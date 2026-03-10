@@ -2257,6 +2257,128 @@ function PartnerProgramPage(){
   );
 }
 
+
+
+function CommercialFrameworkPage(){
+  const hierarchySteps = [
+    {title:"Reseller Master Agreement", subtitle:"Single governing agreement"},
+    {title:"Product Schedules", subtitle:"Solution-specific operating terms"},
+    {title:"EULAs & Service Terms", subtitle:"End-customer legal documentation"},
+    {title:"Pricing Framework", subtitle:"Commercial model and discounting"},
+  ];
+  const scheduleCards = [
+    "Telephony Services Schedule",
+    "UCaaS & CCaaS Platform Schedule",
+    "AI & Automation Schedule",
+    "Secure Payments Schedule",
+    "Managed Services Schedule",
+    "Professional Services Schedule",
+  ];
+  const eulaExamples = ["End User Licence Agreement", "Acceptable Use Policy", "Service Level Agreements", "Data Processing Agreements"];
+  const pricingItems = ["Wholesale partner pricing", "Partner tier discounts", "Recommended resale pricing", "Usage-based pricing where applicable"];
+
+  return(
+    <React.Fragment>
+      <Bg/>
+      <div style={{position:"relative",zIndex:1,minHeight:"100vh",padding:"50px 44px 56px",animation:"fadeIn 0.35s ease both"}}>
+        <div style={{maxWidth:1160,margin:"0 auto",display:"flex",flexDirection:"column",gap:26}}>
+          <section style={{textAlign:"center",padding:"0 6px"}}>
+            <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(99,171,143,0.09)",border:"1px solid rgba(99,171,143,0.28)",borderRadius:100,padding:"6px 15px",marginBottom:16,fontSize:11,fontWeight:800,color:"#91C4B0",letterSpacing:"0.08em",textTransform:"uppercase"}}>Commercial Architecture</div>
+            <h1 style={{fontSize:"clamp(26px,4vw,50px)",fontWeight:800,color:"#fff",lineHeight:1.08,letterSpacing:"-0.03em",marginBottom:16,fontFamily:"'Syne',sans-serif"}}>Commercial & Legal <span style={{color:"#63AB8F"}}>Framework</span></h1>
+            <p style={{fontSize:14,color:"#6E9990",lineHeight:1.85,maxWidth:920,margin:"0 auto"}}>The IPI Partner Advantage program is designed to provide a simple, scalable and partner-friendly commercial structure. Partners sign a single Reseller Master Agreement which governs the overall relationship with IP Integration. From that point onward, partners can sell any solution within the IPI portfolio using modular product schedules, standardised pricing frameworks and published legal documentation.</p>
+            <p style={{fontSize:14,color:"#6E9990",lineHeight:1.85,maxWidth:920,margin:"12px auto 0"}}>This structure removes contractual friction and allows partners to rapidly expand their portfolio as new solutions are introduced.</p>
+            <p style={{fontSize:12,fontWeight:800,color:"#91C4B0",letterSpacing:"0.1em",textTransform:"uppercase",marginTop:18}}>Designed for scale, flexibility and rapid partner growth.</p>
+          </section>
+
+          <div className="brand-line"/>
+
+          <section>
+            <div style={{fontSize:11,fontWeight:800,color:"rgba(99,171,143,0.68)",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:14}}>1 · Partner Agreement Structure</div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:12,marginBottom:14}}>
+              {hierarchySteps.map((step, i)=>(
+                <div key={step.title} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(99,171,143,0.24)",borderRadius:13,padding:"16px 14px",display:"flex",gap:10,alignItems:"flex-start"}}>
+                  <div style={{width:26,height:26,borderRadius:8,background:"rgba(99,171,143,0.18)",border:"1px solid rgba(99,171,143,0.35)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#91C4B0",flexShrink:0}}>{i+1}</div>
+                  <div>
+                    <div style={{fontSize:13.5,fontWeight:800,color:"#E8F5F0",fontFamily:"'Syne',sans-serif"}}>{step.title}</div>
+                    <div style={{fontSize:11.5,color:"#5A8880",lineHeight:1.6,marginTop:4}}>{step.subtitle}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{display:"flex",justifyContent:"center",fontSize:12,color:"rgba(145,196,176,0.85)",letterSpacing:"0.05em",marginBottom:18}}>Master Agreement ↓ Product Schedules ↓ EULAs ↓ Pricing</div>
+            <div style={{background:"linear-gradient(140deg,rgba(99,171,143,0.1),rgba(99,171,143,0.04))",border:"1px solid rgba(99,171,143,0.32)",borderRadius:14,padding:"18px 20px"}}>
+              <h3 style={{fontSize:18,color:"#fff",marginBottom:10,fontFamily:"'Syne',sans-serif"}}>Reseller Master Agreement (RMA)</h3>
+              <p style={{fontSize:13,color:"#6E9990",lineHeight:1.75,marginBottom:12}}>The Reseller Master Agreement defines the overall legal and commercial relationship between IP Integration and the partner.</p>
+              <ul style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:"6px 16px",paddingLeft:18,color:"#91C4B0",fontSize:12.5,lineHeight:1.7,margin:0}}>
+                <li>partnership terms and conditions</li><li>partner obligations and responsibilities</li><li>partner tier classification</li><li>discount framework</li><li>billing and payment terms</li><li>general commercial governance</li>
+              </ul>
+              <p style={{fontSize:12.5,color:"#7FB3A6",lineHeight:1.75,marginTop:12}}>Once signed, the RMA allows partners to sell the full IPI portfolio without signing new master agreements.</p>
+            </div>
+          </section>
+
+          <section>
+            <div style={{fontSize:11,fontWeight:800,color:"rgba(99,171,143,0.68)",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:12}}>2 · Product Schedules</div>
+            <p style={{fontSize:13,color:"#6E9990",lineHeight:1.75,marginBottom:14}}>Each product family has its own schedule. Product Schedules define the operational and commercial terms for each solution area.</p>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(210px,1fr))",gap:10,marginBottom:14}}>
+              {scheduleCards.map(s=><div key={s} style={{background:"rgba(255,255,255,0.025)",border:"1px solid rgba(99,171,143,0.2)",borderRadius:12,padding:"14px 12px",fontSize:12.5,fontWeight:700,color:"#B7D7CE"}}>{s}</div>)}
+            </div>
+            <ul style={{paddingLeft:18,color:"#91C4B0",fontSize:12.5,lineHeight:1.7,margin:0}}><li>product scope and description</li><li>service delivery model</li><li>support structure</li><li>service levels</li><li>provisioning requirements</li></ul>
+            <p style={{fontSize:12.5,color:"#7FB3A6",lineHeight:1.75,marginTop:12}}>When a new IPI product is introduced, a new schedule can be added without changing the master agreement.</p>
+          </section>
+
+          <section style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:14}}>
+            <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(163,121,146,0.32)",borderRadius:14,padding:"18px"}}>
+              <div style={{fontSize:11,fontWeight:800,color:"rgba(163,121,146,0.72)",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:8}}>3 · End User Legal Agreements (EULAs)</div>
+              <p style={{fontSize:12.5,color:"#6E9990",lineHeight:1.75,marginBottom:10}}>EULAs govern the relationship between IP Integration and the end customer using the platform. Partners reference these documents when selling IPI services to their customers.</p>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>{eulaExamples.map(e=><div key={e} style={{background:"rgba(163,121,146,0.1)",border:"1px solid rgba(163,121,146,0.25)",borderRadius:10,padding:"9px 10px",fontSize:12,color:"#D8B9CB"}}>{e}</div>)}</div>
+              <p style={{fontSize:12,color:"#A88BA0",lineHeight:1.75,marginTop:10}}>All documents are maintained centrally and published through the Trust Portal.</p>
+            </div>
+
+            <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(192,136,123,0.32)",borderRadius:14,padding:"18px"}}>
+              <div style={{fontSize:11,fontWeight:800,color:"rgba(192,136,123,0.74)",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:8}}>4 · Pricing Framework</div>
+              <p style={{fontSize:12.5,color:"#6E9990",lineHeight:1.75,marginBottom:10}}>Partner Pricing Structure</p>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>{pricingItems.map(item=><div key={item} style={{background:"rgba(192,136,123,0.1)",border:"1px solid rgba(192,136,123,0.25)",borderRadius:10,padding:"9px 10px",fontSize:11.5,color:"#DFB6AC"}}>{item}</div>)}</div>
+              <p style={{fontSize:12,color:"#C99A8E",lineHeight:1.75,marginTop:10}}>Pricing is maintained separately from legal agreements to allow updates without renegotiating contracts. This ensures the commercial framework remains agile while protecting the legal integrity of the partner agreement.</p>
+            </div>
+          </section>
+
+          <section style={{background:"linear-gradient(135deg,rgba(99,171,143,0.18),rgba(99,171,143,0.06))",border:"1px solid rgba(99,171,143,0.36)",borderRadius:15,padding:"20px"}}>
+            <div style={{fontSize:11,fontWeight:800,color:"rgba(99,171,143,0.8)",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:8}}>5 · Portfolio Access Model</div>
+            <h3 style={{fontSize:21,color:"#fff",fontFamily:"'Syne',sans-serif",marginBottom:8}}>One Agreement — Full Portfolio Access</h3>
+            <p style={{fontSize:13,color:"#6E9990",lineHeight:1.75}}>Once a partner signs the Reseller Master Agreement they gain access to the entire IPI product portfolio.</p>
+            <ul style={{paddingLeft:18,color:"#A6D5C6",fontSize:12.5,lineHeight:1.75,margin:"10px 0 0"}}><li>start by selling a single solution</li><li>expand into additional products over time</li><li>add new services without signing new contracts</li></ul>
+            <p style={{fontSize:12.5,color:"#8EBDAF",lineHeight:1.75,marginTop:10}}>This allows partners to evolve from selling point solutions to delivering full CX platforms.</p>
+          </section>
+
+          <section style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:14}}>
+            <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(123,150,163,0.32)",borderRadius:14,padding:"18px"}}>
+              <div style={{fontSize:11,fontWeight:800,color:"rgba(123,150,163,0.78)",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:8}}>6 · Trust Portal</div>
+              <h3 style={{fontSize:18,color:"#fff",fontFamily:"'Syne',sans-serif",marginBottom:8}}>Trust & Compliance Portal</h3>
+              <p style={{fontSize:12.5,color:"#6E9990",lineHeight:1.75,marginBottom:10}}>The Partner Portal includes a dedicated Trust Page providing access to the latest versions of:</p>
+              <ul style={{paddingLeft:18,color:"#9DB8C5",fontSize:12.5,lineHeight:1.7,margin:0}}><li>Reseller Master Agreement</li><li>Product schedules</li><li>EULAs and service terms</li><li>security and compliance documentation</li><li>service descriptions and SLAs</li></ul>
+              <p style={{fontSize:12,color:"#87A3AF",lineHeight:1.75,marginTop:10}}>This ensures partners always have access to the most current documentation.</p>
+            </div>
+
+            <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(99,171,143,0.24)",borderRadius:14,padding:"18px"}}>
+              <div style={{fontSize:11,fontWeight:800,color:"rgba(99,171,143,0.78)",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:8}}>7 · Why This Model Works</div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                <div>
+                  <div style={{fontSize:12,fontWeight:800,color:"#91C4B0",marginBottom:6}}>Benefits for Partners</div>
+                  <ul style={{paddingLeft:18,color:"#A6D5C6",fontSize:12,lineHeight:1.65,margin:0}}><li>simple onboarding process</li><li>ability to sell multiple solutions</li><li>no need to renegotiate contracts for new products</li><li>faster sales cycles</li></ul>
+                </div>
+                <div>
+                  <div style={{fontSize:12,fontWeight:800,color:"#91C4B0",marginBottom:6}}>Benefits for IP Integration</div>
+                  <ul style={{paddingLeft:18,color:"#A6D5C6",fontSize:12,lineHeight:1.65,margin:0}}><li>scalable legal framework</li><li>faster partner recruitment</li><li>easier product expansion</li><li>consistent governance across the ecosystem</li></ul>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </React.Fragment>
+  );
+}
+
 // ═══════════════════════════════════════════════════════
 // SIDEBAR NAV WRAPPER
 // ═══════════════════════════════════════════════════════
@@ -2266,6 +2388,7 @@ const NAV_ITEMS = [
   {id:"hub",     icon:"🎓", label:"Partner Enablement",   sublabel:"Hub 2026"},
   {id:"pillars", icon:"🧩", label:"Six Pillars",           sublabel:"Product Framework"},
   {id:"program", icon:"🎯", label:"Partner Program",       sublabel:"Recruitment & IPP"},
+  {id:"commercial", icon:"📜", label:"Commercial Framework", sublabel:"Legal & Pricing Model"},
 ];
 
 function SideNav({page, setPage}){
@@ -2366,6 +2489,7 @@ function App(){
     if(page==="pillars") return <SixPillars onBack={()=>setPage("main")} onHub={()=>setPage("hub")}/>;
     if(page==="bse")     return <BuildSellExpand/>;
     if(page==="program") return <PartnerProgramPage/>;
+    if(page==="commercial") return <CommercialFrameworkPage/>;
 
     // Page 1 — Home
     return(
