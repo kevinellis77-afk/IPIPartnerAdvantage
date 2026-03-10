@@ -8275,15 +8275,14 @@ function GovernancePage() {
                 background: "rgba(255,255,255,0.03)",
                 border: "1px solid rgba(123,150,163,0.3)",
                 borderRadius: 14,
-                overflowX: "auto",
               }}
             >
-              <div style={{ minWidth: 1650 }}>
+              <div>
                 <div
                   style={{
                     display: "grid",
                     gridTemplateColumns:
-                      "3fr repeat(8,0.9fr) 1.1fr 1fr 1fr 1.1fr 0.8fr 0.8fr",
+                      "2.6fr repeat(8,0.75fr) 1fr 1fr 0.85fr 1fr 0.9fr 0.55fr",
                     background: "rgba(123,150,163,0.14)",
                     borderBottom: "1px solid rgba(123,150,163,0.25)",
                   }}
@@ -8314,6 +8313,7 @@ function GovernancePage() {
                         color: "#A9C3CE",
                         letterSpacing: "0.08em",
                         textTransform: "uppercase",
+                        minWidth: 0,
                       }}
                     >
                       {h}
@@ -8327,7 +8327,7 @@ function GovernancePage() {
                       style={{
                         display: "grid",
                         gridTemplateColumns:
-                          "3fr repeat(8,0.9fr) 1.1fr 1fr 1fr 1.1fr 0.8fr 0.8fr",
+                          "2.6fr repeat(8,0.75fr) 1fr 1fr 0.85fr 1fr 0.9fr 0.55fr",
                         borderTop: idx
                           ? "1px solid rgba(255,255,255,0.07)"
                           : "none",
@@ -8340,6 +8340,7 @@ function GovernancePage() {
                           fontSize: 12,
                           color: "#E8F5F0",
                           fontWeight: 700,
+                          minWidth: 0,
                         }}
                       >
                         {task.activity}
@@ -8367,6 +8368,7 @@ function GovernancePage() {
                               padding: "10px",
                               display: "flex",
                               justifyContent: "center",
+                              minWidth: 0,
                             }}
                           >
                             <span
