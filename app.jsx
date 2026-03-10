@@ -3808,324 +3808,6 @@ function PillarCard({ pillar, isActive, onClick }) {
   );
 }
 
-function SixPillars({ onBack, onHub }) {
-  const [activeId, setActiveId] = React.useState(null);
-
-  return (
-    <div
-      style={{
-        position: "relative",
-        zIndex: 1,
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        background: "#131E20",
-      }}
-    >
-      <Bg />
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        {/* HEADER */}
-        <header
-          style={{
-            padding: "22px 44px 0",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 12,
-            paddingLeft: 68,
-          }}
-        >
-          <LogoMark h={48} />
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              background:
-                "linear-gradient(135deg,rgba(163,121,146,0.12),rgba(99,171,143,0.08))",
-              border: "1px solid rgba(163,121,146,0.3)",
-              borderRadius: 100,
-              padding: "7px 18px",
-            }}
-          >
-            <div
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: "50%",
-                background: "#A37992",
-                boxShadow: "0 0 8px #A37992",
-                animation: "liveDot 2.2s ease-in-out infinite",
-              }}
-            />
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 800,
-                color: "#C49DB8",
-                letterSpacing: "0.07em",
-                textTransform: "uppercase",
-              }}
-            >
-              Partner Sales Framework
-            </span>
-            <span
-              style={{
-                fontSize: 9,
-                color: "rgba(163,121,146,0.5)",
-                letterSpacing: "0.07em",
-                textTransform: "uppercase",
-              }}
-            >
-              2026
-            </span>
-          </div>
-          <div style={{ width: 36 }} />
-        </header>
-
-        {/* HERO */}
-        <div
-          style={{
-            textAlign: "center",
-            padding: "44px 40px 0",
-            position: "relative",
-          }}
-        >
-          {/* Glow orb */}
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: 600,
-              height: 300,
-              borderRadius: "50%",
-              background: "rgba(163,121,146,0.06)",
-              filter: "blur(80px)",
-              pointerEvents: "none",
-            }}
-          />
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              background: "rgba(163,121,146,0.08)",
-              border: "1px solid rgba(163,121,146,0.25)",
-              borderRadius: 100,
-              padding: "5px 16px",
-              marginBottom: 16,
-              fontSize: 11,
-              fontWeight: 800,
-              color: "#C49DB8",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              position: "relative",
-              zIndex: 1,
-            }}
-          >
-            IPI Partner Advantage 2026
-          </div>
-          <h1
-            style={{
-              fontSize: "clamp(26px,4vw,52px)",
-              fontWeight: 800,
-              letterSpacing: "-0.04em",
-              color: "#fff",
-              lineHeight: 1.05,
-              marginBottom: 14,
-              fontFamily: "'Syne',sans-serif",
-              position: "relative",
-              zIndex: 1,
-            }}
-          >
-            The Six{" "}
-            <span
-              style={{
-                color: "#A37992",
-                textShadow: "0 0 40px rgba(163,121,146,0.5)",
-              }}
-            >
-              Product Pillars
-            </span>
-          </h1>
-          <p
-            style={{
-              fontSize: 14,
-              color: "#6E9990",
-              maxWidth: 620,
-              margin: "0 auto 6px",
-              lineHeight: 1.8,
-              position: "relative",
-              zIndex: 1,
-            }}
-          >
-            The core messaging framework for the IPI partner programme. Six
-            distinct revenue streams — each a standalone sale, all more powerful
-            together.
-          </p>
-          <p
-            style={{
-              fontSize: 12,
-              color: "rgba(110,153,144,0.5)",
-              position: "relative",
-              zIndex: 1,
-              fontStyle: "italic",
-            }}
-          >
-            Click any pillar to highlight it
-          </p>
-        </div>
-
-        {/* VISUAL CONNECTIVE BAR */}
-        <div
-          style={{
-            maxWidth: 1200,
-            margin: "32px auto 0",
-            padding: "0 44px",
-            width: "100%",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 0,
-              height: 6,
-              borderRadius: 100,
-              overflow: "hidden",
-            }}
-          >
-            {PILLARS.map((p, i) => (
-              <div
-                key={p.id}
-                onClick={() =>
-                  setActiveId((prev) => (prev === p.id ? null : p.id))
-                }
-                style={{
-                  flex: 1,
-                  height: "100%",
-                  background: `rgba(${p.glow},${activeId === p.id ? 0.85 : 0.3})`,
-                  cursor: "pointer",
-                  transition: "all 0.3s",
-                  boxShadow:
-                    activeId === p.id ? `0 0 12px rgba(${p.glow},0.6)` : "",
-                }}
-              />
-            ))}
-          </div>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginTop: 8,
-            }}
-          >
-            {PILLARS.map((p) => (
-              <div
-                key={p.id}
-                style={{
-                  flex: 1,
-                  textAlign: "center",
-                  fontSize: 9,
-                  fontWeight: 800,
-                  color: `rgba(${p.glow},${activeId === p.id ? 0.9 : 0.4})`,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.06em",
-                  cursor: "pointer",
-                  transition: "color 0.3s",
-                }}
-                onClick={() =>
-                  setActiveId((prev) => (prev === p.id ? null : p.id))
-                }
-              >
-                {p.num}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* PILLARS GRID */}
-        <div
-          style={{
-            maxWidth: 1200,
-            margin: "28px auto 0",
-            padding: "0 44px",
-            width: "100%",
-            display: "grid",
-            gridTemplateColumns: "repeat(3,1fr)",
-            gap: 16,
-            flex: 1,
-          }}
-        >
-          {PILLARS.map((pillar) => (
-            <PillarCard
-              key={pillar.id}
-              pillar={pillar}
-              isActive={activeId === pillar.id}
-              onClick={() =>
-                setActiveId((prev) => (prev === pillar.id ? null : pillar.id))
-              }
-            />
-          ))}
-        </div>
-
-        {/* FOOTER */}
-        <div style={{ padding: "40px 44px 44px", marginTop: "auto" }}>
-          <div className="brand-line" style={{ marginBottom: 20 }} />
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              flexWrap: "wrap",
-              gap: 16,
-            }}
-          >
-            <p
-              style={{
-                fontSize: 10,
-                color: "rgba(99,171,143,0.3)",
-                letterSpacing: "0.07em",
-                textTransform: "uppercase",
-              }}
-            >
-              © 2026 IP Integration Ltd · IPI Partner Advantage · Partner
-              Confidential
-            </p>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button
-                onClick={onHub}
-                className="btn-p"
-                style={{ fontSize: 11, padding: "8px 18px" }}
-              >
-                Partner Enablement Hub →
-              </button>
-              <button
-                onClick={onBack}
-                className="btn-s"
-                style={{ fontSize: 11, padding: "8px 18px" }}
-              >
-                ← Ecosystem Overview
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ═══════════════════════════════════════════════════════
 // PARTNER ENABLEMENT HUB (Page 2)
 // ═══════════════════════════════════════════════════════
@@ -5471,6 +5153,14 @@ function ProspectToolPage() {
 // BUILD · SELL · EXPAND PAGE (Page 2)
 // ═══════════════════════════════════════════════════════
 function BuildSellExpand() {
+  const [activePillar, setActivePillar] = React.useState(null);
+  const sectionLinks = [
+    { id: "framework", label: "Framework" },
+    { id: "journey", label: "Revenue Journey" },
+    { id: "six-pillars", label: "Six Pillars" },
+    { id: "actions", label: "Next Actions" },
+  ];
+
   return (
     <React.Fragment>
       <Bg />
@@ -5484,7 +5174,6 @@ function BuildSellExpand() {
           animation: "fadeIn 0.35s ease both",
         }}
       >
-        {/* HERO */}
         <div style={{ textAlign: "center", padding: "64px 40px 12px" }}>
           <div
             style={{
@@ -5516,215 +5205,190 @@ function BuildSellExpand() {
               fontFamily: "'Syne',sans-serif",
             }}
           >
-            Build.{" "}
-            <span
-              style={{
-                color: "#63AB8F",
-                textShadow: "0 0 40px rgba(99,171,143,0.65)",
-              }}
-            >
-              Sell.
-            </span>{" "}
-            Expand.
+            Build. <span style={{ color: "#63AB8F", textShadow: "0 0 40px rgba(99,171,143,0.65)" }}>Sell.</span> Expand.
           </h1>
           <p
             style={{
               fontSize: 16,
               fontWeight: 400,
               color: "#6E9990",
-              maxWidth: 640,
+              maxWidth: 760,
               margin: "0 auto 12px",
               lineHeight: 1.78,
             }}
           >
-            The most flexible CX platform for partners who want to build
-            differentiated customer contact solutions.
+            A single partner growth framework that combines the Build · Sell · Expand motion with IPI's Six Product Pillars, helping teams move from first opportunity to long-term recurring value.
           </p>
           <p
             style={{
               fontSize: 13.5,
               color: "rgba(110,153,144,0.65)",
-              maxWidth: 560,
+              maxWidth: 620,
               margin: "0 auto",
               lineHeight: 1.72,
               fontStyle: "italic",
             }}
           >
-            Enabling our partners to deliver Exceptional Customer Contact
-            through IP Integration's platform, services and expertise.
+            Enabling our partners to deliver Exceptional Customer Contact through IP Integration's platform, services and expertise.
           </p>
         </div>
 
-        {/* Value Props */}
-        <div
-          style={{
-            maxWidth: 1100,
-            margin: "40px auto 0",
-            padding: "0 44px",
-            width: "100%",
-            display: "grid",
-            gridTemplateColumns: "repeat(3,1fr)",
-            gap: 16,
-          }}
-        >
-          {[
-            {
-              icon: "🏗️",
-              color: "#91C4B0",
-              glow: "145,196,176",
-              title: "Build Your CX Practice",
-              body: "Use IPI's modular platform to assemble a CX solution tailored to your customers' needs. Start with telephony, layer in CCaaS, add AI and payments as the relationship grows.",
-            },
-            {
-              icon: "💼",
-              color: "#A37992",
-              glow: "163,121,146",
-              title: "Sell With Confidence",
-              body: "IPI provides the sales tools, pre-sales support, co-sell materials and training to help you go to market fast — with a compelling, differentiated story every time.",
-            },
-            {
-              icon: "📈",
-              color: "#D4A843",
-              glow: "212,168,67",
-              title: "Expand Revenue Streams",
-              body: "Every customer engagement is an opportunity to expand. Add managed services, AI automation or secure payments to grow recurring revenue without replacing what's already sold.",
-            },
-          ].map((v, i) => (
-            <div
-              key={i}
-              style={{
-                background: "rgba(255,255,255,0.025)",
-                border: `1px solid rgba(${v.glow},0.2)`,
-                borderRadius: 16,
-                padding: "26px 24px",
-                display: "flex",
-                flexDirection: "column",
-                gap: 14,
-                transition: "all 0.25s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = `rgba(${v.glow},0.06)`;
-                e.currentTarget.style.borderColor = `rgba(${v.glow},0.4)`;
-                e.currentTarget.style.transform = "translateY(-4px)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "rgba(255,255,255,0.025)";
-                e.currentTarget.style.borderColor = `rgba(${v.glow},0.2)`;
-                e.currentTarget.style.transform = "translateY(0)";
-              }}
-            >
-              <div
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 13,
-                  background: `rgba(${v.glow},0.14)`,
-                  border: `1px solid rgba(${v.glow},0.3)`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 24,
-                }}
-              >
-                {v.icon}
-              </div>
-              <div
-                style={{
-                  fontSize: 15,
-                  fontWeight: 800,
-                  color: v.color,
-                  fontFamily: "'Syne',sans-serif",
-                  lineHeight: 1.25,
-                }}
-              >
-                {v.title}
-              </div>
-              <div style={{ fontSize: 13, color: "#5A8880", lineHeight: 1.75 }}>
-                {v.body}
-              </div>
-            </div>
-          ))}
+        <div className="bse-section-index-wrap">
+          <div className="bse-section-index">
+            <span className="bse-section-index-label">Page Sections</span>
+            {sectionLinks.map((item) => (
+              <a key={item.id} href={`#${item.id}`} className="bse-section-index-link">
+                {item.label}
+              </a>
+            ))}
+          </div>
         </div>
+
+        <section id="framework" className="bse-section-shell">
+          <div className="bse-section-heading">
+            <h2>Build · Sell · Expand Framework</h2>
+            <p>Start with a strong base offer, sell with repeatable confidence, then expand every account through adjacent services and innovation.</p>
+          </div>
+          <div className="bse-value-grid">
+            {[
+              {
+                icon: "🏗️",
+                color: "#91C4B0",
+                glow: "145,196,176",
+                title: "Build Your CX Practice",
+                body: "Use IPI's modular platform to assemble a CX solution tailored to your customers' needs. Start with telephony, layer in CCaaS, add AI and payments as the relationship grows.",
+              },
+              {
+                icon: "💼",
+                color: "#A37992",
+                glow: "163,121,146",
+                title: "Sell With Confidence",
+                body: "IPI provides the sales tools, pre-sales support, co-sell materials and training to help you go to market fast — with a compelling, differentiated story every time.",
+              },
+              {
+                icon: "📈",
+                color: "#D4A843",
+                glow: "212,168,67",
+                title: "Expand Revenue Streams",
+                body: "Every customer engagement is an opportunity to expand. Add managed services, AI automation or secure payments to grow recurring revenue without replacing what's already sold.",
+              },
+            ].map((v, i) => (
+              <div
+                key={i}
+                style={{
+                  background: "rgba(255,255,255,0.025)",
+                  border: `1px solid rgba(${v.glow},0.2)`,
+                  borderRadius: 16,
+                  padding: "26px 24px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 14,
+                  transition: "all 0.25s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = `rgba(${v.glow},0.06)`;
+                  e.currentTarget.style.borderColor = `rgba(${v.glow},0.4)`;
+                  e.currentTarget.style.transform = "translateY(-4px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.025)";
+                  e.currentTarget.style.borderColor = `rgba(${v.glow},0.2)`;
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+              >
+                <div
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 13,
+                    background: `rgba(${v.glow},0.14)`,
+                    border: `1px solid rgba(${v.glow},0.3)`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 24,
+                  }}
+                >
+                  {v.icon}
+                </div>
+                <div
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 800,
+                    color: v.color,
+                    fontFamily: "'Syne',sans-serif",
+                    lineHeight: 1.25,
+                  }}
+                >
+                  {v.title}
+                </div>
+                <div style={{ fontSize: 13, color: "#5A8880", lineHeight: 1.75 }}>{v.body}</div>
+              </div>
+            ))}
+          </div>
+        </section>
 
         <div className="brand-line" style={{ margin: "44px 44px 0" }} />
 
-        {/* PARTNER REVENUE JOURNEY */}
-        <div
-          style={{
-            maxWidth: 1100,
-            margin: "0 auto",
-            padding: "36px 44px 0",
-            width: "100%",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-              marginBottom: 22,
-            }}
-          >
-            <div
-              style={{
-                height: 1,
-                flex: 1,
-                background:
-                  "linear-gradient(90deg,transparent,rgba(99,171,143,0.3))",
-              }}
-            />
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: 800,
-                color: "rgba(99,171,143,0.6)",
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                whiteSpace: "nowrap",
-              }}
-            >
-              Partner Revenue Journey
-            </span>
-            <div
-              style={{
-                height: 1,
-                flex: 1,
-                background:
-                  "linear-gradient(90deg,rgba(99,171,143,0.3),transparent)",
-              }}
-            />
-          </div>
-          <div style={{ marginBottom: 18 }}>
-            <h2
-              style={{
-                fontSize: "clamp(18px,2.2vw,26px)",
-                fontWeight: 800,
-                color: "#fff",
-                letterSpacing: "-0.02em",
-                lineHeight: 1.15,
-                marginBottom: 6,
-                fontFamily: "'Syne',sans-serif",
-              }}
-            >
-              From first sale to full CCaaS
-            </h2>
-            <p
-              style={{
-                fontSize: 13,
-                color: "#6E9990",
-                lineHeight: 1.75,
-                maxWidth: 580,
-              }}
-            >
-              Every step deepens the customer relationship and grows your
-              recurring revenue — start anywhere, expand at the customer's pace.
-            </p>
+        <section id="journey" className="bse-section-shell" style={{ paddingTop: 36 }}>
+          <div className="bse-section-heading">
+            <h2>Partner Revenue Journey</h2>
+            <p>From first sale to full CCaaS, every step deepens the customer relationship and grows recurring revenue at the customer's pace.</p>
           </div>
           <PartnerJourney />
-        </div>
+        </section>
 
-        {/* CTA */}
-        <div style={{ padding: "48px 44px 52px", marginTop: "auto" }}>
+        <section id="six-pillars" className="bse-section-shell" style={{ paddingTop: 52 }}>
+          <div className="bse-section-heading">
+            <h2>Six Product Pillars</h2>
+            <p>The core messaging framework for the IPI partner programme: six distinct revenue streams that stand alone, yet create more value when sold together.</p>
+          </div>
+
+          <div className="bse-pillars-bar-wrap">
+            <div className="bse-pillars-bar">
+              {PILLARS.map((p) => (
+                <div
+                  key={p.id}
+                  onClick={() => setActivePillar((prev) => (prev === p.id ? null : p.id))}
+                  style={{
+                    flex: 1,
+                    height: "100%",
+                    background: `rgba(${p.glow},${activePillar === p.id ? 0.85 : 0.3})`,
+                    cursor: "pointer",
+                    transition: "all 0.3s",
+                    boxShadow: activePillar === p.id ? `0 0 12px rgba(${p.glow},0.6)` : "",
+                  }}
+                />
+              ))}
+            </div>
+            <div className="bse-pillars-numbers">
+              {PILLARS.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  className="bse-pillars-number-btn"
+                  style={{ color: `rgba(${p.glow},${activePillar === p.id ? 0.9 : 0.4})` }}
+                  onClick={() => setActivePillar((prev) => (prev === p.id ? null : p.id))}
+                >
+                  {p.num}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="bse-pillars-grid">
+            {PILLARS.map((pillar) => (
+              <PillarCard
+                key={pillar.id}
+                pillar={pillar}
+                isActive={activePillar === pillar.id}
+                onClick={() => setActivePillar((prev) => (prev === pillar.id ? null : pillar.id))}
+              />
+            ))}
+          </div>
+        </section>
+
+        <section id="actions" style={{ padding: "48px 44px 52px", marginTop: "auto" }}>
           <div className="brand-line" style={{ marginBottom: 34 }} />
           <div
             style={{
@@ -5737,7 +5401,7 @@ function BuildSellExpand() {
               gap: 28,
             }}
           >
-            <div style={{ maxWidth: 520 }}>
+            <div style={{ maxWidth: 600 }}>
               <h2
                 style={{
                   fontSize: "clamp(20px,2.6vw,30px)",
@@ -5749,26 +5413,17 @@ function BuildSellExpand() {
                   fontFamily: "'Syne',sans-serif",
                 }}
               >
-                One platform.{" "}
-                <span style={{ color: "#63AB8F" }}>
-                  Multiple revenue opportunities.
-                </span>
+                One platform. <span style={{ color: "#63AB8F" }}>Multiple revenue opportunities.</span>
               </h2>
-              <p style={{ fontSize: 13.5, color: "#6E9990", lineHeight: 1.82 }}>
-                Start with a single module and grow. Each IPI solution stands
-                alone — or connects into a complete, unified customer contact
-                platform your customers won't want to leave.
+              <p style={{ fontSize: 13.5, color: "#6E9990", lineHeight: 1.82, marginBottom: 12 }}>
+                Start with a single module and grow. Each IPI solution stands alone, or connects into a complete customer contact platform your customers won't want to leave.
+              </p>
+              <p style={{ fontSize: 12.5, color: "rgba(110,153,144,0.8)", lineHeight: 1.75 }}>
+                Next steps: align your target accounts to the framework, identify which pillars attach naturally, and build a co-sell plan with the IPI team.
               </p>
             </div>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-              <button
-                className="btn-p"
-                style={{
-                  fontFamily: "'Nunito Sans',sans-serif",
-                  border: "none",
-                  cursor: "pointer",
-                }}
-              >
+              <button className="btn-p" style={{ fontFamily: "'Nunito Sans',sans-serif", border: "none", cursor: "pointer" }}>
                 Download Partner Pack
               </button>
             </div>
@@ -5784,10 +5439,9 @@ function BuildSellExpand() {
               textTransform: "uppercase",
             }}
           >
-            © 2026 IP Integration Ltd · IPI Partner Advantage · Partner
-            Confidential
+            © 2026 IP Integration Ltd · IPI Partner Advantage · Partner Confidential
           </p>
-        </div>
+        </section>
       </div>
       <style>{`@keyframes fadeIn{from{opacity:0}to{opacity:1}}`}</style>
     </React.Fragment>
@@ -9321,12 +8975,6 @@ const NAV_ITEMS = [
     sublabel: "Deal Intelligence",
   },
   {
-    id: "pillars",
-    icon: "🧩",
-    label: "Six Pillars",
-    sublabel: "Product Framework",
-  },
-  {
     id: "program",
     icon: "🎯",
     label: "Partner Program",
@@ -9592,13 +9240,6 @@ function App() {
     if (page === "hub")
       return (
         <EnablementHub onBack={() => setPage("main")} onNavigate={setPage} />
-      );
-    if (page === "pillars")
-      return (
-        <SixPillars
-          onBack={() => setPage("main")}
-          onHub={() => setPage("hub")}
-        />
       );
     if (page === "prospect") return <ProspectToolPage />;
     if (page === "bse") return <BuildSellExpand />;
