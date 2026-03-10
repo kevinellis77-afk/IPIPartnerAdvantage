@@ -2472,6 +2472,74 @@ function CommercialFrameworkPage(){
   );
 }
 
+
+
+const RACI_ROWS = [
+  {workstream:"Partner Recruitment", ipi:"A/R", channel:"C", operations:"I", legal:"I"},
+  {workstream:"Opportunity Qualification", ipi:"R", channel:"A/R", operations:"C", legal:"I"},
+  {workstream:"Solution Design", ipi:"A/R", channel:"R", operations:"C", legal:"I"},
+  {workstream:"Commercial Approval", ipi:"A", channel:"C", operations:"R", legal:"C"},
+  {workstream:"Contracting & Terms", ipi:"C", channel:"I", operations:"C", legal:"A/R"},
+  {workstream:"Service Onboarding", ipi:"A", channel:"R", operations:"A/R", legal:"I"},
+  {workstream:"Quarterly Business Review", ipi:"A/R", channel:"R", operations:"C", legal:"I"},
+];
+
+function GovernancePage(){
+  return(
+    <React.Fragment>
+      <Bg/>
+      <div style={{position:"relative",zIndex:1,minHeight:"100vh",display:"flex",flexDirection:"column",animation:"fadeIn 0.35s ease both"}}>
+        <header style={{padding:"22px 44px 0",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12,paddingLeft:68}}>
+          <LogoMark h={48}/>
+          <div style={{display:"flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,rgba(123,150,163,0.15),rgba(99,171,143,0.08))",border:"1px solid rgba(123,150,163,0.35)",borderRadius:100,padding:"7px 18px"}}>
+            <div style={{width:7,height:7,borderRadius:"50%",background:"#7B96A3",boxShadow:"0 0 8px #7B96A3",animation:"liveDot 2.2s ease-in-out infinite"}}/>
+            <span style={{fontSize:11,fontWeight:800,color:"#A9C3CE",letterSpacing:"0.07em",textTransform:"uppercase"}}>Governance & RACI</span>
+          </div>
+          <div style={{width:36}}/>
+        </header>
+
+        <div style={{maxWidth:1140,margin:"0 auto",padding:"34px 44px 0",width:"100%"}}>
+          <h1 style={{fontSize:"clamp(24px,3.8vw,46px)",fontWeight:800,letterSpacing:"-0.04em",color:"#fff",lineHeight:1.05,marginBottom:10,fontFamily:"'Syne',sans-serif"}}>
+            Partner <span style={{color:"#7B96A3"}}>Governance</span> RACI Matrix
+          </h1>
+          <p style={{fontSize:13.5,color:"#6E9990",maxWidth:860,lineHeight:1.75,marginBottom:18}}>
+            This view clarifies delivery accountability across IP Integration, partner teams and internal governance functions so opportunities progress with clear ownership.
+          </p>
+
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:18}}>
+            {[{k:"R",l:"Responsible",c:"#63AB8F"},{k:"A",l:"Accountable",c:"#D4A843"},{k:"C",l:"Consulted",c:"#A37992"},{k:"I",l:"Informed",c:"#7B96A3"}].map(item=>(
+              <div key={item.k} style={{background:"rgba(255,255,255,0.03)",border:`1px solid ${item.c}55`,borderRadius:10,padding:"9px 10px",display:"flex",gap:8,alignItems:"center"}}>
+                <span style={{width:20,height:20,borderRadius:6,display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900,background:`${item.c}22`,color:item.c,border:`1px solid ${item.c}66`}}>{item.k}</span>
+                <span style={{fontSize:12,color:"#C0DDD6",fontWeight:700}}>{item.l}</span>
+              </div>
+            ))}
+          </div>
+
+          <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(123,150,163,0.3)",borderRadius:14,overflow:"hidden"}}>
+            <div style={{display:"grid",gridTemplateColumns:"2.2fr repeat(4,1fr)",background:"rgba(123,150,163,0.14)",borderBottom:"1px solid rgba(123,150,163,0.25)"}}>
+              {["Workstream","IPI Channel Team","Partner","Operations","Legal"].map(h=><div key={h} style={{padding:"12px 14px",fontSize:11,fontWeight:800,color:"#A9C3CE",letterSpacing:"0.08em",textTransform:"uppercase"}}>{h}</div>)}
+            </div>
+            {RACI_ROWS.map((row,idx)=>(
+              <div key={row.workstream} style={{display:"grid",gridTemplateColumns:"2.2fr repeat(4,1fr)",borderTop:idx?"1px solid rgba(255,255,255,0.07)":"none"}}>
+                <div style={{padding:"12px 14px",fontSize:12.5,color:"#E8F5F0",fontWeight:700}}>{row.workstream}</div>
+                {[row.ipi,row.channel,row.operations,row.legal].map((v,i)=><div key={i} style={{padding:"12px 14px",fontSize:12,color:"#BFD8D2",fontWeight:800,letterSpacing:"0.03em"}}>{v}</div>)}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{padding:"40px 44px 44px",marginTop:"auto"}}>
+          <div className="brand-line" style={{marginBottom:20}}/>
+          <p style={{textAlign:"center",fontSize:10,color:"rgba(99,171,143,0.3)",letterSpacing:"0.07em",textTransform:"uppercase"}}>
+            © 2026 IP Integration Ltd · IPI Partner Advantage · Partner Confidential
+          </p>
+        </div>
+      </div>
+      <style>{`@keyframes fadeIn{from{opacity:0}to{opacity:1}}`}</style>
+    </React.Fragment>
+  );
+}
+
 // ═══════════════════════════════════════════════════════
 // SIDEBAR NAV WRAPPER
 // ═══════════════════════════════════════════════════════
@@ -2483,6 +2551,7 @@ const NAV_ITEMS = [
   {id:"pillars", icon:"🧩", label:"Six Pillars",           sublabel:"Product Framework"},
   {id:"program", icon:"🎯", label:"Partner Program",       sublabel:"Recruitment & IPP"},
   {id:"commercial", icon:"📜", label:"Commercial Framework", sublabel:"Legal & Pricing Model"},
+  {id:"governance", icon:"🧭", label:"Governance & RACI", sublabel:"Roles & Ownership"},
 ];
 
 function SideNav({page, setPage}){
@@ -2585,6 +2654,7 @@ function App(){
     if(page==="bse")     return <BuildSellExpand/>;
     if(page==="program") return <PartnerProgramPage/>;
     if(page==="commercial") return <CommercialFrameworkPage/>;
+    if(page==="governance") return <GovernancePage/>;
 
     // Page 1 — Home
     return(
