@@ -2326,13 +2326,6 @@ const GOVERNANCE_PRIORITY_META = {
   "Medium":{color:"#D4A843",bg:"rgba(212,168,67,0.14)",border:"rgba(212,168,67,0.32)"},
   "Low":{color:"#91C4B0",bg:"rgba(99,171,143,0.14)",border:"rgba(99,171,143,0.3)"},
 };
-const GOVERNANCE_STATUS = ["Not Started","In Progress","Complete"];
-const GOVERNANCE_STATUS_META = {
-  "Not Started":{color:"#9BB0AC",bg:"rgba(123,150,163,0.14)",border:"rgba(123,150,163,0.3)"},
-  "In Progress":{color:"#D4A843",bg:"rgba(212,168,67,0.14)",border:"rgba(212,168,67,0.32)"},
-  "Complete":{color:"#63AB8F",bg:"rgba(99,171,143,0.16)",border:"rgba(99,171,143,0.35)"},
-};
-
 const RACI_ACTIVITIES = [
   {id:"g1",activity:"Define Channel Strategy",channelManager:"R",salesLeadership:"C",marketing:"C",product:"C",legal:"I",finance:"I",operationsDelivery:"I",executiveLeadership:"A"},
   {id:"g2",activity:"Define Partner Program Structure",channelManager:"R",salesLeadership:"C",marketing:"C",product:"C",legal:"C",finance:"C",operationsDelivery:"I",executiveLeadership:"A"},
@@ -2360,7 +2353,6 @@ const RACI_ACTIVITIES = [
 
 function getDefaultGovernanceActivities(){
   return RACI_ACTIVITIES.map(item=>({...item,status:"Not Started",completed:false,owner:"",priority:"Medium",targetDate:"",notes:"",updatedAt:null}));
-  return RACI_ACTIVITIES.map(item=>({...item,status:"Not Started",completed:false,lastUpdated:null}));
 }
 
 function hydrateGovernanceActivities(){
