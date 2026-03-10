@@ -2300,6 +2300,12 @@ const GOVERNANCE_PRIORITY_META = {
   "Medium":{color:"#D4A843",bg:"rgba(212,168,67,0.14)",border:"rgba(212,168,67,0.32)"},
   "Low":{color:"#91C4B0",bg:"rgba(99,171,143,0.14)",border:"rgba(99,171,143,0.3)"},
 };
+const GOVERNANCE_STATUS = ["Not Started","In Progress","Complete"];
+const GOVERNANCE_STATUS_META = {
+  "Not Started":{color:"#9BB0AC",bg:"rgba(123,150,163,0.14)",border:"rgba(123,150,163,0.3)"},
+  "In Progress":{color:"#D4A843",bg:"rgba(212,168,67,0.14)",border:"rgba(212,168,67,0.32)"},
+  "Complete":{color:"#63AB8F",bg:"rgba(99,171,143,0.16)",border:"rgba(99,171,143,0.35)"},
+};
 
 const RACI_ACTIVITIES = [
   {id:"g1",activity:"Define Channel Strategy",channelManager:"R",salesLeadership:"C",marketing:"C",product:"C",legal:"I",finance:"I",operationsDelivery:"I",executiveLeadership:"A"},
@@ -2328,6 +2334,7 @@ const RACI_ACTIVITIES = [
 
 function getDefaultGovernanceActivities(){
   return RACI_ACTIVITIES.map(item=>({...item,status:"Not Started",completed:false,owner:"",priority:"Medium",targetDate:"",notes:"",updatedAt:null}));
+  return RACI_ACTIVITIES.map(item=>({...item,status:"Not Started",completed:false,lastUpdated:null}));
 }
 
 function hydrateGovernanceActivities(){
@@ -2364,9 +2371,63 @@ function raciBadge(value){
   return <span style={{display:"inline-flex",width:24,height:24,borderRadius:7,alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,color:token.color,background:token.bg,border:`1px solid ${token.border}`}}>{value}</span>;
 }
 
+    return {...item,status:completed?"Complete":status,completed,lastUpdated:saved.lastUpdated || null};
+  });
+}
+
 function PartnerProgramPage(){
   const [activeT, setActiveT] = React.useState(0);
+  const [activities, setActivities] = React.useState(hydrateGovernanceActivities);
+  const [statusFilter, setStatusFilter] = React.useState("All");
+  const [showIncompleteOnly, setShowIncompleteOnly] = React.useState(false);
   const t = PARTNER_TIERS_DATA[activeT];
+
+  React.useEffect(()=>{
+    localStorage.setItem(GOVERNANCE_STORAGE_KEY, JSON.stringify(activities));
+  }, [activities]);
+
+  const summary = React.useMemo(()=>{
+    const total = activities.length;
+    const completed = activities.filter(item=>item.status==="Complete").length;
+    const inProgress = activities.filter(item=>item.status==="In Progress").length;
+    const notStarted = activities.filter(item=>item.status==="Not Started").length;
+    const pctComplete = total ? Math.round((completed / total) * 100) : 0;
+    return {total,completed,inProgress,notStarted,pctComplete};
+  }, [activities]);
+
+  const visibleActivities = React.useMemo(()=>activities.filter(item=>{
+    if(statusFilter !== "All" && item.status !== statusFilter) return false;
+    if(showIncompleteOnly && item.status === "Complete") return false;
+    return true;
+  }), [activities, statusFilter, showIncompleteOnly]);
+
+  function updateStatus(id, status){
+    setActivities(prev => prev.map(item=>item.id===id ? {
+      ...item,
+      status,
+      completed:status === "Complete",
+      lastUpdated:new Date().toISOString(),
+    } : item));
+  }
+
+  function updateCompleted(id, completed){
+    setActivities(prev => prev.map(item=>{
+      if(item.id !== id) return item;
+      const status = completed ? "Complete" : (item.status === "Complete" ? "Not Started" : item.status);
+      return {...item,status,completed,lastUpdated:new Date().toISOString()};
+    }));
+  }
+
+  function raciBadge(value){
+    const tokenMap = {
+      R:{color:"#63AB8F",bg:"rgba(99,171,143,0.16)",border:"rgba(99,171,143,0.4)"},
+      A:{color:"#D4A843",bg:"rgba(212,168,67,0.14)",border:"rgba(212,168,67,0.35)"},
+      C:{color:"#C49DB8",bg:"rgba(163,121,146,0.14)",border:"rgba(163,121,146,0.32)"},
+      I:{color:"#8BA7A1",bg:"rgba(123,150,163,0.12)",border:"rgba(123,150,163,0.3)"},
+    };
+    const token = tokenMap[value] || tokenMap.I;
+    return <span style={{display:"inline-flex",width:24,height:24,borderRadius:7,alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,color:token.color,background:token.bg,border:`1px solid ${token.border}`}}>{value}</span>;
+  }
 
   return(
     <React.Fragment>
@@ -2540,6 +2601,98 @@ function PartnerProgramPage(){
         </div>
 
         <div className="brand-line" style={{margin:"44px 44px 0"}}/>
+
+        {/* PARTNER PROGRAM GOVERNANCE */}
+        <div style={{maxWidth:1200,margin:"0 auto",padding:"36px 44px 0",width:"100%"}}>
+          <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:12}}>
+            <div style={{height:1,flex:1,background:"linear-gradient(90deg,transparent,rgba(99,171,143,0.3))"}}/>
+            <span style={{fontSize:10,fontWeight:800,color:"rgba(99,171,143,0.62)",letterSpacing:"0.14em",textTransform:"uppercase",whiteSpace:"nowrap"}}>Partner Program Governance</span>
+            <div style={{height:1,flex:1,background:"linear-gradient(90deg,rgba(99,171,143,0.3),transparent)"}}/>
+          </div>
+          <p style={{fontSize:13,color:"#6E9990",lineHeight:1.75,maxWidth:760,marginBottom:18}}>
+            This governance matrix still defines clear ownership (RACI) across the IPI Partner Advantage program, while now adding practical execution tracking for delivery visibility.
+          </p>
+          <div style={{background:"rgba(255,255,255,0.025)",border:"1px solid rgba(99,171,143,0.2)",borderRadius:16,padding:"18px 20px",marginBottom:18}}>
+            <div style={{fontSize:11,fontWeight:800,color:"#91C4B0",marginBottom:8}}>Execution Tracking</div>
+            <p style={{fontSize:12.5,color:"#7FA59C",lineHeight:1.7,margin:0}}>
+              This page not only defines ownership across the IPI Partner Advantage program, it also provides a lightweight execution tracker to show which governance activities are complete, in progress or still outstanding.
+            </p>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(5,minmax(0,1fr))",gap:12,marginBottom:18}}>
+            {[
+              {label:"Total Activities",value:summary.total,color:"#B7CDC7"},
+              {label:"Completed",value:summary.completed,color:"#63AB8F"},
+              {label:"In Progress",value:summary.inProgress,color:"#D4A843"},
+              {label:"Not Started",value:summary.notStarted,color:"#9BB0AC"},
+              {label:"% Complete",value:`${summary.pctComplete}%`,color:"#63AB8F"},
+            ].map(card=>(
+              <div key={card.label} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(99,171,143,0.2)",borderRadius:14,padding:"14px 15px"}}>
+                <div style={{fontSize:10,fontWeight:800,color:"rgba(145,196,176,0.65)",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:6}}>{card.label}</div>
+                <div style={{fontSize:24,fontWeight:800,color:card.color,lineHeight:1}}>{card.value}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,marginBottom:12,flexWrap:"wrap"}}>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+              {["All",...GOVERNANCE_STATUS].map(filter=>{
+                const active = statusFilter === filter;
+                return (
+                  <button key={filter} onClick={()=>setStatusFilter(filter)} style={{border:`1px solid ${active?"rgba(99,171,143,0.45)":"rgba(255,255,255,0.12)"}`,background:active?"rgba(99,171,143,0.14)":"rgba(255,255,255,0.03)",color:active?"#91C4B0":"#A9C2BC",borderRadius:999,padding:"6px 12px",fontSize:11,fontWeight:700,cursor:"pointer"}}>{filter}</button>
+                );
+              })}
+            </div>
+            <label style={{display:"inline-flex",alignItems:"center",gap:8,fontSize:12,color:"#A9C2BC",cursor:"pointer"}}>
+              <input type="checkbox" checked={showIncompleteOnly} onChange={e=>setShowIncompleteOnly(e.target.checked)} style={{accentColor:"#63AB8F"}}/>
+              Show incomplete only
+            </label>
+          </div>
+          <div style={{background:"rgba(255,255,255,0.02)",border:"1px solid rgba(99,171,143,0.2)",borderRadius:16,overflow:"hidden",marginBottom:8}}>
+            <div style={{overflowX:"auto"}}>
+              <table style={{width:"100%",borderCollapse:"collapse",minWidth:1560}}>
+                <thead>
+                  <tr>
+                    {["Activity","Channel Manager","Sales Leadership","Marketing","Product","Legal","Finance","Operations / Delivery","Executive Leadership","Status","Done","Last Updated"].map(head=>(
+                      <th key={head} style={{padding:"11px 10px",fontSize:10,fontWeight:800,color:"rgba(145,196,176,0.8)",letterSpacing:"0.08em",textTransform:"uppercase",background:"rgba(99,171,143,0.08)",borderBottom:"1px solid rgba(99,171,143,0.2)",textAlign:head==="Activity"?"left":"center"}}>{head}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {visibleActivities.map(item=>{
+                    const statusMeta = GOVERNANCE_STATUS_META[item.status] || GOVERNANCE_STATUS_META["Not Started"];
+                    return(
+                      <tr key={item.id} style={{borderBottom:"1px solid rgba(99,171,143,0.1)"}}>
+                        <td style={{padding:"11px 12px",fontSize:12.5,color:"#D9ECE7",fontWeight:600,minWidth:260}}>{item.activity}</td>
+                        <td style={{textAlign:"center",padding:"11px 8px"}}>{raciBadge(item.channelManager)}</td>
+                        <td style={{textAlign:"center",padding:"11px 8px"}}>{raciBadge(item.salesLeadership)}</td>
+                        <td style={{textAlign:"center",padding:"11px 8px"}}>{raciBadge(item.marketing)}</td>
+                        <td style={{textAlign:"center",padding:"11px 8px"}}>{raciBadge(item.product)}</td>
+                        <td style={{textAlign:"center",padding:"11px 8px"}}>{raciBadge(item.legal)}</td>
+                        <td style={{textAlign:"center",padding:"11px 8px"}}>{raciBadge(item.finance)}</td>
+                        <td style={{textAlign:"center",padding:"11px 8px"}}>{raciBadge(item.operationsDelivery)}</td>
+                        <td style={{textAlign:"center",padding:"11px 8px"}}>{raciBadge(item.executiveLeadership)}</td>
+                        <td style={{textAlign:"center",padding:"11px 8px"}}>
+                          <select value={item.status} onChange={e=>updateStatus(item.id, e.target.value)} style={{background:statusMeta.bg,color:statusMeta.color,border:`1px solid ${statusMeta.border}`,borderRadius:8,padding:"5px 8px",fontSize:11.5,fontWeight:700}}>
+                            {GOVERNANCE_STATUS.map(option=><option key={option} value={option}>{option}</option>)}
+                          </select>
+                        </td>
+                        <td style={{textAlign:"center",padding:"11px 8px"}}>
+                          <input type="checkbox" checked={item.completed} onChange={e=>updateCompleted(item.id, e.target.checked)} style={{accentColor:"#63AB8F",width:16,height:16,cursor:"pointer"}}/>
+                        </td>
+                        <td style={{textAlign:"center",padding:"11px 8px",fontSize:11,color:"#7A9A93",whiteSpace:"nowrap"}}>{item.lastUpdated ? new Date(item.lastUpdated).toLocaleDateString() : "—"}</td>
+                      </tr>
+                    );
+                  })}
+                  {visibleActivities.length===0 && (
+                    <tr><td colSpan="12" style={{padding:"24px 14px",textAlign:"center",color:"#7A9A93",fontSize:12.5}}>No activities match the selected filter.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <p style={{fontSize:11,color:"rgba(145,196,176,0.55)",lineHeight:1.7,marginBottom:0}}>
+            Legend: R = Responsible, A = Accountable, C = Consulted, I = Informed.
+          </p>
+        </div>
 
         <div className="brand-line" style={{margin:"44px 44px 0"}}/>
 
