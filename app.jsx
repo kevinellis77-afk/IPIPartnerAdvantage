@@ -2474,17 +2474,135 @@ function CommercialFrameworkPage(){
 
 
 
-const RACI_ROWS = [
-  {workstream:"Partner Recruitment", ipi:"A/R", channel:"C", operations:"I", legal:"I"},
-  {workstream:"Opportunity Qualification", ipi:"R", channel:"A/R", operations:"C", legal:"I"},
-  {workstream:"Solution Design", ipi:"A/R", channel:"R", operations:"C", legal:"I"},
-  {workstream:"Commercial Approval", ipi:"A", channel:"C", operations:"R", legal:"C"},
-  {workstream:"Contracting & Terms", ipi:"C", channel:"I", operations:"C", legal:"A/R"},
-  {workstream:"Service Onboarding", ipi:"A", channel:"R", operations:"A/R", legal:"I"},
-  {workstream:"Quarterly Business Review", ipi:"A/R", channel:"R", operations:"C", legal:"I"},
+const GOVERNANCE_ACTIVITIES = [
+  {id:"1", activity:"Define Channel Strategy", channelManager:"R", salesLeadership:"C", marketing:"C", product:"C", legal:"I", finance:"I", operationsDelivery:"I", executiveLeadership:"A"},
+  {id:"2", activity:"Define Partner Program Structure", channelManager:"R", salesLeadership:"C", marketing:"C", product:"C", legal:"C", finance:"C", operationsDelivery:"I", executiveLeadership:"A"},
+  {id:"3", activity:"Partner Tier Definition", channelManager:"R", salesLeadership:"C", marketing:"C", product:"I", legal:"C", finance:"C", operationsDelivery:"I", executiveLeadership:"A"},
+  {id:"4", activity:"Partner Recruitment Plan", channelManager:"R", salesLeadership:"C", marketing:"C", product:"I", legal:"I", finance:"I", operationsDelivery:"I", executiveLeadership:"A"},
+  {id:"5", activity:"Target Partner Identification", channelManager:"R", salesLeadership:"C", marketing:"I", product:"I", legal:"I", finance:"I", operationsDelivery:"I", executiveLeadership:"A"},
+  {id:"6", activity:"Partner Outreach & Recruitment", channelManager:"R", salesLeadership:"C", marketing:"I", product:"I", legal:"I", finance:"I", operationsDelivery:"I", executiveLeadership:"A"},
+  {id:"7", activity:"Partner Program Branding (IPI Partner Advantage)", channelManager:"C", salesLeadership:"I", marketing:"R", product:"I", legal:"I", finance:"I", operationsDelivery:"I", executiveLeadership:"A"},
+  {id:"8", activity:"Partner Marketing Assets", channelManager:"C", salesLeadership:"I", marketing:"R", product:"C", legal:"I", finance:"I", operationsDelivery:"I", executiveLeadership:"A"},
+  {id:"9", activity:"Partner Portal Development", channelManager:"C", salesLeadership:"I", marketing:"R", product:"C", legal:"I", finance:"I", operationsDelivery:"R", executiveLeadership:"A"},
+  {id:"10", activity:"Trust & Compliance Page", channelManager:"C", salesLeadership:"I", marketing:"I", product:"C", legal:"R", finance:"I", operationsDelivery:"I", executiveLeadership:"A"},
+  {id:"11", activity:"Reseller Master Agreement", channelManager:"C", salesLeadership:"I", marketing:"I", product:"I", legal:"R", finance:"C", operationsDelivery:"I", executiveLeadership:"A"},
+  {id:"12", activity:"Product Schedules", channelManager:"C", salesLeadership:"I", marketing:"I", product:"R", legal:"C", finance:"I", operationsDelivery:"C", executiveLeadership:"A"},
+  {id:"13", activity:"Partner Price Lists", channelManager:"C", salesLeadership:"I", marketing:"I", product:"C", legal:"I", finance:"R", operationsDelivery:"I", executiveLeadership:"A"},
+  {id:"14", activity:"Partner Discount Structure", channelManager:"C", salesLeadership:"I", marketing:"I", product:"I", legal:"C", finance:"R", operationsDelivery:"I", executiveLeadership:"A"},
+  {id:"15", activity:"Partner Onboarding Process", channelManager:"R", salesLeadership:"C", marketing:"C", product:"C", legal:"I", finance:"I", operationsDelivery:"R", executiveLeadership:"A"},
+  {id:"16", activity:"Partner Sales Enablement", channelManager:"R", salesLeadership:"C", marketing:"R", product:"C", legal:"I", finance:"I", operationsDelivery:"I", executiveLeadership:"A"},
+  {id:"17", activity:"Technical Enablement & Training", channelManager:"C", salesLeadership:"I", marketing:"I", product:"R", legal:"I", finance:"I", operationsDelivery:"R", executiveLeadership:"A"},
+  {id:"18", activity:"Partner Deal Registration Process", channelManager:"R", salesLeadership:"C", marketing:"I", product:"I", legal:"I", finance:"C", operationsDelivery:"I", executiveLeadership:"A"},
+  {id:"19", activity:"Partner Opportunity Support", channelManager:"R", salesLeadership:"R", marketing:"I", product:"C", legal:"I", finance:"I", operationsDelivery:"C", executiveLeadership:"A"},
+  {id:"20", activity:"Partner Revenue Reporting", channelManager:"C", salesLeadership:"I", marketing:"I", product:"I", legal:"I", finance:"R", operationsDelivery:"C", executiveLeadership:"A"},
+  {id:"21", activity:"Partner Program Performance Review", channelManager:"R", salesLeadership:"C", marketing:"C", product:"C", legal:"I", finance:"C", operationsDelivery:"C", executiveLeadership:"A"},
+  {id:"22", activity:"12 Month Partner Recruitment Roadmap", channelManager:"R", salesLeadership:"C", marketing:"C", product:"I", legal:"I", finance:"I", operationsDelivery:"I", executiveLeadership:"A"},
 ];
 
+const GOVERNANCE_STATUS_OPTIONS = ["Not Started","In Progress","Blocked","Complete"];
+const PRIORITY_OPTIONS = ["High","Medium","Low"];
+const EXECUTION_STORAGE_KEY = "ipi-governance-execution-v1";
+
+function getTodayISODate(){
+  return new Date().toISOString().slice(0,10);
+}
+
+function isTaskOverdue(task){
+  return !!task.targetDate && task.targetDate < getTodayISODate() && task.status !== "Complete";
+}
+
 function GovernancePage(){
+  const [view,setView]=React.useState("matrix");
+  const [statusFilter,setStatusFilter]=React.useState("All");
+  const [priorityFilter,setPriorityFilter]=React.useState("All");
+  const [searchTerm,setSearchTerm]=React.useState("");
+  const [showIncompleteOnly,setShowIncompleteOnly]=React.useState(false);
+  const [showOverdueOnly,setShowOverdueOnly]=React.useState(false);
+  const [noteTaskId,setNoteTaskId]=React.useState(null);
+  const [tasks,setTasks]=React.useState(()=>{
+    const stored = localStorage.getItem(EXECUTION_STORAGE_KEY);
+    const parsed = stored ? JSON.parse(stored) : {};
+    return GOVERNANCE_ACTIVITIES.map(item=>({
+      ...item,
+      status: parsed[item.id]?.status || "Not Started",
+      completed: parsed[item.id]?.status === "Complete",
+      owner: parsed[item.id]?.owner || "",
+      priority: parsed[item.id]?.priority || "Medium",
+      targetDate: parsed[item.id]?.targetDate || "",
+      notes: parsed[item.id]?.notes || "",
+      updatedAt: parsed[item.id]?.updatedAt || "",
+    }));
+  });
+
+  React.useEffect(()=>{
+    const serializable = tasks.reduce((acc,task)=>{
+      acc[task.id] = {
+        status: task.status,
+        owner: task.owner,
+        priority: task.priority,
+        targetDate: task.targetDate,
+        notes: task.notes,
+        updatedAt: task.updatedAt,
+      };
+      return acc;
+    },{});
+    localStorage.setItem(EXECUTION_STORAGE_KEY, JSON.stringify(serializable));
+  },[tasks]);
+
+  const updateTask = (id, patch)=>{
+    setTasks(prev=>prev.map(task=>{
+      if(task.id !== id) return task;
+      const next = {...task, ...patch, updatedAt:new Date().toISOString()};
+      if(Object.prototype.hasOwnProperty.call(patch,"completed")){
+        if(patch.completed){
+          next.status = "Complete";
+        }else if(next.status === "Complete"){
+          next.status = "Not Started";
+        }
+      }
+      if(Object.prototype.hasOwnProperty.call(patch,"status")){
+        next.completed = patch.status === "Complete";
+      }
+      return next;
+    }));
+  };
+
+  const filteredTasks = tasks.filter(task=>{
+    const matchStatus = statusFilter === "All" || task.status === statusFilter;
+    const matchPriority = priorityFilter === "All" || task.priority === priorityFilter;
+    const text = searchTerm.trim().toLowerCase();
+    const matchSearch = !text || task.activity.toLowerCase().includes(text) || task.owner.toLowerCase().includes(text);
+    const matchIncomplete = !showIncompleteOnly || task.status !== "Complete";
+    const matchOverdue = !showOverdueOnly || isTaskOverdue(task);
+    return matchStatus && matchPriority && matchSearch && matchIncomplete && matchOverdue;
+  });
+
+  const summary = tasks.reduce((acc,task)=>{
+    acc.total += 1;
+    if(task.status === "Complete") acc.complete += 1;
+    if(task.status === "In Progress") acc.inProgress += 1;
+    if(task.status === "Blocked") acc.blocked += 1;
+    if(isTaskOverdue(task)) acc.overdue += 1;
+    return acc;
+  },{total:0,complete:0,inProgress:0,blocked:0,overdue:0});
+
+  const completePct = summary.total ? Math.round((summary.complete / summary.total) * 100) : 0;
+  const currentNoteTask = tasks.find(task=>task.id === noteTaskId);
+  const ownershipSummary = [
+    {role:"Channel Manager", key:"channelManager"},
+    {role:"Sales Leadership", key:"salesLeadership"},
+    {role:"Marketing", key:"marketing"},
+    {role:"Product", key:"product"},
+    {role:"Legal", key:"legal"},
+    {role:"Finance", key:"finance"},
+    {role:"Operations / Delivery", key:"operationsDelivery"},
+    {role:"Executive Leadership", key:"executiveLeadership"},
+  ].map(role=>({
+    ...role,
+    accountable: GOVERNANCE_ACTIVITIES.filter(row=>row[role.key] === "A").length,
+    responsible: GOVERNANCE_ACTIVITIES.filter(row=>row[role.key] === "R").length,
+  }));
+
   return(
     <React.Fragment>
       <Bg/>
@@ -2506,6 +2624,11 @@ function GovernancePage(){
             This view clarifies delivery accountability across IP Integration, partner teams and internal governance functions so opportunities progress with clear ownership.
           </p>
 
+          <section style={{background:"rgba(123,150,163,0.08)",border:"1px solid rgba(123,150,163,0.28)",borderRadius:14,padding:"16px 18px",marginBottom:16}}>
+            <div style={{fontSize:11,fontWeight:800,color:"#9DB8C5",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:6}}>Execution Tracking</div>
+            <p style={{fontSize:12.5,color:"#C0DDD6",lineHeight:1.75,margin:0}}>This page not only defines governance across the IPI Partner Advantage program, it also acts as a lightweight execution tracker to manage progress, ownership and next steps across key partner program activities.</p>
+          </section>
+
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:18}}>
             {[{k:"R",l:"Responsible",c:"#63AB8F"},{k:"A",l:"Accountable",c:"#D4A843"},{k:"C",l:"Consulted",c:"#A37992"},{k:"I",l:"Informed",c:"#7B96A3"}].map(item=>(
               <div key={item.k} style={{background:"rgba(255,255,255,0.03)",border:`1px solid ${item.c}55`,borderRadius:10,padding:"9px 10px",display:"flex",gap:8,alignItems:"center"}}>
@@ -2515,17 +2638,117 @@ function GovernancePage(){
             ))}
           </div>
 
-          <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(123,150,163,0.3)",borderRadius:14,overflow:"hidden"}}>
-            <div style={{display:"grid",gridTemplateColumns:"2.2fr repeat(4,1fr)",background:"rgba(123,150,163,0.14)",borderBottom:"1px solid rgba(123,150,163,0.25)"}}>
-              {["Workstream","IPI Channel Team","Partner","Operations","Legal"].map(h=><div key={h} style={{padding:"12px 14px",fontSize:11,fontWeight:800,color:"#A9C3CE",letterSpacing:"0.08em",textTransform:"uppercase"}}>{h}</div>)}
-            </div>
-            {RACI_ROWS.map((row,idx)=>(
-              <div key={row.workstream} style={{display:"grid",gridTemplateColumns:"2.2fr repeat(4,1fr)",borderTop:idx?"1px solid rgba(255,255,255,0.07)":"none"}}>
-                <div style={{padding:"12px 14px",fontSize:12.5,color:"#E8F5F0",fontWeight:700}}>{row.workstream}</div>
-                {[row.ipi,row.channel,row.operations,row.legal].map((v,i)=><div key={i} style={{padding:"12px 14px",fontSize:12,color:"#BFD8D2",fontWeight:800,letterSpacing:"0.03em"}}>{v}</div>)}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(6,minmax(0,1fr))",gap:10,marginBottom:14}}>
+            {[
+              {label:"Total Activities",value:summary.total,color:"#9DB8C5"},
+              {label:"Complete",value:summary.complete,color:"#63AB8F"},
+              {label:"In Progress",value:summary.inProgress,color:"#7B96A3"},
+              {label:"Blocked",value:summary.blocked,color:"#D68A8A"},
+              {label:"Overdue",value:summary.overdue,color:"#D4A843"},
+              {label:"% Complete",value:`${completePct}%`,color:"#A37992"},
+            ].map(card=>(
+              <div key={card.label} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(123,150,163,0.3)",borderRadius:10,padding:"10px 12px"}}>
+                <div style={{fontSize:10.5,fontWeight:800,color:"#A9C3CE",letterSpacing:"0.08em",textTransform:"uppercase"}}>{card.label}</div>
+                <div style={{fontSize:22,fontWeight:800,color:card.color,marginTop:4,fontFamily:"'Syne',sans-serif"}}>{card.value}</div>
               </div>
             ))}
           </div>
+
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap",marginBottom:10}}>
+            <div style={{display:"inline-flex",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(123,150,163,0.3)",borderRadius:999,padding:4}}>
+              {[{id:"matrix",label:"Matrix View"},{id:"action",label:"Action Plan View"}].map(option=>(
+                <button key={option.id} onClick={()=>setView(option.id)} style={{border:"none",cursor:"pointer",background:view===option.id?"rgba(123,150,163,0.28)":"transparent",color:view===option.id?"#E8F5F0":"#8EB1A8",padding:"8px 14px",borderRadius:999,fontSize:12,fontWeight:700}}>{option.label}</button>
+              ))}
+            </div>
+            <div style={{fontSize:11,color:"#7FA39A"}}>Status options: Not Started · In Progress · Blocked · Complete</div>
+          </div>
+
+          <div style={{display:"grid",gridTemplateColumns:"1.1fr 1fr 1fr auto auto",gap:8,marginBottom:14}}>
+            <input value={searchTerm} onChange={e=>setSearchTerm(e.target.value)} placeholder="Search activity or owner" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(123,150,163,0.3)",borderRadius:8,color:"#D9ECE6",padding:"8px 10px",fontSize:12}}/>
+            <select value={statusFilter} onChange={e=>setStatusFilter(e.target.value)} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(123,150,163,0.3)",borderRadius:8,color:"#D9ECE6",padding:"8px 10px",fontSize:12}}>
+              {["All",...GOVERNANCE_STATUS_OPTIONS].map(v=><option key={v} value={v}>{v}</option>)}
+            </select>
+            <select value={priorityFilter} onChange={e=>setPriorityFilter(e.target.value)} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(123,150,163,0.3)",borderRadius:8,color:"#D9ECE6",padding:"8px 10px",fontSize:12}}>
+              {["All",...PRIORITY_OPTIONS].map(v=><option key={v} value={v}>{v}</option>)}
+            </select>
+            <label style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:"#BFD8D2"}}><input type="checkbox" checked={showIncompleteOnly} onChange={e=>setShowIncompleteOnly(e.target.checked)}/>Incomplete</label>
+            <label style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:"#BFD8D2"}}><input type="checkbox" checked={showOverdueOnly} onChange={e=>setShowOverdueOnly(e.target.checked)}/>Overdue</label>
+          </div>
+
+          {view === "matrix" ? (
+          <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(123,150,163,0.3)",borderRadius:14,overflowX:"auto"}}>
+            <div style={{minWidth:1650}}>
+              <div style={{display:"grid",gridTemplateColumns:"3fr repeat(8,0.9fr) 1.1fr 1fr 1fr 1.1fr 0.8fr 0.8fr",background:"rgba(123,150,163,0.14)",borderBottom:"1px solid rgba(123,150,163,0.25)"}}>
+                {["Activity","Channel Manager","Sales Leadership","Marketing","Product","Legal","Finance","Operations / Delivery","Executive Leadership","Status","Owner","Priority","Target Date","Notes","Done"].map(h=><div key={h} style={{padding:"10px 10px",fontSize:10.5,fontWeight:800,color:"#A9C3CE",letterSpacing:"0.08em",textTransform:"uppercase"}}>{h}</div>)}
+              </div>
+              {filteredTasks.length ? filteredTasks.map((task,idx)=>(
+                <div key={task.id} style={{display:"grid",gridTemplateColumns:"3fr repeat(8,0.9fr) 1.1fr 1fr 1fr 1.1fr 0.8fr 0.8fr",borderTop:idx?"1px solid rgba(255,255,255,0.07)":"none",alignItems:"center"}}>
+                  <div style={{padding:"10px",fontSize:12,color:"#E8F5F0",fontWeight:700}}>{task.activity}</div>
+                  {[task.channelManager,task.salesLeadership,task.marketing,task.product,task.legal,task.finance,task.operationsDelivery,task.executiveLeadership].map((v,i)=>{
+                    const map = {R:"#63AB8F",A:"#D4A843",C:"#A37992",I:"#7B96A3"};
+                    return <div key={i} style={{padding:"10px",display:"flex",justifyContent:"center"}}><span style={{minWidth:24,textAlign:"center",fontSize:11,fontWeight:800,color:map[v],background:`${map[v]}22`,border:`1px solid ${map[v]}66`,borderRadius:6,padding:"2px 6px"}}>{v}</span></div>;
+                  })}
+                  <div style={{padding:"10px"}}><select value={task.status} onChange={e=>updateTask(task.id,{status:e.target.value})} style={{width:"100%",background:isTaskOverdue(task)?"rgba(212,168,67,0.2)":"rgba(255,255,255,0.03)",border:`1px solid ${task.status==="Blocked"?"rgba(214,138,138,0.6)":"rgba(123,150,163,0.3)"}`,borderRadius:6,color:"#D9ECE6",padding:"6px",fontSize:12}}>{GOVERNANCE_STATUS_OPTIONS.map(v=><option key={v} value={v}>{v}</option>)}</select></div>
+                  <div style={{padding:"10px"}}><input value={task.owner} onChange={e=>updateTask(task.id,{owner:e.target.value})} placeholder="Owner" style={{width:"100%",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(123,150,163,0.3)",borderRadius:6,color:"#D9ECE6",padding:"6px",fontSize:12}}/></div>
+                  <div style={{padding:"10px"}}><select value={task.priority} onChange={e=>updateTask(task.id,{priority:e.target.value})} style={{width:"100%",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(123,150,163,0.3)",borderRadius:6,color:"#D9ECE6",padding:"6px",fontSize:12}}>{PRIORITY_OPTIONS.map(v=><option key={v} value={v}>{v}</option>)}</select></div>
+                  <div style={{padding:"10px"}}><input type="date" value={task.targetDate} onChange={e=>updateTask(task.id,{targetDate:e.target.value})} style={{width:"100%",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(123,150,163,0.3)",borderRadius:6,color:"#D9ECE6",padding:"6px",fontSize:12}}/></div>
+                  <div style={{padding:"10px"}}><button onClick={()=>setNoteTaskId(task.id)} style={{width:"100%",border:"1px solid rgba(123,150,163,0.35)",background:task.notes?"rgba(99,171,143,0.14)":"rgba(255,255,255,0.03)",color:"#C0DDD6",borderRadius:6,padding:"6px",fontSize:11,fontWeight:700,cursor:"pointer"}}>{task.notes?"View / Edit":"Add Notes"}</button></div>
+                  <div style={{padding:"10px",display:"flex",justifyContent:"center"}}><input type="checkbox" checked={task.completed} onChange={e=>updateTask(task.id,{completed:e.target.checked})}/></div>
+                </div>
+              )) : <div style={{padding:"24px",fontSize:12.5,color:"#8EB1A8"}}>No activities match the current filters.</div>}
+            </div>
+          </div>
+          ) : (
+            <div style={{display:"grid",gap:10}}>
+              {filteredTasks.length ? filteredTasks.map(task=>(
+                <div key={task.id} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(123,150,163,0.3)",borderRadius:12,padding:"12px 14px",display:"grid",gridTemplateColumns:"2fr repeat(6,minmax(90px,1fr))",alignItems:"center",gap:10}}>
+                  <div>
+                    <div style={{fontSize:13,fontWeight:700,color:"#E8F5F0"}}>{task.activity}</div>
+                    <div style={{fontSize:11,color:"#7FA39A",marginTop:4}}>{task.updatedAt ? `Last updated ${new Date(task.updatedAt).toLocaleString()}` : "Not updated yet"}</div>
+                  </div>
+                  <select value={task.status} onChange={e=>updateTask(task.id,{status:e.target.value})} style={{background:isTaskOverdue(task)?"rgba(212,168,67,0.2)":"rgba(255,255,255,0.03)",border:`1px solid ${task.status==="Blocked"?"rgba(214,138,138,0.6)":"rgba(123,150,163,0.3)"}`,borderRadius:6,color:"#D9ECE6",padding:"8px",fontSize:12}}>{GOVERNANCE_STATUS_OPTIONS.map(v=><option key={v} value={v}>{v}</option>)}</select>
+                  <input value={task.owner} onChange={e=>updateTask(task.id,{owner:e.target.value})} placeholder="Owner" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(123,150,163,0.3)",borderRadius:6,color:"#D9ECE6",padding:"8px",fontSize:12}}/>
+                  <select value={task.priority} onChange={e=>updateTask(task.id,{priority:e.target.value})} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(123,150,163,0.3)",borderRadius:6,color:"#D9ECE6",padding:"8px",fontSize:12}}>{PRIORITY_OPTIONS.map(v=><option key={v} value={v}>{v}</option>)}</select>
+                  <input type="date" value={task.targetDate} onChange={e=>updateTask(task.id,{targetDate:e.target.value})} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(123,150,163,0.3)",borderRadius:6,color:"#D9ECE6",padding:"8px",fontSize:12}}/>
+                  <button onClick={()=>setNoteTaskId(task.id)} style={{border:"1px solid rgba(123,150,163,0.35)",background:task.notes?"rgba(99,171,143,0.14)":"rgba(255,255,255,0.03)",color:"#C0DDD6",borderRadius:6,padding:"8px",fontSize:11,fontWeight:700,cursor:"pointer"}}>{task.notes?"View / Edit Notes":"Add Notes"}</button>
+                  <label style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,fontSize:11,color:"#BFD8D2"}}><input type="checkbox" checked={task.completed} onChange={e=>updateTask(task.id,{completed:e.target.checked})}/>Done</label>
+                </div>
+              )) : <div style={{padding:"24px",fontSize:12.5,color:"#8EB1A8",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(123,150,163,0.3)",borderRadius:12}}>No activities match the current filters.</div>}
+            </div>
+          )}
+
+          <section style={{marginTop:20}}>
+            <div style={{fontSize:12,fontWeight:800,color:"#9DB8C5",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Key Ownership Summary</div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(4,minmax(0,1fr))",gap:10}}>
+              {ownershipSummary.map(role=>(
+                <div key={role.role} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(123,150,163,0.24)",borderRadius:10,padding:"10px 12px"}}>
+                  <div style={{fontSize:12,color:"#E8F5F0",fontWeight:700,marginBottom:6}}>{role.role}</div>
+                  <div style={{fontSize:11,color:"#A6C6BE"}}>A: {role.accountable} · R: {role.responsible}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section style={{marginTop:14,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(123,150,163,0.24)",borderRadius:12,padding:"14px 16px"}}>
+            <div style={{fontSize:12,fontWeight:800,color:"#9DB8C5",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Why This Matters</div>
+            <p style={{fontSize:12.5,color:"#BFD8D2",lineHeight:1.75,margin:0}}>The RACI model remains the governance backbone, while execution tracking adds day-to-day clarity around ownership, priorities and delivery risk. Leadership gets board-level visibility, and delivery teams gain a practical action plan to move the partner program forward without losing strategic alignment.</p>
+          </section>
+
+          {currentNoteTask && (
+            <div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget) setNoteTaskId(null);}}>
+              <div className="modal-box" style={{maxWidth:620,border:"1px solid rgba(123,150,163,0.35)",background:"linear-gradient(160deg,#162422,#0E1A18)",padding:20}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:10}}>
+                  <div>
+                    <div style={{fontSize:11,fontWeight:800,color:"#91C4B0",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:6}}>Notes</div>
+                    <div style={{fontSize:16,fontWeight:800,color:"#fff",fontFamily:"'Syne',sans-serif"}}>{currentNoteTask.activity}</div>
+                  </div>
+                  <button onClick={()=>setNoteTaskId(null)} style={{border:"none",background:"rgba(255,255,255,0.08)",color:"#C0DDD6",width:30,height:30,borderRadius:"50%",cursor:"pointer"}}>×</button>
+                </div>
+                <textarea value={currentNoteTask.notes} onChange={e=>updateTask(currentNoteTask.id,{notes:e.target.value})} placeholder="Capture dependencies, blockers, decisions and next actions." style={{width:"100%",minHeight:150,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(123,150,163,0.35)",borderRadius:8,color:"#D9ECE6",padding:10,fontSize:12,lineHeight:1.6}}/>
+              </div>
+            </div>
+          )}
+        </div>
         </div>
 
         <div style={{padding:"40px 44px 44px",marginTop:"auto"}}>
