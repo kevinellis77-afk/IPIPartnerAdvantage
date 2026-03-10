@@ -157,3 +157,30 @@ body{background:#131E20;color:#DFF0EA;font-family:'Nunito Sans','Helvetica Neue'
   .channel-grid-kpi,.channel-grid-4,.channel-grid-5,.channel-grid-3{grid-template-columns:1fr;}
   .channel-hero{padding:22px;}
 }
+
+/* Build Sell Expand + Six Pillars merged page */
+.bse-section-index-wrap{max-width:1100px;width:100%;margin:24px auto 0;padding:0 44px;}
+.bse-section-index{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:rgba(255,255,255,0.025);border:1px solid rgba(99,171,143,0.22);border-radius:14px;padding:12px 14px;}
+.bse-section-index-label{font-size:10px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:rgba(145,196,176,0.7);margin-right:4px;}
+.bse-section-index-link{font-size:12px;font-weight:700;color:#91C4B0;text-decoration:none;padding:6px 10px;border-radius:999px;border:1px solid rgba(99,171,143,0.26);background:rgba(99,171,143,0.08);}
+.bse-section-index-link:hover{background:rgba(99,171,143,0.16);}
+.bse-section-shell{max-width:1100px;margin:0 auto;padding:40px 44px 0;width:100%;}
+.bse-section-heading{margin-bottom:20px;}
+.bse-section-heading h2{font-size:clamp(22px,2.6vw,34px);font-weight:800;color:#fff;letter-spacing:-0.03em;line-height:1.12;font-family:'Syne',sans-serif;margin-bottom:8px;}
+.bse-section-heading p{font-size:13.5px;color:#6E9990;line-height:1.8;max-width:760px;}
+.bse-value-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;}
+.bse-pillars-bar-wrap{margin-top:8px;}
+.bse-pillars-bar{display:flex;align-items:center;height:6px;border-radius:100px;overflow:hidden;}
+.bse-pillars-numbers{display:flex;justify-content:space-between;margin-top:8px;}
+.bse-pillars-number-btn{flex:1;text-align:center;font-size:10px;font-weight:800;background:transparent;border:none;letter-spacing:0.07em;cursor:pointer;text-transform:uppercase;}
+.bse-pillars-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:24px;}
+
+@media (max-width:900px){
+  .bse-section-index-wrap,.bse-section-shell{padding-left:18px;padding-right:18px;}
+  .bse-value-grid,.bse-pillars-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media (max-width:640px){
+  .bse-value-grid,.bse-pillars-grid{grid-template-columns:1fr;}
+  .bse-section-index{gap:8px;}
+  .bse-section-index-link{font-size:11px;}
+}
