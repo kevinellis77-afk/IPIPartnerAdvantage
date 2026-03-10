@@ -2648,13 +2648,13 @@ function App(){
   const [page,setPage]=React.useState("main");
 
   function renderPage(){
-    if (page === "hub")        return <EnablementHub onBack={()=>setPage("main")} onNavigate={setPage} />;
-    if (page === "pillars")    return <SixPillars onBack={()=>setPage("main")} onHub={()=>setPage("hub")} />;
-    if (page === "prospect")   return <ProspectToolPage />;
-    if (page === "bse")        return <BuildSellExpand />;
-    if (page === "program")    return <PartnerProgramPage />;
-    if (page === "commercial") return <CommercialFrameworkPage />;
-    if (page === "governance") return <GovernancePage />;
+    if(page === "hub")        return <EnablementHub onBack={()=>setPage("main")} onNavigate={setPage} />;
+    if(page === "pillars")    return <SixPillars onBack={()=>setPage("main")} onHub={()=>setPage("hub")} />;
+    if(page === "prospect")   return <ProspectToolPage />;
+    if(page === "bse")        return <BuildSellExpand />;
+    if(page === "program")    return <PartnerProgramPage />;
+    if(page === "commercial") return <CommercialFrameworkPage />;
+    if(page === "governance") return <GovernancePage />;
 
     // Page 1 — Home
     return(
