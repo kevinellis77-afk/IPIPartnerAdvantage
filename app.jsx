@@ -2540,11 +2540,232 @@ function GovernancePage(){
   );
 }
 
+const CHANNEL_MANAGER_DATA = {
+  lastUpdated: "Updated 04 Mar 2026",
+  mission: "Recruit, enable and support partners who can scale the IPI CX ecosystem faster than direct sales alone.",
+  missionSupport: "The Channel Manager Dashboard is the operating centre for the IPI Partner Advantage program. It provides a clear view of partner recruitment, activation, pipeline development and program execution, helping IP Integration build a scalable and predictable channel revenue engine.",
+  kpis: [
+    {label:"Target Partners", value:"50", hint:"FY26 recruitment objective"},
+    {label:"Active Recruitment Conversations", value:"18", hint:"Across all priority types"},
+    {label:"Signed Partners", value:"14", hint:"Contracts executed"},
+    {label:"Activated Partners", value:"9", hint:"Onboarded and selling-ready"},
+    {label:"Registered Opportunities", value:"37", hint:"Current quarter submissions"},
+    {label:"Partner Pipeline Value", value:"£2.8m", hint:"Weighted opportunity value"},
+    {label:"Closed Won Revenue", value:"£1.1m", hint:"YTD channel contribution"},
+    {label:"Partner Activation Rate", value:"64%", hint:"Activated partners / signed"},
+  ],
+  pillars: [
+    {title:"Partner Recruitment", desc:"Identify, target and recruit the right partners across the priority tiers for IPI Partner Advantage."},
+    {title:"Partner Enablement", desc:"Equip partners with the messaging, training and commercial clarity required to sell the IPI portfolio."},
+    {title:"Pipeline Development", desc:"Work with partners to generate, progress and support qualified revenue opportunities."},
+    {title:"Governance & Performance", desc:"Maintain program visibility through reviews, execution tracking, commercial structure and internal alignment."},
+  ],
+  cadence: [
+    {day:"Monday", title:"Pipeline & Partner Review", desc:"Review partner opportunities, deal registrations, blocked deals and internal sales alignment."},
+    {day:"Tuesday", title:"Partner Recruitment", desc:"Prospect target partners, run outreach activity and hold introductory discovery calls."},
+    {day:"Wednesday", title:"Partner Enablement", desc:"Deliver training, messaging, product walkthroughs and solution positioning."},
+    {day:"Thursday", title:"Joint Selling", desc:"Support live opportunities through account mapping, workshops and joint customer engagement."},
+    {day:"Friday", title:"Strategy & Program Development", desc:"Refine partner assets, review progress, update governance trackers and improve the program."},
+  ],
+  lifecycle: [
+    {stage:"Recruit", desc:"Identify and engage target partners aligned to IPI’s channel strategy."},
+    {stage:"Onboard", desc:"Complete agreements, portal setup and initial program access."},
+    {stage:"Enable", desc:"Deliver sales, technical and commercial readiness."},
+    {stage:"Sell", desc:"Support partner-led pipeline creation and opportunity progression."},
+    {stage:"Scale", desc:"Expand the partner’s footprint, solution mix and revenue contribution."},
+  ],
+  priorities: [
+    {rank:1, title:"CCaaS Resellers", desc:"Fastest path to platform revenue and CX-led opportunity creation."},
+    {rank:2, title:"Telecom & UC Resellers", desc:"Strong installed bases that can expand into broader CX solutions."},
+    {rank:3, title:"Specialist Solution Providers", desc:"High-value entry point for point solutions such as payments, IVR and AI."},
+    {rank:4, title:"Managed Service Providers", desc:"Long-term recurring revenue potential through managed CX environments."},
+    {rank:5, title:"CX & Digital Transformation Consultancies", desc:"Strategic influencers that can shape enterprise transformation decisions."},
+  ],
+  recruitment: [
+    {name:"Nimbus Comms", type:"CCaaS Reseller", stage:"Discovery Booked", action:"Prepare solution overview deck", owner:"Channel Manager", notes:"Intro call confirmed for Wed"},
+    {name:"Vertex Telecom", type:"Telecom & UC Reseller", stage:"Commercial Review", action:"Align tier and margin model", owner:"Finance + Channel", notes:"Awaiting revised volume profile"},
+    {name:"FlowDigital CX", type:"CX Consultancy", stage:"Outreach Sent", action:"Follow-up with case studies", owner:"Channel Manager", notes:"Opened email and downloaded pack"},
+    {name:"SignalPath MSP", type:"Managed Service Provider", stage:"In Evaluation", action:"Book technical architecture workshop", owner:"Solutions", notes:"Strong fit for managed CX offer"},
+    {name:"Payline Integrations", type:"Specialist Provider", stage:"Signed", action:"Confirm onboarding checklist", owner:"Operations", notes:"Agreement signed, portal pending"},
+    {name:"Apex Engage", type:"CCaaS Reseller", stage:"Activated", action:"Launch first joint opportunity plan", owner:"Sales", notes:"First two accounts identified"},
+  ],
+  actions: [
+    {task:"Finalise partner tier framework", status:"In Progress"},
+    {task:"Launch Trust & Compliance page", status:"Not Started"},
+    {task:"Complete Reseller Master Agreement review", status:"In Progress"},
+    {task:"Build first 25-partner recruitment target list", status:"Complete"},
+    {task:"Schedule first partner enablement webinar", status:"Not Started"},
+  ],
+  progress: [
+    {label:"Partners Signed vs Target", value:"14 / 50", percent:28},
+    {label:"Activated vs Signed", value:"9 / 14", percent:64},
+    {label:"Opportunities Registered", value:"37", percent:74},
+    {label:"Revenue Progress vs Plan", value:"£1.1m / £2.4m", percent:46},
+  ],
+  teams: [
+    {team:"Sales", desc:"Joint selling, opportunity support and pipeline progression."},
+    {team:"Marketing", desc:"Partner campaigns, messaging and enablement assets."},
+    {team:"Product", desc:"Solution positioning, packaging and technical alignment."},
+    {team:"Legal", desc:"Reseller agreements, terms and compliance frameworks."},
+    {team:"Finance", desc:"Pricing, discounting and commercial structures."},
+    {team:"Operations / Delivery", desc:"Onboarding, implementation and service readiness."},
+  ],
+};
+
+function ChannelManagerDashboardPage(){
+  return(
+    <React.Fragment>
+      <Bg/>
+      <div className="channel-dashboard-page">
+        <header className="channel-dashboard-header">
+          <LogoMark h={48}/>
+          <div className="channel-dashboard-pill">{CHANNEL_MANAGER_DATA.lastUpdated}</div>
+        </header>
+
+        <section className="channel-hero">
+          <div className="channel-hero-label">Channel Manager Mission</div>
+          <h1>Channel Manager Dashboard</h1>
+          <p className="channel-mission">{CHANNEL_MANAGER_DATA.mission}</p>
+          <p className="channel-support">{CHANNEL_MANAGER_DATA.missionSupport}</p>
+        </section>
+
+        <section className="channel-section">
+          <div className="channel-grid-kpi">
+            {CHANNEL_MANAGER_DATA.kpis.map(kpi=>(
+              <div key={kpi.label} className="channel-card channel-kpi-card">
+                <div className="channel-kpi-label">{kpi.label}</div>
+                <div className="channel-kpi-value">{kpi.value}</div>
+                <div className="channel-kpi-hint">{kpi.hint}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="channel-section">
+          <h2 className="channel-title">Operating Plan Overview</h2>
+          <div className="channel-grid-4">
+            {CHANNEL_MANAGER_DATA.pillars.map(item=>(
+              <div key={item.title} className="channel-card">
+                <h3>{item.title}</h3>
+                <p>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="channel-section">
+          <h2 className="channel-title">Weekly Operating Cadence</h2>
+          <div className="channel-grid-5">
+            {CHANNEL_MANAGER_DATA.cadence.map(item=>(
+              <div key={item.day} className="channel-card">
+                <div className="channel-day">{item.day}</div>
+                <h3>{item.title}</h3>
+                <p>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="channel-section">
+          <h2 className="channel-title">Partner Lifecycle</h2>
+          <div className="channel-lifecycle-wrap">
+            {CHANNEL_MANAGER_DATA.lifecycle.map((item,idx)=>(
+              <React.Fragment key={item.stage}>
+                <div className="channel-card channel-life-card">
+                  <div className="channel-step">{item.stage}</div>
+                  <p>{item.desc}</p>
+                </div>
+                {idx < CHANNEL_MANAGER_DATA.lifecycle.length-1 && <div className="channel-arrow">→</div>}
+              </React.Fragment>
+            ))}
+          </div>
+        </section>
+
+        <section className="channel-section">
+          <h2 className="channel-title">Target Partner Priority</h2>
+          <div className="channel-grid-5">
+            {CHANNEL_MANAGER_DATA.priorities.map(item=>(
+              <div key={item.title} className="channel-card">
+                <div className="channel-priority-rank">{item.rank}</div>
+                <h3>{item.title}</h3>
+                <p>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="channel-section">
+          <h2 className="channel-title">Partner Recruitment Pipeline</h2>
+          <div className="channel-table-wrap">
+            <table className="channel-table">
+              <thead>
+                <tr>
+                  <th>Partner Name</th><th>Partner Type</th><th>Stage</th><th>Next Action</th><th>Owner</th><th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {CHANNEL_MANAGER_DATA.recruitment.map(row=>(
+                  <tr key={row.name}>
+                    <td>{row.name}</td><td>{row.type}</td><td><span className="channel-chip">{row.stage}</span></td><td>{row.action}</td><td>{row.owner}</td><td>{row.notes}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="channel-section channel-two-col">
+          <div>
+            <h2 className="channel-title">Channel Manager Priorities</h2>
+            <div className="channel-stack">
+              {CHANNEL_MANAGER_DATA.actions.map(item=>(
+                <div key={item.task} className="channel-card channel-action-card">
+                  <span>{item.task}</span>
+                  <span className="channel-chip">{item.status}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h2 className="channel-title">Program Progress Snapshot</h2>
+            <div className="channel-stack">
+              {CHANNEL_MANAGER_DATA.progress.map(metric=>(
+                <div key={metric.label} className="channel-card">
+                  <div className="channel-metric-head"><span>{metric.label}</span><strong>{metric.value}</strong></div>
+                  <div className="channel-progress"><span style={{width:`${metric.percent}%`}}/></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="channel-section">
+          <h2 className="channel-title">Internal Alignment</h2>
+          <div className="channel-grid-3">
+            {CHANNEL_MANAGER_DATA.teams.map(item=>(
+              <div key={item.team} className="channel-card">
+                <h3>{item.team}</h3>
+                <p>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="channel-closing-panel">
+          <h2>Why This Dashboard Matters</h2>
+          <p>The Channel Manager Dashboard creates a single operational view of how IP Integration recruits, enables and scales partners. It connects strategy with execution, helping the business build a repeatable channel model, support the right partners and grow predictable revenue through the IPI Partner Advantage program.</p>
+        </section>
+      </div>
+    </React.Fragment>
+  );
+}
+
 // ═══════════════════════════════════════════════════════
 // SIDEBAR NAV WRAPPER
 // ═══════════════════════════════════════════════════════
 const NAV_ITEMS = [
   {id:"main",    icon:"🏠", label:"Home",                 sublabel:"Ecosystem Overview"},
+  {id:"channel-dashboard", icon:"📊", label:"Channel Manager Dashboard", sublabel:"Operational Control Centre"},
   {id:"bse",     icon:"📈", label:"Build. Sell. Expand.", sublabel:"Revenue Journey"},
   {id:"hub",     icon:"🎓", label:"Partner Enablement",   sublabel:"Hub 2026"},
   {id:"prospect", icon:"🔎", label:"Partner Prospect Tool", sublabel:"Deal Intelligence"},
@@ -2648,6 +2869,7 @@ function App(){
   const [page,setPage]=React.useState("main");
 
   function renderPage(){
+    if(page === "channel-dashboard") return <ChannelManagerDashboardPage />;
     if(page === "hub")        return <EnablementHub onBack={()=>setPage("main")} onNavigate={setPage} />;
     if(page === "pillars")    return <SixPillars onBack={()=>setPage("main")} onHub={()=>setPage("hub")} />;
     if(page === "prospect")   return <ProspectToolPage />;
