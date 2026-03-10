@@ -17,3 +17,5 @@ Then visit `http://localhost:8000`.
 ## Notes
 
 The app is now bundled into `index.html` for easier direct opening. It still loads React, Babel and fonts from public CDNs, so the browser needs internet access.
+
+If those CDN requests are blocked, the page now shows an on-screen dependency error with the blocked URLs so you can diagnose network restrictions quickly.
