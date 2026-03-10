@@ -1663,6 +1663,13 @@ const RESOURCES = [
     tagColor:"#91C4B0", glow:"99,171,143",
     cta:"Register Deal",
   },
+  {
+    id:"prospect-search", icon:"🔎", category:"Deal Intelligence", title:"Prospect Search Tool",
+    desc:"Search prospect accounts by sector, size and installed estate to find best-fit opportunities for ECX, AI and Secure Payments conversations.",
+    tags:["Web App","ICP"],
+    tagColor:"#63AB8F", glow:"99,171,143",
+    cta:"Launch Tool",
+  },
 ];
 
 function EnablementHub({onBack}){
