@@ -1993,7 +1993,6 @@ function ProspectToolPage(){
               </div>
             ))}
           </div>
-        </div>
 
         <div style={{padding:"40px 44px 44px",marginTop:"auto"}}>
           <div className="brand-line" style={{marginBottom:20}}/>
