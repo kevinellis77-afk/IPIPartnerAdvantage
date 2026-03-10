@@ -2389,9 +2389,6 @@ function raciBadge(value){
   return <span style={{display:"inline-flex",width:24,height:24,borderRadius:7,alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,color:token.color,background:token.bg,border:`1px solid ${token.border}`}}>{value}</span>;
 }
 
-    return {...item,status:completed?"Complete":status,completed,lastUpdated:saved.lastUpdated || null};
-  });
-}
 
 function PartnerProgramPage(){
   const [activeT, setActiveT] = React.useState(0);
