@@ -4,9 +4,15 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>IPI Partner Advantage — Customer Contact Ecosystem</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<script>
+window.__dependencyErrors = [];
+function reportDependencyError(name, url) {
+  window.__dependencyErrors.push({ name, url });
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js" onerror="reportDependencyError('react', this.src)"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js" onerror="reportDependencyError('react-dom', this.src)"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js" onerror="reportDependencyError('babel-standalone', this.src)"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
@@ -112,6 +118,26 @@ body{background:#131E20;color:#DFF0EA;font-family:-apple-system,BlinkMacSystemFo
 <body>
 <div id="root"></div>
 <noscript>This app requires JavaScript enabled in the browser.</noscript>
+<script>
+window.setTimeout(function() {
+  var depsMissing = typeof window.React === "undefined" || typeof window.ReactDOM === "undefined" || typeof window.Babel === "undefined";
+  if (!depsMissing) return;
+
+  var root = document.getElementById("root");
+  if (!root) return;
+
+  var depList = (window.__dependencyErrors || []).map(function(dep) {
+    return "<li><code>" + dep.name + "</code> from <code>" + dep.url + "</code></li>";
+  }).join("");
+
+  root.innerHTML = '<div style="max-width:760px;margin:48px auto;padding:20px 22px;border:1px solid rgba(208,139,127,0.45);border-radius:12px;background:rgba(208,139,127,0.08);font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif;line-height:1.45;">'
+    + '<h1 style="font-size:20px;margin:0 0 10px;color:#F2C5BE;">App failed to load required dependencies</h1>'
+    + '<p style="margin:0 0 10px;color:#F5D8D3;">This app currently depends on third-party CDNs (cdnjs.cloudflare.com). If your network blocks those URLs, the page will not render.</p>'
+    + (depList ? '<ul style="margin:0 0 12px 18px;color:#F5D8D3;">' + depList + '</ul>' : '')
+    + '<p style="margin:0;color:#F5D8D3;">Try allowing access to cdnjs.cloudflare.com or serve local copies of React, ReactDOM, and Babel in this folder.</p>'
+    + '</div>';
+}, 1000);
+</script>
 <script type="text/babel">
 // ═══════════════════════════════════════════════════════
 // CONTENT DATA
@@ -2300,13 +2326,6 @@ const GOVERNANCE_PRIORITY_META = {
   "Medium":{color:"#D4A843",bg:"rgba(212,168,67,0.14)",border:"rgba(212,168,67,0.32)"},
   "Low":{color:"#91C4B0",bg:"rgba(99,171,143,0.14)",border:"rgba(99,171,143,0.3)"},
 };
-const GOVERNANCE_STATUS = ["Not Started","In Progress","Complete"];
-const GOVERNANCE_STATUS_META = {
-  "Not Started":{color:"#9BB0AC",bg:"rgba(123,150,163,0.14)",border:"rgba(123,150,163,0.3)"},
-  "In Progress":{color:"#D4A843",bg:"rgba(212,168,67,0.14)",border:"rgba(212,168,67,0.32)"},
-  "Complete":{color:"#63AB8F",bg:"rgba(99,171,143,0.16)",border:"rgba(99,171,143,0.35)"},
-};
-
 const RACI_ACTIVITIES = [
   {id:"g1",activity:"Define Channel Strategy",channelManager:"R",salesLeadership:"C",marketing:"C",product:"C",legal:"I",finance:"I",operationsDelivery:"I",executiveLeadership:"A"},
   {id:"g2",activity:"Define Partner Program Structure",channelManager:"R",salesLeadership:"C",marketing:"C",product:"C",legal:"C",finance:"C",operationsDelivery:"I",executiveLeadership:"A"},
@@ -2334,7 +2353,6 @@ const RACI_ACTIVITIES = [
 
 function getDefaultGovernanceActivities(){
   return RACI_ACTIVITIES.map(item=>({...item,status:"Not Started",completed:false,owner:"",priority:"Medium",targetDate:"",notes:"",updatedAt:null}));
-  return RACI_ACTIVITIES.map(item=>({...item,status:"Not Started",completed:false,lastUpdated:null}));
 }
 
 function hydrateGovernanceActivities(){
@@ -2371,9 +2389,6 @@ function raciBadge(value){
   return <span style={{display:"inline-flex",width:24,height:24,borderRadius:7,alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,color:token.color,background:token.bg,border:`1px solid ${token.border}`}}>{value}</span>;
 }
 
-    return {...item,status:completed?"Complete":status,completed,lastUpdated:saved.lastUpdated || null};
-  });
-}
 
 function PartnerProgramPage(){
   const [activeT, setActiveT] = React.useState(0);
