@@ -1663,9 +1663,16 @@ const RESOURCES = [
     tagColor:"#91C4B0", glow:"99,171,143",
     cta:"Register Deal",
   },
+  {
+    id:"prospect-search", icon:"🔎", category:"Deal Intelligence", title:"Prospect Search Tool",
+    desc:"Search prospect accounts by sector, size and installed estate to find best-fit opportunities for ECX, AI and Secure Payments conversations.",
+    tags:["Web App","ICP"],
+    tagColor:"#63AB8F", glow:"99,171,143",
+    cta:"Launch Tool",
+  },
 ];
 
-function EnablementHub({onBack}){
+function EnablementHub({onBack,onNavigate}){
   const [activeTier,setActiveTier]=React.useState(null);
 
   return(
@@ -1889,6 +1896,7 @@ function EnablementHub({onBack}){
                   style={{background:`rgba(${res.glow},0.12)`,border:`1px solid rgba(${res.glow},0.35)`,borderRadius:9,padding:"9px 16px",fontSize:12,fontWeight:800,color:res.tagColor,cursor:"pointer",fontFamily:"'Nunito Sans',sans-serif",letterSpacing:"0.04em",transition:"all 0.2s",textAlign:"center",width:"100%"}}
                   onMouseEnter={e=>{e.currentTarget.style.background=`rgba(${res.glow},0.22)`;e.currentTarget.style.borderColor=`rgba(${res.glow},0.6)`;}}
                   onMouseLeave={e=>{e.currentTarget.style.background=`rgba(${res.glow},0.12)`;e.currentTarget.style.borderColor=`rgba(${res.glow},0.35)`;}}
+                  onClick={()=>{ if(res.id==="prospect-search" && onNavigate){ onNavigate("prospect"); } }}
                 >{res.cta} →</button>
               </div>
             ))}
@@ -1910,6 +1918,91 @@ function EnablementHub({onBack}){
         @keyframes liveDot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.3;transform:scale(0.7);}}
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
       `}</style>
+    </React.Fragment>
+  );
+}
+
+
+const PROSPECT_SAMPLE = [
+  {name:"Acme Utilities", sector:"Utilities", size:"Enterprise", estate:"Legacy PBX", fit:["ECX","AI Sidekick","PCI Cloud"]},
+  {name:"Northbank Finance", sector:"Financial Services", size:"Mid-Market", estate:"Mixed UC/CC", fit:["DTMF Mask","AI Insights","Call Recording"]},
+  {name:"Harbour Retail Group", sector:"Retail", size:"Enterprise", estate:"On-prem Contact Centre", fit:["Voicebot","Pay by Link","Q4 Me"]},
+  {name:"BlueStone Housing", sector:"Public Sector", size:"SMB", estate:"Basic SIP", fit:["Unified Comms","IVR","Send Me"]},
+];
+
+function ProspectToolPage(){
+  const [query,setQuery]=React.useState("");
+  const [sector,setSector]=React.useState("All");
+  const [size,setSize]=React.useState("All");
+  const sectors=["All",...new Set(PROSPECT_SAMPLE.map(p=>p.sector))];
+  const sizes=["All",...new Set(PROSPECT_SAMPLE.map(p=>p.size))];
+
+  const results = PROSPECT_SAMPLE.filter(p=>{
+    const q=(query||"").toLowerCase();
+    const queryHit = !q || p.name.toLowerCase().includes(q) || p.estate.toLowerCase().includes(q);
+    const sectorHit = sector==="All" || p.sector===sector;
+    const sizeHit = size==="All" || p.size===size;
+    return queryHit && sectorHit && sizeHit;
+  });
+
+  return(
+    <React.Fragment>
+      <Bg/>
+      <div style={{position:"relative",zIndex:1,minHeight:"100vh",display:"flex",flexDirection:"column",animation:"fadeIn 0.35s ease both"}}>
+        <header style={{padding:"22px 44px 0",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12,paddingLeft:68}}>
+          <LogoMark h={48}/>
+          <div style={{display:"flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,rgba(99,171,143,0.15),rgba(145,196,176,0.08))",border:"1px solid rgba(99,171,143,0.32)",borderRadius:100,padding:"7px 18px"}}>
+            <div style={{width:7,height:7,borderRadius:"50%",background:"#63AB8F",boxShadow:"0 0 8px #63AB8F",animation:"liveDot 2.2s ease-in-out infinite"}}/>
+            <span style={{fontSize:11,fontWeight:800,color:"#91C4B0",letterSpacing:"0.07em",textTransform:"uppercase"}}>Partner Prospect Tool</span>
+          </div>
+          <div style={{width:36}}/>
+        </header>
+
+        <div style={{maxWidth:1100,margin:"0 auto",padding:"34px 44px 0",width:"100%"}}>
+          <h1 style={{fontSize:"clamp(24px,3.8vw,46px)",fontWeight:800,letterSpacing:"-0.04em",color:"#fff",lineHeight:1.05,marginBottom:10,fontFamily:"'Syne',sans-serif"}}>
+            Prospect <span style={{color:"#63AB8F"}}>Search Tool</span>
+          </h1>
+          <p style={{fontSize:13.5,color:"#6E9990",maxWidth:760,lineHeight:1.75,marginBottom:20}}>
+            Find best-fit accounts by sector, company profile and current estate to position ECX, AI & Automation and Secure Payments opportunities.
+          </p>
+
+          <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr",gap:12,marginBottom:18}}>
+            <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search account or installed estate..."
+              style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(99,171,143,0.28)",borderRadius:10,padding:"11px 12px",color:"#E8F5F0",fontSize:13,outline:"none"}}/>
+            <select value={sector} onChange={e=>setSector(e.target.value)} style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(99,171,143,0.28)",borderRadius:10,padding:"11px 12px",color:"#E8F5F0",fontSize:13,outline:"none"}}>
+              {sectors.map(opt=><option key={opt} value={opt} style={{background:"#13211E"}}>{opt}</option>)}
+            </select>
+            <select value={size} onChange={e=>setSize(e.target.value)} style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(99,171,143,0.28)",borderRadius:10,padding:"11px 12px",color:"#E8F5F0",fontSize:13,outline:"none"}}>
+              {sizes.map(opt=><option key={opt} value={opt} style={{background:"#13211E"}}>{opt}</option>)}
+            </select>
+          </div>
+
+          <div style={{fontSize:11,fontWeight:800,color:"rgba(99,171,143,0.7)",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:10}}>
+            {results.length} matched accounts
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:12}}>
+            {results.map(p=>(
+              <div key={p.name} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(99,171,143,0.2)",borderRadius:14,padding:"16px 16px 14px"}}>
+                <div style={{fontSize:15,fontWeight:800,color:"#E8F5F0",marginBottom:6,fontFamily:"'Syne',sans-serif"}}>{p.name}</div>
+                <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
+                  <span style={{fontSize:10,padding:"3px 8px",borderRadius:99,border:"1px solid rgba(99,171,143,0.35)",color:"#91C4B0"}}>{p.sector}</span>
+                  <span style={{fontSize:10,padding:"3px 8px",borderRadius:99,border:"1px solid rgba(123,150,163,0.4)",color:"#9BB6C2"}}>{p.size}</span>
+                </div>
+                <div style={{fontSize:12,color:"#6E9990",lineHeight:1.6,marginBottom:8}}>Installed estate: {p.estate}</div>
+                <div style={{fontSize:11,color:"#C0DDD6",lineHeight:1.6}}>Recommended motion: <span style={{color:"#63AB8F"}}>{p.fit.join(" • ")}</span></div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{padding:"40px 44px 44px",marginTop:"auto"}}>
+          <div className="brand-line" style={{marginBottom:20}}/>
+          <p style={{textAlign:"center",fontSize:10,color:"rgba(99,171,143,0.3)",letterSpacing:"0.07em",textTransform:"uppercase"}}>
+            © 2026 IP Integration Ltd · IPI Partner Advantage · Partner Confidential
+          </p>
+        </div>
+      </div>
+      <style>{`@keyframes fadeIn{from{opacity:0}to{opacity:1}}`}</style>
     </React.Fragment>
   );
 }
@@ -2379,6 +2472,74 @@ function CommercialFrameworkPage(){
   );
 }
 
+
+
+const RACI_ROWS = [
+  {workstream:"Partner Recruitment", ipi:"A/R", channel:"C", operations:"I", legal:"I"},
+  {workstream:"Opportunity Qualification", ipi:"R", channel:"A/R", operations:"C", legal:"I"},
+  {workstream:"Solution Design", ipi:"A/R", channel:"R", operations:"C", legal:"I"},
+  {workstream:"Commercial Approval", ipi:"A", channel:"C", operations:"R", legal:"C"},
+  {workstream:"Contracting & Terms", ipi:"C", channel:"I", operations:"C", legal:"A/R"},
+  {workstream:"Service Onboarding", ipi:"A", channel:"R", operations:"A/R", legal:"I"},
+  {workstream:"Quarterly Business Review", ipi:"A/R", channel:"R", operations:"C", legal:"I"},
+];
+
+function GovernancePage(){
+  return(
+    <React.Fragment>
+      <Bg/>
+      <div style={{position:"relative",zIndex:1,minHeight:"100vh",display:"flex",flexDirection:"column",animation:"fadeIn 0.35s ease both"}}>
+        <header style={{padding:"22px 44px 0",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12,paddingLeft:68}}>
+          <LogoMark h={48}/>
+          <div style={{display:"flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,rgba(123,150,163,0.15),rgba(99,171,143,0.08))",border:"1px solid rgba(123,150,163,0.35)",borderRadius:100,padding:"7px 18px"}}>
+            <div style={{width:7,height:7,borderRadius:"50%",background:"#7B96A3",boxShadow:"0 0 8px #7B96A3",animation:"liveDot 2.2s ease-in-out infinite"}}/>
+            <span style={{fontSize:11,fontWeight:800,color:"#A9C3CE",letterSpacing:"0.07em",textTransform:"uppercase"}}>Governance & RACI</span>
+          </div>
+          <div style={{width:36}}/>
+        </header>
+
+        <div style={{maxWidth:1140,margin:"0 auto",padding:"34px 44px 0",width:"100%"}}>
+          <h1 style={{fontSize:"clamp(24px,3.8vw,46px)",fontWeight:800,letterSpacing:"-0.04em",color:"#fff",lineHeight:1.05,marginBottom:10,fontFamily:"'Syne',sans-serif"}}>
+            Partner <span style={{color:"#7B96A3"}}>Governance</span> RACI Matrix
+          </h1>
+          <p style={{fontSize:13.5,color:"#6E9990",maxWidth:860,lineHeight:1.75,marginBottom:18}}>
+            This view clarifies delivery accountability across IP Integration, partner teams and internal governance functions so opportunities progress with clear ownership.
+          </p>
+
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:18}}>
+            {[{k:"R",l:"Responsible",c:"#63AB8F"},{k:"A",l:"Accountable",c:"#D4A843"},{k:"C",l:"Consulted",c:"#A37992"},{k:"I",l:"Informed",c:"#7B96A3"}].map(item=>(
+              <div key={item.k} style={{background:"rgba(255,255,255,0.03)",border:`1px solid ${item.c}55`,borderRadius:10,padding:"9px 10px",display:"flex",gap:8,alignItems:"center"}}>
+                <span style={{width:20,height:20,borderRadius:6,display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900,background:`${item.c}22`,color:item.c,border:`1px solid ${item.c}66`}}>{item.k}</span>
+                <span style={{fontSize:12,color:"#C0DDD6",fontWeight:700}}>{item.l}</span>
+              </div>
+            ))}
+          </div>
+
+          <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(123,150,163,0.3)",borderRadius:14,overflow:"hidden"}}>
+            <div style={{display:"grid",gridTemplateColumns:"2.2fr repeat(4,1fr)",background:"rgba(123,150,163,0.14)",borderBottom:"1px solid rgba(123,150,163,0.25)"}}>
+              {["Workstream","IPI Channel Team","Partner","Operations","Legal"].map(h=><div key={h} style={{padding:"12px 14px",fontSize:11,fontWeight:800,color:"#A9C3CE",letterSpacing:"0.08em",textTransform:"uppercase"}}>{h}</div>)}
+            </div>
+            {RACI_ROWS.map((row,idx)=>(
+              <div key={row.workstream} style={{display:"grid",gridTemplateColumns:"2.2fr repeat(4,1fr)",borderTop:idx?"1px solid rgba(255,255,255,0.07)":"none"}}>
+                <div style={{padding:"12px 14px",fontSize:12.5,color:"#E8F5F0",fontWeight:700}}>{row.workstream}</div>
+                {[row.ipi,row.channel,row.operations,row.legal].map((v,i)=><div key={i} style={{padding:"12px 14px",fontSize:12,color:"#BFD8D2",fontWeight:800,letterSpacing:"0.03em"}}>{v}</div>)}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{padding:"40px 44px 44px",marginTop:"auto"}}>
+          <div className="brand-line" style={{marginBottom:20}}/>
+          <p style={{textAlign:"center",fontSize:10,color:"rgba(99,171,143,0.3)",letterSpacing:"0.07em",textTransform:"uppercase"}}>
+            © 2026 IP Integration Ltd · IPI Partner Advantage · Partner Confidential
+          </p>
+        </div>
+      </div>
+      <style>{`@keyframes fadeIn{from{opacity:0}to{opacity:1}}`}</style>
+    </React.Fragment>
+  );
+}
+
 // ═══════════════════════════════════════════════════════
 // SIDEBAR NAV WRAPPER
 // ═══════════════════════════════════════════════════════
@@ -2386,9 +2547,11 @@ const NAV_ITEMS = [
   {id:"main",    icon:"🏠", label:"Home",                 sublabel:"Ecosystem Overview"},
   {id:"bse",     icon:"📈", label:"Build. Sell. Expand.", sublabel:"Revenue Journey"},
   {id:"hub",     icon:"🎓", label:"Partner Enablement",   sublabel:"Hub 2026"},
+  {id:"prospect", icon:"🔎", label:"Partner Prospect Tool", sublabel:"Deal Intelligence"},
   {id:"pillars", icon:"🧩", label:"Six Pillars",           sublabel:"Product Framework"},
   {id:"program", icon:"🎯", label:"Partner Program",       sublabel:"Recruitment & IPP"},
   {id:"commercial", icon:"📜", label:"Commercial Framework", sublabel:"Legal & Pricing Model"},
+  {id:"governance", icon:"🧭", label:"Governance & RACI", sublabel:"Roles & Ownership"},
 ];
 
 function SideNav({page, setPage}){
@@ -2485,11 +2648,13 @@ function App(){
   const [page,setPage]=React.useState("main");
 
   function renderPage(){
-    if(page==="hub")     return <EnablementHub onBack={()=>setPage("main")}/>;
+    if(page==="hub")     return <EnablementHub onBack={()=>setPage("main")} onNavigate={setPage}/>;
     if(page==="pillars") return <SixPillars onBack={()=>setPage("main")} onHub={()=>setPage("hub")}/>;
+    if(page==="prospect") return <ProspectToolPage/>;
     if(page==="bse")     return <BuildSellExpand/>;
     if(page==="program") return <PartnerProgramPage/>;
     if(page==="commercial") return <CommercialFrameworkPage/>;
+    if(page==="governance") return <GovernancePage/>;
 
     // Page 1 — Home
     return(
