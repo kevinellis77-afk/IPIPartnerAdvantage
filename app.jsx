@@ -7410,6 +7410,16 @@ const GOVERNANCE_STATUS_OPTIONS = [
 ];
 const PRIORITY_OPTIONS = ["High", "Medium", "Low"];
 const EXECUTION_STORAGE_KEY = "ipi-governance-execution-v1";
+const RACI_ROLE_FIELDS = [
+  ["channelManager", "Channel Manager"],
+  ["salesLeadership", "Sales Leadership"],
+  ["marketing", "Marketing"],
+  ["product", "Product"],
+  ["legal", "Legal"],
+  ["finance", "Finance"],
+  ["operationsDelivery", "Operations / Delivery"],
+  ["executiveLeadership", "Executive Leadership"],
+];
 
 function getTodayISODate() {
   return new Date().toISOString().slice(0, 10);
@@ -7421,6 +7431,12 @@ function isTaskOverdue(task) {
     task.targetDate < getTodayISODate() &&
     task.status !== "Complete"
   );
+}
+
+function buildRaciText(task, assignment) {
+  return RACI_ROLE_FIELDS.filter(([field]) => task[field] === assignment)
+    .map(([, label]) => label)
+    .join(", ");
 }
 
 function GovernancePage() {
@@ -7443,6 +7459,10 @@ function GovernancePage() {
       targetDate: parsed[item.id]?.targetDate || "",
       notes: parsed[item.id]?.notes || "",
       updatedAt: parsed[item.id]?.updatedAt || "",
+      r: parsed[item.id]?.r || buildRaciText(item, "R"),
+      a: parsed[item.id]?.a || buildRaciText(item, "A"),
+      c: parsed[item.id]?.c || buildRaciText(item, "C"),
+      i: parsed[item.id]?.i || buildRaciText(item, "I"),
     }));
   });
 
@@ -7455,6 +7475,10 @@ function GovernancePage() {
         targetDate: task.targetDate,
         notes: task.notes,
         updatedAt: task.updatedAt,
+        r: task.r,
+        a: task.a,
+        c: task.c,
+        i: task.i,
       };
       return acc;
     }, {});
@@ -7517,6 +7541,32 @@ function GovernancePage() {
     ? Math.round((summary.complete / summary.total) * 100)
     : 0;
   const currentNoteTask = tasks.find((task) => task.id === noteTaskId);
+
+  const getTaskRowStyle = (task) => {
+    if (isTaskOverdue(task)) {
+      return {
+        background: "rgba(168,67,67,0.18)",
+        borderColor: "rgba(214,138,138,0.45)",
+      };
+    }
+    if (task.status === "In Progress") {
+      return {
+        background: "rgba(123,150,163,0.1)",
+        borderColor: "rgba(123,150,163,0.28)",
+      };
+    }
+    if (task.status === "Complete") {
+      return {
+        background: "rgba(99,171,143,0.12)",
+        borderColor: "rgba(145,196,176,0.32)",
+      };
+    }
+    return {
+      background: "transparent",
+      borderColor: "rgba(255,255,255,0.07)",
+    };
+  };
+
   const ownershipSummary = [
     { role: "Channel Manager", key: "channelManager" },
     { role: "Sales Leadership", key: "salesLeadership" },
@@ -7929,28 +7979,26 @@ function GovernancePage() {
                 background: "rgba(255,255,255,0.03)",
                 border: "1px solid rgba(123,150,163,0.3)",
                 borderRadius: 14,
+                overflowX: "auto",
               }}
             >
-              <div>
+              <div style={{ minWidth: 1120 }}>
                 <div
                   style={{
                     display: "grid",
                     gridTemplateColumns:
-                      "2.6fr repeat(8,0.75fr) 1fr 1fr 0.85fr 1fr 0.9fr 0.55fr",
+                      "minmax(260px,2fr) repeat(4,minmax(120px,0.85fr)) minmax(120px,0.9fr) minmax(130px,1fr) minmax(105px,0.8fr) minmax(130px,0.95fr) minmax(120px,0.95fr) minmax(70px,0.55fr)",
+                    columnGap: 8,
                     background: "rgba(123,150,163,0.14)",
                     borderBottom: "1px solid rgba(123,150,163,0.25)",
                   }}
                 >
                   {[
                     "Activity",
-                    "Channel Manager",
-                    "Sales Leadership",
-                    "Marketing",
-                    "Product",
-                    "Legal",
-                    "Finance",
-                    "Operations / Delivery",
-                    "Executive Leadership",
+                    "R",
+                    "A",
+                    "C",
+                    "I",
                     "Status",
                     "Owner",
                     "Priority",
@@ -7962,12 +8010,14 @@ function GovernancePage() {
                       key={h}
                       style={{
                         padding: "10px 10px",
-                        fontSize: 10.5,
+                        fontSize: h.length === 1 ? 12 : 10.5,
                         fontWeight: 800,
                         color: "#A9C3CE",
                         letterSpacing: "0.08em",
                         textTransform: "uppercase",
                         minWidth: 0,
+                        whiteSpace: "nowrap",
+                        textAlign: h.length === 1 ? "center" : "left",
                       }}
                     >
                       {h}
@@ -7975,195 +8025,182 @@ function GovernancePage() {
                   ))}
                 </div>
                 {filteredTasks.length ? (
-                  filteredTasks.map((task, idx) => (
-                    <div
-                      key={task.id}
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns:
-                          "2.6fr repeat(8,0.75fr) 1fr 1fr 0.85fr 1fr 0.9fr 0.55fr",
-                        borderTop: idx
-                          ? "1px solid rgba(255,255,255,0.07)"
-                          : "none",
-                        alignItems: "center",
-                      }}
-                    >
+                  filteredTasks.map((task, idx) => {
+                    const rowStyle = getTaskRowStyle(task);
+                    const taskCompleted = task.status === "Complete" || task.status === "Completed";
+                    return (
                       <div
+                        key={task.id}
                         style={{
-                          padding: "10px",
-                          fontSize: 12,
-                          color: "#E8F5F0",
-                          fontWeight: 700,
-                          minWidth: 0,
+                          display: "grid",
+                          gridTemplateColumns:
+                            "minmax(260px,2fr) repeat(4,minmax(120px,0.85fr)) minmax(120px,0.9fr) minmax(130px,1fr) minmax(105px,0.8fr) minmax(130px,0.95fr) minmax(120px,0.95fr) minmax(70px,0.55fr)",
+                          columnGap: 8,
+                          borderTop: idx ? `1px solid ${rowStyle.borderColor}` : "none",
+                          alignItems: "center",
+                          background: rowStyle.background,
                         }}
                       >
-                        {task.activity}
-                      </div>
-                      {[
-                        task.channelManager,
-                        task.salesLeadership,
-                        task.marketing,
-                        task.product,
-                        task.legal,
-                        task.finance,
-                        task.operationsDelivery,
-                        task.executiveLeadership,
-                      ].map((v, i) => {
-                        const map = {
-                          R: "#63AB8F",
-                          A: "#D4A843",
-                          C: "#A37992",
-                          I: "#7B96A3",
-                        };
-                        return (
-                          <div
-                            key={i}
+                        <div
+                          style={{
+                            padding: "10px",
+                            fontSize: 12,
+                            color: "#E8F5F0",
+                            fontWeight: 700,
+                            minWidth: 0,
+                            textDecoration: taskCompleted ? "line-through" : "none",
+                            textDecorationColor: taskCompleted ? "rgba(160,214,194,0.9)" : "transparent",
+                          }}
+                        >
+                          {task.activity}
+                        </div>
+                        {[
+                          ["r", "Responsible"],
+                          ["a", "Accountable"],
+                          ["c", "Consulted"],
+                          ["i", "Informed"],
+                        ].map(([field, label]) => (
+                          <div key={`${task.id}-${field}`} style={{ padding: "10px" }}>
+                            <input
+                              value={task[field] || ""}
+                              onChange={(e) =>
+                                updateTask(task.id, { [field]: e.target.value })
+                              }
+                              placeholder={label}
+                              style={{
+                                width: "100%",
+                                background: "rgba(255,255,255,0.03)",
+                                border: "1px solid rgba(123,150,163,0.3)",
+                                borderRadius: 6,
+                                color: "#D9ECE6",
+                                padding: "6px",
+                                fontSize: 12,
+                              }}
+                            />
+                          </div>
+                        ))}
+                        <div style={{ padding: "10px" }}>
+                          <select
+                            value={task.status}
+                            onChange={(e) =>
+                              updateTask(task.id, { status: e.target.value })
+                            }
                             style={{
-                              padding: "10px",
-                              display: "flex",
-                              justifyContent: "center",
-                              minWidth: 0,
+                              width: "100%",
+                              background: isTaskOverdue(task)
+                                ? "rgba(168,67,67,0.2)"
+                                : "rgba(255,255,255,0.03)",
+                              border: `1px solid ${task.status === "Blocked" ? "rgba(214,138,138,0.6)" : "rgba(123,150,163,0.3)"}`,
+                              borderRadius: 6,
+                              color: "#D9ECE6",
+                              padding: "6px",
+                              fontSize: 12,
                             }}
                           >
-                            <span
-                              style={{
-                                minWidth: 24,
-                                textAlign: "center",
-                                fontSize: 11,
-                                fontWeight: 800,
-                                color: map[v],
-                                background: `${map[v]}22`,
-                                border: `1px solid ${map[v]}66`,
-                                borderRadius: 6,
-                                padding: "2px 6px",
-                              }}
-                            >
-                              {v}
-                            </span>
-                          </div>
-                        );
-                      })}
-                      <div style={{ padding: "10px" }}>
-                        <select
-                          value={task.status}
-                          onChange={(e) =>
-                            updateTask(task.id, { status: e.target.value })
-                          }
+                            {GOVERNANCE_STATUS_OPTIONS.map((v) => (
+                              <option key={v} value={v}>
+                                {v}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div style={{ padding: "10px" }}>
+                          <input
+                            value={task.owner}
+                            onChange={(e) =>
+                              updateTask(task.id, { owner: e.target.value })
+                            }
+                            placeholder="Owner"
+                            style={{
+                              width: "100%",
+                              background: "rgba(255,255,255,0.03)",
+                              border: "1px solid rgba(123,150,163,0.3)",
+                              borderRadius: 6,
+                              color: "#D9ECE6",
+                              padding: "6px",
+                              fontSize: 12,
+                            }}
+                          />
+                        </div>
+                        <div style={{ padding: "10px" }}>
+                          <select
+                            value={task.priority}
+                            onChange={(e) =>
+                              updateTask(task.id, { priority: e.target.value })
+                            }
+                            style={{
+                              width: "100%",
+                              background: "rgba(255,255,255,0.03)",
+                              border: "1px solid rgba(123,150,163,0.3)",
+                              borderRadius: 6,
+                              color: "#D9ECE6",
+                              padding: "6px",
+                              fontSize: 12,
+                            }}
+                          >
+                            {PRIORITY_OPTIONS.map((v) => (
+                              <option key={v} value={v}>
+                                {v}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div style={{ padding: "10px" }}>
+                          <input
+                            type="date"
+                            value={task.targetDate}
+                            onChange={(e) =>
+                              updateTask(task.id, { targetDate: e.target.value })
+                            }
+                            style={{
+                              width: "100%",
+                              background: "rgba(255,255,255,0.03)",
+                              border: "1px solid rgba(123,150,163,0.3)",
+                              borderRadius: 6,
+                              color: "#D9ECE6",
+                              padding: "6px",
+                              fontSize: 12,
+                            }}
+                          />
+                        </div>
+                        <div style={{ padding: "10px" }}>
+                          <button
+                            onClick={() => setNoteTaskId(task.id)}
+                            style={{
+                              width: "100%",
+                              border: "1px solid rgba(123,150,163,0.35)",
+                              background: task.notes
+                                ? "rgba(99,171,143,0.14)"
+                                : "rgba(255,255,255,0.03)",
+                              color: "#C0DDD6",
+                              borderRadius: 6,
+                              padding: "6px",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              cursor: "pointer",
+                            }}
+                          >
+                            {task.notes ? "View / Edit" : "Add Notes"}
+                          </button>
+                        </div>
+                        <div
                           style={{
-                            width: "100%",
-                            background: isTaskOverdue(task)
-                              ? "rgba(212,168,67,0.2)"
-                              : "rgba(255,255,255,0.03)",
-                            border: `1px solid ${task.status === "Blocked" ? "rgba(214,138,138,0.6)" : "rgba(123,150,163,0.3)"}`,
-                            borderRadius: 6,
-                            color: "#D9ECE6",
-                            padding: "6px",
-                            fontSize: 12,
+                            padding: "10px",
+                            display: "flex",
+                            justifyContent: "center",
                           }}
                         >
-                          {GOVERNANCE_STATUS_OPTIONS.map((v) => (
-                            <option key={v} value={v}>
-                              {v}
-                            </option>
-                          ))}
-                        </select>
+                          <input
+                            type="checkbox"
+                            checked={task.completed}
+                            onChange={(e) =>
+                              updateTask(task.id, { completed: e.target.checked })
+                            }
+                          />
+                        </div>
                       </div>
-                      <div style={{ padding: "10px" }}>
-                        <input
-                          value={task.owner}
-                          onChange={(e) =>
-                            updateTask(task.id, { owner: e.target.value })
-                          }
-                          placeholder="Owner"
-                          style={{
-                            width: "100%",
-                            background: "rgba(255,255,255,0.03)",
-                            border: "1px solid rgba(123,150,163,0.3)",
-                            borderRadius: 6,
-                            color: "#D9ECE6",
-                            padding: "6px",
-                            fontSize: 12,
-                          }}
-                        />
-                      </div>
-                      <div style={{ padding: "10px" }}>
-                        <select
-                          value={task.priority}
-                          onChange={(e) =>
-                            updateTask(task.id, { priority: e.target.value })
-                          }
-                          style={{
-                            width: "100%",
-                            background: "rgba(255,255,255,0.03)",
-                            border: "1px solid rgba(123,150,163,0.3)",
-                            borderRadius: 6,
-                            color: "#D9ECE6",
-                            padding: "6px",
-                            fontSize: 12,
-                          }}
-                        >
-                          {PRIORITY_OPTIONS.map((v) => (
-                            <option key={v} value={v}>
-                              {v}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div style={{ padding: "10px" }}>
-                        <input
-                          type="date"
-                          value={task.targetDate}
-                          onChange={(e) =>
-                            updateTask(task.id, { targetDate: e.target.value })
-                          }
-                          style={{
-                            width: "100%",
-                            background: "rgba(255,255,255,0.03)",
-                            border: "1px solid rgba(123,150,163,0.3)",
-                            borderRadius: 6,
-                            color: "#D9ECE6",
-                            padding: "6px",
-                            fontSize: 12,
-                          }}
-                        />
-                      </div>
-                      <div style={{ padding: "10px" }}>
-                        <button
-                          onClick={() => setNoteTaskId(task.id)}
-                          style={{
-                            width: "100%",
-                            border: "1px solid rgba(123,150,163,0.35)",
-                            background: task.notes
-                              ? "rgba(99,171,143,0.14)"
-                              : "rgba(255,255,255,0.03)",
-                            color: "#C0DDD6",
-                            borderRadius: 6,
-                            padding: "6px",
-                            fontSize: 11,
-                            fontWeight: 700,
-                            cursor: "pointer",
-                          }}
-                        >
-                          {task.notes ? "View / Edit" : "Add Notes"}
-                        </button>
-                      </div>
-                      <div
-                        style={{
-                          padding: "10px",
-                          display: "flex",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={task.completed}
-                          onChange={(e) =>
-                            updateTask(task.id, { completed: e.target.checked })
-                          }
-                        />
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div
                     style={{
@@ -8180,26 +8217,34 @@ function GovernancePage() {
           ) : (
             <div style={{ display: "grid", gap: 10 }}>
               {filteredTasks.length ? (
-                filteredTasks.map((task) => (
-                  <div
-                    key={task.id}
-                    style={{
-                      background: "rgba(255,255,255,0.03)",
-                      border: "1px solid rgba(123,150,163,0.3)",
+                filteredTasks.map((task) => {
+                  const rowStyle = getTaskRowStyle(task);
+                  const taskCompleted =
+                    task.status === "Complete" || task.status === "Completed";
+                  return (
+                    <div
+                      key={task.id}
+                      style={{
+                      background: rowStyle.background,
+                      border: `1px solid ${rowStyle.borderColor}`,
                       borderRadius: 12,
                       padding: "12px 14px",
                       display: "grid",
                       gridTemplateColumns: "2fr repeat(6,minmax(90px,1fr))",
                       alignItems: "center",
                       gap: 10,
-                    }}
-                  >
+                      }}
+                    >
                     <div>
                       <div
                         style={{
                           fontSize: 13,
                           fontWeight: 700,
                           color: "#E8F5F0",
+                          textDecoration: taskCompleted ? "line-through" : "none",
+                          textDecorationColor: taskCompleted
+                            ? "rgba(160,214,194,0.9)"
+                            : "transparent",
                         }}
                       >
                         {task.activity}
@@ -8321,7 +8366,8 @@ function GovernancePage() {
                       Done
                     </label>
                   </div>
-                ))
+                  );
+                })
               ) : (
                 <div
                   style={{
