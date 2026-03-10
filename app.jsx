@@ -1672,7 +1672,7 @@ const RESOURCES = [
   },
 ];
 
-function EnablementHub({onBack}){
+function EnablementHub({onBack,onNavigate}){
   const [activeTier,setActiveTier]=React.useState(null);
 
   return(
@@ -1896,6 +1896,7 @@ function EnablementHub({onBack}){
                   style={{background:`rgba(${res.glow},0.12)`,border:`1px solid rgba(${res.glow},0.35)`,borderRadius:9,padding:"9px 16px",fontSize:12,fontWeight:800,color:res.tagColor,cursor:"pointer",fontFamily:"'Nunito Sans',sans-serif",letterSpacing:"0.04em",transition:"all 0.2s",textAlign:"center",width:"100%"}}
                   onMouseEnter={e=>{e.currentTarget.style.background=`rgba(${res.glow},0.22)`;e.currentTarget.style.borderColor=`rgba(${res.glow},0.6)`;}}
                   onMouseLeave={e=>{e.currentTarget.style.background=`rgba(${res.glow},0.12)`;e.currentTarget.style.borderColor=`rgba(${res.glow},0.35)`;}}
+                  onClick={()=>{ if(res.id==="prospect-search" && onNavigate){ onNavigate("prospect"); } }}
                 >{res.cta} →</button>
               </div>
             ))}
@@ -1917,6 +1918,91 @@ function EnablementHub({onBack}){
         @keyframes liveDot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.3;transform:scale(0.7);}}
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
       `}</style>
+    </React.Fragment>
+  );
+}
+
+
+const PROSPECT_SAMPLE = [
+  {name:"Acme Utilities", sector:"Utilities", size:"Enterprise", estate:"Legacy PBX", fit:["ECX","AI Sidekick","PCI Cloud"]},
+  {name:"Northbank Finance", sector:"Financial Services", size:"Mid-Market", estate:"Mixed UC/CC", fit:["DTMF Mask","AI Insights","Call Recording"]},
+  {name:"Harbour Retail Group", sector:"Retail", size:"Enterprise", estate:"On-prem Contact Centre", fit:["Voicebot","Pay by Link","Q4 Me"]},
+  {name:"BlueStone Housing", sector:"Public Sector", size:"SMB", estate:"Basic SIP", fit:["Unified Comms","IVR","Send Me"]},
+];
+
+function ProspectToolPage(){
+  const [query,setQuery]=React.useState("");
+  const [sector,setSector]=React.useState("All");
+  const [size,setSize]=React.useState("All");
+  const sectors=["All",...new Set(PROSPECT_SAMPLE.map(p=>p.sector))];
+  const sizes=["All",...new Set(PROSPECT_SAMPLE.map(p=>p.size))];
+
+  const results = PROSPECT_SAMPLE.filter(p=>{
+    const q=(query||"").toLowerCase();
+    const queryHit = !q || p.name.toLowerCase().includes(q) || p.estate.toLowerCase().includes(q);
+    const sectorHit = sector==="All" || p.sector===sector;
+    const sizeHit = size==="All" || p.size===size;
+    return queryHit && sectorHit && sizeHit;
+  });
+
+  return(
+    <React.Fragment>
+      <Bg/>
+      <div style={{position:"relative",zIndex:1,minHeight:"100vh",display:"flex",flexDirection:"column",animation:"fadeIn 0.35s ease both"}}>
+        <header style={{padding:"22px 44px 0",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12,paddingLeft:68}}>
+          <LogoMark h={48}/>
+          <div style={{display:"flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,rgba(99,171,143,0.15),rgba(145,196,176,0.08))",border:"1px solid rgba(99,171,143,0.32)",borderRadius:100,padding:"7px 18px"}}>
+            <div style={{width:7,height:7,borderRadius:"50%",background:"#63AB8F",boxShadow:"0 0 8px #63AB8F",animation:"liveDot 2.2s ease-in-out infinite"}}/>
+            <span style={{fontSize:11,fontWeight:800,color:"#91C4B0",letterSpacing:"0.07em",textTransform:"uppercase"}}>Partner Prospect Tool</span>
+          </div>
+          <div style={{width:36}}/>
+        </header>
+
+        <div style={{maxWidth:1100,margin:"0 auto",padding:"34px 44px 0",width:"100%"}}>
+          <h1 style={{fontSize:"clamp(24px,3.8vw,46px)",fontWeight:800,letterSpacing:"-0.04em",color:"#fff",lineHeight:1.05,marginBottom:10,fontFamily:"'Syne',sans-serif"}}>
+            Prospect <span style={{color:"#63AB8F"}}>Search Tool</span>
+          </h1>
+          <p style={{fontSize:13.5,color:"#6E9990",maxWidth:760,lineHeight:1.75,marginBottom:20}}>
+            Find best-fit accounts by sector, company profile and current estate to position ECX, AI & Automation and Secure Payments opportunities.
+          </p>
+
+          <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr",gap:12,marginBottom:18}}>
+            <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search account or installed estate..."
+              style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(99,171,143,0.28)",borderRadius:10,padding:"11px 12px",color:"#E8F5F0",fontSize:13,outline:"none"}}/>
+            <select value={sector} onChange={e=>setSector(e.target.value)} style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(99,171,143,0.28)",borderRadius:10,padding:"11px 12px",color:"#E8F5F0",fontSize:13,outline:"none"}}>
+              {sectors.map(opt=><option key={opt} value={opt} style={{background:"#13211E"}}>{opt}</option>)}
+            </select>
+            <select value={size} onChange={e=>setSize(e.target.value)} style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(99,171,143,0.28)",borderRadius:10,padding:"11px 12px",color:"#E8F5F0",fontSize:13,outline:"none"}}>
+              {sizes.map(opt=><option key={opt} value={opt} style={{background:"#13211E"}}>{opt}</option>)}
+            </select>
+          </div>
+
+          <div style={{fontSize:11,fontWeight:800,color:"rgba(99,171,143,0.7)",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:10}}>
+            {results.length} matched accounts
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:12}}>
+            {results.map(p=>(
+              <div key={p.name} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(99,171,143,0.2)",borderRadius:14,padding:"16px 16px 14px"}}>
+                <div style={{fontSize:15,fontWeight:800,color:"#E8F5F0",marginBottom:6,fontFamily:"'Syne',sans-serif"}}>{p.name}</div>
+                <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
+                  <span style={{fontSize:10,padding:"3px 8px",borderRadius:99,border:"1px solid rgba(99,171,143,0.35)",color:"#91C4B0"}}>{p.sector}</span>
+                  <span style={{fontSize:10,padding:"3px 8px",borderRadius:99,border:"1px solid rgba(123,150,163,0.4)",color:"#9BB6C2"}}>{p.size}</span>
+                </div>
+                <div style={{fontSize:12,color:"#6E9990",lineHeight:1.6,marginBottom:8}}>Installed estate: {p.estate}</div>
+                <div style={{fontSize:11,color:"#C0DDD6",lineHeight:1.6}}>Recommended motion: <span style={{color:"#63AB8F"}}>{p.fit.join(" • ")}</span></div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{padding:"40px 44px 44px",marginTop:"auto"}}>
+          <div className="brand-line" style={{marginBottom:20}}/>
+          <p style={{textAlign:"center",fontSize:10,color:"rgba(99,171,143,0.3)",letterSpacing:"0.07em",textTransform:"uppercase"}}>
+            © 2026 IP Integration Ltd · IPI Partner Advantage · Partner Confidential
+          </p>
+        </div>
+      </div>
+      <style>{`@keyframes fadeIn{from{opacity:0}to{opacity:1}}`}</style>
     </React.Fragment>
   );
 }
@@ -2393,6 +2479,7 @@ const NAV_ITEMS = [
   {id:"main",    icon:"🏠", label:"Home",                 sublabel:"Ecosystem Overview"},
   {id:"bse",     icon:"📈", label:"Build. Sell. Expand.", sublabel:"Revenue Journey"},
   {id:"hub",     icon:"🎓", label:"Partner Enablement",   sublabel:"Hub 2026"},
+  {id:"prospect", icon:"🔎", label:"Partner Prospect Tool", sublabel:"Deal Intelligence"},
   {id:"pillars", icon:"🧩", label:"Six Pillars",           sublabel:"Product Framework"},
   {id:"program", icon:"🎯", label:"Partner Program",       sublabel:"Recruitment & IPP"},
   {id:"commercial", icon:"📜", label:"Commercial Framework", sublabel:"Legal & Pricing Model"},
@@ -2492,8 +2579,9 @@ function App(){
   const [page,setPage]=React.useState("main");
 
   function renderPage(){
-    if(page==="hub")     return <EnablementHub onBack={()=>setPage("main")}/>;
+    if(page==="hub")     return <EnablementHub onBack={()=>setPage("main")} onNavigate={setPage}/>;
     if(page==="pillars") return <SixPillars onBack={()=>setPage("main")} onHub={()=>setPage("hub")}/>;
+    if(page==="prospect") return <ProspectToolPage/>;
     if(page==="bse")     return <BuildSellExpand/>;
     if(page==="program") return <PartnerProgramPage/>;
     if(page==="commercial") return <CommercialFrameworkPage/>;
