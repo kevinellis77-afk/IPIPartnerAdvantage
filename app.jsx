@@ -12,8 +12,8 @@ const DATA = {
       sublabel: "Foundation",
       shortLabel: "Telephony",
       icon: "📡",
-      color: "#91C4B0",
-      glow: "99,171,143",
+      color: "#67D8FF",
+      glow: "54,198,255",
       tagline: "The infrastructure that makes every conversation possible.",
       items: [
         {
@@ -52,7 +52,7 @@ const DATA = {
       shortLabel: "AI & Automation",
       icon: "🤖",
       color: "#A37992",
-      glow: "163,121,146",
+      glow: "177,143,255",
       tagline:
         "Intelligent automation that works for agents and customers alike.",
       items: [
@@ -102,7 +102,7 @@ const DATA = {
       shortLabel: "Payments",
       icon: "🔐",
       color: "#C0887B",
-      glow: "192,136,123",
+      glow: "255,154,108",
       tagline: "PCI-DSS compliance built in — not bolted on.",
       items: [
         {
@@ -180,8 +180,8 @@ const JOURNEY = [
     stage: 1,
     title: "Telephony\nFoundation",
     tag: "Start Here",
-    color: "#91C4B0",
-    glow: "99,171,143",
+    color: "#67D8FF",
+    glow: "54,198,255",
     icon: "📡",
     value: "Basic voice services — SIP, numbering and routing.",
     products: ["SIP", "Numbering", "Routing", "IVR", "Call Recording"],
@@ -191,8 +191,8 @@ const JOURNEY = [
     stage: 2,
     title: "ECX\nPlatform",
     tag: "Anchor Deal",
-    color: "#63AB8F",
-    glow: "99,171,143",
+    color: "#36C6FF",
+    glow: "54,198,255",
     icon: "⚡",
     value: "Unified comms & contact centre — the connective platform.",
     products: ["Unified Comms", "Contact Centre", "Omnichannel", "Reporting"],
@@ -203,7 +203,7 @@ const JOURNEY = [
     title: "AI &\nAutomation",
     tag: "Upsell",
     color: "#A37992",
-    glow: "163,121,146",
+    glow: "177,143,255",
     icon: "🤖",
     value:
       "Automate, assist and analyse — intelligence across every interaction.",
@@ -215,7 +215,7 @@ const JOURNEY = [
     title: "Secure\nPayments",
     tag: "Cross-sell",
     color: "#C0887B",
-    glow: "192,136,123",
+    glow: "255,154,108",
     icon: "🔐",
     value: "PCI-DSS compliant payments, de-scoping the contact centre.",
     products: ["PCI Cloud", "Pauseable", "DTMF Mask", "Pay by Link"],
@@ -265,7 +265,7 @@ const PHILOSOPHY = [
 
 
 const theme = window.appTheme || {
-  colors: { primary: "#63AB8F", primaryHover: "#4D9378", border: "rgba(145,196,176,0.22)", surface: "#17242b", surfaceMuted: "rgba(255,255,255,0.03)", textPrimary: "#e9f4f1", textMuted: "#9bb6b0" },
+  colors: { primary: "#36C6FF", primaryHover: "#1CB2F0", border: "rgba(103,216,255,0.22)", surface: "#0F1727", surfaceMuted: "rgba(255,255,255,0.03)", textPrimary: "#e9f4f1", textMuted: "#8EA6BF" },
   spacing: { xs: "4px", sm: "8px", md: "16px", lg: "24px", xl: "32px" },
   radius: { sm: "10px", md: "14px", lg: "18px", pill: "999px" }
 };
@@ -334,7 +334,7 @@ function Bg() {
         style={{
           width: 700,
           height: 700,
-          background: "rgba(99,171,143,0.055)",
+          background: "rgba(54,198,255,0.055)",
           top: -250,
           left: -200,
           animationDelay: "0s",
@@ -345,7 +345,7 @@ function Bg() {
         style={{
           width: 500,
           height: 500,
-          background: "rgba(163,121,146,0.045)",
+          background: "rgba(177,143,255,0.045)",
           bottom: -100,
           right: -80,
           animationDelay: "9s",
@@ -385,7 +385,7 @@ function SectionHeader({ eyebrow, title, description }) {
   return (
     <div className="ds-section-header">
       {eyebrow ? (
-        <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(145,196,176,0.78)" }}>
+        <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(103,216,255,0.78)" }}>
           {eyebrow}
         </div>
       ) : null}
@@ -446,6 +446,46 @@ function StandardTable({ className = "", children }) {
   return <div className={`table-wrapper ds-table-wrap ${className}`.trim()}>{children}</div>;
 }
 
+function PageHeader(props) {
+  return <AppPageHeader {...props} />;
+}
+
+function SectionCard({ children, className = "", style = {} }) {
+  return <StandardCard className={className} style={style}>{children}</StandardCard>;
+}
+
+function Badge({ children, tone = "info" }) {
+  return <span className={`status-badge status-${tone}`}>{children}</span>;
+}
+
+function SidebarNavItem({ item, active, onClick, collapsed }) {
+  return (
+    <button
+      className={`sidebar-nav-item ${active ? "active" : ""}`}
+      onClick={onClick}
+      type="button"
+      title={collapsed ? item.label : ""}
+    >
+      <span className="sidebar-nav-icon">{item.icon}</span>
+      {!collapsed && (
+        <span className="sidebar-nav-text">
+          <span className="sidebar-nav-label">{item.label}</span>
+          <span className="sidebar-nav-sublabel">{item.sublabel}</span>
+        </span>
+      )}
+    </button>
+  );
+}
+
+function ActionButton({ children, variant = "primary", className = "", ...props }) {
+  const cls = variant === "secondary" ? "ui-btn ui-btn--secondary" : "ui-btn ui-btn--primary";
+  return <button className={`${cls} ${className}`.trim()} {...props}>{children}</button>;
+}
+
+function FilterBar({ children, className = "" }) {
+  return <div className={`filter-bar ${className}`.trim()}>{children}</div>;
+}
+
 // ═══════════════════════════════════════════════════════
 // TOGGLE
 // ═══════════════════════════════════════════════════════
@@ -466,7 +506,7 @@ function Toggle({ complete, onToggle }) {
         className="toggle-track"
         style={{
           background: complete
-            ? "rgba(99,171,143,0.18)"
+            ? "rgba(54,198,255,0.18)"
             : "rgba(255,255,255,0.05)",
         }}
       >
@@ -581,7 +621,7 @@ function SegmentModal({ zone, onClose }) {
                 <p
                   style={{
                     fontSize: 13,
-                    color: "#6E9990",
+                    color: "#8EA6BF",
                     marginTop: 6,
                     lineHeight: 1.6,
                   }}
@@ -705,7 +745,7 @@ function SegmentModal({ zone, onClose }) {
                     style={{
                       fontSize: 13,
                       fontWeight: 800,
-                      color: "#E8F5F0",
+                      color: "#EAF5FF",
                       marginBottom: 4,
                       lineHeight: 1.2,
                     }}
@@ -715,7 +755,7 @@ function SegmentModal({ zone, onClose }) {
                   <div
                     style={{
                       fontSize: 11,
-                      color: "#5A8880",
+                      color: "#7E97B4",
                       lineHeight: 1.6,
                       display: "-webkit-box",
                       WebkitLineClamp: 2,
@@ -963,7 +1003,7 @@ function Diagram({ activeZone, complete, onZone }) {
           cy={CY}
           r={R2}
           fill="none"
-          stroke={complete ? "rgba(99,171,143,0.22)" : "rgba(255,255,255,0.05)"}
+          stroke={complete ? "rgba(54,198,255,0.22)" : "rgba(255,255,255,0.05)"}
           strokeWidth="1.2"
           strokeDasharray={complete ? null : "5 8"}
           style={{ transition: "stroke 0.5s" }}
@@ -974,7 +1014,7 @@ function Diagram({ activeZone, complete, onZone }) {
           cy={CY}
           r={R1 + 1}
           fill="none"
-          stroke="rgba(99,171,143,0.08)"
+          stroke="rgba(54,198,255,0.08)"
           strokeWidth="0.5"
         />
 
@@ -1119,7 +1159,7 @@ function Diagram({ activeZone, complete, onZone }) {
           cy={CY}
           r={R1}
           fill="url(#hubG)"
-          stroke={complete ? "rgba(99,171,143,0.9)" : "rgba(99,171,143,0.5)"}
+          stroke={complete ? "rgba(54,198,255,0.9)" : "rgba(54,198,255,0.5)"}
           strokeWidth="2"
           style={{
             animation: "hubPulse 4s ease-in-out infinite",
@@ -1131,7 +1171,7 @@ function Diagram({ activeZone, complete, onZone }) {
           cy={CY}
           r={R1 - 16}
           fill="none"
-          stroke="rgba(99,171,143,0.1)"
+          stroke="rgba(54,198,255,0.1)"
           strokeWidth="0.7"
         />
         <circle
@@ -1139,7 +1179,7 @@ function Diagram({ activeZone, complete, onZone }) {
           cy={CY}
           r={R1 - 34}
           fill="none"
-          stroke="rgba(99,171,143,0.06)"
+          stroke="rgba(54,198,255,0.06)"
           strokeWidth="0.5"
         />
         <text
@@ -1152,7 +1192,7 @@ function Diagram({ activeZone, complete, onZone }) {
           letterSpacing="-1.5"
           fill="white"
           pointerEvents="none"
-          style={{ filter: "drop-shadow(0 0 20px rgba(99,171,143,0.9))" }}
+          style={{ filter: "drop-shadow(0 0 20px rgba(54,198,255,0.9))" }}
         >
           ECX
         </text>
@@ -1164,7 +1204,7 @@ function Diagram({ activeZone, complete, onZone }) {
           fontSize="8.5"
           fontWeight="700"
           letterSpacing="0.6"
-          fill="rgba(145,196,176,0.85)"
+          fill="rgba(103,216,255,0.85)"
           pointerEvents="none"
         >
           Unified Comms &amp;
@@ -1177,7 +1217,7 @@ function Diagram({ activeZone, complete, onZone }) {
           fontSize="8.5"
           fontWeight="700"
           letterSpacing="0.6"
-          fill="rgba(145,196,176,0.85)"
+          fill="rgba(103,216,255,0.85)"
           pointerEvents="none"
         >
           Contact Centre
@@ -1243,7 +1283,7 @@ function PartnerJourney() {
             right: "7%",
             height: 2,
             background:
-              "linear-gradient(90deg,rgba(145,196,176,0.4),rgba(99,171,143,0.55),rgba(163,121,146,0.5),rgba(192,136,123,0.45),rgba(123,150,163,0.4))",
+              "linear-gradient(90deg,rgba(103,216,255,0.4),rgba(54,198,255,0.55),rgba(177,143,255,0.5),rgba(255,154,108,0.45),rgba(123,150,163,0.4))",
             zIndex: 0,
             pointerEvents: "none",
           }}
@@ -1486,8 +1526,8 @@ const PRODUCT_DATA = {
   SIP: {
     id: "sip",
     family: "telephony",
-    color: "#91C4B0",
-    glow: "145,196,176",
+    color: "#67D8FF",
+    glow: "103,216,255",
     badge: "Telephony · VoiceConnect",
     tagline: "Enterprise SIP trunking, built for modern cloud CX",
     url: "https://www.ipintegration.com/solutions/voiceconnect/",
@@ -1513,8 +1553,8 @@ const PRODUCT_DATA = {
   Numbering: {
     id: "numbering",
     family: "telephony",
-    color: "#91C4B0",
-    glow: "145,196,176",
+    color: "#67D8FF",
+    glow: "103,216,255",
     badge: "Telephony · VoiceConnect",
     tagline: "UK national and international number management",
     url: "https://www.ipintegration.com/solutions/voiceconnect/",
@@ -1533,8 +1573,8 @@ const PRODUCT_DATA = {
   Routing: {
     id: "routing",
     family: "telephony",
-    color: "#91C4B0",
-    glow: "145,196,176",
+    color: "#67D8FF",
+    glow: "103,216,255",
     badge: "Telephony · VoiceConnect",
     tagline: "Intelligent network-based call routing",
     url: "https://www.ipintegration.com/solutions/voiceconnect/",
@@ -1554,8 +1594,8 @@ const PRODUCT_DATA = {
   IVR: {
     id: "ivr",
     family: "telephony",
-    color: "#91C4B0",
-    glow: "145,196,176",
+    color: "#67D8FF",
+    glow: "103,216,255",
     badge: "Telephony · VoiceConnect",
     tagline: "Self-service IVR built for the cloud",
     url: "https://www.ipintegration.com/solutions/voiceconnect/",
@@ -1575,8 +1615,8 @@ const PRODUCT_DATA = {
   "Call Recording": {
     id: "call-recording",
     family: "telephony",
-    color: "#91C4B0",
-    glow: "145,196,176",
+    color: "#67D8FF",
+    glow: "103,216,255",
     badge: "Telephony · Compliance",
     tagline: "Compliant call recording across every interaction",
     url: "https://www.ipintegration.com/solutions/voiceconnect/",
@@ -1596,8 +1636,8 @@ const PRODUCT_DATA = {
   VoiceConnect: {
     id: "voiceconnect",
     family: "telephony",
-    color: "#91C4B0",
-    glow: "145,196,176",
+    color: "#67D8FF",
+    glow: "103,216,255",
     badge: "Telephony",
     tagline: "The IPI voice platform for resilience, flexibility and scale",
     url: "https://www.ipintegration.com/solutions/voiceconnect/",
@@ -1627,8 +1667,8 @@ const PRODUCT_DATA = {
   "ECX Voice": {
     id: "ecx-voice",
     family: "ecx",
-    color: "#91C4B0",
-    glow: "145,196,176",
+    color: "#67D8FF",
+    glow: "103,216,255",
     badge: "CCaaS",
     tagline: "A customisable CCaaS solution with powerful voice features",
     summary:
@@ -1652,8 +1692,8 @@ const PRODUCT_DATA = {
   "ECX Omni": {
     id: "ecx-omni",
     family: "ecx",
-    color: "#91C4B0",
-    glow: "99,171,143",
+    color: "#67D8FF",
+    glow: "54,198,255",
     badge: "CCaaS",
     tagline: "A true omnichannel experience",
     summary:
@@ -1692,8 +1732,8 @@ const PRODUCT_DATA = {
   "ECX Max": {
     id: "ecx-max",
     family: "ecx",
-    color: "#63AB8F",
-    glow: "99,171,143",
+    color: "#36C6FF",
+    glow: "54,198,255",
     badge: "CCaaS · AI Native",
     tagline: "Smarter CX, built-in",
     summary:
@@ -1777,8 +1817,8 @@ const PRODUCT_DATA = {
   "ECX Contact Centre": {
     id: "ecx-cc",
     family: "ecx",
-    color: "#63AB8F",
-    glow: "99,171,143",
+    color: "#36C6FF",
+    glow: "54,198,255",
     badge: "CCaaS",
     tagline: "Enterprise contact centre, delivered from the cloud",
     summary:
@@ -1797,8 +1837,8 @@ const PRODUCT_DATA = {
   "Omnichannel Engagement": {
     id: "omnichannel",
     family: "ecx",
-    color: "#91C4B0",
-    glow: "145,196,176",
+    color: "#67D8FF",
+    glow: "103,216,255",
     badge: "CCaaS",
     tagline: "Every channel. One agent experience.",
     summary:
@@ -1816,8 +1856,8 @@ const PRODUCT_DATA = {
   "Workforce Enablement": {
     id: "workforce",
     family: "ecx",
-    color: "#91C4B0",
-    glow: "145,196,176",
+    color: "#67D8FF",
+    glow: "103,216,255",
     badge: "CCaaS",
     tagline: "Tools that empower every agent",
     summary:
@@ -1838,7 +1878,7 @@ const PRODUCT_DATA = {
     id: "voicebot",
     family: "ai",
     color: "#A37992",
-    glow: "163,121,146",
+    glow: "177,143,255",
     badge: "AI & Automation · IPI Cloud AI",
     tagline: "Conversational AI for voice — 24/7 self-service",
     url: "https://www.ipintegration.com/solutions/ai-contact-centre/",
@@ -1866,7 +1906,7 @@ const PRODUCT_DATA = {
     id: "chatbot",
     family: "ai",
     color: "#A37992",
-    glow: "163,121,146",
+    glow: "177,143,255",
     badge: "AI & Automation · IPI Cloud AI",
     tagline: "Conversational AI for digital channels",
     url: "https://www.ipintegration.com/solutions/ai-contact-centre/",
@@ -1887,7 +1927,7 @@ const PRODUCT_DATA = {
     id: "ai-sidekick",
     family: "ai",
     color: "#A37992",
-    glow: "163,121,146",
+    glow: "177,143,255",
     badge: "AI & Automation · ElasticCX Bolt-on",
     tagline: "Real-time AI assistance for every agent conversation",
     summary:
@@ -1927,7 +1967,7 @@ const PRODUCT_DATA = {
     id: "ai-insights",
     family: "ai",
     color: "#A37992",
-    glow: "163,121,146",
+    glow: "177,143,255",
     badge: "AI & Automation · ElasticCX Bolt-on",
     tagline: "Extract valuable insights from every interaction",
     summary:
@@ -1974,7 +2014,7 @@ const PRODUCT_DATA = {
     id: "id-me",
     family: "ai",
     color: "#A37992",
-    glow: "163,121,146",
+    glow: "177,143,255",
     badge: "AI & Automation · IPI Cloud AI",
     tagline: "Voice biometrics for instant, secure caller identification",
     url: "https://www.ipintegration.com/solutions/ai-contact-centre/",
@@ -1995,7 +2035,7 @@ const PRODUCT_DATA = {
     id: "q4-me",
     family: "ai",
     color: "#A37992",
-    glow: "163,121,146",
+    glow: "177,143,255",
     badge: "AI & Automation · IPI Cloud AI",
     tagline: "IPI's patented multichannel callback solution",
     url: "https://www.ipintegration.com/solutions/ai-contact-centre/",
@@ -2016,7 +2056,7 @@ const PRODUCT_DATA = {
     id: "send-me",
     family: "ai",
     color: "#A37992",
-    glow: "163,121,146",
+    glow: "177,143,255",
     badge: "AI & Automation · IPI Cloud AI",
     tagline: "Deflect callers to digital while they wait",
     url: "https://www.ipintegration.com/solutions/ai-contact-centre/",
@@ -2039,7 +2079,7 @@ const PRODUCT_DATA = {
     id: "pauseable",
     family: "payments",
     color: "#C0887B",
-    glow: "192,136,123",
+    glow: "255,154,108",
     badge: "Secure Payments · IPI-developed",
     tagline: "Automatic pause-and-resume for PCI-compliant call recording",
     url: "https://www.ipintegration.com/solutions/secure-contact-centre-payments/",
@@ -2067,7 +2107,7 @@ const PRODUCT_DATA = {
     id: "pci-cloud",
     family: "payments",
     color: "#C0887B",
-    glow: "192,136,123",
+    glow: "255,154,108",
     badge: "Secure Payments · Cloud PCI",
     tagline: "Enterprise-grade PCI DSS compliance for contact centres",
     url: "https://www.ipintegration.com/solutions/secure-contact-centre-payments/",
@@ -2113,7 +2153,7 @@ const PRODUCT_DATA = {
     id: "dtmf",
     family: "payments",
     color: "#C0887B",
-    glow: "192,136,123",
+    glow: "255,154,108",
     badge: "Secure Payments · Agent Pay",
     tagline: "Prevent card tones entering your environment — Agent Pay",
     url: "https://www.ipintegration.com/solutions/secure-contact-centre-payments/",
@@ -2140,7 +2180,7 @@ const PRODUCT_DATA = {
     id: "pay-by-link",
     family: "payments",
     color: "#C0887B",
-    glow: "192,136,123",
+    glow: "255,154,108",
     badge: "Secure Payments · Pay by Link",
     tagline: "Secure payment links across every channel",
     url: "https://www.ipintegration.com/solutions/secure-contact-centre-payments/",
@@ -2296,7 +2336,7 @@ const PRODUCT_DATA = {
     id: "cx-strategy",
     family: "prosvcs",
     color: "#A37992",
-    glow: "163,121,146",
+    glow: "177,143,255",
     badge: "Professional Services · Consultancy",
     tagline: "Strategic CX consultancy from the UK's leading experts",
     url: "https://www.ipintegration.com/services/contact-centre-consultancy/",
@@ -2322,7 +2362,7 @@ const PRODUCT_DATA = {
     id: "solution-design",
     family: "prosvcs",
     color: "#A37992",
-    glow: "163,121,146",
+    glow: "177,143,255",
     badge: "Professional Services · Consultancy",
     tagline: "Architecture and solution design for complex CX deployments",
     url: "https://www.ipintegration.com/services/contact-centre-consultancy/",
@@ -2348,7 +2388,7 @@ const PRODUCT_DATA = {
     id: "integration",
     family: "prosvcs",
     color: "#A37992",
-    glow: "163,121,146",
+    glow: "177,143,255",
     badge: "Professional Services · Development",
     tagline: "Bespoke development and integration for CX platforms",
     url: "https://www.ipintegration.com/services/development-and-integrations/",
@@ -2374,7 +2414,7 @@ const PRODUCT_DATA = {
     id: "enablement",
     family: "prosvcs",
     color: "#A37992",
-    glow: "163,121,146",
+    glow: "177,143,255",
     badge: "Professional Services · Training",
     tagline: "Training and adoption programmes for CX success",
     url: "https://www.ipintegration.com/services/contact-centre-training/",
@@ -2401,7 +2441,7 @@ const PRODUCT_DATA = {
     id: "ai-enablement",
     family: "prosvcs",
     color: "#A37992",
-    glow: "163,121,146",
+    glow: "177,143,255",
     badge: "Professional Services · AI",
     tagline: "Practical AI adoption for contact centres",
     url: "https://www.ipintegration.com/solutions/ai-contact-centre/ai-pathway/",
@@ -2452,7 +2492,7 @@ function ProductModal({ productName, onClose, onNavigate }) {
         >
           <div
             style={{
-              color: "#6E9990",
+              color: "#8EA6BF",
               fontSize: 14,
               textAlign: "center",
               padding: "40px 0",
@@ -2466,11 +2506,11 @@ function ProductModal({ productName, onClose, onNavigate }) {
             style={{
               display: "block",
               margin: "20px auto 0",
-              background: "rgba(99,171,143,0.12)",
-              border: "1px solid rgba(99,171,143,0.3)",
+              background: "rgba(54,198,255,0.12)",
+              border: "1px solid rgba(54,198,255,0.3)",
               borderRadius: 100,
               padding: "9px 22px",
-              color: "#91C4B0",
+              color: "#67D8FF",
               fontSize: 12,
               fontWeight: 800,
               cursor: "pointer",
@@ -2693,8 +2733,8 @@ function ProductModal({ productName, onClose, onNavigate }) {
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {p.relatedIds.map((name) => {
                 const rel = PRODUCT_DATA[name];
-                const rc = rel ? rel.color : "#91C4B0";
-                const rg = rel ? rel.glow : "145,196,176";
+                const rc = rel ? rel.color : "#67D8FF";
+                const rg = rel ? rel.glow : "103,216,255";
                 return (
                   <button
                     key={name}
@@ -2807,9 +2847,9 @@ const STACK_LAYERS = [
     sublabel: "Embedded compliance layer",
     icon: "🔐",
     color: "#C0887B",
-    glow: "192,136,123",
-    bg: "linear-gradient(135deg,rgba(192,136,123,0.18),rgba(192,136,123,0.07))",
-    border: "rgba(192,136,123,0.45)",
+    glow: "255,154,108",
+    bg: "linear-gradient(135deg,rgba(255,154,108,0.18),rgba(255,154,108,0.07))",
+    border: "rgba(255,154,108,0.45)",
     items: ["Pauseable", "PCI Cloud (DTMF Suppression)", "Digital Pay by Link"],
     desc: "Secure payment add-ons that protect cardholder data and support PCI-DSS compliance without disrupting the live customer conversation.",
     span: "full",
@@ -2820,9 +2860,9 @@ const STACK_LAYERS = [
     sublabel: "Intelligence and optimisation layer",
     icon: "🤖",
     color: "#A37992",
-    glow: "163,121,146",
-    bg: "linear-gradient(135deg,rgba(163,121,146,0.18),rgba(163,121,146,0.07))",
-    border: "rgba(163,121,146,0.45)",
+    glow: "177,143,255",
+    bg: "linear-gradient(135deg,rgba(177,143,255,0.18),rgba(177,143,255,0.07))",
+    border: "rgba(177,143,255,0.45)",
     items: [
       "Voicebot",
       "Chatbot",
@@ -2840,10 +2880,10 @@ const STACK_LAYERS = [
     label: "UCaaS & CCaaS Platform",
     sublabel: "Core communications platform",
     icon: "⚡",
-    color: "#63AB8F",
-    glow: "99,171,143",
-    bg: "linear-gradient(135deg,rgba(99,171,143,0.22),rgba(99,171,143,0.08))",
-    border: "rgba(99,171,143,0.55)",
+    color: "#36C6FF",
+    glow: "54,198,255",
+    bg: "linear-gradient(135deg,rgba(54,198,255,0.22),rgba(54,198,255,0.08))",
+    border: "rgba(54,198,255,0.55)",
     items: [
       "ECX Unified Communications",
       "ECX Contact Centre",
@@ -2858,10 +2898,10 @@ const STACK_LAYERS = [
     label: "Telephony Infrastructure",
     sublabel: "Core voice services",
     icon: "📡",
-    color: "#91C4B0",
-    glow: "99,171,143",
-    bg: "linear-gradient(135deg,rgba(145,196,176,0.18),rgba(145,196,176,0.06))",
-    border: "rgba(145,196,176,0.4)",
+    color: "#67D8FF",
+    glow: "54,198,255",
+    bg: "linear-gradient(135deg,rgba(103,216,255,0.18),rgba(103,216,255,0.06))",
+    border: "rgba(103,216,255,0.4)",
     items: ["SIP", "Numbering", "Routing", "IVR", "Call Recording"],
     desc: "Resilient telephony infrastructure that provides the voice capability required to run high-performing customer contact operations.",
     span: "full",
@@ -3088,12 +3128,12 @@ function PlatformStack() {
             }}
           >
             How the platform{" "}
-            <span style={{ color: "#63AB8F" }}>layers together</span>
+            <span style={{ color: "#36C6FF" }}>layers together</span>
           </h2>
           <p
             style={{
               fontSize: 14,
-              color: "#6E9990",
+              color: "#8EA6BF",
               maxWidth: "none",
               margin: "0",
               lineHeight: 1.75,
@@ -3101,7 +3141,7 @@ function PlatformStack() {
           >
             Each layer can be sold independently or combined into a complete,
             integrated solution. Click any{" "}
-            <span style={{ color: "#91C4B0", fontWeight: 700 }}>
+            <span style={{ color: "#67D8FF", fontWeight: 700 }}>
               product pill ↗
             </span>{" "}
             to explore full product details.
@@ -3135,7 +3175,7 @@ function PlatformStack() {
                 transform: "rotate(180deg)",
                 fontSize: 9,
                 fontWeight: 800,
-                color: "rgba(99,171,143,0.3)",
+                color: "rgba(54,198,255,0.3)",
                 letterSpacing: "0.15em",
                 textTransform: "uppercase",
                 whiteSpace: "normal",
@@ -3164,13 +3204,13 @@ function PlatformStack() {
                   >
                     <path
                       d="M8 0 L8 22"
-                      stroke="rgba(99,171,143,0.3)"
+                      stroke="rgba(54,198,255,0.3)"
                       strokeWidth="1.5"
                       strokeDasharray="3 3"
                     />
                     <path
                       d="M3 16 L8 22 L13 16"
-                      stroke="rgba(99,171,143,0.4)"
+                      stroke="rgba(54,198,255,0.4)"
                       strokeWidth="1.5"
                       fill="none"
                     />
@@ -3221,10 +3261,10 @@ const PILLARS = [
     icon: "📡",
     label: "Telephony Infrastructure",
     sublabel: "The foundation of every CX solution",
-    color: "#91C4B0",
-    glow: "145,196,176",
-    bg: "linear-gradient(135deg,rgba(145,196,176,0.14),rgba(145,196,176,0.04))",
-    border: "rgba(145,196,176,0.4)",
+    color: "#67D8FF",
+    glow: "103,216,255",
+    bg: "linear-gradient(135deg,rgba(103,216,255,0.14),rgba(103,216,255,0.04))",
+    border: "rgba(103,216,255,0.4)",
     positioning: "Enterprise-grade telephony built for modern cloud CX.",
     products: [
       "SIP Trunking",
@@ -3247,10 +3287,10 @@ const PILLARS = [
     icon: "⚡",
     label: "UCaaS & CCaaS",
     sublabel: "The core communications platform partners sell",
-    color: "#63AB8F",
-    glow: "99,171,143",
-    bg: "linear-gradient(135deg,rgba(99,171,143,0.18),rgba(99,171,143,0.05))",
-    border: "rgba(99,171,143,0.5)",
+    color: "#36C6FF",
+    glow: "54,198,255",
+    bg: "linear-gradient(135deg,rgba(54,198,255,0.18),rgba(54,198,255,0.05))",
+    border: "rgba(54,198,255,0.5)",
     positioning:
       "A flexible communications platform for exceptional customer contact.",
     products: [
@@ -3274,9 +3314,9 @@ const PILLARS = [
     label: "AI & Automation",
     sublabel: "One of the largest growth areas",
     color: "#A37992",
-    glow: "163,121,146",
-    bg: "linear-gradient(135deg,rgba(163,121,146,0.16),rgba(163,121,146,0.04))",
-    border: "rgba(163,121,146,0.45)",
+    glow: "177,143,255",
+    bg: "linear-gradient(135deg,rgba(177,143,255,0.16),rgba(177,143,255,0.04))",
+    border: "rgba(177,143,255,0.45)",
     positioning: "AI that enhances every stage of the customer interaction.",
     products: [
       "Voicebot",
@@ -3301,9 +3341,9 @@ const PILLARS = [
     label: "Secure Payments",
     sublabel: "A major differentiator for IPI",
     color: "#C0887B",
-    glow: "192,136,123",
-    bg: "linear-gradient(135deg,rgba(192,136,123,0.16),rgba(192,136,123,0.04))",
-    border: "rgba(192,136,123,0.42)",
+    glow: "255,154,108",
+    bg: "linear-gradient(135deg,rgba(255,154,108,0.16),rgba(255,154,108,0.04))",
+    border: "rgba(255,154,108,0.42)",
     positioning:
       "Secure, PCI compliant payment experiences embedded into customer conversations.",
     products: [
@@ -3648,10 +3688,10 @@ const TIERS = [
     id: "silver",
     label: "Silver Partner",
     badge: "Preferred",
-    color: "#91C4B0",
-    glow: "99,171,143",
-    bg: "linear-gradient(135deg,rgba(99,171,143,0.15),rgba(99,171,143,0.05))",
-    border: "rgba(99,171,143,0.45)",
+    color: "#67D8FF",
+    glow: "54,198,255",
+    bg: "linear-gradient(135deg,rgba(54,198,255,0.15),rgba(54,198,255,0.05))",
+    border: "rgba(54,198,255,0.45)",
     icon: "🥈",
     margin: "30%",
     items: [
@@ -3691,8 +3731,8 @@ const RESOURCES = [
     title: "Partner Sales Kit",
     desc: "Complete kit including one-pager, battle card, demo script, and pricing guide. Ready to co-brand.",
     tags: ["PDF", "PPTX", "Ready"],
-    tagColor: "#91C4B0",
-    glow: "99,171,143",
+    tagColor: "#67D8FF",
+    glow: "54,198,255",
     cta: "Download Kit",
   },
   {
@@ -3703,7 +3743,7 @@ const RESOURCES = [
     desc: "API documentation, SBC requirements, Azure prerequisites, and CCaaS connector matrix.",
     tags: ["Technical Brief"],
     tagColor: "#A37992",
-    glow: "163,121,146",
+    glow: "177,143,255",
     cta: "View Brief",
   },
   {
@@ -3713,8 +3753,8 @@ const RESOURCES = [
     title: "Co-Sell Presentation",
     desc: "Partner-customisable slide deck for joint customer meetings. IPI + partner narrative built in.",
     tags: ["Slide Deck"],
-    tagColor: "#63AB8F",
-    glow: "99,171,143",
+    tagColor: "#36C6FF",
+    glow: "54,198,255",
     cta: "Get Deck",
   },
   {
@@ -3725,7 +3765,7 @@ const RESOURCES = [
     desc: "PCI DSS 4.0.1 scope summary, descoping proof points, and QSA statement template.",
     tags: ["Compliance Pack"],
     tagColor: "#C0887B",
-    glow: "192,136,123",
+    glow: "255,154,108",
     cta: "Download Pack",
   },
   {
@@ -3746,8 +3786,8 @@ const RESOURCES = [
     title: "Deal Registration",
     desc: "Register a Cloud PCI opportunity for protection, partner margin, and access to IPI pre-sales support.",
     tags: ["Portal Access"],
-    tagColor: "#91C4B0",
-    glow: "99,171,143",
+    tagColor: "#67D8FF",
+    glow: "54,198,255",
     cta: "Register Deal",
   },
   {
@@ -3757,8 +3797,8 @@ const RESOURCES = [
     title: "Prospect Search Tool",
     desc: "Search prospect accounts by sector, size and installed estate to find best-fit opportunities for ECX, AI and Secure Payments conversations.",
     tags: ["Web App", "ICP"],
-    tagColor: "#63AB8F",
-    glow: "99,171,143",
+    tagColor: "#36C6FF",
+    glow: "54,198,255",
     cta: "Launch Tool",
   },
 ];
@@ -3778,7 +3818,7 @@ function EnablementHub({ onBack, onNavigate }) {
     margin: "0 0 10px",
     fontSize: 10,
     fontWeight: 800,
-    color: "rgba(145,196,176,0.78)",
+    color: "rgba(103,216,255,0.78)",
     letterSpacing: "0.14em",
     textTransform: "uppercase",
   };
@@ -3839,7 +3879,7 @@ function EnablementHub({ onBack, onNavigate }) {
               alignItems: "center",
               gap: 8,
               background:
-                "linear-gradient(135deg,rgba(212,168,67,0.12),rgba(99,171,143,0.08))",
+                "linear-gradient(135deg,rgba(212,168,67,0.12),rgba(54,198,255,0.08))",
               border: "1px solid rgba(212,168,67,0.3)",
               borderRadius: 100,
               padding: "7px 18px",
@@ -3893,7 +3933,7 @@ function EnablementHub({ onBack, onNavigate }) {
               margin: "0 auto",
               padding: "clamp(28px,3.8vw,42px) clamp(20px,3vw,40px)",
               borderRadius: 24,
-              border: "1px solid rgba(145,196,176,0.16)",
+              border: "1px solid rgba(103,216,255,0.16)",
               background:
                 "linear-gradient(180deg,rgba(15,36,47,0.62) 0%,rgba(10,22,31,0.72) 100%)",
               boxShadow: "0 20px 48px rgba(6,12,20,0.28)",
@@ -4045,7 +4085,7 @@ function EnablementHub({ onBack, onNavigate }) {
             <div
               style={{
                 borderRadius: 20,
-                border: "1px solid rgba(145,196,176,0.28)",
+                border: "1px solid rgba(103,216,255,0.28)",
                 background:
                   "linear-gradient(150deg,rgba(14,44,50,0.78),rgba(14,32,41,0.62))",
                 padding: "clamp(18px,2.4vw,26px)",
@@ -4064,8 +4104,8 @@ function EnablementHub({ onBack, onNavigate }) {
                   key={item.label}
                   style={{
                     borderRadius: 14,
-                    border: "1px solid rgba(145,196,176,0.2)",
-                    background: "rgba(145,196,176,0.08)",
+                    border: "1px solid rgba(103,216,255,0.2)",
+                    background: "rgba(103,216,255,0.08)",
                     minHeight: 96,
                     display: "flex",
                     flexDirection: "column",
@@ -4148,8 +4188,8 @@ function EnablementHub({ onBack, onNavigate }) {
               {
                 name: "Silver",
                 subtitle: "Scaling partners",
-                color: "#91C4B0",
-                glow: "145,196,176",
+                color: "#67D8FF",
+                glow: "103,216,255",
                 benefits: [
                   "Competitive partner margins",
                   "Partner enablement and training",
@@ -4334,7 +4374,7 @@ function EnablementHub({ onBack, onNavigate }) {
                   "Align on target markets and propositions",
                   "Identify initial opportunities and campaigns",
                 ],
-                color: "145,196,176",
+                color: "103,216,255",
               },
               {
                 title: "Land",
@@ -4438,7 +4478,7 @@ function EnablementHub({ onBack, onNavigate }) {
                 who: "Telecom, UC and CX resellers selling directly to end customers.",
                 fit: "They already own customer relationships and can embed IPI into broader communications roadmaps.",
                 gain: "Platform margin, deployment revenue and recurring account growth.",
-                glow: "99,171,143",
+                glow: "54,198,255",
               },
               {
                 title: "Managed Service Providers",
@@ -4452,14 +4492,14 @@ function EnablementHub({ onBack, onNavigate }) {
                 who: "CX and transformation consultancies shaping customer strategy and technology choices.",
                 fit: "They influence solution selection and lead business case development.",
                 gain: "Referral income, project consulting fees and strategic programme engagements.",
-                glow: "163,121,146",
+                glow: "177,143,255",
               },
               {
                 title: "Technology & ISV Partners",
                 who: "Software vendors and ecosystem players integrating products with IPI platforms.",
                 fit: "They create differentiated joint solutions and improve customer outcomes.",
                 gain: "Co-sell motion, integration-led opportunities and shared account expansion.",
-                glow: "192,136,123",
+                glow: "255,154,108",
               },
             ].map((card) => (
               <div
@@ -4481,7 +4521,7 @@ function EnablementHub({ onBack, onNavigate }) {
                   Who They Are
                 </div>
                 <p style={{ margin: 0, fontSize: 13, color: "#BCD6D0", lineHeight: 1.55 }}>{card.who}</p>
-                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.08em", color: "#91C4B0", textTransform: "uppercase" }}>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.08em", color: "#67D8FF", textTransform: "uppercase" }}>
                   Why They Fit
                 </div>
                 <p style={{ margin: 0, fontSize: 13, color: "#BCD6D0", lineHeight: 1.55 }}>{card.fit}</p>
@@ -4516,7 +4556,7 @@ function EnablementHub({ onBack, onNavigate }) {
                   "SIP, telephony and connectivity services",
                   "Ongoing platform subscriptions",
                 ],
-                glow: "145,196,176",
+                glow: "103,216,255",
               },
               {
                 icon: "📈",
@@ -4549,7 +4589,7 @@ function EnablementHub({ onBack, onNavigate }) {
                   "Multi-site deployments",
                   "Long-term managed service opportunities",
                 ],
-                glow: "163,121,146",
+                glow: "177,143,255",
               },
             ].map((block) => (
               <div
@@ -4571,7 +4611,7 @@ function EnablementHub({ onBack, onNavigate }) {
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {block.points.map((point) => (
                     <div key={point} style={{ display: "flex", gap: 8, fontSize: 13, color: "#C6DFD8", lineHeight: 1.55 }}>
-                      <span style={{ color: "#91C4B0" }}>•</span>
+                      <span style={{ color: "#67D8FF" }}>•</span>
                       <span>{point}</span>
                     </div>
                   ))}
@@ -4666,7 +4706,7 @@ function EnablementHub({ onBack, onNavigate }) {
                         style={{
                           fontSize: 14,
                           fontWeight: 800,
-                          color: "#E8F5F0",
+                          color: "#EAF5FF",
                           lineHeight: 1.2,
                           fontFamily: "'Syne',sans-serif",
                         }}
@@ -4700,7 +4740,7 @@ function EnablementHub({ onBack, onNavigate }) {
                 <p
                   style={{
                     fontSize: 12,
-                    color: "#5A8880",
+                    color: "#7E97B4",
                     lineHeight: 1.72,
                     flex: 1,
                   }}
@@ -4758,7 +4798,7 @@ function EnablementHub({ onBack, onNavigate }) {
             <p
               style={{
                 fontSize: 10,
-                color: "rgba(99,171,143,0.3)",
+                color: "rgba(54,198,255,0.3)",
                 letterSpacing: "0.07em",
                 textTransform: "uppercase",
               }}
@@ -4857,8 +4897,8 @@ function ProspectToolPage() {
               alignItems: "center",
               gap: 8,
               background:
-                "linear-gradient(135deg,rgba(99,171,143,0.15),rgba(145,196,176,0.08))",
-              border: "1px solid rgba(99,171,143,0.32)",
+                "linear-gradient(135deg,rgba(54,198,255,0.15),rgba(103,216,255,0.08))",
+              border: "1px solid rgba(54,198,255,0.32)",
               borderRadius: 100,
               padding: "7px 18px",
             }}
@@ -4868,8 +4908,8 @@ function ProspectToolPage() {
                 width: 7,
                 height: 7,
                 borderRadius: "50%",
-                background: "#63AB8F",
-                boxShadow: "0 0 8px #63AB8F",
+                background: "#36C6FF",
+                boxShadow: "0 0 8px #36C6FF",
                 animation: "liveDot 2.2s ease-in-out infinite",
               }}
             />
@@ -4877,7 +4917,7 @@ function ProspectToolPage() {
               style={{
                 fontSize: 11,
                 fontWeight: 800,
-                color: "#91C4B0",
+                color: "#67D8FF",
                 letterSpacing: "0.07em",
                 textTransform: "uppercase",
               }}
@@ -4897,7 +4937,7 @@ function ProspectToolPage() {
         >
           <AppPageHeader
             eyebrow="Partner Prospect Tool"
-            title={<>Prospect <span style={{ color: "#63AB8F" }}>Search Tool</span></>}
+            title={<>Prospect <span style={{ color: "#36C6FF" }}>Search Tool</span></>}
             subtitle="Find best-fit accounts by sector, company profile and current estate to position ECX, AI & Automation and Secure Payments opportunities."
           />
 
@@ -4915,10 +4955,10 @@ function ProspectToolPage() {
               placeholder="Search account or installed estate..."
               style={{
                 background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(99,171,143,0.28)",
+                border: "1px solid rgba(54,198,255,0.28)",
                 borderRadius: 10,
                 padding: "11px 12px",
-                color: "#E8F5F0",
+                color: "#EAF5FF",
                 fontSize: 13,
                 outline: "none",
               }}
@@ -4957,7 +4997,7 @@ function ProspectToolPage() {
             style={{
               fontSize: 11,
               fontWeight: 800,
-              color: "rgba(99,171,143,0.7)",
+              color: "rgba(54,198,255,0.7)",
               letterSpacing: "0.08em",
               textTransform: "uppercase",
               marginBottom: 10,
@@ -4977,7 +5017,7 @@ function ProspectToolPage() {
                 key={p.name}
                 style={{
                   background: "rgba(255,255,255,0.03)",
-                  border: "1px solid rgba(99,171,143,0.2)",
+                  border: "1px solid rgba(54,198,255,0.2)",
                   borderRadius: 14,
                   padding: "16px 16px 14px",
                 }}
@@ -4986,7 +5026,7 @@ function ProspectToolPage() {
                   style={{
                     fontSize: 15,
                     fontWeight: 800,
-                    color: "#E8F5F0",
+                    color: "#EAF5FF",
                     marginBottom: 6,
                     fontFamily: "'Syne',sans-serif",
                   }}
@@ -5006,8 +5046,8 @@ function ProspectToolPage() {
                       fontSize: 10,
                       padding: "3px 8px",
                       borderRadius: 99,
-                      border: "1px solid rgba(99,171,143,0.35)",
-                      color: "#91C4B0",
+                      border: "1px solid rgba(54,198,255,0.35)",
+                      color: "#67D8FF",
                     }}
                   >
                     {p.sector}
@@ -5027,7 +5067,7 @@ function ProspectToolPage() {
                 <div
                   style={{
                     fontSize: 12,
-                    color: "#6E9990",
+                    color: "#8EA6BF",
                     lineHeight: 1.6,
                     marginBottom: 8,
                   }}
@@ -5038,7 +5078,7 @@ function ProspectToolPage() {
                   style={{ fontSize: 11, color: "#C0DDD6", lineHeight: 1.6 }}
                 >
                   Recommended motion:{" "}
-                  <span style={{ color: "#63AB8F" }}>{p.fit.join(" • ")}</span>
+                  <span style={{ color: "#36C6FF" }}>{p.fit.join(" • ")}</span>
                 </div>
               </div>
             ))}
@@ -5051,7 +5091,7 @@ function ProspectToolPage() {
             style={{
               textAlign: "center",
               fontSize: 10,
-              color: "rgba(99,171,143,0.3)",
+              color: "rgba(54,198,255,0.3)",
               letterSpacing: "0.07em",
               textTransform: "uppercase",
             }}
@@ -5142,7 +5182,7 @@ function BuildSellExpand() {
       >
         <AppPageHeader
           eyebrow="Customer Contact Ecosystem"
-          title={<>Build. <span style={{ color: "#63AB8F" }}>Sell.</span> Expand.</>}
+          title={<>Build. <span style={{ color: "#36C6FF" }}>Sell.</span> Expand.</>}
           subtitle="A single partner growth framework that combines the Build · Sell · Expand motion with IPI's Six Product Pillars, helping teams move from first opportunity to long-term recurring value."
         />
 
@@ -5166,15 +5206,15 @@ function BuildSellExpand() {
             {[
               {
                 icon: "🏗️",
-                color: "#91C4B0",
-                glow: "145,196,176",
+                color: "#67D8FF",
+                glow: "103,216,255",
                 title: "Build Your CX Practice",
                 body: "Use IPI's modular platform to assemble a CX solution tailored to your customers' needs. Start with telephony, layer in CCaaS, add AI and payments as the relationship grows.",
               },
               {
                 icon: "💼",
                 color: "#A37992",
-                glow: "163,121,146",
+                glow: "177,143,255",
                 title: "Sell With Confidence",
                 body: "IPI provides the sales tools, pre-sales support, co-sell materials and training to help you go to market fast — with a compelling, differentiated story every time.",
               },
@@ -5235,7 +5275,7 @@ function BuildSellExpand() {
                 >
                   {v.title}
                 </div>
-                <div style={{ fontSize: 13, color: "#5A8880", lineHeight: 1.75 }}>{v.body}</div>
+                <div style={{ fontSize: 13, color: "#7E97B4", lineHeight: 1.75 }}>{v.body}</div>
               </div>
             ))}
           </div>
@@ -5371,9 +5411,9 @@ function BuildSellExpand() {
                   fontFamily: "'Syne',sans-serif",
                 }}
               >
-                One platform. <span style={{ color: "#63AB8F" }}>Multiple revenue opportunities.</span>
+                One platform. <span style={{ color: "#36C6FF" }}>Multiple revenue opportunities.</span>
               </h2>
-              <p style={{ fontSize: 13.5, color: "#6E9990", lineHeight: 1.82, marginBottom: 12 }}>
+              <p style={{ fontSize: 13.5, color: "#8EA6BF", lineHeight: 1.82, marginBottom: 12 }}>
                 Start with a single module and grow. Each IPI solution stands alone, or connects into a complete customer contact platform your customers won't want to leave.
               </p>
               <p style={{ fontSize: 12.5, color: "rgba(110,153,144,0.8)", lineHeight: 1.75 }}>
@@ -5392,7 +5432,7 @@ function BuildSellExpand() {
               textAlign: "center",
               marginTop: 16,
               fontSize: 10,
-              color: "rgba(99,171,143,0.26)",
+              color: "rgba(54,198,255,0.26)",
               letterSpacing: "0.07em",
               textTransform: "uppercase",
             }}
@@ -5415,8 +5455,8 @@ const PARTNER_TIERS_DATA = [
     priority: "Highest Strategic Priority",
     label: "CCaaS Resellers",
     icon: "🎯",
-    color: "#63AB8F",
-    glow: "99,171,143",
+    color: "#36C6FF",
+    glow: "54,198,255",
     vendors: ["Genesys", "Five9", "Talkdesk"],
     whyMatter: [
       "Sell contact centre solutions",
@@ -5447,8 +5487,8 @@ const PARTNER_TIERS_DATA = [
     priority: "Large Installed Base Opportunity",
     label: "Telecom & UC Resellers",
     icon: "📡",
-    color: "#91C4B0",
-    glow: "145,196,176",
+    color: "#67D8FF",
+    glow: "103,216,255",
     vendors: ["SIP trunking", "PBX systems", "UC platforms"],
     whyMatter: [
       "Large installed voice customer bases",
@@ -5480,7 +5520,7 @@ const PARTNER_TIERS_DATA = [
     label: "Specialist Solution Providers",
     icon: "🔧",
     color: "#A37992",
-    glow: "163,121,146",
+    glow: "177,143,255",
     vendors: [
       "Secure payment providers",
       "Compliance specialists",
@@ -5552,7 +5592,7 @@ const PARTNER_TIERS_DATA = [
     label: "CX & Digital Transformation Consultancies",
     icon: "💡",
     color: "#C0887B",
-    glow: "192,136,123",
+    glow: "255,154,108",
     vendors: [
       "Contact centre platform strategy",
       "Automation advisory",
@@ -5640,14 +5680,14 @@ function PartnerProgramPage() {
               display: "inline-flex",
               alignItems: "center",
               gap: 8,
-              background: "rgba(99,171,143,0.08)",
-              border: "1px solid rgba(99,171,143,0.22)",
+              background: "rgba(54,198,255,0.08)",
+              border: "1px solid rgba(54,198,255,0.22)",
               borderRadius: 100,
               padding: "5px 16px",
               marginBottom: 16,
               fontSize: 11,
               fontWeight: 800,
-              color: "#91C4B0",
+              color: "#67D8FF",
               letterSpacing: "0.1em",
               textTransform: "uppercase",
             }}
@@ -5668,8 +5708,8 @@ function PartnerProgramPage() {
             IPI Partner{" "}
             <span
               style={{
-                color: "#63AB8F",
-                textShadow: "0 0 36px rgba(99,171,143,0.6)",
+                color: "#36C6FF",
+                textShadow: "0 0 36px rgba(54,198,255,0.6)",
               }}
             >
               Program
@@ -5714,14 +5754,14 @@ function PartnerProgramPage() {
                 height: 1,
                 flex: 1,
                 background:
-                  "linear-gradient(90deg,transparent,rgba(99,171,143,0.3))",
+                  "linear-gradient(90deg,transparent,rgba(54,198,255,0.3))",
               }}
             />
             <span
               style={{
                 fontSize: 10,
                 fontWeight: 800,
-                color: "rgba(99,171,143,0.6)",
+                color: "rgba(54,198,255,0.6)",
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
                 whiteSpace: "normal",
@@ -5734,7 +5774,7 @@ function PartnerProgramPage() {
                 height: 1,
                 flex: 1,
                 background:
-                  "linear-gradient(90deg,rgba(99,171,143,0.3),transparent)",
+                  "linear-gradient(90deg,rgba(54,198,255,0.3),transparent)",
               }}
             />
           </div>
@@ -5742,7 +5782,7 @@ function PartnerProgramPage() {
           <p
             style={{
               fontSize: 13,
-              color: "#6E9990",
+              color: "#8EA6BF",
               lineHeight: 1.75,
               maxWidth: "none",
               marginBottom: 28,
@@ -6098,8 +6138,8 @@ function PartnerProgramPage() {
             <div
               style={{
                 background:
-                  "linear-gradient(135deg,rgba(99,171,143,0.12),rgba(99,171,143,0.04))",
-                border: "1.5px solid rgba(99,171,143,0.35)",
+                  "linear-gradient(135deg,rgba(54,198,255,0.12),rgba(54,198,255,0.04))",
+                border: "1.5px solid rgba(54,198,255,0.35)",
                 borderRadius: 16,
                 padding: "24px",
               }}
@@ -6108,7 +6148,7 @@ function PartnerProgramPage() {
                 style={{
                   fontSize: 11,
                   fontWeight: 800,
-                  color: "rgba(99,171,143,0.7)",
+                  color: "rgba(54,198,255,0.7)",
                   letterSpacing: "0.1em",
                   textTransform: "uppercase",
                   marginBottom: 14,
@@ -6120,11 +6160,11 @@ function PartnerProgramPage() {
                 style={{ display: "flex", flexDirection: "column", gap: 10 }}
               >
                 {[
-                  { num: "1️⃣", label: "CCaaS Resellers", color: "#63AB8F" },
+                  { num: "1️⃣", label: "CCaaS Resellers", color: "#36C6FF" },
                   {
                     num: "2️⃣",
                     label: "Telecom & UC Resellers",
-                    color: "#91C4B0",
+                    color: "#67D8FF",
                   },
                 ].map((r, i) => (
                   <div
@@ -6155,7 +6195,7 @@ function PartnerProgramPage() {
               <p
                 style={{
                   fontSize: 12,
-                  color: "#5A8880",
+                  color: "#7E97B4",
                   lineHeight: 1.7,
                   marginTop: 14,
                   marginBottom: 0,
@@ -6170,8 +6210,8 @@ function PartnerProgramPage() {
             <div
               style={{
                 background:
-                  "linear-gradient(135deg,rgba(163,121,146,0.1),rgba(163,121,146,0.03))",
-                border: "1.5px solid rgba(163,121,146,0.28)",
+                  "linear-gradient(135deg,rgba(177,143,255,0.1),rgba(177,143,255,0.03))",
+                border: "1.5px solid rgba(177,143,255,0.28)",
                 borderRadius: 16,
                 padding: "24px",
               }}
@@ -6180,7 +6220,7 @@ function PartnerProgramPage() {
                 style={{
                   fontSize: 11,
                   fontWeight: 800,
-                  color: "rgba(163,121,146,0.7)",
+                  color: "rgba(177,143,255,0.7)",
                   letterSpacing: "0.1em",
                   textTransform: "uppercase",
                   marginBottom: 14,
@@ -6236,7 +6276,7 @@ function PartnerProgramPage() {
               <p
                 style={{
                   fontSize: 12,
-                  color: "#5A8880",
+                  color: "#7E97B4",
                   lineHeight: 1.7,
                   marginTop: 14,
                   marginBottom: 0,
@@ -6273,14 +6313,14 @@ function PartnerProgramPage() {
                 height: 1,
                 flex: 1,
                 background:
-                  "linear-gradient(90deg,transparent,rgba(99,171,143,0.3))",
+                  "linear-gradient(90deg,transparent,rgba(54,198,255,0.3))",
               }}
             />
             <span
               style={{
                 fontSize: 10,
                 fontWeight: 800,
-                color: "rgba(99,171,143,0.6)",
+                color: "rgba(54,198,255,0.6)",
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
                 whiteSpace: "normal",
@@ -6293,14 +6333,14 @@ function PartnerProgramPage() {
                 height: 1,
                 flex: 1,
                 background:
-                  "linear-gradient(90deg,rgba(99,171,143,0.3),transparent)",
+                  "linear-gradient(90deg,rgba(54,198,255,0.3),transparent)",
               }}
             />
           </div>
           <p
             style={{
               fontSize: 13,
-              color: "#6E9990",
+              color: "#8EA6BF",
               lineHeight: 1.75,
               maxWidth: "none",
               marginBottom: 24,
@@ -6322,7 +6362,7 @@ function PartnerProgramPage() {
                 key={i}
                 style={{
                   background: "rgba(255,255,255,0.025)",
-                  border: "1px solid rgba(99,171,143,0.18)",
+                  border: "1px solid rgba(54,198,255,0.18)",
                   borderRadius: 14,
                   padding: "20px",
                   display: "flex",
@@ -6331,13 +6371,13 @@ function PartnerProgramPage() {
                   transition: "all 0.25s",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "rgba(99,171,143,0.06)";
-                  e.currentTarget.style.borderColor = "rgba(99,171,143,0.35)";
+                  e.currentTarget.style.background = "rgba(54,198,255,0.06)";
+                  e.currentTarget.style.borderColor = "rgba(54,198,255,0.35)";
                   e.currentTarget.style.transform = "translateY(-3px)";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = "rgba(255,255,255,0.025)";
-                  e.currentTarget.style.borderColor = "rgba(99,171,143,0.18)";
+                  e.currentTarget.style.borderColor = "rgba(54,198,255,0.18)";
                   e.currentTarget.style.transform = "translateY(0)";
                 }}
               >
@@ -6347,8 +6387,8 @@ function PartnerProgramPage() {
                       width: 40,
                       height: 40,
                       borderRadius: 11,
-                      background: "rgba(99,171,143,0.12)",
-                      border: "1px solid rgba(99,171,143,0.25)",
+                      background: "rgba(54,198,255,0.12)",
+                      border: "1px solid rgba(54,198,255,0.25)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -6362,7 +6402,7 @@ function PartnerProgramPage() {
                     style={{
                       fontSize: 13,
                       fontWeight: 800,
-                      color: "#91C4B0",
+                      color: "#67D8FF",
                       fontFamily: "'Syne',sans-serif",
                     }}
                   >
@@ -6370,7 +6410,7 @@ function PartnerProgramPage() {
                   </div>
                 </div>
                 <div
-                  style={{ fontSize: 12, color: "#5A8880", lineHeight: 1.72 }}
+                  style={{ fontSize: 12, color: "#7E97B4", lineHeight: 1.72 }}
                 >
                   {c.desc}
                 </div>
@@ -6451,14 +6491,14 @@ function CommercialFrameworkPage() {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 8,
-                background: "rgba(99,171,143,0.09)",
-                border: "1px solid rgba(99,171,143,0.28)",
+                background: "rgba(54,198,255,0.09)",
+                border: "1px solid rgba(54,198,255,0.28)",
                 borderRadius: 100,
                 padding: "6px 15px",
                 marginBottom: 16,
                 fontSize: 11,
                 fontWeight: 800,
-                color: "#91C4B0",
+                color: "#67D8FF",
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
               }}
@@ -6477,12 +6517,12 @@ function CommercialFrameworkPage() {
               }}
             >
               Commercial & Legal{" "}
-              <span style={{ color: "#63AB8F" }}>Framework</span>
+              <span style={{ color: "#36C6FF" }}>Framework</span>
             </h1>
             <p
               style={{
                 fontSize: 14,
-                color: "#6E9990",
+                color: "#8EA6BF",
                 lineHeight: 1.85,
                 maxWidth: "none",
                 margin: "0",
@@ -6499,7 +6539,7 @@ function CommercialFrameworkPage() {
             <p
               style={{
                 fontSize: 14,
-                color: "#6E9990",
+                color: "#8EA6BF",
                 lineHeight: 1.85,
                 maxWidth: "none",
                 margin: "12px auto 0",
@@ -6512,7 +6552,7 @@ function CommercialFrameworkPage() {
               style={{
                 fontSize: 12,
                 fontWeight: 800,
-                color: "#91C4B0",
+                color: "#67D8FF",
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
                 marginTop: 18,
@@ -6529,7 +6569,7 @@ function CommercialFrameworkPage() {
               style={{
                 fontSize: 11,
                 fontWeight: 800,
-                color: "rgba(99,171,143,0.68)",
+                color: "rgba(54,198,255,0.68)",
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
                 marginBottom: 14,
@@ -6550,7 +6590,7 @@ function CommercialFrameworkPage() {
                   key={step.title}
                   style={{
                     background: "rgba(255,255,255,0.03)",
-                    border: "1px solid rgba(99,171,143,0.24)",
+                    border: "1px solid rgba(54,198,255,0.24)",
                     borderRadius: 13,
                     padding: "16px 14px",
                     display: "flex",
@@ -6563,14 +6603,14 @@ function CommercialFrameworkPage() {
                       width: 26,
                       height: 26,
                       borderRadius: 8,
-                      background: "rgba(99,171,143,0.18)",
-                      border: "1px solid rgba(99,171,143,0.35)",
+                      background: "rgba(54,198,255,0.18)",
+                      border: "1px solid rgba(54,198,255,0.35)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       fontSize: 12,
                       fontWeight: 800,
-                      color: "#91C4B0",
+                      color: "#67D8FF",
                       flexShrink: 0,
                     }}
                   >
@@ -6581,7 +6621,7 @@ function CommercialFrameworkPage() {
                       style={{
                         fontSize: 13.5,
                         fontWeight: 800,
-                        color: "#E8F5F0",
+                        color: "#EAF5FF",
                         fontFamily: "'Syne',sans-serif",
                       }}
                     >
@@ -6590,7 +6630,7 @@ function CommercialFrameworkPage() {
                     <div
                       style={{
                         fontSize: 11.5,
-                        color: "#5A8880",
+                        color: "#7E97B4",
                         lineHeight: 1.6,
                         marginTop: 4,
                       }}
@@ -6606,7 +6646,7 @@ function CommercialFrameworkPage() {
                 display: "flex",
                 justifyContent: "center",
                 fontSize: 12,
-                color: "rgba(145,196,176,0.85)",
+                color: "rgba(103,216,255,0.85)",
                 letterSpacing: "0.05em",
                 marginBottom: 18,
               }}
@@ -6616,8 +6656,8 @@ function CommercialFrameworkPage() {
             <div
               style={{
                 background:
-                  "linear-gradient(140deg,rgba(99,171,143,0.1),rgba(99,171,143,0.04))",
-                border: "1px solid rgba(99,171,143,0.32)",
+                  "linear-gradient(140deg,rgba(54,198,255,0.1),rgba(54,198,255,0.04))",
+                border: "1px solid rgba(54,198,255,0.32)",
                 borderRadius: 14,
                 padding: "18px 20px",
               }}
@@ -6635,7 +6675,7 @@ function CommercialFrameworkPage() {
               <p
                 style={{
                   fontSize: 13,
-                  color: "#6E9990",
+                  color: "#8EA6BF",
                   lineHeight: 1.75,
                   marginBottom: 12,
                 }}
@@ -6649,7 +6689,7 @@ function CommercialFrameworkPage() {
                   gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
                   gap: "6px 16px",
                   paddingLeft: 18,
-                  color: "#91C4B0",
+                  color: "#67D8FF",
                   fontSize: 12.5,
                   lineHeight: 1.7,
                   margin: 0,
@@ -6681,7 +6721,7 @@ function CommercialFrameworkPage() {
               style={{
                 fontSize: 11,
                 fontWeight: 800,
-                color: "rgba(99,171,143,0.68)",
+                color: "rgba(54,198,255,0.68)",
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
                 marginBottom: 12,
@@ -6692,7 +6732,7 @@ function CommercialFrameworkPage() {
             <p
               style={{
                 fontSize: 13,
-                color: "#6E9990",
+                color: "#8EA6BF",
                 lineHeight: 1.75,
                 marginBottom: 14,
               }}
@@ -6713,7 +6753,7 @@ function CommercialFrameworkPage() {
                   key={s}
                   style={{
                     background: "rgba(255,255,255,0.025)",
-                    border: "1px solid rgba(99,171,143,0.2)",
+                    border: "1px solid rgba(54,198,255,0.2)",
                     borderRadius: 12,
                     padding: "14px 12px",
                     fontSize: 12.5,
@@ -6728,7 +6768,7 @@ function CommercialFrameworkPage() {
             <ul
               style={{
                 paddingLeft: 18,
-                color: "#91C4B0",
+                color: "#67D8FF",
                 fontSize: 12.5,
                 lineHeight: 1.7,
                 margin: 0,
@@ -6763,7 +6803,7 @@ function CommercialFrameworkPage() {
             <div
               style={{
                 background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(163,121,146,0.32)",
+                border: "1px solid rgba(177,143,255,0.32)",
                 borderRadius: 14,
                 padding: "18px",
               }}
@@ -6772,7 +6812,7 @@ function CommercialFrameworkPage() {
                 style={{
                   fontSize: 11,
                   fontWeight: 800,
-                  color: "rgba(163,121,146,0.72)",
+                  color: "rgba(177,143,255,0.72)",
                   letterSpacing: "0.12em",
                   textTransform: "uppercase",
                   marginBottom: 8,
@@ -6783,7 +6823,7 @@ function CommercialFrameworkPage() {
               <p
                 style={{
                   fontSize: 12.5,
-                  color: "#6E9990",
+                  color: "#8EA6BF",
                   lineHeight: 1.75,
                   marginBottom: 10,
                 }}
@@ -6797,8 +6837,8 @@ function CommercialFrameworkPage() {
                   <div
                     key={e}
                     style={{
-                      background: "rgba(163,121,146,0.1)",
-                      border: "1px solid rgba(163,121,146,0.25)",
+                      background: "rgba(177,143,255,0.1)",
+                      border: "1px solid rgba(177,143,255,0.25)",
                       borderRadius: 10,
                       padding: "9px 10px",
                       fontSize: 12,
@@ -6825,7 +6865,7 @@ function CommercialFrameworkPage() {
             <div
               style={{
                 background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(192,136,123,0.32)",
+                border: "1px solid rgba(255,154,108,0.32)",
                 borderRadius: 14,
                 padding: "18px",
               }}
@@ -6834,7 +6874,7 @@ function CommercialFrameworkPage() {
                 style={{
                   fontSize: 11,
                   fontWeight: 800,
-                  color: "rgba(192,136,123,0.74)",
+                  color: "rgba(255,154,108,0.74)",
                   letterSpacing: "0.12em",
                   textTransform: "uppercase",
                   marginBottom: 8,
@@ -6845,7 +6885,7 @@ function CommercialFrameworkPage() {
               <p
                 style={{
                   fontSize: 12.5,
-                  color: "#6E9990",
+                  color: "#8EA6BF",
                   lineHeight: 1.75,
                   marginBottom: 10,
                 }}
@@ -6863,8 +6903,8 @@ function CommercialFrameworkPage() {
                   <div
                     key={item}
                     style={{
-                      background: "rgba(192,136,123,0.1)",
-                      border: "1px solid rgba(192,136,123,0.25)",
+                      background: "rgba(255,154,108,0.1)",
+                      border: "1px solid rgba(255,154,108,0.25)",
                       borderRadius: 10,
                       padding: "9px 10px",
                       fontSize: 11.5,
@@ -6894,8 +6934,8 @@ function CommercialFrameworkPage() {
           <section
             style={{
               background:
-                "linear-gradient(135deg,rgba(99,171,143,0.18),rgba(99,171,143,0.06))",
-              border: "1px solid rgba(99,171,143,0.36)",
+                "linear-gradient(135deg,rgba(54,198,255,0.18),rgba(54,198,255,0.06))",
+              border: "1px solid rgba(54,198,255,0.36)",
               borderRadius: 15,
               padding: "20px",
             }}
@@ -6904,7 +6944,7 @@ function CommercialFrameworkPage() {
               style={{
                 fontSize: 11,
                 fontWeight: 800,
-                color: "rgba(99,171,143,0.8)",
+                color: "rgba(54,198,255,0.8)",
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
                 marginBottom: 8,
@@ -6922,7 +6962,7 @@ function CommercialFrameworkPage() {
             >
               One Agreement — Full Portfolio Access
             </h3>
-            <p style={{ fontSize: 13, color: "#6E9990", lineHeight: 1.75 }}>
+            <p style={{ fontSize: 13, color: "#8EA6BF", lineHeight: 1.75 }}>
               Once a partner signs the Reseller Master Agreement they gain
               access to the entire IPI product portfolio.
             </p>
@@ -6992,7 +7032,7 @@ function CommercialFrameworkPage() {
               <p
                 style={{
                   fontSize: 12.5,
-                  color: "#6E9990",
+                  color: "#8EA6BF",
                   lineHeight: 1.75,
                   marginBottom: 10,
                 }}
@@ -7031,7 +7071,7 @@ function CommercialFrameworkPage() {
             <div
               style={{
                 background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(99,171,143,0.24)",
+                border: "1px solid rgba(54,198,255,0.24)",
                 borderRadius: 14,
                 padding: "18px",
               }}
@@ -7040,7 +7080,7 @@ function CommercialFrameworkPage() {
                 style={{
                   fontSize: 11,
                   fontWeight: 800,
-                  color: "rgba(99,171,143,0.78)",
+                  color: "rgba(54,198,255,0.78)",
                   letterSpacing: "0.12em",
                   textTransform: "uppercase",
                   marginBottom: 8,
@@ -7060,7 +7100,7 @@ function CommercialFrameworkPage() {
                     style={{
                       fontSize: 12,
                       fontWeight: 800,
-                      color: "#91C4B0",
+                      color: "#67D8FF",
                       marginBottom: 6,
                     }}
                   >
@@ -7086,7 +7126,7 @@ function CommercialFrameworkPage() {
                     style={{
                       fontSize: 12,
                       fontWeight: 800,
-                      color: "#91C4B0",
+                      color: "#67D8FF",
                       marginBottom: 6,
                     }}
                   >
@@ -7768,8 +7808,8 @@ function GovernancePage() {
     }
     if (task.status === "Complete") {
       return {
-        background: "rgba(99,171,143,0.12)",
-        borderColor: "rgba(145,196,176,0.32)",
+        background: "rgba(54,198,255,0.12)",
+        borderColor: "rgba(103,216,255,0.32)",
       };
     }
     return {
@@ -7811,7 +7851,7 @@ function GovernancePage() {
               alignItems: "center",
               gap: 8,
               background:
-                "linear-gradient(135deg,rgba(123,150,163,0.15),rgba(99,171,143,0.08))",
+                "linear-gradient(135deg,rgba(123,150,163,0.15),rgba(54,198,255,0.08))",
               border: "1px solid rgba(123,150,163,0.35)",
               borderRadius: 100,
               padding: "7px 18px",
@@ -7867,7 +7907,7 @@ function GovernancePage() {
           <p
             style={{
               fontSize: 13.5,
-              color: "#6E9990",
+              color: "#8EA6BF",
               maxWidth: "none",
               lineHeight: 1.75,
               marginBottom: 18,
@@ -7923,7 +7963,7 @@ function GovernancePage() {
             }}
           >
             {[
-              { k: "R", l: "Responsible", c: "#63AB8F" },
+              { k: "R", l: "Responsible", c: "#36C6FF" },
               { k: "A", l: "Accountable", c: "#D4A843" },
               { k: "C", l: "Consulted", c: "#A37992" },
               { k: "I", l: "Informed", c: "#7B96A3" },
@@ -7980,7 +8020,7 @@ function GovernancePage() {
                 value: summary.total,
                 color: "#9DB8C5",
               },
-              { label: "Complete", value: summary.complete, color: "#63AB8F" },
+              { label: "Complete", value: summary.complete, color: "#36C6FF" },
               {
                 label: "In Progress",
                 value: summary.inProgress,
@@ -8044,7 +8084,7 @@ function GovernancePage() {
                       view === option.id
                         ? "rgba(123,150,163,0.28)"
                         : "transparent",
-                    color: view === option.id ? "#E8F5F0" : "#8EB1A8",
+                    color: view === option.id ? "#EAF5FF" : "#8EB1A8",
                     padding: "8px 14px",
                     borderRadius: 999,
                     fontSize: 12,
@@ -8168,7 +8208,7 @@ function GovernancePage() {
                           style={{
                             padding: "10px",
                             fontSize: 12,
-                            color: "#E8F5F0",
+                            color: "#EAF5FF",
                             fontWeight: 700,
                             minWidth: 0,
                             textDecoration: taskCompleted ? "line-through" : "none",
@@ -8297,7 +8337,7 @@ function GovernancePage() {
                               width: "100%",
                               border: "1px solid rgba(123,150,163,0.35)",
                               background: task.notes
-                                ? "rgba(99,171,143,0.14)"
+                                ? "rgba(54,198,255,0.14)"
                                 : "rgba(255,255,255,0.03)",
                               color: "#C0DDD6",
                               borderRadius: 6,
@@ -8367,7 +8407,7 @@ function GovernancePage() {
                         style={{
                           fontSize: 13,
                           fontWeight: 700,
-                          color: "#E8F5F0",
+                          color: "#EAF5FF",
                           textDecoration: taskCompleted ? "line-through" : "none",
                           textDecorationColor: taskCompleted
                             ? "rgba(160,214,194,0.9)"
@@ -8450,7 +8490,7 @@ function GovernancePage() {
                       style={{
                         border: "1px solid rgba(123,150,163,0.35)",
                         background: task.notes
-                          ? "rgba(99,171,143,0.14)"
+                          ? "rgba(54,198,255,0.14)"
                           : "rgba(255,255,255,0.03)",
                         color: "#C0DDD6",
                         borderRadius: 6,
@@ -8612,7 +8652,7 @@ function GovernancePage() {
                       style={{
                         fontSize: 11,
                         fontWeight: 800,
-                        color: "#91C4B0",
+                        color: "#67D8FF",
                         letterSpacing: "0.1em",
                         textTransform: "uppercase",
                         marginBottom: 6,
@@ -8675,7 +8715,7 @@ function GovernancePage() {
             style={{
               textAlign: "center",
               fontSize: 10,
-              color: "rgba(99,171,143,0.3)",
+              color: "rgba(54,198,255,0.3)",
               letterSpacing: "0.07em",
               textTransform: "uppercase",
             }}
@@ -9537,26 +9577,18 @@ function SideNav({ page, setPage, onLayoutChange }) {
             {NAV_ITEMS.map((item) => {
               const active = page === item.id;
               return (
-                <button
+                <SidebarNavItem
                   key={item.id}
-                  className={`sidebar-nav-item ${active ? "active" : ""}`}
+                  item={item}
+                  active={active}
+                  collapsed={isCollapsed}
                   onClick={() => {
                     setPage(item.id);
                     if (isMobile || !isPinned) {
                       setIsSidebarOpen(false);
                     }
                   }}
-                  type="button"
-                  title={isCollapsed ? item.label : ""}
-                >
-                  <span className="sidebar-nav-icon">{item.icon}</span>
-                  {!isCollapsed && (
-                    <span className="sidebar-nav-text">
-                      <span className="sidebar-nav-label">{item.label}</span>
-                      <span className="sidebar-nav-sublabel">{item.sublabel}</span>
-                    </span>
-                  )}
-                </button>
+                />
               );
             })}
           </nav>
@@ -9654,8 +9686,8 @@ function App() {
                   alignItems: "center",
                   gap: 8,
                   background:
-                    "linear-gradient(135deg,rgba(99,171,143,0.12),rgba(163,121,146,0.08))",
-                  border: "1px solid rgba(99,171,143,0.3)",
+                    "linear-gradient(135deg,rgba(54,198,255,0.12),rgba(177,143,255,0.08))",
+                  border: "1px solid rgba(54,198,255,0.3)",
                   borderRadius: 100,
                   padding: "7px 18px",
                 }}
@@ -9665,8 +9697,8 @@ function App() {
                     width: 7,
                     height: 7,
                     borderRadius: "50%",
-                    background: "#63AB8F",
-                    boxShadow: "0 0 8px #63AB8F",
+                    background: "#36C6FF",
+                    boxShadow: "0 0 8px #36C6FF",
                     animation: "liveDot 2.2s ease-in-out infinite",
                   }}
                 />
@@ -9674,7 +9706,7 @@ function App() {
                   style={{
                     fontSize: 11,
                     fontWeight: 800,
-                    color: "#91C4B0",
+                    color: "#67D8FF",
                     letterSpacing: "0.07em",
                     textTransform: "uppercase",
                   }}
@@ -9684,7 +9716,7 @@ function App() {
                 <span
                   style={{
                     fontSize: 9,
-                    color: "rgba(99,171,143,0.5)",
+                    color: "rgba(54,198,255,0.5)",
                     letterSpacing: "0.07em",
                     textTransform: "uppercase",
                   }}
@@ -9719,8 +9751,8 @@ function App() {
               IPI Partner{" "}
               <span
                 style={{
-                  color: "#63AB8F",
-                  textShadow: "0 0 40px rgba(99,171,143,0.65)",
+                  color: "#36C6FF",
+                  textShadow: "0 0 40px rgba(54,198,255,0.65)",
                 }}
               >
                 Advantage
@@ -9730,7 +9762,7 @@ function App() {
               style={{
                 fontSize: 15,
                 fontWeight: 500,
-                color: "#6E9990",
+                color: "#8EA6BF",
                 maxWidth: "none",
                 margin: "0",
                 lineHeight: 1.78,
@@ -9764,14 +9796,14 @@ function App() {
                     height: 1,
                     flex: 1,
                     background:
-                      "linear-gradient(90deg,transparent,rgba(99,171,143,0.35))",
+                      "linear-gradient(90deg,transparent,rgba(54,198,255,0.35))",
                   }}
                 />
                 <div
                   style={{
                     fontSize: 10,
                     fontWeight: 800,
-                    color: "#91C4B0",
+                    color: "#67D8FF",
                     letterSpacing: "0.14em",
                     textTransform: "uppercase",
                     whiteSpace: "normal",
@@ -9784,7 +9816,7 @@ function App() {
                     height: 1,
                     flex: 1,
                     background:
-                      "linear-gradient(90deg,rgba(99,171,143,0.35),transparent)",
+                      "linear-gradient(90deg,rgba(54,198,255,0.35),transparent)",
                   }}
                 />
               </div>
@@ -9801,12 +9833,12 @@ function App() {
                   }}
                 >
                   How we go to market{" "}
-                  <span style={{ color: "#63AB8F" }}>with partners</span>
+                  <span style={{ color: "#36C6FF" }}>with partners</span>
                 </h2>
                 <p
                   style={{
                     fontSize: 13.5,
-                    color: "#6E9990",
+                    color: "#8EA6BF",
                     maxWidth: "none",
                     margin: "0",
                     lineHeight: 1.75,
@@ -9833,7 +9865,7 @@ function App() {
                       gap: 14,
                       padding: "24px",
                       background: "rgba(255,255,255,0.03)",
-                      border: "1px solid rgba(99,171,143,0.15)",
+                      border: "1px solid rgba(54,198,255,0.15)",
                       borderRadius: 16,
                     }}
                   >
@@ -9842,8 +9874,8 @@ function App() {
                         width: 48,
                         height: 48,
                         borderRadius: 13,
-                        background: "rgba(99,171,143,0.12)",
-                        border: "1px solid rgba(99,171,143,0.25)",
+                        background: "rgba(54,198,255,0.12)",
+                        border: "1px solid rgba(54,198,255,0.25)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -9857,7 +9889,7 @@ function App() {
                       style={{
                         fontSize: 14,
                         fontWeight: 800,
-                        color: "#E8F5F0",
+                        color: "#EAF5FF",
                         lineHeight: 1.3,
                         fontFamily: "'Syne',sans-serif",
                       }}
@@ -9867,7 +9899,7 @@ function App() {
                     <div
                       style={{
                         fontSize: 12,
-                        color: "#5A8880",
+                        color: "#7E97B4",
                         lineHeight: 1.7,
                       }}
                     >
@@ -9906,7 +9938,7 @@ function App() {
                   style={{
                     fontSize: 11,
                     fontWeight: 800,
-                    color: "rgba(99,171,143,0.6)",
+                    color: "rgba(54,198,255,0.6)",
                     letterSpacing: "0.1em",
                     textTransform: "uppercase",
                     marginBottom: 10,
@@ -9926,12 +9958,12 @@ function App() {
                   }}
                 >
                   One platform.{" "}
-                  <span style={{ color: "#63AB8F" }}>
+                  <span style={{ color: "#36C6FF" }}>
                     Multiple revenue opportunities.
                   </span>
                 </h2>
                 <p
-                  style={{ fontSize: 13.5, color: "#6E9990", lineHeight: 1.82 }}
+                  style={{ fontSize: 13.5, color: "#8EA6BF", lineHeight: 1.82 }}
                 >
                   Start with a single module and grow. Each IPI solution stands
                   alone — or connects into a complete, unified customer contact
@@ -9967,7 +9999,7 @@ function App() {
                 textAlign: "center",
                 marginTop: 16,
                 fontSize: 10,
-                color: "rgba(99,171,143,0.26)",
+                color: "rgba(54,198,255,0.26)",
                 letterSpacing: "0.07em",
                 textTransform: "uppercase",
               }}
@@ -9979,7 +10011,7 @@ function App() {
         </div>
         <style>{`
           @keyframes liveDot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.3;transform:scale(0.7);}}
-          @keyframes hubPulse{0%,100%{filter:drop-shadow(0 0 12px rgba(99,171,143,0.4));}50%{filter:drop-shadow(0 0 30px rgba(99,171,143,0.7));}}
+          @keyframes hubPulse{0%,100%{filter:drop-shadow(0 0 12px rgba(54,198,255,0.4));}50%{filter:drop-shadow(0 0 30px rgba(54,198,255,0.7));}}
           @keyframes shimmer{0%{opacity:0.5}50%{opacity:1}100%{opacity:0.5}}
         `}</style>
       </React.Fragment>
