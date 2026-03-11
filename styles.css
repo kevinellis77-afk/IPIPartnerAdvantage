@@ -383,3 +383,27 @@ tbody tr:nth-child(even){background:rgba(255,255,255,0.015);}
   .cm-journey-card{grid-template-columns:1fr;}
   .cm-mock-hero h3{font-size:24px;}
 }
+
+.exportButton{border:none;border-radius:12px;padding:10px 16px;font-weight:700;cursor:pointer;background:#183153;color:#fff;box-shadow:0 8px 20px rgba(24,49,83,.18);transition:transform .15s ease,filter .15s ease;}
+.exportButton:hover{transform:translateY(-1px);filter:brightness(1.05);}
+.raciTableWrap{background:rgba(255,255,255,.03);border:1px solid rgba(123,150,163,.3);border-radius:14px;overflow-x:auto;}
+.raciTableGrid{min-width:1380px;}
+.raciTableHeader,.raciTableRow{display:grid;grid-template-columns:minmax(260px,2fr) repeat(4,minmax(170px,1fr)) minmax(120px,.9fr) minmax(130px,1fr) minmax(105px,.8fr) minmax(130px,.95fr) minmax(120px,.95fr) minmax(70px,.55fr);column-gap:8px;align-items:start;}
+.raciTableHeader{background:rgba(123,150,163,.14);border-bottom:1px solid rgba(123,150,163,.25);position:sticky;top:0;z-index:3;}
+.raciHeaderCell{padding:12px 14px;font-size:10.5px;font-weight:800;color:#A9C3CE;letter-spacing:.08em;text-transform:uppercase;white-space:normal;}
+.raciHeaderCell.col-r,.metric-r{background:rgba(239,68,68,.12);color:#991b1b;}
+.raciHeaderCell.col-a,.metric-a{background:rgba(59,130,246,.12);color:#1d4ed8;}
+.raciHeaderCell.col-c,.metric-c{background:rgba(245,158,11,.14);color:#b45309;}
+.raciHeaderCell.col-i,.metric-i{background:rgba(100,116,139,.14);color:#475569;}
+.raciTableRow:hover{background:rgba(123,150,163,.08)!important;}
+.selectedTags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.raciTag{padding:4px 8px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(37,99,235,.08);color:#1d4ed8;border:1px solid rgba(37,99,235,.14);}
+.ownershipDashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:20px 0 28px;}
+.ownershipCard{background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(245,248,252,.96));border:1px solid rgba(20,40,80,.08);border-radius:18px;padding:18px;box-shadow:0 10px 24px rgba(15,23,42,.08);}
+.ownershipHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;}
+.ownershipRole{font-size:15px;font-weight:700;color:#183153;}
+.ownershipTotal{font-size:36px;line-height:1;font-weight:800;color:#0f172a;}
+.ownershipMetrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.metric{border-radius:14px;padding:10px 8px;text-align:center;}
+.metricValue{font-size:22px;font-weight:800;line-height:1.1;}
+.metricLabel{margin-top:4px;font-size:12px;font-weight:700;opacity:.85;}
