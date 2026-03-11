@@ -5632,9 +5632,226 @@ const IPP_CRITERIA = [
   },
 ];
 
+const IPP_SCORING_STORAGE_KEY = "ipi_partner_profile_scoring_evaluations_v1";
+
+const IPP_SCORING_CATEGORIES = [
+  {
+    id: "customerBaseAlignment",
+    title: "A. Customer Base Alignment",
+    description:
+      "How well the partner’s existing customers match the IP Integration target market.",
+    helper:
+      "1 = Mostly SMB/general IT customers · 2 = Limited CX relevance · 3 = Some mid-market or UC customers · 4 = Strong mid-market CX/UC customer base · 5 = Established CX/contact centre customer base",
+  },
+  {
+    id: "portfolioSynergy",
+    title: "B. Portfolio Synergy",
+    description:
+      "How well the partner’s current portfolio aligns with and complements IP Integration solutions.",
+    helper:
+      "1 = No meaningful alignment · 2 = General IT reseller only · 3 = Some UC or networking relevance · 4 = Strong UC/contact centre relevance · 5 = Excellent fit with complementary CX, UC, CC or service portfolio",
+  },
+  {
+    id: "salesCapability",
+    title: "C. Sales Capability",
+    description:
+      "Ability to create pipeline and sell value-led customer experience solutions.",
+    helper:
+      "1 = No specialist sales capability · 2 = Reactive sales model · 3 = Some consultative sales ability · 4 = Dedicated sales specialists · 5 = Proven CX / solution-selling sales team",
+  },
+  {
+    id: "technicalCapability",
+    title: "D. Technical Capability",
+    description: "Ability to deploy, support and grow customer solutions.",
+    helper:
+      "1 = No technical delivery resource · 2 = Basic IT support only · 3 = UC engineering capability · 4 = Contact centre or complex communications capability · 5 = Strong implementation and support capability across relevant areas",
+  },
+  {
+    id: "strategicAlignment",
+    title: "E. Strategic Alignment",
+    description:
+      "How important customer experience, cloud communications or adjacent services are to the partner’s growth strategy.",
+    helper:
+      "1 = Not strategic · 2 = Opportunistic only · 3 = Moderate interest · 4 = Active growth area · 5 = Core strategic focus",
+  },
+  {
+    id: "growthPotential",
+    title: "F. Growth Potential",
+    description:
+      "Estimated revenue potential and expansion opportunity for IP Integration.",
+    helper:
+      "1 = Less than £50k potential · 2 = £50k–£100k · 3 = £100k–£250k · 4 = £250k–£500k · 5 = £500k+ potential",
+  },
+];
+
+const getIppClassification = (score) => {
+  if (score >= 25) {
+    return {
+      label: "Strategic Partner",
+      color: "#6FD9AE",
+      badgeBg: "rgba(111,217,174,0.14)",
+      badgeBorder: "rgba(111,217,174,0.38)",
+      interpretation:
+        "Strong alignment to the Ideal Partner Profile. Prioritise recruitment and joint planning.",
+    };
+  }
+  if (score >= 20) {
+    return {
+      label: "High Potential",
+      color: "#67D8FF",
+      badgeBg: "rgba(103,216,255,0.14)",
+      badgeBorder: "rgba(103,216,255,0.38)",
+      interpretation: "Good potential, but some capability gaps need validating.",
+    };
+  }
+  if (score >= 15) {
+    return {
+      label: "Developing Partner",
+      color: "#F3C874",
+      badgeBg: "rgba(243,200,116,0.14)",
+      badgeBorder: "rgba(243,200,116,0.34)",
+      interpretation: "Moderate fit. Suitable for selective engagement.",
+    };
+  }
+  if (score >= 10) {
+    return {
+      label: "Opportunistic Partner",
+      color: "#AEB9C8",
+      badgeBg: "rgba(174,185,200,0.16)",
+      badgeBorder: "rgba(174,185,200,0.32)",
+      interpretation: "Moderate fit. Suitable for selective engagement.",
+    };
+  }
+  return {
+    label: "Low Priority",
+    color: "#FF7A7A",
+    badgeBg: "rgba(255,122,122,0.14)",
+    badgeBorder: "rgba(255,122,122,0.35)",
+    interpretation: "Low fit against current reseller priorities.",
+  };
+};
+
 function PartnerProgramPage() {
   const [activeT, setActiveT] = React.useState(0);
   const t = PARTNER_TIERS_DATA[activeT];
+  const createEmptyEvaluation = React.useCallback(() => ({
+    id: null,
+    partnerName: "",
+    website: "",
+    primaryContact: "",
+    region: "",
+    existingVendorRelationships: "",
+    notes: "",
+    scores: Object.fromEntries(IPP_SCORING_CATEGORIES.map((cat) => [cat.id, 3])),
+    risks: {
+      competitorCommitment: false,
+      limitedTechnicalResource: false,
+      noSalesInvestment: false,
+    },
+  }), []);
+
+  const [evaluationForm, setEvaluationForm] = React.useState(() =>
+    createEmptyEvaluation(),
+  );
+  const [savedEvaluations, setSavedEvaluations] = React.useState([]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem(IPP_SCORING_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) setSavedEvaluations(parsed);
+    } catch (error) {
+      console.error("Failed to load saved partner evaluations", error);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(
+      IPP_SCORING_STORAGE_KEY,
+      JSON.stringify(savedEvaluations),
+    );
+  }, [savedEvaluations]);
+
+  const totalScore = IPP_SCORING_CATEGORIES.reduce(
+    (sum, category) => sum + Number(evaluationForm.scores[category.id] || 0),
+    0,
+  );
+  const classification = getIppClassification(totalScore);
+  const hasRiskFlag = Object.values(evaluationForm.risks).some(Boolean);
+
+  const setDetailField = (field, value) => {
+    setEvaluationForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const setCategoryScore = (categoryId, value) => {
+    setEvaluationForm((prev) => ({
+      ...prev,
+      scores: { ...prev.scores, [categoryId]: Number(value) },
+    }));
+  };
+
+  const setRiskFlag = (flagKey, checked) => {
+    setEvaluationForm((prev) => ({
+      ...prev,
+      risks: { ...prev.risks, [flagKey]: checked },
+    }));
+  };
+
+  const handleSaveEvaluation = () => {
+    const nowIso = new Date().toISOString();
+    const record = {
+      ...evaluationForm,
+      id: evaluationForm.id || `${Date.now()}`,
+      totalScore,
+      classification: classification.label,
+      classificationColor: classification.color,
+      interpretation: classification.interpretation,
+      dateEvaluated: evaluationForm.id
+        ? evaluationForm.dateEvaluated || nowIso
+        : nowIso,
+      updatedAt: nowIso,
+    };
+
+    setSavedEvaluations((prev) => {
+      const exists = prev.some((item) => item.id === record.id);
+      if (exists) {
+        return prev.map((item) => (item.id === record.id ? record : item));
+      }
+      return [record, ...prev];
+    });
+    setEvaluationForm(createEmptyEvaluation());
+  };
+
+  const handleEditEvaluation = (record) => {
+    setEvaluationForm({
+      id: record.id,
+      partnerName: record.partnerName || "",
+      website: record.website || "",
+      primaryContact: record.primaryContact || "",
+      region: record.region || "",
+      existingVendorRelationships: record.existingVendorRelationships || "",
+      notes: record.notes || "",
+      scores: Object.fromEntries(
+        IPP_SCORING_CATEGORIES.map((cat) => [cat.id, Number(record.scores?.[cat.id] || 1)]),
+      ),
+      risks: {
+        competitorCommitment: Boolean(record.risks?.competitorCommitment),
+        limitedTechnicalResource: Boolean(record.risks?.limitedTechnicalResource),
+        noSalesInvestment: Boolean(record.risks?.noSalesInvestment),
+      },
+      dateEvaluated: record.dateEvaluated,
+    });
+  };
+
+  const handleDeleteEvaluation = (recordId) => {
+    setSavedEvaluations((prev) => prev.filter((item) => item.id !== recordId));
+    setEvaluationForm((prev) =>
+      prev.id === recordId ? createEmptyEvaluation() : prev,
+    );
+  };
 
   return (
     <React.Fragment>
@@ -6393,6 +6610,223 @@ function PartnerProgramPage() {
               </div>
             ))}
           </div>
+
+
+          <div className="brand-line" style={{ margin: "44px 0 0" }} />
+
+          <section style={{ marginTop: 34 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 14,
+                marginBottom: 10,
+              }}
+            >
+              <div
+                style={{
+                  height: 1,
+                  flex: 1,
+                  background:
+                    "linear-gradient(90deg,transparent,rgba(54,198,255,0.3))",
+                }}
+              />
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 800,
+                  color: "rgba(54,198,255,0.6)",
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Ideal Partner Profile Scoring Tool
+              </span>
+              <div
+                style={{
+                  height: 1,
+                  flex: 1,
+                  background:
+                    "linear-gradient(90deg,rgba(54,198,255,0.3),transparent)",
+                }}
+              />
+            </div>
+            <h3
+              style={{
+                fontSize: 26,
+                color: "#fff",
+                fontFamily: "'Syne',sans-serif",
+                marginBottom: 8,
+              }}
+            >
+              Ideal Partner Profile Scoring Tool
+            </h3>
+            <p style={{ fontSize: 13, color: "#8EA6BF", lineHeight: 1.75 }}>
+              Score prospective reseller partners against the IP Integration ideal partner criteria to identify the strongest recruitment opportunities.
+            </p>
+            <p style={{ fontSize: 12.5, color: "#7E97B4", lineHeight: 1.75, marginBottom: 24 }}>
+              This tool helps IP Integration assess how closely a prospective reseller aligns to the ideal partner profile. It provides a structured, repeatable way to prioritise recruitment effort, highlight strengths and identify gaps before investing time in enablement and onboarding.
+            </p>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: 14, alignItems: "start" }}>
+              <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 14, padding: 18 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(54,198,255,0.75)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
+                  Partner Details
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 10 }}>
+                  {[
+                    ["partnerName", "Partner Name"],
+                    ["website", "Website"],
+                    ["primaryContact", "Primary Contact"],
+                    ["region", "Region"],
+                    ["existingVendorRelationships", "Existing Vendor Relationships"],
+                  ].map(([field, label]) => (
+                    <label key={field} style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                      <span style={{ fontSize: 11.5, color: "#A3BCD6", fontWeight: 700 }}>{label}</span>
+                      <input
+                        value={evaluationForm[field] || ""}
+                        onChange={(e) => setDetailField(field, e.target.value)}
+                        style={{ background: "rgba(9,20,36,0.7)", border: "1px solid rgba(54,198,255,0.24)", borderRadius: 10, color: "#D9ECFF", padding: "10px 12px", fontSize: 12.5 }}
+                      />
+                    </label>
+                  ))}
+                  <label style={{ display: "flex", flexDirection: "column", gap: 5, gridColumn: "1 / -1" }}>
+                    <span style={{ fontSize: 11.5, color: "#A3BCD6", fontWeight: 700 }}>Notes</span>
+                    <textarea
+                      value={evaluationForm.notes}
+                      onChange={(e) => setDetailField("notes", e.target.value)}
+                      rows={4}
+                      style={{ background: "rgba(9,20,36,0.7)", border: "1px solid rgba(54,198,255,0.24)", borderRadius: 10, color: "#D9ECFF", padding: "10px 12px", fontSize: 12.5, resize: "vertical" }}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gap: 14 }}>
+                <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 14, padding: 18 }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(54,198,255,0.75)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
+                    Score Summary
+                  </div>
+                  <div style={{ fontSize: 52, fontWeight: 900, lineHeight: 1, color: classification.color, fontFamily: "'Syne',sans-serif" }}>
+                    {totalScore}<span style={{ fontSize: 20, color: "#8EA6BF" }}>/30</span>
+                  </div>
+                  <div style={{ marginTop: 10, display: "inline-flex", padding: "6px 12px", borderRadius: 999, border: `1px solid ${classification.badgeBorder}`, background: classification.badgeBg, color: classification.color, fontSize: 12, fontWeight: 800 }}>
+                    {classification.label}
+                  </div>
+                  <p style={{ marginTop: 12, fontSize: 12.5, color: "#A3BCD6", lineHeight: 1.7 }}>{classification.interpretation}</p>
+                </div>
+
+                <div style={{ background: "rgba(255,255,255,0.025)", border: `1px solid ${hasRiskFlag ? "rgba(255,122,122,0.5)" : "rgba(54,198,255,0.2)"}`, borderRadius: 14, padding: 18 }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: hasRiskFlag ? "rgba(255,122,122,0.84)" : "rgba(54,198,255,0.75)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
+                    Partner Risk Flags
+                  </div>
+                  <div style={{ display: "grid", gap: 8 }}>
+                    {[
+                      ["competitorCommitment", "Already heavily committed to competitor CCaaS vendors"],
+                      ["limitedTechnicalResource", "Limited technical resource"],
+                      ["noSalesInvestment", "No visible sales investment in CX or cloud communications"],
+                    ].map(([key, label]) => (
+                      <label key={key} style={{ display: "flex", gap: 8, alignItems: "center", color: "#B6CAE0", fontSize: 12.5 }}>
+                        <input type="checkbox" checked={evaluationForm.risks[key]} onChange={(e) => setRiskFlag(key, e.target.checked)} />
+                        {label}
+                      </label>
+                    ))}
+                  </div>
+                  {hasRiskFlag && (
+                    <div style={{ marginTop: 10, background: "rgba(255,122,122,0.14)", border: "1px solid rgba(255,122,122,0.45)", borderRadius: 10, padding: "8px 10px", color: "#FFB7B7", fontSize: 12, fontWeight: 700 }}>
+                      Partner risk identified – validate capability and commitment before progressing.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 14, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 14, padding: 18 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(54,198,255,0.75)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
+                Scoring Framework
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 10 }}>
+                {IPP_SCORING_CATEGORIES.map((category) => (
+                  <div key={category.id} style={{ background: "rgba(54,198,255,0.06)", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 12, padding: 12 }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 800, color: "#C9E9FF", marginBottom: 6 }}>{category.title}</div>
+                    <p style={{ fontSize: 12, color: "#8EA6BF", lineHeight: 1.65, marginBottom: 8 }}>{category.description}</p>
+                    <select
+                      value={evaluationForm.scores[category.id]}
+                      onChange={(e) => setCategoryScore(category.id, e.target.value)}
+                      style={{ width: "100%", background: "rgba(9,20,36,0.82)", border: "1px solid rgba(54,198,255,0.28)", borderRadius: 10, color: "#E8F4FF", padding: "9px 10px", fontSize: 13, fontWeight: 700, marginBottom: 6 }}
+                    >
+                      {[1, 2, 3, 4, 5].map((value) => (
+                        <option key={value} value={value}>{value}</option>
+                      ))}
+                    </select>
+                    <div style={{ fontSize: 11, color: "#7E97B4", lineHeight: 1.55 }}>{category.helper}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ marginTop: 16, display: "flex", justifyContent: "space-between", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  {IPP_SCORING_CATEGORIES.map((category) => (
+                    <div key={category.id} style={{ display: "grid", gap: 4, minWidth: 80 }}>
+                      <span style={{ fontSize: 10.5, color: "#8EA6BF" }}>{category.title.split('. ')[0]}</span>
+                      <div style={{ height: 6, borderRadius: 999, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+                        <span style={{ display: "block", height: "100%", width: `${(evaluationForm.scores[category.id] / 5) * 100}%`, background: "linear-gradient(90deg,#36C6FF,#6FD9AE)" }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSaveEvaluation}
+                  style={{ background: "linear-gradient(135deg,#36C6FF,#2C9DDF)", border: "1px solid rgba(54,198,255,0.5)", color: "#041426", borderRadius: 10, fontWeight: 800, fontSize: 13, padding: "10px 16px", cursor: "pointer" }}
+                >
+                  Save Evaluation
+                </button>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 16, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 14, padding: 18 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(54,198,255,0.75)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
+                Saved Evaluations
+              </div>
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 760 }}>
+                  <thead>
+                    <tr>
+                      {["Partner Name", "Region", "Total Score", "Classification", "Date Evaluated", "Notes", "Actions"].map((head) => (
+                        <th key={head} style={{ textAlign: "left", fontSize: 11, color: "#7E97B4", fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", borderBottom: "1px solid rgba(54,198,255,0.16)", padding: "0 8px 10px" }}>{head}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {savedEvaluations.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} style={{ color: "#7E97B4", fontSize: 12.5, padding: "12px 8px" }}>No evaluations saved yet.</td>
+                      </tr>
+                    ) : (
+                      savedEvaluations.map((record) => (
+                        <tr key={record.id}>
+                          <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.05)", color: "#D5E9FB", fontSize: 12.5 }}>{record.partnerName || "—"}</td>
+                          <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.05)", color: "#B4C8DD", fontSize: 12.5 }}>{record.region || "—"}</td>
+                          <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.05)", color: "#D5E9FB", fontSize: 12.5, fontWeight: 800 }}>{record.totalScore}/30</td>
+                          <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}><span style={{ fontSize: 11.5, fontWeight: 800, color: record.classificationColor || "#AEB9C8" }}>{record.classification}</span></td>
+                          <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.05)", color: "#B4C8DD", fontSize: 12.5 }}>{record.dateEvaluated ? new Date(record.dateEvaluated).toLocaleDateString() : "—"}</td>
+                          <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.05)", color: "#B4C8DD", fontSize: 12.5 }}>{record.notes || "—"}</td>
+                          <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                              <button type="button" onClick={() => handleEditEvaluation(record)} style={{ background: "rgba(103,216,255,0.14)", border: "1px solid rgba(103,216,255,0.34)", color: "#8EDFFF", borderRadius: 8, fontSize: 11, fontWeight: 700, padding: "5px 9px", cursor: "pointer" }}>View</button>
+                              <button type="button" onClick={() => handleEditEvaluation(record)} style={{ background: "rgba(243,200,116,0.14)", border: "1px solid rgba(243,200,116,0.34)", color: "#F3C874", borderRadius: 8, fontSize: 11, fontWeight: 700, padding: "5px 9px", cursor: "pointer" }}>Edit</button>
+                              <button type="button" onClick={() => handleDeleteEvaluation(record.id)} style={{ background: "rgba(255,122,122,0.14)", border: "1px solid rgba(255,122,122,0.36)", color: "#FF9D9D", borderRadius: 8, fontSize: 11, fontWeight: 700, padding: "5px 9px", cursor: "pointer" }}>Delete</button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
       <style>{`@keyframes fadeIn{from{opacity:0}to{opacity:1}}`}</style>
