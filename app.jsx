@@ -4796,289 +4796,289 @@ function EnablementHub({ onBack, onNavigate }) {
 
 const PROSPECT_SAMPLE = [
   {
-    name: "Acme Utilities",
-    sector: "Utilities",
-    size: "Enterprise",
-    estate: "Legacy PBX",
-    fit: ["ECX", "AI Sidekick", "PCI Cloud"],
+    id: "p-001",
+    company: "Acme Utilities",
+    channelRole: "Reseller",
+    channelSegment: "Communications",
+    industry: "Utilities",
+    companySize: "Enterprise",
+    technologyStack: "Mitel, Teams",
+    keyVendors: "Mitel; Microsoft",
+    adopterProfile: "Early Majority",
+    creditRating: "A",
+    country: "United Kingdom",
+    varType: "Managed Service VAR",
+    prospectListStatus: "Unassigned",
+    website: "acmeutilities.co.uk",
+    linkedin: "https://www.linkedin.com/company/acme-utilities",
+    summary: "National utilities integrator modernising contact centre estates.",
+    contacts: [
+      { name: "Sophie Reynolds", role: "Head of CX", email: "s.reynolds@acmeutilities.co.uk" },
+    ],
   },
   {
-    name: "Northbank Finance",
-    sector: "Financial Services",
-    size: "Mid-Market",
-    estate: "Mixed UC/CC",
-    fit: ["DTMF Mask", "AI Insights", "Call Recording"],
+    id: "p-002", company: "Northbank Finance", channelRole: "MSP", channelSegment: "Financial Services", industry: "Banking", companySize: "Mid-Market", technologyStack: "Genesys Cloud, Salesforce", keyVendors: "Genesys; Salesforce", adopterProfile: "Innovator", creditRating: "A", country: "United Kingdom", varType: "Security-led VAR", prospectListStatus: "Unassigned", website: "northbankfinance.com", linkedin: "https://www.linkedin.com/company/northbank-finance", summary: "Fast-growth fintech group with cloud-first roadmap.", contacts: [{ name: "Tom Ahmed", role: "Operations Director", email: "tom.ahmed@northbankfinance.com" }]
   },
   {
-    name: "Harbour Retail Group",
-    sector: "Retail",
-    size: "Enterprise",
-    estate: "On-prem Contact Centre",
-    fit: ["Voicebot", "Pay by Link", "Q4 Me"],
+    id: "p-003", company: "Harbour Retail Group", channelRole: "Reseller", channelSegment: "Retail & eCommerce", industry: "Retail", companySize: "Enterprise", technologyStack: "Avaya, Zendesk", keyVendors: "Avaya; Zendesk", adopterProfile: "Early Adopter", creditRating: "BBB", country: "United Kingdom", varType: "UC Specialist", prospectListStatus: "In outreach", website: "harbourretail.co.uk", linkedin: "https://www.linkedin.com/company/harbour-retail-group", summary: "Omnichannel retail estate seeking secure payments uplift.", contacts: []
   },
   {
-    name: "BlueStone Housing",
-    sector: "Public Sector",
-    size: "SMB",
-    estate: "Basic SIP",
-    fit: ["Unified Comms", "IVR", "Send Me"],
+    id: "p-004", company: "BlueStone Housing", channelRole: "Distributor", channelSegment: "Public Sector", industry: "Housing", companySize: "SMB", technologyStack: "3CX, HubSpot", keyVendors: "3CX; HubSpot", adopterProfile: "Late Majority", creditRating: "BB", country: "United Kingdom", varType: "Generalist VAR", prospectListStatus: "Unassigned", website: "bluestonehousing.org", linkedin: "https://www.linkedin.com/company/bluestone-housing", summary: "Regional housing provider with legacy telephony footprint.", contacts: [{ name: "Leah Grant", role: "Transformation Manager", email: "l.grant@bluestonehousing.org" }]
+  },
+  {
+    id: "p-005", company: "Pioneer Healthcare IT", channelRole: "MSP", channelSegment: "Healthcare", industry: "Healthcare", companySize: "Mid-Market", technologyStack: "RingCentral, ServiceNow", keyVendors: "RingCentral; ServiceNow", adopterProfile: "Early Adopter", creditRating: "A", country: "Ireland", varType: "Managed Service VAR", prospectListStatus: "Qualified", website: "pioneerhealthit.ie", linkedin: "https://www.linkedin.com/company/pioneer-healthcare-it", summary: "Healthcare-focused service provider with compliance-led sales motion.", contacts: [{ name: "Ella Morgan", role: "Commercial Lead", email: "ella.morgan@pioneerhealthit.ie" }]
+  },
+  {
+    id: "p-006", company: "Summit Telecom Solutions", channelRole: "Agent", channelSegment: "Telecoms", industry: "Telecommunications", companySize: "SMB", technologyStack: "Gamma, Microsoft Teams", keyVendors: "Gamma; Microsoft", adopterProfile: "Early Majority", creditRating: "BBB", country: "United Kingdom", varType: "UC Specialist", prospectListStatus: "In outreach", website: "summittelecom.co.uk", linkedin: "https://www.linkedin.com/company/summit-telecom-solutions", summary: "Independent telecom reseller building CCaaS practices.", contacts: []
   },
 ];
 
-function ProspectToolPage() {
-  const [query, setQuery] = React.useState("");
-  const [sector, setSector] = React.useState("All");
-  const [size, setSize] = React.useState("All");
-  const sectors = ["All", ...new Set(PROSPECT_SAMPLE.map((p) => p.sector))];
-  const sizes = ["All", ...new Set(PROSPECT_SAMPLE.map((p) => p.size))];
+const PROSPECT_LISTS_KEY = "ipi-prospect-lists-v1";
 
-  const results = PROSPECT_SAMPLE.filter((p) => {
-    const q = (query || "").toLowerCase();
-    const queryHit =
-      !q ||
-      p.name.toLowerCase().includes(q) ||
-      p.estate.toLowerCase().includes(q);
-    const sectorHit = sector === "All" || p.sector === sector;
-    const sizeHit = size === "All" || p.size === size;
-    return queryHit && sectorHit && sizeHit;
+function ProspectToolPage() {
+  const [activeTab, setActiveTab] = React.useState("explore");
+  const [selectedIds, setSelectedIds] = React.useState([]);
+  const [activeCompany, setActiveCompany] = React.useState(null);
+  const [newListName, setNewListName] = React.useState("");
+  const [selectedListId, setSelectedListId] = React.useState("all");
+  const [toasts, setToasts] = React.useState([]);
+  const [filters, setFilters] = React.useState({
+    search: "",
+    channelRole: "All",
+    channelSegment: "All",
+    industry: "All",
+    companySize: "All",
+    technologyStack: "All",
+    keyVendors: "All",
+    adopterProfile: "All",
+    creditRating: "All",
+    country: "All",
+    varType: "All",
+    prospectListStatus: "All",
   });
 
+  const [lists, setLists] = React.useState(() => {
+    try {
+      const raw = localStorage.getItem(PROSPECT_LISTS_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  React.useEffect(() => {
+    localStorage.setItem(PROSPECT_LISTS_KEY, JSON.stringify(lists));
+  }, [lists]);
+
+  const notify = (message) => {
+    const id = Date.now() + Math.random();
+    setToasts((prev) => [...prev, { id, message }]);
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 2800);
+  };
+
+  const filterDefs = [
+    ["channelRole", "Channel Role"], ["channelSegment", "Channel Segment"], ["industry", "Industry"], ["companySize", "Company Size"],
+    ["technologyStack", "Technology Stack"], ["keyVendors", "Key Vendors"], ["adopterProfile", "Adopter Profile"], ["creditRating", "Credit Rating"],
+    ["country", "Country"], ["varType", "VAR Type"], ["prospectListStatus", "Prospect List Status"],
+  ];
+
+  const optionsByField = Object.fromEntries(
+    filterDefs.map(([field]) => [field, ["All", ...new Set(PROSPECT_SAMPLE.map((p) => p[field]).filter(Boolean))]])
+  );
+
+  const companyLists = React.useMemo(() => {
+    const map = {};
+    lists.forEach((list) => {
+      list.companyIds.forEach((id) => {
+        if (!map[id]) map[id] = [];
+        map[id].push(list.name);
+      });
+    });
+    return map;
+  }, [lists]);
+
+  const filteredProspects = PROSPECT_SAMPLE.filter((p) => {
+    const text = filters.search.toLowerCase();
+    const textHit = !text || [p.company, p.industry, p.technologyStack, p.keyVendors, p.country].join(" ").toLowerCase().includes(text);
+    const fieldHit = filterDefs.every(([field]) => filters[field] === "All" || p[field] === filters[field]);
+    return textHit && fieldHit;
+  });
+
+  const exploreRows = selectedListId === "all" ? filteredProspects : filteredProspects.filter((p) => (lists.find((l) => l.id === selectedListId)?.companyIds || []).includes(p.id));
+  const allVisibleSelected = exploreRows.length > 0 && exploreRows.every((p) => selectedIds.includes(p.id));
+
+  const handleSelectAll = () => {
+    if (allVisibleSelected) {
+      setSelectedIds((prev) => prev.filter((id) => !exploreRows.some((p) => p.id === id)));
+      return;
+    }
+    setSelectedIds((prev) => Array.from(new Set([...prev, ...exploreRows.map((p) => p.id)])));
+  };
+
+  const createList = () => {
+    const name = newListName.trim();
+    if (!name) return;
+    if (lists.some((l) => l.name.toLowerCase() === name.toLowerCase())) {
+      notify("List already exists");
+      return;
+    }
+    const list = { id: `list-${Date.now()}`, name, companyIds: [] };
+    setLists((prev) => [...prev, list]);
+    setNewListName("");
+    notify(`Created list: ${name}`);
+  };
+
+  const addSelectedToList = (listId) => {
+    if (!selectedIds.length) return notify("Select companies first");
+    setLists((prev) => prev.map((l) => l.id === listId ? { ...l, companyIds: Array.from(new Set([...l.companyIds, ...selectedIds])) } : l));
+    notify("Added selected companies to list");
+  };
+
+  const csvFromRows = (rows, hubspot = false) => {
+    const columns = hubspot
+      ? ["Company Name", "Website", "Industry", "Number of Employees", "Country", "Description"]
+      : ["Company", "Channel Role", "Channel Segment", "Industry", "Company Size", "Technology Stack", "Key Vendors", "Adopter Profile", "Credit Rating", "Country", "VAR Type", "Prospect List Status"];
+    const values = rows.map((p) => hubspot
+      ? [p.company, p.website, p.industry, p.companySize, p.country, p.summary]
+      : [p.company, p.channelRole, p.channelSegment, p.industry, p.companySize, p.technologyStack, p.keyVendors, p.adopterProfile, p.creditRating, p.country, p.varType, p.prospectListStatus]);
+    const content = [columns, ...values]
+      .map((r) => r.map((v) => `"${String(v ?? "").replaceAll('"', '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${hubspot ? "hubspot" : "prospects"}-${Date.now()}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
+  const selectedList = lists.find((l) => l.id === selectedListId);
+  const selectedListRows = selectedList ? PROSPECT_SAMPLE.filter((p) => selectedList.companyIds.includes(p.id)) : [];
+
   return (
-    <React.Fragment>
-      <Bg />
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          animation: "fadeIn 0.35s ease both",
-        }}
-      >
-        <header
-          style={{
-            padding: "22px 44px 0",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 12,
-            paddingLeft: 68,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              background:
-                "linear-gradient(135deg,rgba(54,198,255,0.15),rgba(103,216,255,0.08))",
-              border: "1px solid rgba(54,198,255,0.32)",
-              borderRadius: 100,
-              padding: "7px 18px",
-            }}
-          >
-            <div
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: "50%",
-                background: "#36C6FF",
-                boxShadow: "0 0 8px #36C6FF",
-                animation: "liveDot 2.2s ease-in-out infinite",
-              }}
-            />
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 800,
-                color: "#67D8FF",
-                letterSpacing: "0.07em",
-                textTransform: "uppercase",
-              }}
-            >
-              Partner Prospect Tool
-            </span>
+    <div style={{ paddingBottom: 40 }}>
+      <AppPageHeader
+        eyebrow="Partner Prospect Tool"
+        title={<>Partner <span style={{ color: "#36C6FF" }}>Prospect Tool</span></>}
+        subtitle="Explore channel prospects, build reusable lists, and export campaign-ready datasets."
+      />
+
+      <section className="ds-section" style={{ paddingTop: 12 }}>
+        <div className="prospect-stats-grid" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 12 }}>
+          {[{label:"Total",value:PROSPECT_SAMPLE.length},{label:"Filtered",value:exploreRows.length},{label:"Selected",value:selectedIds.length}].map((s)=> (
+            <div key={s.label} className="ds-card" style={{ padding: 14 }}><div style={{ fontSize: 11, color: "#91C4B0", textTransform: "uppercase", fontWeight: 800 }}>{s.label}</div><div style={{ fontFamily: "'Syne',sans-serif", color: "#fff", fontSize: 34 }}>{s.value}</div></div>
+          ))}
+        </div>
+
+        <div style={{ display: "flex", gap: 10, marginTop: 16, marginBottom: 14, flexWrap: "wrap" }}>
+          {[["explore", "Explore"], ["lists", "Prospect Lists"]].map(([id, label]) => (
+            <button key={id} className="ui-btn" style={{ background: activeTab === id ? "rgba(54,198,255,0.22)" : undefined }} onClick={() => setActiveTab(id)}>{label}</button>
+          ))}
+          <div style={{ marginLeft: "auto", minWidth: 220 }}>
+            <input className="ui-search" placeholder="AI search (coming soon)" disabled style={{ width: "100%", opacity: 0.65 }} />
           </div>
-          <div style={{ width: 36 }} />
-        </header>
+        </div>
 
-        <div
-          style={{
-            maxWidth: "none",
-            margin: "0",
-            width: "100%",
-          }}
-        >
-          <AppPageHeader
-            eyebrow="Partner Prospect Tool"
-            title={<>Prospect <span style={{ color: "#36C6FF" }}>Search Tool</span></>}
-            subtitle="Find best-fit accounts by sector, company profile and current estate to position ECX, AI & Automation and Secure Payments opportunities."
-          />
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "2fr 1fr 1fr",
-              gap: 12,
-              marginBottom: 18,
-            }}
-          >
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search account or installed estate..."
-              style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(54,198,255,0.28)",
-                borderRadius: 10,
-                padding: "11px 12px",
-                color: "#EAF5FF",
-                fontSize: 13,
-                outline: "none",
-              }}
-            />
-            <select
-              className="ui-dropdown"
-              value={sector}
-              onChange={(e) => setSector(e.target.value)}
-              style={{
-                boxShadow: "none",
-              }}
-            >
-              {sectors.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
+        {activeTab === "explore" ? (
+          <div className="prospect-main-grid" style={{ display: "grid", gridTemplateColumns: "300px minmax(0,1fr)", gap: 14, alignItems: "start" }}>
+            <div className="ds-card" style={{ padding: 14, position: "sticky", top: 16 }}>
+              <input className="ui-search" placeholder="Search" value={filters.search} onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))} style={{ width: "100%", marginBottom: 10 }} />
+              {filterDefs.map(([field, label]) => (
+                <div key={field} style={{ marginBottom: 8 }}>
+                  <div style={{ fontSize: 10, color: "#91C4B0", textTransform: "uppercase", fontWeight: 800, marginBottom: 4 }}>{label}</div>
+                  <select className="ui-dropdown" value={filters[field]} onChange={(e) => setFilters((f) => ({ ...f, [field]: e.target.value }))} style={{ width: "100%" }}>
+                    {optionsByField[field].map((o) => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                </div>
               ))}
-            </select>
-            <select
-              className="ui-dropdown"
-              value={size}
-              onChange={(e) => setSize(e.target.value)}
-              style={{
-                boxShadow: "none",
-              }}
-            >
-              {sizes.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
-          </div>
+            </div>
 
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 800,
-              color: "rgba(54,198,255,0.7)",
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              marginBottom: 10,
-            }}
-          >
-            {results.length} matched accounts
+            <div className="ds-card" style={{ padding: 12 }}>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+                <button className="ui-btn secondary" onClick={handleSelectAll}>{allVisibleSelected ? "Clear visible" : "Select visible"}</button>
+                <button className="ui-btn secondary" onClick={() => csvFromRows(exploreRows, false)}>Export Filtered CSV</button>
+                <button className="ui-btn secondary" onClick={() => csvFromRows(exploreRows, true)}>Export HubSpot CSV</button>
+                <select className="ui-dropdown" value={selectedListId} onChange={(e) => setSelectedListId(e.target.value)}>
+                  <option value="all">All companies</option>
+                  {lists.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+                </select>
+                {!!lists.length && <button className="ui-btn" onClick={() => addSelectedToList(lists[0].id)}>Add Selected to First List</button>}
+              </div>
+              <div style={{ overflowX: "auto" }}>
+                <table className="channel-table">
+                  <thead>
+                    <tr>
+                      <th><input type="checkbox" checked={allVisibleSelected} onChange={handleSelectAll} /></th>
+                      <th>Company</th><th>Role</th><th>Segment</th><th>Industry</th><th>Size</th><th>Country</th><th>In Lists</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {exploreRows.map((p) => (
+                      <tr key={p.id} onClick={() => setActiveCompany(p)} style={{ cursor: "pointer" }}>
+                        <td onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={selectedIds.includes(p.id)} onChange={() => setSelectedIds((prev) => prev.includes(p.id) ? prev.filter((id) => id !== p.id) : [...prev, p.id])} /></td>
+                        <td>{p.company}</td><td>{p.channelRole}</td><td>{p.channelSegment}</td><td>{p.industry}</td><td>{p.companySize}</td><td>{p.country}</td>
+                        <td>{(companyLists[p.id] || []).join(", ") || "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(2,1fr)",
-              gap: 12,
-            }}
-          >
-            {results.map((p) => (
-              <div
-                key={p.name}
-                style={{
-                  background: "rgba(255,255,255,0.03)",
-                  border: "1px solid rgba(54,198,255,0.2)",
-                  borderRadius: 14,
-                  padding: "16px 16px 14px",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 800,
-                    color: "#EAF5FF",
-                    marginBottom: 6,
-                    fontFamily: "'Syne',sans-serif",
-                  }}
-                >
-                  {p.name}
+        ) : (
+          <div className="ds-card" style={{ padding: 14 }}>
+            <div style={{ display: "flex", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
+              <input className="ui-search" placeholder="Create list" value={newListName} onChange={(e) => setNewListName(e.target.value)} style={{ maxWidth: 300 }} />
+              <button className="ui-btn" onClick={createList}>Create List</button>
+              <button className="ui-btn secondary" disabled={!selectedList} onClick={() => selectedList && csvFromRows(selectedListRows, false)}>Export list CSV</button>
+              <button className="ui-btn secondary" disabled={!selectedList} onClick={() => selectedList && csvFromRows(selectedListRows, true)}>Export list HubSpot CSV</button>
+            </div>
+            {lists.map((l) => (
+              <div key={l.id} className="channel-card" style={{ marginBottom: 10 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+                  <strong>{l.name}</strong>
+                  <button className="ui-btn secondary" onClick={() => { setSelectedListId(l.id); addSelectedToList(l.id); }}>Add selected</button>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 6,
-                    flexWrap: "wrap",
-                    marginBottom: 8,
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: 10,
-                      padding: "3px 8px",
-                      borderRadius: 99,
-                      border: "1px solid rgba(54,198,255,0.35)",
-                      color: "#67D8FF",
-                    }}
-                  >
-                    {p.sector}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 10,
-                      padding: "3px 8px",
-                      borderRadius: 99,
-                      border: "1px solid rgba(123,150,163,0.4)",
-                      color: "#9BB6C2",
-                    }}
-                  >
-                    {p.size}
-                  </span>
-                </div>
-                <div
-                  style={{
-                    fontSize: 12,
-                    color: "#8EA6BF",
-                    lineHeight: 1.6,
-                    marginBottom: 8,
-                  }}
-                >
-                  Installed estate: {p.estate}
-                </div>
-                <div
-                  style={{ fontSize: 11, color: "#C0DDD6", lineHeight: 1.6 }}
-                >
-                  Recommended motion:{" "}
-                  <span style={{ color: "#36C6FF" }}>{p.fit.join(" • ")}</span>
-                </div>
+                <div style={{ fontSize: 12, color: "#9bb6b0" }}>{l.companyIds.length} companies</div>
               </div>
             ))}
+            {!lists.length && <div style={{ color: "#9bb6b0", fontSize: 13 }}>No lists yet.</div>}
+          </div>
+        )}
+      </section>
+
+      {activeCompany && (
+        <div style={{ position: "fixed", right: 0, top: 0, width: "min(420px,100%)", height: "100vh", background: "#16242d", borderLeft: "1px solid rgba(145,196,176,0.3)", zIndex: 1200, padding: 18, overflowY: "auto" }}>
+          <button className="ui-btn secondary" onClick={() => setActiveCompany(null)} style={{ marginBottom: 10 }}>Close</button>
+          <h3 style={{ color: "#fff", fontFamily: "'Syne',sans-serif", marginBottom: 10 }}>{activeCompany.company}</h3>
+          <p style={{ color: "#9bb6b0", fontSize: 13, marginBottom: 14 }}>{activeCompany.summary}</p>
+          <div style={{ fontSize: 12, color: "#dff0ea", lineHeight: 1.7 }}>
+            <div><strong>Industry:</strong> {activeCompany.industry}</div>
+            <div><strong>Technology stack:</strong> {activeCompany.technologyStack}</div>
+            <div><strong>Vendors:</strong> {activeCompany.keyVendors}</div>
+          </div>
+          <div style={{ marginTop: 14 }}>
+            <a className="ui-btn secondary" href={activeCompany.linkedin} target="_blank" rel="noreferrer" style={{ display: "inline-flex", textDecoration: "none", alignItems: "center" }}>LinkedIn company page</a>
+          </div>
+          <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
+            <a href={`https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(activeCompany.company + " decision maker")}`} target="_blank" rel="noreferrer" style={{ color: "#67D8FF", fontSize: 12 }}>LinkedIn people search</a>
+            <a href={`https://www.linkedin.com/search/results/all/?keywords=${encodeURIComponent(activeCompany.company + " channel director")}`} target="_blank" rel="noreferrer" style={{ color: "#67D8FF", fontSize: 12 }}>LinkedIn role search</a>
+          </div>
+          <div style={{ marginTop: 16 }}>
+            <div style={{ fontSize: 11, color: "#91C4B0", textTransform: "uppercase", fontWeight: 800, marginBottom: 6 }}>Contacts</div>
+            {activeCompany.contacts.length ? activeCompany.contacts.map((c) => (
+              <div key={c.email} className="channel-card" style={{ marginBottom: 8 }}><strong>{c.name}</strong><span>{c.role}</span><span>{c.email}</span></div>
+            )) : <div style={{ color: "#9bb6b0", fontSize: 12 }}>No contacts available.</div>}
           </div>
         </div>
+      )}
 
-        <div style={{ padding: "40px 44px 44px", marginTop: "auto" }}>
-          <div className="brand-line" style={{ marginBottom: 20 }} />
-          <p
-            style={{
-              textAlign: "center",
-              fontSize: 10,
-              color: "rgba(54,198,255,0.3)",
-              letterSpacing: "0.07em",
-              textTransform: "uppercase",
-            }}
-          >
-            © 2026 IP Integration Ltd · IPI Partner Advantage · Partner
-            Confidential
-          </p>
-        </div>
+      <div style={{ position: "fixed", right: 14, bottom: 14, display: "grid", gap: 8, zIndex: 1400 }}>
+        {toasts.map((t) => (
+          <div key={t.id} style={{ background: "rgba(22,36,45,0.95)", border: "1px solid rgba(145,196,176,0.32)", borderRadius: 10, padding: "10px 12px", fontSize: 12 }}>{t.message}</div>
+        ))}
       </div>
-      <style>{`@keyframes fadeIn{from{opacity:0}to{opacity:1}}`}</style>
-    </React.Fragment>
+    </div>
   );
 }
 
