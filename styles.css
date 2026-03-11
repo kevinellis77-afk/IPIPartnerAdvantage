@@ -507,3 +507,139 @@ body{
 @media (max-width: 760px){
   .prospect-stats-grid{grid-template-columns:1fr!important;}
 }
+
+/* ===== IPI unified design system overrides ===== */
+:root {
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+body {
+  background: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  font-size: 16px;
+}
+h1 { font-size: 32px; font-weight: 600; line-height: 1.2; }
+h2 { font-size: 24px; font-weight: 600; line-height: 1.25; }
+h3 { font-size: 18px; font-weight: 600; line-height: 1.3; }
+p, li, td, input, select, textarea, button { font-size: 15px; }
+small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px; }
+
+.app-shell { background: var(--bg-app); color: var(--text-primary); }
+.app-main { flex: 1; min-width: 0; }
+.page-shell {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--space-5);
+}
+.app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border-soft);
+  background: color-mix(in srgb, var(--bg-surface) 92%, transparent);
+  backdrop-filter: blur(8px);
+}
+.app-topbar__eyebrow { color: var(--text-secondary); text-transform: uppercase; letter-spacing: .08em; font-size: 12px; }
+.app-topbar__title { color: var(--text-primary); font-size: 18px; font-weight: 600; }
+
+.theme-toggle {
+  display: inline-flex;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+}
+.theme-toggle__btn {
+  text-transform: capitalize;
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.theme-toggle__btn.is-active {
+  background: var(--brand-secondary);
+  color: #fff;
+}
+
+.app-sidebar {
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-soft);
+  box-shadow: none;
+}
+.sidebar-nav-item { color: var(--text-secondary); border: 1px solid transparent; }
+.sidebar-nav-item:hover { background: var(--bg-subtle); color: var(--text-primary); }
+.sidebar-nav-item.active {
+  background: color-mix(in srgb, var(--brand-secondary) 18%, var(--bg-surface));
+  border-color: color-mix(in srgb, var(--brand-secondary) 38%, var(--border-soft));
+  color: var(--text-primary);
+  box-shadow: none;
+}
+.sidebar-nav-item.active::before { background: var(--brand-secondary); }
+
+.ds-page-header, .ds-section { padding-left: 0; padding-right: 0; }
+.ds-page-header { padding-top: var(--space-6); gap: var(--space-3); }
+.ds-page-header__eyebrow {
+  border: 1px solid var(--border-soft);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+}
+.ds-page-header__title { color: var(--text-primary); font-family: var(--font-primary); font-size: 32px; font-weight: 600; }
+.ds-page-header__subtitle { color: var(--text-secondary); max-width: 80ch; }
+
+.ds-card,.channel-card,.prj-journey-card,.prj-contrast-card,.prj-use-case-card,
+.table-wrapper,.channel-table-wrap {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-soft) !important;
+  border-radius: var(--radius-card) !important;
+  box-shadow: var(--shadow-soft);
+}
+.ui-btn,button.ui-btn,.btn-p,.btn-s {
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--border-soft);
+  background: var(--brand-primary);
+  color: #fff;
+}
+.ui-btn--secondary,.ui-btn.secondary,.btn-s {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+}
+.ui-field,.ui-dropdown,select,input,textarea {
+  min-height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+.status-badge,.channel-chip {
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+}
+.table-wrapper table thead th,.channel-table th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  z-index: 1;
+}
+
+@media (max-width: 900px) {
+  .page-shell { padding: var(--space-4); }
+  .app-topbar { padding: var(--space-4); }
+}
+
+.app-main-inner{min-width:0;}
