@@ -5201,12 +5201,6 @@ function ProspectToolPage() {
 // ═══════════════════════════════════════════════════════
 function BuildSellExpand() {
   const [activePillar, setActivePillar] = React.useState(null);
-  const sectionLinks = [
-    { id: "framework", label: "Framework" },
-    { id: "journey", label: "Revenue Journey" },
-    { id: "six-pillars", label: "Six Pillars" },
-    { id: "actions", label: "Next Actions" },
-  ];
 
   const journeyPanels = [
     {
@@ -5270,23 +5264,6 @@ function BuildSellExpand() {
           animation: "fadeIn 0.35s ease both",
         }}
       >
-        <AppPageHeader
-          eyebrow="Customer Contact Ecosystem"
-          title={<>Build. <span style={{ color: "#36C6FF" }}>Sell.</span> Expand.</>}
-          subtitle="A single partner growth framework that combines the Build · Sell · Expand motion with IPI's Six Product Pillars, helping teams move from first opportunity to long-term recurring value."
-        />
-
-        <div className="bse-section-index-wrap">
-          <div className="bse-section-index">
-            <span className="bse-section-index-label">Page Sections</span>
-            {sectionLinks.map((item) => (
-              <a key={item.id} href={`#${item.id}`} className="bse-section-index-link">
-                {item.label}
-              </a>
-            ))}
-          </div>
-        </div>
-
         <section id="framework" className="bse-section-shell">
           <div className="bse-section-heading">
             <h2>Build · Sell · Expand Framework</h2>
