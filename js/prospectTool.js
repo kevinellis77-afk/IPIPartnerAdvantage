@@ -1,7 +1,5 @@
 (function () {
-  const BASE_PATH = window.location.hostname.includes("github.io")
-    ? "/IPIPartnerAdvantage"
-    : "";
+  const DATASET_URL = "./channel_prospects.json";
 
   const SCORE_TERMS = ['reseller', 'msp', 'integrator', 'telecom', 'uc', 'ccaas', 'it services', 'managed services', 'cloud', 'payments', 'cx', 'ai'];
 
@@ -159,22 +157,17 @@
   }
 
   async function loadProspectsCsv() {
-    const csvUrl = `${BASE_PATH}/data/channel_prospects.csv`;
+    console.log("Fetching dataset from:", DATASET_URL);
 
-    console.log("Fetching CSV from:", csvUrl);
-
-    const response = await fetch(csvUrl, { cache: "no-store" });
+    const response = await fetch(DATASET_URL, { cache: "no-store" });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch CSV: ${response.status} ${response.statusText}`);
+      throw new Error(`Failed to fetch dataset: ${response.status} ${response.statusText}`);
     }
 
-    const csvText = await response.text();
-    console.log("CSV length:", csvText.length);
-    console.log("CSV preview:", csvText.slice(0, 300));
-
-    const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-    return parsed.data.map(normalizeRecord);
+    const parsed = await response.json();
+    console.log("Dataset rows:", parsed.length);
+    return parsed.map(normalizeRecord);
   }
 
   function toCsv(records) {
