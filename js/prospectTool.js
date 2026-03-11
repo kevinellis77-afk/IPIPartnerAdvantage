@@ -1,9 +1,22 @@
 (function () {
-  const DATA_PATHS = [
-    './data/channel_prospects.csv',
-    '/IPIPartnerAdvantage/data/channel_prospects.csv',
-    '/data/channel_prospects.csv',
-  ];
+  function getDataPaths() {
+    const baseRelative = './data/channel_prospects.csv';
+    const paths = [baseRelative];
+
+    const scriptSrc = document.currentScript && document.currentScript.src;
+    if (scriptSrc) {
+      paths.push(new URL('../data/channel_prospects.csv', scriptSrc).toString());
+    }
+
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    if (pathParts.length > 0) {
+      paths.push(`/${pathParts[0]}/data/channel_prospects.csv`);
+    }
+
+    return [...new Set(paths)];
+  }
+
+  const DATA_PATHS = getDataPaths();
 
   const SCORE_TERMS = ['reseller', 'msp', 'integrator', 'telecom', 'uc', 'ccaas', 'it services', 'managed services', 'cloud', 'payments', 'cx', 'ai'];
 
