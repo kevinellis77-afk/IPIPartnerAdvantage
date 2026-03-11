@@ -4802,60 +4802,46 @@ const PROSPECT_SAMPLE = [
     channelSegment: "Communications",
     industry: "Utilities",
     companySize: "Enterprise",
-    technologyStack: "Mitel, Teams",
-    keyVendors: "Mitel; Microsoft",
+    technologyStack: ["Mitel", "Microsoft Teams"],
+    keyVendors: ["Mitel", "Microsoft"],
     adopterProfile: "Early Majority",
     creditRating: "A",
     country: "United Kingdom",
     varType: "Managed Service VAR",
-    prospectListStatus: "Unassigned",
     website: "acmeutilities.co.uk",
     linkedin: "https://www.linkedin.com/company/acme-utilities",
     summary: "National utilities integrator modernising contact centre estates.",
-    contacts: [
-      { name: "Sophie Reynolds", role: "Head of CX", email: "s.reynolds@acmeutilities.co.uk" },
-    ],
+    contacts: [{ name: "Sophie Reynolds", role: "Head of CX", email: "s.reynolds@acmeutilities.co.uk" }],
   },
   {
-    id: "p-002", company: "Northbank Finance", channelRole: "MSP", channelSegment: "Financial Services", industry: "Banking", companySize: "Mid-Market", technologyStack: "Genesys Cloud, Salesforce", keyVendors: "Genesys; Salesforce", adopterProfile: "Innovator", creditRating: "A", country: "United Kingdom", varType: "Security-led VAR", prospectListStatus: "Unassigned", website: "northbankfinance.com", linkedin: "https://www.linkedin.com/company/northbank-finance", summary: "Fast-growth fintech group with cloud-first roadmap.", contacts: [{ name: "Tom Ahmed", role: "Operations Director", email: "tom.ahmed@northbankfinance.com" }]
+    id: "p-002", company: "Northbank Finance", channelRole: "MSP", channelSegment: "Financial Services", industry: "Banking", companySize: "Mid-Market", technologyStack: ["Genesys Cloud", "Salesforce"], keyVendors: ["Genesys", "Salesforce"], adopterProfile: "Innovator", creditRating: "A", country: "United Kingdom", varType: "Security-led VAR", website: "northbankfinance.com", linkedin: "https://www.linkedin.com/company/northbank-finance", summary: "Fast-growth fintech group with cloud-first roadmap.", contacts: [{ name: "Tom Ahmed", role: "Operations Director", email: "tom.ahmed@northbankfinance.com" }]
   },
   {
-    id: "p-003", company: "Harbour Retail Group", channelRole: "Reseller", channelSegment: "Retail & eCommerce", industry: "Retail", companySize: "Enterprise", technologyStack: "Avaya, Zendesk", keyVendors: "Avaya; Zendesk", adopterProfile: "Early Adopter", creditRating: "BBB", country: "United Kingdom", varType: "UC Specialist", prospectListStatus: "In outreach", website: "harbourretail.co.uk", linkedin: "https://www.linkedin.com/company/harbour-retail-group", summary: "Omnichannel retail estate seeking secure payments uplift.", contacts: []
+    id: "p-003", company: "Harbour Retail Group", channelRole: "Reseller", channelSegment: "Retail & eCommerce", industry: "Retail", companySize: "Enterprise", technologyStack: ["Avaya", "Zendesk"], keyVendors: ["Avaya", "Zendesk"], adopterProfile: "Early Adopter", creditRating: "BBB", country: "United Kingdom", varType: "UC Specialist", website: "harbourretail.co.uk", linkedin: "https://www.linkedin.com/company/harbour-retail-group", summary: "Omnichannel retail estate seeking secure payments uplift.", contacts: []
   },
   {
-    id: "p-004", company: "BlueStone Housing", channelRole: "Distributor", channelSegment: "Public Sector", industry: "Housing", companySize: "SMB", technologyStack: "3CX, HubSpot", keyVendors: "3CX; HubSpot", adopterProfile: "Late Majority", creditRating: "BB", country: "United Kingdom", varType: "Generalist VAR", prospectListStatus: "Unassigned", website: "bluestonehousing.org", linkedin: "https://www.linkedin.com/company/bluestone-housing", summary: "Regional housing provider with legacy telephony footprint.", contacts: [{ name: "Leah Grant", role: "Transformation Manager", email: "l.grant@bluestonehousing.org" }]
+    id: "p-004", company: "BlueStone Housing", channelRole: "Distributor", channelSegment: "Public Sector", industry: "Housing", companySize: "SMB", technologyStack: ["3CX", "HubSpot"], keyVendors: ["3CX", "HubSpot"], adopterProfile: "Late Majority", creditRating: "BB", country: "United Kingdom", varType: "Generalist VAR", website: "bluestonehousing.org", linkedin: "https://www.linkedin.com/company/bluestone-housing", summary: "Regional housing provider with legacy telephony footprint.", contacts: [{ name: "Leah Grant", role: "Transformation Manager", email: "l.grant@bluestonehousing.org" }]
   },
   {
-    id: "p-005", company: "Pioneer Healthcare IT", channelRole: "MSP", channelSegment: "Healthcare", industry: "Healthcare", companySize: "Mid-Market", technologyStack: "RingCentral, ServiceNow", keyVendors: "RingCentral; ServiceNow", adopterProfile: "Early Adopter", creditRating: "A", country: "Ireland", varType: "Managed Service VAR", prospectListStatus: "Qualified", website: "pioneerhealthit.ie", linkedin: "https://www.linkedin.com/company/pioneer-healthcare-it", summary: "Healthcare-focused service provider with compliance-led sales motion.", contacts: [{ name: "Ella Morgan", role: "Commercial Lead", email: "ella.morgan@pioneerhealthit.ie" }]
+    id: "p-005", company: "Pioneer Healthcare IT", channelRole: "MSP", channelSegment: "Healthcare", industry: "Healthcare", companySize: "Mid-Market", technologyStack: ["RingCentral", "ServiceNow"], keyVendors: ["RingCentral", "ServiceNow"], adopterProfile: "Early Adopter", creditRating: "A", country: "Ireland", varType: "Managed Service VAR", website: "pioneerhealthit.ie", linkedin: "https://www.linkedin.com/company/pioneer-healthcare-it", summary: "Healthcare-focused service provider with compliance-led sales motion.", contacts: [{ name: "Ella Morgan", role: "Commercial Lead", email: "ella.morgan@pioneerhealthit.ie" }]
   },
   {
-    id: "p-006", company: "Summit Telecom Solutions", channelRole: "Agent", channelSegment: "Telecoms", industry: "Telecommunications", companySize: "SMB", technologyStack: "Gamma, Microsoft Teams", keyVendors: "Gamma; Microsoft", adopterProfile: "Early Majority", creditRating: "BBB", country: "United Kingdom", varType: "UC Specialist", prospectListStatus: "In outreach", website: "summittelecom.co.uk", linkedin: "https://www.linkedin.com/company/summit-telecom-solutions", summary: "Independent telecom reseller building CCaaS practices.", contacts: []
+    id: "p-006", company: "Summit Telecom Solutions", channelRole: "Agent", channelSegment: "Telecoms", industry: "Telecommunications", companySize: "SMB", technologyStack: ["Gamma", "Microsoft Teams"], keyVendors: ["Gamma", "Microsoft"], adopterProfile: "Early Majority", creditRating: "BBB", country: "United Kingdom", varType: "UC Specialist", website: "summittelecom.co.uk", linkedin: "https://www.linkedin.com/company/summit-telecom-solutions", summary: "Independent telecom reseller building CCaaS practices.", contacts: []
   },
 ];
 
 const PROSPECT_LISTS_KEY = "ipi-prospect-lists-v1";
+const PROSPECT_FILTER_KEYS = ["channelRole", "channelSegment", "industry", "companySize", "technologyStack", "keyVendors", "adopterProfile", "creditRating", "country", "varType"];
 
 function ProspectToolPage() {
   const [activeTab, setActiveTab] = React.useState("explore");
-  const [selectedIds, setSelectedIds] = React.useState([]);
+  const [selectedIds, setSelectedIds] = React.useState(new Set());
   const [activeCompany, setActiveCompany] = React.useState(null);
   const [newListName, setNewListName] = React.useState("");
-  const [selectedListId, setSelectedListId] = React.useState("all");
   const [toasts, setToasts] = React.useState([]);
-  const [filters, setFilters] = React.useState({
-    search: "",
-    channelRole: "All",
-    channelSegment: "All",
-    industry: "All",
-    companySize: "All",
-    technologyStack: "All",
-    keyVendors: "All",
-    adopterProfile: "All",
-    creditRating: "All",
-    country: "All",
-    varType: "All",
-    prospectListStatus: "All",
-  });
+  const [keyword, setKeyword] = React.useState("");
+  const [listedStatus, setListedStatus] = React.useState("all");
+  const [filters, setFilters] = React.useState(() => Object.fromEntries(PROSPECT_FILTER_KEYS.map((k) => [k, new Set()])));
 
   const [lists, setLists] = React.useState(() => {
     try {
@@ -4870,154 +4856,172 @@ function ProspectToolPage() {
     localStorage.setItem(PROSPECT_LISTS_KEY, JSON.stringify(lists));
   }, [lists]);
 
-  const notify = (message) => {
-    const id = Date.now() + Math.random();
+  const notify = React.useCallback((message) => {
+    const id = `${Date.now()}-${Math.random()}`;
     setToasts((prev) => [...prev, { id, message }]);
-    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 2800);
-  };
-
-  const filterDefs = [
-    ["channelRole", "Channel Role"], ["channelSegment", "Channel Segment"], ["industry", "Industry"], ["companySize", "Company Size"],
-    ["technologyStack", "Technology Stack"], ["keyVendors", "Key Vendors"], ["adopterProfile", "Adopter Profile"], ["creditRating", "Credit Rating"],
-    ["country", "Country"], ["varType", "VAR Type"], ["prospectListStatus", "Prospect List Status"],
-  ];
-
-  const optionsByField = Object.fromEntries(
-    filterDefs.map(([field]) => [field, ["All", ...new Set(PROSPECT_SAMPLE.map((p) => p[field]).filter(Boolean))]])
-  );
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 2200);
+  }, []);
 
   const companyLists = React.useMemo(() => {
     const map = {};
-    lists.forEach((list) => {
-      list.companyIds.forEach((id) => {
-        if (!map[id]) map[id] = [];
-        map[id].push(list.name);
-      });
-    });
+    lists.forEach((list) => list.companyIds.forEach((id) => { map[id] = [...(map[id] || []), list.name]; }));
     return map;
   }, [lists]);
 
-  const filteredProspects = PROSPECT_SAMPLE.filter((p) => {
-    const text = filters.search.toLowerCase();
-    const textHit = !text || [p.company, p.industry, p.technologyStack, p.keyVendors, p.country].join(" ").toLowerCase().includes(text);
-    const fieldHit = filterDefs.every(([field]) => filters[field] === "All" || p[field] === filters[field]);
-    return textHit && fieldHit;
-  });
+  const optionValues = React.useMemo(() => {
+    const uniq = (arr) => Array.from(new Set(arr)).sort((a, b) => String(a).localeCompare(String(b)));
+    return {
+      channelRole: uniq(PROSPECT_SAMPLE.map((p) => p.channelRole)),
+      channelSegment: uniq(PROSPECT_SAMPLE.map((p) => p.channelSegment)),
+      industry: uniq(PROSPECT_SAMPLE.map((p) => p.industry)),
+      companySize: uniq(PROSPECT_SAMPLE.map((p) => p.companySize)),
+      technologyStack: uniq(PROSPECT_SAMPLE.flatMap((p) => p.technologyStack)),
+      keyVendors: uniq(PROSPECT_SAMPLE.flatMap((p) => p.keyVendors)),
+      adopterProfile: uniq(PROSPECT_SAMPLE.map((p) => p.adopterProfile)),
+      creditRating: uniq(PROSPECT_SAMPLE.map((p) => p.creditRating)),
+      country: uniq(PROSPECT_SAMPLE.map((p) => p.country)),
+      varType: uniq(PROSPECT_SAMPLE.map((p) => p.varType)),
+    };
+  }, []);
 
-  const exploreRows = selectedListId === "all" ? filteredProspects : filteredProspects.filter((p) => (lists.find((l) => l.id === selectedListId)?.companyIds || []).includes(p.id));
-  const allVisibleSelected = exploreRows.length > 0 && exploreRows.every((p) => selectedIds.includes(p.id));
+  const filteredProspects = React.useMemo(() => {
+    const search = keyword.trim().toLowerCase();
+    return PROSPECT_SAMPLE.filter((p) => {
+      if (search) {
+        const hay = [p.company, p.channelRole, p.channelSegment, p.industry, p.companySize, p.technologyStack.join(" "), p.keyVendors.join(" "), p.summary, p.country, p.varType].join(" ").toLowerCase();
+        if (!hay.includes(search)) return false;
+      }
+      for (const key of PROSPECT_FILTER_KEYS) {
+        const picked = filters[key];
+        if (!picked.size) continue;
+        if (key === "technologyStack" || key === "keyVendors") {
+          const hasOne = (p[key] || []).some((item) => picked.has(item));
+          if (!hasOne) return false;
+        } else if (!picked.has(p[key])) return false;
+      }
+      const inList = !!companyLists[p.id]?.length;
+      if (listedStatus === "in-list" && !inList) return false;
+      if (listedStatus === "not-listed" && inList) return false;
+      return true;
+    });
+  }, [companyLists, filters, keyword, listedStatus]);
 
-  const handleSelectAll = () => {
-    if (allVisibleSelected) {
-      setSelectedIds((prev) => prev.filter((id) => !exploreRows.some((p) => p.id === id)));
-      return;
-    }
-    setSelectedIds((prev) => Array.from(new Set([...prev, ...exploreRows.map((p) => p.id)])));
+  const allVisibleSelected = filteredProspects.length > 0 && filteredProspects.every((p) => selectedIds.has(p.id));
+
+  const toggleFilter = (key, value) => {
+    setFilters((prev) => {
+      const next = { ...prev, [key]: new Set(prev[key]) };
+      next[key].has(value) ? next[key].delete(value) : next[key].add(value);
+      return next;
+    });
   };
+
+  const clearFilters = () => {
+    setKeyword("");
+    setListedStatus("all");
+    setFilters(Object.fromEntries(PROSPECT_FILTER_KEYS.map((k) => [k, new Set()])));
+  };
+
+  const toggleSelected = (id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllVisible = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) filteredProspects.forEach((p) => next.delete(p.id));
+      else filteredProspects.forEach((p) => next.add(p.id));
+      return next;
+    });
+  };
+
+  const deselectAll = () => setSelectedIds(new Set());
 
   const createList = () => {
     const name = newListName.trim();
     if (!name) return;
-    if (lists.some((l) => l.name.toLowerCase() === name.toLowerCase())) {
-      notify("List already exists");
-      return;
-    }
-    const list = { id: `list-${Date.now()}`, name, companyIds: [] };
-    setLists((prev) => [...prev, list]);
+    if (lists.some((l) => l.name.toLowerCase() === name.toLowerCase())) return notify("List already exists");
+    setLists((prev) => [...prev, { id: `list-${Date.now()}`, name, companyIds: [] }]);
     setNewListName("");
     notify(`Created list: ${name}`);
   };
 
   const addSelectedToList = (listId) => {
-    if (!selectedIds.length) return notify("Select companies first");
-    setLists((prev) => prev.map((l) => l.id === listId ? { ...l, companyIds: Array.from(new Set([...l.companyIds, ...selectedIds])) } : l));
+    if (!selectedIds.size) return notify("Select companies first");
+    setLists((prev) => prev.map((l) => (l.id === listId ? { ...l, companyIds: Array.from(new Set([...l.companyIds, ...selectedIds])) } : l)));
     notify("Added selected companies to list");
   };
 
-  const csvFromRows = (rows, hubspot = false) => {
-    const columns = hubspot
-      ? ["Company Name", "Website", "Industry", "Number of Employees", "Country", "Description"]
-      : ["Company", "Channel Role", "Channel Segment", "Industry", "Company Size", "Technology Stack", "Key Vendors", "Adopter Profile", "Credit Rating", "Country", "VAR Type", "Prospect List Status"];
-    const values = rows.map((p) => hubspot
-      ? [p.company, p.website, p.industry, p.companySize, p.country, p.summary]
-      : [p.company, p.channelRole, p.channelSegment, p.industry, p.companySize, p.technologyStack, p.keyVendors, p.adopterProfile, p.creditRating, p.country, p.varType, p.prospectListStatus]);
-    const content = [columns, ...values]
-      .map((r) => r.map((v) => `"${String(v ?? "").replaceAll('"', '""')}"`).join(","))
-      .join("\n");
-    const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `${hubspot ? "hubspot" : "prospects"}-${Date.now()}.csv`;
-    link.click();
-    URL.revokeObjectURL(link.href);
-  };
+  const removeFromList = (listId, companyId) => setLists((prev) => prev.map((l) => (l.id === listId ? { ...l, companyIds: l.companyIds.filter((id) => id !== companyId) } : l)));
 
-  const selectedList = lists.find((l) => l.id === selectedListId);
-  const selectedListRows = selectedList ? PROSPECT_SAMPLE.filter((p) => selectedList.companyIds.includes(p.id)) : [];
+  const selectedCount = selectedIds.size;
 
   return (
-    <div style={{ paddingBottom: 40 }}>
-      <AppPageHeader
+    <div className="page-shell" style={{ maxWidth: 1600, margin: "0 auto", width: "100%" }}>
+      <PageSection
+        id="prospect"
+        title="Partner Prospect Tool"
         eyebrow="Partner Prospect Tool"
-        title={<>Partner <span style={{ color: "#36C6FF" }}>Prospect Tool</span></>}
-        subtitle="Explore channel prospects, build reusable lists, and export campaign-ready datasets."
-      />
-
-      <section className="ds-section" style={{ paddingTop: 12 }}>
-        <div className="prospect-stats-grid" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 12 }}>
-          {[{label:"Total",value:PROSPECT_SAMPLE.length},{label:"Filtered",value:exploreRows.length},{label:"Selected",value:selectedIds.length}].map((s)=> (
-            <div key={s.label} className="ds-card" style={{ padding: 14 }}><div style={{ fontSize: 11, color: "#91C4B0", textTransform: "uppercase", fontWeight: 800 }}>{s.label}</div><div style={{ fontFamily: "'Syne',sans-serif", color: "#fff", fontSize: 34 }}>{s.value}</div></div>
-          ))}
+        subtitle="Prospect search and list management adapted from the repository's Prospect Search HTML workflow."
+      >
+        <div className="prospect-stats-grid" style={{ display: "grid", gap: 12, marginBottom: 12 }}>
+          <div className="ds-card"><strong>{PROSPECT_SAMPLE.length}</strong><div style={{ color: "#9bb6b0", fontSize: 12 }}>Total companies</div></div>
+          <div className="ds-card"><strong>{filteredProspects.length}</strong><div style={{ color: "#9bb6b0", fontSize: 12 }}>Filtered companies</div></div>
+          <div className="ds-card"><strong>{selectedCount}</strong><div style={{ color: "#9bb6b0", fontSize: 12 }}>Selected companies</div></div>
         </div>
 
-        <div style={{ display: "flex", gap: 10, marginTop: 16, marginBottom: 14, flexWrap: "wrap" }}>
-          {[["explore", "Explore"], ["lists", "Prospect Lists"]].map(([id, label]) => (
-            <button key={id} className="ui-btn" style={{ background: activeTab === id ? "rgba(54,198,255,0.22)" : undefined }} onClick={() => setActiveTab(id)}>{label}</button>
-          ))}
-          <div style={{ marginLeft: "auto", minWidth: 220 }}>
-            <input className="ui-search" placeholder="AI search (coming soon)" disabled style={{ width: "100%", opacity: 0.65 }} />
-          </div>
+        <div className="ds-card" style={{ marginBottom: 12, padding: 8, display: "inline-flex", gap: 8 }}>
+          {["explore", "lists"].map((tab) => <button key={tab} className={`ui-btn ${activeTab === tab ? "" : "secondary"}`} onClick={() => setActiveTab(tab)}>{tab === "explore" ? "Explore" : "Prospect Lists"}</button>)}
         </div>
 
         {activeTab === "explore" ? (
-          <div className="prospect-main-grid" style={{ display: "grid", gridTemplateColumns: "300px minmax(0,1fr)", gap: 14, alignItems: "start" }}>
-            <div className="ds-card" style={{ padding: 14, position: "sticky", top: 16 }}>
-              <input className="ui-search" placeholder="Search" value={filters.search} onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))} style={{ width: "100%", marginBottom: 10 }} />
-              {filterDefs.map(([field, label]) => (
-                <div key={field} style={{ marginBottom: 8 }}>
-                  <div style={{ fontSize: 10, color: "#91C4B0", textTransform: "uppercase", fontWeight: 800, marginBottom: 4 }}>{label}</div>
-                  <select className="ui-dropdown" value={filters[field]} onChange={(e) => setFilters((f) => ({ ...f, [field]: e.target.value }))} style={{ width: "100%" }}>
-                    {optionsByField[field].map((o) => <option key={o} value={o}>{o}</option>)}
-                  </select>
+          <div className="prospect-main-grid" style={{ display: "grid", gap: 14, alignItems: "start" }}>
+            <div className="ds-card" style={{ position: "sticky", top: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <strong>Filters</strong><button className="ui-btn secondary" onClick={clearFilters}>Clear</button>
+              </div>
+              <input className="ui-search" placeholder="Keyword search" value={keyword} onChange={(e) => setKeyword(e.target.value)} style={{ width: "100%", marginBottom: 10 }} />
+              {Object.entries(optionValues).map(([key, values]) => (
+                <div key={key} style={{ marginBottom: 10 }}>
+                  <div style={{ fontSize: 11, color: "#9bb6b0", marginBottom: 6 }}>{key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase())}</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {values.map((value) => (
+                      <button key={value} className="ui-btn secondary" style={{ height: 30, fontSize: 11, borderColor: filters[key].has(value) ? "#36c6ff" : undefined }} onClick={() => toggleFilter(key, value)}>{value}</button>
+                    ))}
+                  </div>
                 </div>
               ))}
+              <div>
+                <div style={{ fontSize: 11, color: "#9bb6b0", marginBottom: 6 }}>Prospect List Status</div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {[ ["all", "All"], ["in-list", "In a list"], ["not-listed", "Not listed"] ].map(([value, label]) => (
+                    <button key={value} className="ui-btn secondary" style={{ height: 30, fontSize: 11, borderColor: listedStatus === value ? "#36c6ff" : undefined }} onClick={() => setListedStatus(value)}>{label}</button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div className="ds-card" style={{ padding: 12 }}>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
-                <button className="ui-btn secondary" onClick={handleSelectAll}>{allVisibleSelected ? "Clear visible" : "Select visible"}</button>
-                <button className="ui-btn secondary" onClick={() => csvFromRows(exploreRows, false)}>Export Filtered CSV</button>
-                <button className="ui-btn secondary" onClick={() => csvFromRows(exploreRows, true)}>Export HubSpot CSV</button>
-                <select className="ui-dropdown" value={selectedListId} onChange={(e) => setSelectedListId(e.target.value)}>
-                  <option value="all">All companies</option>
+              <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+                <button className="ui-btn secondary" onClick={toggleSelectAllVisible}>{allVisibleSelected ? "Deselect visible" : "Select visible"}</button>
+                <button className="ui-btn secondary" onClick={deselectAll}>Deselect all</button>
+                <select className="ui-search" style={{ maxWidth: 260 }} onChange={(e) => e.target.value && addSelectedToList(e.target.value)} defaultValue="">
+                  <option value="">Add selected to list…</option>
                   {lists.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
                 </select>
-                {!!lists.length && <button className="ui-btn" onClick={() => addSelectedToList(lists[0].id)}>Add Selected to First List</button>}
               </div>
-              <div style={{ overflowX: "auto" }}>
+              <div className="channel-table-wrap">
                 <table className="channel-table">
-                  <thead>
-                    <tr>
-                      <th><input type="checkbox" checked={allVisibleSelected} onChange={handleSelectAll} /></th>
-                      <th>Company</th><th>Role</th><th>Segment</th><th>Industry</th><th>Size</th><th>Country</th><th>In Lists</th>
-                    </tr>
-                  </thead>
+                  <thead><tr><th><input type="checkbox" checked={allVisibleSelected} onChange={toggleSelectAllVisible} /></th><th>Company</th><th>Channel Role</th><th>Segment</th><th>Industry</th><th>Company Size</th><th>Tech Stack</th><th>Key Vendors</th><th>Credit</th><th>Country</th><th>VAR Type</th><th>List status</th></tr></thead>
                   <tbody>
-                    {exploreRows.map((p) => (
+                    {filteredProspects.map((p) => (
                       <tr key={p.id} onClick={() => setActiveCompany(p)} style={{ cursor: "pointer" }}>
-                        <td onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={selectedIds.includes(p.id)} onChange={() => setSelectedIds((prev) => prev.includes(p.id) ? prev.filter((id) => id !== p.id) : [...prev, p.id])} /></td>
-                        <td>{p.company}</td><td>{p.channelRole}</td><td>{p.channelSegment}</td><td>{p.industry}</td><td>{p.companySize}</td><td>{p.country}</td>
-                        <td>{(companyLists[p.id] || []).join(", ") || "—"}</td>
+                        <td onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={selectedIds.has(p.id)} onChange={() => toggleSelected(p.id)} /></td>
+                        <td>{p.company}</td><td>{p.channelRole}</td><td>{p.channelSegment}</td><td>{p.industry}</td><td>{p.companySize}</td><td>{p.technologyStack.join(", ")}</td><td>{p.keyVendors.join(", ")}</td><td>{p.creditRating}</td><td>{p.country}</td><td>{p.varType}</td><td>{companyLists[p.id]?.length ? `In ${companyLists[p.id].length} list(s)` : "Not listed"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -5027,56 +5031,48 @@ function ProspectToolPage() {
           </div>
         ) : (
           <div className="ds-card" style={{ padding: 14 }}>
-            <div style={{ display: "flex", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
-              <input className="ui-search" placeholder="Create list" value={newListName} onChange={(e) => setNewListName(e.target.value)} style={{ maxWidth: 300 }} />
+            <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+              <input className="ui-search" placeholder="Create list" value={newListName} onChange={(e) => setNewListName(e.target.value)} style={{ maxWidth: 320 }} />
               <button className="ui-btn" onClick={createList}>Create List</button>
-              <button className="ui-btn secondary" disabled={!selectedList} onClick={() => selectedList && csvFromRows(selectedListRows, false)}>Export list CSV</button>
-              <button className="ui-btn secondary" disabled={!selectedList} onClick={() => selectedList && csvFromRows(selectedListRows, true)}>Export list HubSpot CSV</button>
             </div>
-            {lists.map((l) => (
-              <div key={l.id} className="channel-card" style={{ marginBottom: 10 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-                  <strong>{l.name}</strong>
-                  <button className="ui-btn secondary" onClick={() => { setSelectedListId(l.id); addSelectedToList(l.id); }}>Add selected</button>
+            {lists.map((list) => {
+              const listCompanies = list.companyIds.map((id) => PROSPECT_SAMPLE.find((p) => p.id === id)).filter(Boolean);
+              return (
+                <div key={list.id} className="channel-card" style={{ marginBottom: 10, padding: 12 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                    <strong>{list.name}</strong>
+                    <button className="ui-btn secondary" onClick={() => addSelectedToList(list.id)}>Add selected</button>
+                  </div>
+                  <div style={{ color: "#9bb6b0", fontSize: 12, marginBottom: 8 }}>{listCompanies.length} companies</div>
+                  {listCompanies.slice(0, 8).map((p) => (
+                    <div key={p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12, marginBottom: 5 }}>
+                      <span>{p.company}</span>
+                      <button className="ui-btn secondary" style={{ height: 28, fontSize: 11 }} onClick={() => removeFromList(list.id, p.id)}>Remove</button>
+                    </div>
+                  ))}
                 </div>
-                <div style={{ fontSize: 12, color: "#9bb6b0" }}>{l.companyIds.length} companies</div>
-              </div>
-            ))}
-            {!lists.length && <div style={{ color: "#9bb6b0", fontSize: 13 }}>No lists yet.</div>}
+              );
+            })}
+            {!lists.length && <div style={{ color: "#9bb6b0", fontSize: 13 }}>No lists yet. Create one, then add selected companies from Explore.</div>}
           </div>
         )}
-      </section>
+      </PageSection>
 
       {activeCompany && (
-        <div style={{ position: "fixed", right: 0, top: 0, width: "min(420px,100%)", height: "100vh", background: "#16242d", borderLeft: "1px solid rgba(145,196,176,0.3)", zIndex: 1200, padding: 18, overflowY: "auto" }}>
+        <div style={{ position: "fixed", right: 0, top: 0, width: "min(460px,100%)", height: "100vh", background: "#16242d", borderLeft: "1px solid rgba(145,196,176,0.3)", zIndex: 1200, padding: 18, overflowY: "auto" }}>
           <button className="ui-btn secondary" onClick={() => setActiveCompany(null)} style={{ marginBottom: 10 }}>Close</button>
-          <h3 style={{ color: "#fff", fontFamily: "'Syne',sans-serif", marginBottom: 10 }}>{activeCompany.company}</h3>
-          <p style={{ color: "#9bb6b0", fontSize: 13, marginBottom: 14 }}>{activeCompany.summary}</p>
-          <div style={{ fontSize: 12, color: "#dff0ea", lineHeight: 1.7 }}>
-            <div><strong>Industry:</strong> {activeCompany.industry}</div>
-            <div><strong>Technology stack:</strong> {activeCompany.technologyStack}</div>
-            <div><strong>Vendors:</strong> {activeCompany.keyVendors}</div>
-          </div>
-          <div style={{ marginTop: 14 }}>
-            <a className="ui-btn secondary" href={activeCompany.linkedin} target="_blank" rel="noreferrer" style={{ display: "inline-flex", textDecoration: "none", alignItems: "center" }}>LinkedIn company page</a>
-          </div>
+          <h3 style={{ color: "#fff", fontFamily: "'Syne',sans-serif", marginBottom: 8 }}>{activeCompany.company}</h3>
+          <p style={{ color: "#9bb6b0", fontSize: 13 }}>{activeCompany.summary}</p>
           <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
-            <a href={`https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(activeCompany.company + " decision maker")}`} target="_blank" rel="noreferrer" style={{ color: "#67D8FF", fontSize: 12 }}>LinkedIn people search</a>
-            <a href={`https://www.linkedin.com/search/results/all/?keywords=${encodeURIComponent(activeCompany.company + " channel director")}`} target="_blank" rel="noreferrer" style={{ color: "#67D8FF", fontSize: 12 }}>LinkedIn role search</a>
-          </div>
-          <div style={{ marginTop: 16 }}>
-            <div style={{ fontSize: 11, color: "#91C4B0", textTransform: "uppercase", fontWeight: 800, marginBottom: 6 }}>Contacts</div>
-            {activeCompany.contacts.length ? activeCompany.contacts.map((c) => (
-              <div key={c.email} className="channel-card" style={{ marginBottom: 8 }}><strong>{c.name}</strong><span>{c.role}</span><span>{c.email}</span></div>
-            )) : <div style={{ color: "#9bb6b0", fontSize: 12 }}>No contacts available.</div>}
+            <a href={`https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(`${activeCompany.company} decision maker`)}`} target="_blank" rel="noreferrer" style={{ color: "#67D8FF", fontSize: 12 }}>LinkedIn people search</a>
+            <a href={`https://www.google.com/search?q=${encodeURIComponent(`${activeCompany.company} contact centre director`)}`} target="_blank" rel="noreferrer" style={{ color: "#67D8FF", fontSize: 12 }}>Google role search</a>
+            <a href={activeCompany.linkedin} target="_blank" rel="noreferrer" style={{ color: "#67D8FF", fontSize: 12 }}>LinkedIn company page</a>
           </div>
         </div>
       )}
 
       <div style={{ position: "fixed", right: 14, bottom: 14, display: "grid", gap: 8, zIndex: 1400 }}>
-        {toasts.map((t) => (
-          <div key={t.id} style={{ background: "rgba(22,36,45,0.95)", border: "1px solid rgba(145,196,176,0.32)", borderRadius: 10, padding: "10px 12px", fontSize: 12 }}>{t.message}</div>
-        ))}
+        {toasts.map((t) => <div key={t.id} style={{ background: "rgba(22,36,45,0.95)", border: "1px solid rgba(145,196,176,0.32)", borderRadius: 10, padding: "10px 12px", fontSize: 12 }}>{t.message}</div>)}
       </div>
     </div>
   );
