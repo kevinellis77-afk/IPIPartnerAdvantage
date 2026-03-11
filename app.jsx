@@ -4797,7 +4797,11 @@ function ProspectToolPage() {
   const [page, setPage] = React.useState(1);
   const [sort, setSort] = React.useState('score_desc');
   const [searchInput, setSearchInput] = React.useState('');
-  const [filters, setFilters] = React.useState({ name:'', industry:'', category:'', channel_role:'', channel_segment:'', country:'', city:'', trading_status:'', adopter_profile:'', minEmployees:'', maxEmployees:'', minRevenue:'', maxRevenue:'', hasWebsite:false, hasLinkedIn:false, hasEmail:false, minScore:0 });
+  const [filters, setFilters] = React.useState({
+    name: '', industry: '', category: '', channel_role: '', channel_segment: '', country: '', city: '',
+    trading_status: '', adopter_profile: '', partnerTierName: '', minEmployees: '', maxEmployees: '', minRevenue: '',
+    maxRevenue: '', hasWebsite: false, hasLinkedIn: false, hasEmail: false, minScore: 0
+  });
   const keyword = useDebouncedValue(searchInput, 180);
 
   const loadData = React.useCallback(async () => {
@@ -4811,95 +4815,199 @@ function ProspectToolPage() {
   React.useEffect(() => { setPage(1); }, [keyword, filters, sort, top50]);
 
   const options = React.useMemo(() => {
-    const make = (k) => [...new Set(rows.map((r)=>r[k]).filter(Boolean))].sort();
-    return { industry:make('industry'), category:make('category'), channel_role:make('channel_role'), channel_segment:make('channel_segment'), country:make('country'), city:make('city'), trading_status:make('trading_status'), adopter_profile:make('adopter_profile') };
+    const make = (k) => [...new Set(rows.map((r) => r[k]).filter(Boolean))].sort();
+    return {
+      industry: make('industry'), category: make('category'), channel_role: make('channel_role'),
+      channel_segment: make('channel_segment'), country: make('country'), city: make('city'),
+      trading_status: make('trading_status'), adopter_profile: make('adopter_profile')
+    };
   }, [rows]);
 
-  const filtered = React.useMemo(() => rows.filter((r)=>{
+  const filtered = React.useMemo(() => rows.filter((r) => {
     if (keyword && !r.searchHaystack.includes(keyword.toLowerCase())) return false;
-    const textKeys=['name','industry','category','channel_role','channel_segment','country','city','trading_status','adopter_profile'];
-    for (const k of textKeys) if (filters[k] && (r[k]||'') !== filters[k]) return false;
-    if (filters.minEmployees && (r.numericEmployees===null || r.numericEmployees < Number(filters.minEmployees))) return false;
-    if (filters.maxEmployees && (r.numericEmployees===null || r.numericEmployees > Number(filters.maxEmployees))) return false;
-    if (filters.minRevenue && (r.numericRevenue===null || r.numericRevenue < Number(filters.minRevenue))) return false;
-    if (filters.maxRevenue && (r.numericRevenue===null || r.numericRevenue > Number(filters.maxRevenue))) return false;
+    const textKeys = ['name', 'industry', 'category', 'channel_role', 'channel_segment', 'country', 'city', 'trading_status', 'adopter_profile'];
+    for (const k of textKeys) if (filters[k] && (r[k] || '') !== filters[k]) return false;
+    if (filters.partnerTierName && (r.partnerTierName || '') !== filters.partnerTierName) return false;
+    if (filters.minEmployees && (r.numericEmployees === null || r.numericEmployees < Number(filters.minEmployees))) return false;
+    if (filters.maxEmployees && (r.numericEmployees === null || r.numericEmployees > Number(filters.maxEmployees))) return false;
+    if (filters.minRevenue && (r.numericRevenue === null || r.numericRevenue < Number(filters.minRevenue))) return false;
+    if (filters.maxRevenue && (r.numericRevenue === null || r.numericRevenue > Number(filters.maxRevenue))) return false;
     if (filters.hasWebsite && !r.hasWebsite) return false;
     if (filters.hasLinkedIn && !r.hasLinkedIn) return false;
     if (filters.hasEmail && !r.hasEmail) return false;
-    if (r.idealPartnerScore < Number(filters.minScore||0)) return false;
+    if (r.idealPartnerScore < Number(filters.minScore || 0)) return false;
     return true;
   }), [rows, keyword, filters]);
 
   const sorted = React.useMemo(() => {
-    const list=[...filtered];
-    const [field,dir]=sort.split('_');
-    list.sort((a,b)=>{
-      const av=field==='score'?a.idealPartnerScore:field==='revenue'?a.numericRevenue||0:field==='employees'?a.numericEmployees||0:(a.name||'');
-      const bv=field==='score'?b.idealPartnerScore:field==='revenue'?b.numericRevenue||0:field==='employees'?b.numericEmployees||0:(b.name||'');
-      if (typeof av==='string') return dir==='asc'?av.localeCompare(bv):bv.localeCompare(av);
-      return dir==='asc'?av-bv:bv-av;
+    const list = [...filtered];
+    const [field, dir] = sort.split('_');
+    list.sort((a, b) => {
+      const av = field === 'score' ? a.idealPartnerScore : field === 'revenue' ? a.numericRevenue || 0 : field === 'employees' ? a.numericEmployees || 0 : (a.name || '');
+      const bv = field === 'score' ? b.idealPartnerScore : field === 'revenue' ? b.numericRevenue || 0 : field === 'employees' ? b.numericEmployees || 0 : (b.name || '');
+      if (typeof av === 'string') return dir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+      return dir === 'asc' ? av - bv : bv - av;
     });
-    return top50 ? list.slice(0,50) : list;
+    return top50 ? list.slice(0, 50) : list;
   }, [filtered, sort, top50]);
 
   const pageCount = Math.max(1, Math.ceil(sorted.length / pageSize));
-  const pageRows = sorted.slice((page-1)*pageSize, (page-1)*pageSize+pageSize);
-  const avgScore = sorted.length ? (sorted.reduce((a,b)=>a+b.idealPartnerScore,0)/sorted.length).toFixed(1) : '0.0';
-  const kpis = { total: rows.length, web: rows.filter(r=>r.hasWebsite).length, li: rows.filter(r=>r.hasLinkedIn).length, email: rows.filter(r=>r.hasEmail).length, avgAll: rows.length?(rows.reduce((a,b)=>a+b.idealPartnerScore,0)/rows.length).toFixed(1):'0.0', filtered: sorted.length };
-
-  const exportRows = (records, name) => {
-    const blob = new Blob([window.ProspectToolUtils.toCsv(records)], {type:'text/csv;charset=utf-8;'});
-    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href);
+  const pageRows = sorted.slice((page - 1) * pageSize, (page - 1) * pageSize + pageSize);
+  const avgScore = sorted.length ? (sorted.reduce((a, b) => a + b.idealPartnerScore, 0) / sorted.length).toFixed(1) : '0.0';
+  const kpis = {
+    total: rows.length,
+    web: rows.filter((r) => r.hasWebsite).length,
+    li: rows.filter((r) => r.hasLinkedIn).length,
+    email: rows.filter((r) => r.hasEmail).length,
+    avgAll: rows.length ? (rows.reduce((a, b) => a + b.idealPartnerScore, 0) / rows.length).toFixed(1) : '0.0',
+    filtered: sorted.length
   };
 
-  const activeChips=[keyword&&`Search: ${keyword}`, ...Object.entries(filters).filter(([k,v])=>v&&v!==0).map(([k,v])=>`${k}: ${v}`)].filter(Boolean);
-  const resetFilters=()=>{ setFilters({ name:'', industry:'', category:'', channel_role:'', channel_segment:'', country:'', city:'', trading_status:'', adopter_profile:'', minEmployees:'', maxEmployees:'', minRevenue:'', maxRevenue:'', hasWebsite:false, hasLinkedIn:false, hasEmail:false, minScore:0 }); setSearchInput(''); setTop50(false); };
+  const exportRows = (records, name) => {
+    const blob = new Blob([window.ProspectToolUtils.toCsv(records)], { type: 'text/csv;charset=utf-8;' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); URL.revokeObjectURL(a.href);
+  };
+
+  const getTierClass = (record) => `tier-badge tier-${record.partnerTier?.color || 'gray'}`;
+  const activeChips = [keyword && `Search: ${keyword}`, ...Object.entries(filters).filter(([k, v]) => v && v !== 0).map(([k, v]) => `${k}: ${v}`)].filter(Boolean);
+  const resetFilters = () => {
+    setFilters({
+      name: '', industry: '', category: '', channel_role: '', channel_segment: '', country: '', city: '', trading_status: '',
+      adopter_profile: '', partnerTierName: '', minEmployees: '', maxEmployees: '', minRevenue: '', maxRevenue: '',
+      hasWebsite: false, hasLinkedIn: false, hasEmail: false, minScore: 0
+    });
+    setSearchInput('');
+    setTop50(false);
+  };
 
   if (loading) return <div className="prospect-shell"><PageHeader title="Partner Prospect Tool" subtitle="Loading CSV dataset…" /><div className="ds-card">Loading data…</div></div>;
-  if (error) return <div className="prospect-shell"><PageHeader title="Partner Prospect Tool" subtitle="Unable to load dataset" /><div className="ds-card">{error}<div style={{marginTop:10}}><button className="ui-btn" onClick={loadData}>Retry</button></div></div></div>;
+  if (error) return <div className="prospect-shell"><PageHeader title="Partner Prospect Tool" subtitle="Unable to load dataset" /><div className="ds-card">{error}<div style={{ marginTop: 10 }}><button className="ui-btn" onClick={loadData}>Retry</button></div></div></div>;
 
   return <div className="prospect-shell">
     <PageHeader title="Partner Prospect Tool" eyebrow="Partner Prospect Tool" subtitle="Explore, filter and rank reseller prospects from the channel dataset" right={<span className="pill">{rows.length} records</span>} />
 
     <div className="kpi-grid">{[
-      ['Total Prospects',kpis.total],['Prospects with Website',kpis.web],['Prospects with LinkedIn',kpis.li],['Prospects with Contact Email',kpis.email],['Average Ideal Partner Score',kpis.avgAll],['Filtered Results',kpis.filtered]
-    ].map(([l,v])=><div key={l} className="kpi-card"><div className="kpi-label">{l}</div><div className="kpi-value">{v}</div></div>)}</div>
+      ['Total Prospects', kpis.total], ['Prospects with Website', kpis.web], ['Prospects with LinkedIn', kpis.li],
+      ['Prospects with Contact Email', kpis.email], ['Average Ideal Partner Score', kpis.avgAll], ['Filtered Results', kpis.filtered]
+    ].map(([l, v]) => <div className="kpi-card" key={l}><div className="kpi-label">{l}</div><div className="kpi-value">{v}</div></div>)}</div>
 
-    <div className="ds-card"><div className="filter-grid">
-      <input className="ui-search" placeholder="Global keyword search" value={searchInput} onChange={(e)=>setSearchInput(e.target.value)} />
-      {['name','industry','category','channel_role','channel_segment','country','city','trading_status','adopter_profile'].map((k)=> k==='name' ? <input key={k} className="ui-search" placeholder="Company name" value={filters.name} onChange={(e)=>setFilters({...filters,name:e.target.value})} /> : <select key={k} className="ui-search" value={filters[k]} onChange={(e)=>setFilters({...filters,[k]:e.target.value})}><option value="">{k.replace('_',' ')}</option>{options[k].map(v=><option key={v} value={v}>{v}</option>)}</select>)}
-      <input className="ui-search" placeholder="Min employees" value={filters.minEmployees} onChange={(e)=>setFilters({...filters,minEmployees:e.target.value})} />
-      <input className="ui-search" placeholder="Max employees" value={filters.maxEmployees} onChange={(e)=>setFilters({...filters,maxEmployees:e.target.value})} />
-      <input className="ui-search" placeholder="Min revenue" value={filters.minRevenue} onChange={(e)=>setFilters({...filters,minRevenue:e.target.value})} />
-      <input className="ui-search" placeholder="Max revenue" value={filters.maxRevenue} onChange={(e)=>setFilters({...filters,maxRevenue:e.target.value})} />
-      <label><input type="checkbox" checked={filters.hasWebsite} onChange={(e)=>setFilters({...filters,hasWebsite:e.target.checked})} /> Has website</label>
-      <label><input type="checkbox" checked={filters.hasLinkedIn} onChange={(e)=>setFilters({...filters,hasLinkedIn:e.target.checked})} /> Has LinkedIn</label>
-      <label><input type="checkbox" checked={filters.hasEmail} onChange={(e)=>setFilters({...filters,hasEmail:e.target.checked})} /> Has contact email</label>
-      <label style={{fontSize:12,color:'#9bb6b0'}}>Minimum ideal partner score: {filters.minScore}
-        <input type="range" min="0" max="100" value={filters.minScore} onChange={(e)=>setFilters({...filters,minScore:Number(e.target.value)})} style={{width:'100%'}} />
-      </label>
-    </div></div>
+    <div className="ds-card" style={{ display: 'grid', gap: 10 }}>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <input className="ui-search" placeholder="Search company, industry, role, keywords, contacts…" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
+        <select className="ui-search" value={sort} onChange={(e) => setSort(e.target.value)}>
+          <option value="score_desc">Score ↓</option><option value="score_asc">Score ↑</option>
+          <option value="revenue_desc">Revenue ↓</option><option value="employees_desc">Employees ↓</option>
+          <option value="name_asc">Name A→Z</option>
+        </select>
+      </div>
 
-    <div className="ds-card" style={{display:'flex',flexWrap:'wrap',gap:8}}>
-      <button className="ui-btn secondary" onClick={resetFilters}>Reset Filters</button>
-      <button className="ui-btn" onClick={()=>setTop50(true)}>Show Top 50 Ideal Partners</button>
-      <button className="ui-btn secondary" onClick={()=>exportRows(sorted,'filtered-prospects.csv')}>Export Filtered CSV</button>
-      <button className="ui-btn secondary" onClick={()=>exportRows([...filtered].sort((a,b)=>b.idealPartnerScore-a.idealPartnerScore).slice(0,50),'top-50-prospects.csv')}>Export Top 50 CSV</button>
-      <select className="ui-search" value={sort} onChange={(e)=>setSort(e.target.value)} style={{maxWidth:220}}><option value="score_desc">Sort: Score ↓</option><option value="score_asc">Sort: Score ↑</option><option value="name_asc">Sort: Name A-Z</option><option value="employees_desc">Sort: Employees ↓</option><option value="revenue_desc">Sort: Revenue ↓</option></select>
-      <button className={`ui-btn ${view==='table'?'':'secondary'}`} onClick={()=>setView('table')}>Table</button>
-      <button className={`ui-btn ${view==='cards'?'':'secondary'}`} onClick={()=>setView('cards')}>Cards</button>
-      {top50 && <span className="top50-badge">Top 50 mode</span>}
+      <div className="filter-grid">
+        {['industry', 'category', 'channel_role', 'channel_segment', 'country', 'city', 'trading_status', 'adopter_profile'].map((k) =>
+          <select key={k} className="ui-search" value={filters[k]} onChange={(e) => setFilters((f) => ({ ...f, [k]: e.target.value }))}>
+            <option value="">All {k.replace('_', ' ')}</option>{options[k].map((v) => <option key={v} value={v}>{v}</option>)}
+          </select>
+        )}
+        <select className="ui-search" value={filters.partnerTierName} onChange={(e) => setFilters((f) => ({ ...f, partnerTierName: e.target.value }))}>
+          <option value="">All Partner Tier</option>
+          <option value="Strategic Target">Strategic Target</option>
+          <option value="Strong Prospect">Strong Prospect</option>
+          <option value="Opportunistic">Opportunistic</option>
+          <option value="Low Priority">Low Priority</option>
+        </select>
+        <input className="ui-search" placeholder="Min employees" value={filters.minEmployees} onChange={(e) => setFilters((f) => ({ ...f, minEmployees: e.target.value }))} />
+        <input className="ui-search" placeholder="Max employees" value={filters.maxEmployees} onChange={(e) => setFilters((f) => ({ ...f, maxEmployees: e.target.value }))} />
+        <input className="ui-search" placeholder="Min revenue" value={filters.minRevenue} onChange={(e) => setFilters((f) => ({ ...f, minRevenue: e.target.value }))} />
+        <input className="ui-search" placeholder="Max revenue" value={filters.maxRevenue} onChange={(e) => setFilters((f) => ({ ...f, maxRevenue: e.target.value }))} />
+        <input className="ui-search" type="number" min="0" max="100" placeholder="Minimum score" value={filters.minScore} onChange={(e) => setFilters((f) => ({ ...f, minScore: Number(e.target.value || 0) }))} />
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <label><input type="checkbox" checked={filters.hasWebsite} onChange={(e) => setFilters((f) => ({ ...f, hasWebsite: e.target.checked }))} /> Has website</label>
+        <label><input type="checkbox" checked={filters.hasLinkedIn} onChange={(e) => setFilters((f) => ({ ...f, hasLinkedIn: e.target.checked }))} /> Has LinkedIn</label>
+        <label><input type="checkbox" checked={filters.hasEmail} onChange={(e) => setFilters((f) => ({ ...f, hasEmail: e.target.checked }))} /> Has email</label>
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <button className="ui-btn" onClick={() => setTop50(true)}>Show Top 50 Ideal Partners</button>
+        <button className="ui-btn secondary" onClick={() => exportRows(sorted, 'filtered-prospects.csv')}>Export Filtered CSV</button>
+        <button className="ui-btn secondary" onClick={() => exportRows([...filtered].sort((a, b) => b.idealPartnerScore - a.idealPartnerScore).slice(0, 50), 'top-50-prospects.csv')}>Export Top 50 CSV</button>
+        <button className="ui-btn secondary" onClick={resetFilters}>Reset</button>
+        <button className={`ui-btn ${view === 'table' ? '' : 'secondary'}`} onClick={() => setView('table')}>Table</button>
+        <button className={`ui-btn ${view === 'card' ? '' : 'secondary'}`} onClick={() => setView('card')}>Card</button>
+        {top50 && <span className="top50-badge">Top 50 mode</span>}
+      </div>
+
+      {activeChips.length > 0 && <div className="chip-row">{activeChips.map((c) => <span className="chip" key={c}>{c}</span>)}</div>}
     </div>
 
-    {activeChips.length>0 && <div className="chip-row">{activeChips.map((c)=><span className="chip" key={c}>{c}</span>)}</div>}
+    {top50 && <div className="ds-card" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: 12 }}><strong>Top 50 summary</strong><span>Avg score: {avgScore}</span><span>Websites: {sorted.filter((r) => r.hasWebsite).length}</span><span>LinkedIn: {sorted.filter((r) => r.hasLinkedIn).length}</span><span>Emails: {sorted.filter((r) => r.hasEmail).length}</span></div>}
 
-    {top50 && <div className="ds-card" style={{display:'flex',gap:12,flexWrap:'wrap',fontSize:12}}><strong>Top 50 summary</strong><span>Avg score: {avgScore}</span><span>Websites: {sorted.filter(r=>r.hasWebsite).length}</span><span>LinkedIn: {sorted.filter(r=>r.hasLinkedIn).length}</span><span>Emails: {sorted.filter(r=>r.hasEmail).length}</span></div>}
+    {sorted.length === 0 ? <div className="ds-card">No results found.</div> : view === 'table' ? <div className="prospect-table-wrap"><table className="prospect-table"><thead><tr>{['Rank', 'Company Name', 'Ideal Partner Score', 'Partner Tier', 'Industry', 'Category', 'Channel Role', 'Channel Segment', 'Employees', 'Revenue', 'City', 'Country', 'Website', 'LinkedIn', 'Contacts', 'Trading Status'].map((h) => <th key={h}>{h}</th>)}</tr></thead><tbody>{pageRows.map((r, i) => <tr key={r.id} onClick={() => setSelected(r)} style={{ cursor: 'pointer' }}><td>{(page - 1) * pageSize + i + 1}</td><td><strong>{r.displayName}</strong>{r.ch_link && <div><a href={window.ProspectToolUtils.normalizeUrl(r.ch_link)} target="_blank" rel="noreferrer">Companies House</a></div>}</td><td><span className="score-badge">{r.idealPartnerScore}</span></td><td><span className={getTierClass(r)}>{r.partnerTierName || 'Low Priority'}</span></td><td>{r.industry || '—'}</td><td>{r.category || '—'}</td><td>{r.channel_role || '—'}</td><td>{r.channel_segment || '—'}</td><td>{r.displayEmployees}</td><td>{r.displayRevenue}</td><td>{r.city || '—'}</td><td>{r.country || '—'}</td><td>{r.website ? <a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a> : '—'}</td><td>{r.linkedin ? <a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a> : '—'}</td><td>{r.contactCount}</td><td>{r.trading_status || '—'}</td></tr>)}</tbody></table></div> : <div className="prospect-cards">{pageRows.map((r) => <div className="prospect-card" key={r.id} onClick={() => setSelected(r)}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}><strong>{r.displayName}</strong><div style={{ display: 'flex', gap: 6, alignItems: 'center' }}><span className="score-badge">{r.idealPartnerScore}</span><span className={getTierClass(r)}>{r.partnerTierName || 'Low Priority'}</span></div></div><div>{r.industry || '—'}</div><div>{r.channel_role || '—'} / {r.channel_segment || '—'}</div><div>{r.city || '—'}, {r.country || '—'}</div><div>{r.displayRevenue} · {r.displayEmployees}</div><div>{r.keywords || '—'}</div><div style={{ display: 'flex', gap: 8 }}>{r.website && <a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>}{r.linkedin && <a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}</div></div>)}</div>}
 
-    {sorted.length===0 ? <div className="ds-card">No results found.</div> : view==='table' ? <div className="prospect-table-wrap"><table className="prospect-table"><thead><tr>{['Rank','Company Name','Ideal Partner Score','Industry','Category','Channel Role','Channel Segment','Employees','Revenue','City','Country','Website','LinkedIn','Contacts','Trading Status'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{pageRows.map((r,i)=><tr key={r.id} onClick={()=>setSelected(r)} style={{cursor:'pointer'}}><td>{(page-1)*pageSize+i+1}</td><td><strong>{r.displayName}</strong>{r.ch_link&&<div><a href={window.ProspectToolUtils.normalizeUrl(r.ch_link)} target="_blank" rel="noreferrer">Companies House</a></div>}</td><td><span className="score-badge">{r.idealPartnerScore}</span></td><td>{r.industry||'—'}</td><td>{r.category||'—'}</td><td>{r.channel_role||'—'}</td><td>{r.channel_segment||'—'}</td><td>{r.displayEmployees}</td><td>{r.displayRevenue}</td><td>{r.city||'—'}</td><td>{r.country||'—'}</td><td>{r.website?<a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>:'—'}</td><td>{r.linkedin?<a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>:'—'}</td><td>{r.contactCount}</td><td>{r.trading_status||'—'}</td></tr>)}</tbody></table></div> : <div className="prospect-cards">{pageRows.map((r)=><div className="prospect-card" key={r.id} onClick={()=>setSelected(r)}><div style={{display:'flex',justifyContent:'space-between'}}><strong>{r.displayName}</strong><span className="score-badge">{r.idealPartnerScore}</span></div><div>{r.industry||'—'}</div><div>{r.channel_role||'—'} / {r.channel_segment||'—'}</div><div>{r.city||'—'}, {r.country||'—'}</div><div>{r.displayRevenue} · {r.displayEmployees}</div><div>{r.keywords||'—'}</div><div style={{display:'flex',gap:8}}>{r.website&&<a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>}{r.linkedin&&<a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}</div></div>)}</div>}
+    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}><button className="ui-btn secondary" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Prev</button><span style={{ fontSize: 12, color: '#9bb6b0' }}>Page {page} / {pageCount}</span><button className="ui-btn secondary" disabled={page >= pageCount} onClick={() => setPage((p) => p + 1)}>Next</button><select className="ui-search" value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))} style={{ maxWidth: 90 }}><option>25</option><option>50</option><option>100</option></select></div>
 
-    <div style={{display:'flex',gap:8,alignItems:'center'}}><button className="ui-btn secondary" disabled={page<=1} onClick={()=>setPage(p=>p-1)}>Prev</button><span style={{fontSize:12,color:'#9bb6b0'}}>Page {page} / {pageCount}</span><button className="ui-btn secondary" disabled={page>=pageCount} onClick={()=>setPage(p=>p+1)}>Next</button><select className="ui-search" value={pageSize} onChange={(e)=>setPageSize(Number(e.target.value))} style={{maxWidth:90}}><option>25</option><option>50</option><option>100</option></select></div>
+    {selected && <div className="drawer"><button className="ui-btn secondary" onClick={() => setSelected(null)}>Close</button>
+      <div className="panel-card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' }}>
+          <h3 style={{ margin: 0 }}>{selected.displayName}</h3>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+            <span className="score-badge">Score: {selected.idealPartnerScore}</span>
+            <span className={getTierClass(selected)}>{selected.partnerTierName || 'Low Priority'}</span>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+          {selected.website && <a className="ui-btn secondary" href={window.ProspectToolUtils.normalizeUrl(selected.website)} target="_blank" rel="noreferrer">Website</a>}
+          {selected.linkedin && <a className="ui-btn secondary" href={window.ProspectToolUtils.normalizeUrl(selected.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}
+        </div>
+      </div>
 
-    {selected && <div className="drawer"><button className="ui-btn secondary" onClick={()=>setSelected(null)}>Close</button><h3>{selected.displayName}</h3><div className="score-badge">Ideal Partner Score: {selected.idealPartnerScore}</div><h4>Overview</h4><p>{selected.industry||'—'} · {selected.category||'—'} · {selected.trading_status||'—'}</p><p>Employees {selected.displayEmployees} · Revenue {selected.displayRevenue} · Net Worth {window.ProspectToolUtils.formatCurrency(selected.numericNetWorth)}</p><p>{selected.displayLocation} {selected.postcode}</p><h4>Digital Presence</h4><p>Website: {selected.website||'—'}</p><p>LinkedIn: {selected.linkedin||'—'}</p><p>Email: {selected.email||'—'}</p><h4>Channel Fit</h4><p>{selected.channel_role||'—'} / {selected.channel_segment||'—'} / {selected.adopter_profile||'—'}</p><p>Partners: {selected.partners||'—'}</p><h4>Technology Signals</h4><p>{selected.tech_stack||'—'}</p><p>{selected.keywords||'—'}</p><h4>Contacts</h4>{selected.contacts.length?selected.contacts.map((c,idx)=><div key={idx}>{c.name||'—'} · {c.role||'—'} · {c.email||'—'}</div>):<p>—</p>}<h4>Score Breakdown</h4><ul>{selected.scoreBreakdown.map((f)=><li key={f}>{f}</li>)}</ul><div style={{display:'grid',gap:8,marginTop:10}}><button className="ui-btn secondary" onClick={()=>navigator.clipboard?.writeText(selected.website||'')}>Copy website</button><button className="ui-btn secondary" onClick={()=>navigator.clipboard?.writeText(selected.linkedin||'')}>Copy LinkedIn</button><button className="ui-btn secondary" onClick={()=>navigator.clipboard?.writeText(selected.email||selected.contacts[0]?.email||'')}>Copy email</button><button className="ui-btn" onClick={()=>exportRows([selected],`${selected.id}-prospect.csv`)}>Export this record as CSV row</button></div></div>}
+      <div className="panel-card">
+        <h4>Overview</h4>
+        <p>Industry: {selected.industry || '—'}</p>
+        <p>Company Type: {selected.category || '—'}</p>
+        <p>Employees: {selected.displayEmployees}</p>
+        <p>Revenue: {selected.displayRevenue}</p>
+        <p>Location: {selected.displayLocation} {selected.postcode}</p>
+      </div>
+
+      <div className="panel-card">
+        <h4>Channel Fit</h4>
+        <p>Channel Role: {selected.channel_role || '—'}</p>
+        <p>Channel Segment: {selected.channel_segment || '—'}</p>
+        <p>Adopter Profile: {selected.adopter_profile || '—'}</p>
+      </div>
+
+      <div className="panel-card">
+        <h4>Technology Signals</h4>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {(selected.tech_stack || '').split(/[,;|]/).map((t) => t.trim()).filter(Boolean).map((tech) => <span key={tech} className="tech-tag">{tech}</span>)}
+          {!selected.tech_stack && <span className="tech-tag">No data</span>}
+        </div>
+      </div>
+
+      <div className="panel-card">
+        <h4>Contacts</h4>
+        {selected.contacts.length ? selected.contacts.map((c, idx) => <div key={`${c.name}-${idx}`} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}><span>{c.name || c.email || '—'}</span><span className="tech-tag">{c.role || 'Role not set'}</span></div>) : <p>—</p>}
+      </div>
+
+      <div className="panel-card">
+        <h4>Score Breakdown</h4>
+        {selected.scoreBreakdown.map((f, idx) => {
+          const m = f.match(/([+-]?\d+(?:\.\d+)?)/);
+          const raw = m ? Number(m[1]) : 0;
+          const fill = Math.min(100, Math.max(8, Math.abs(raw) * 5));
+          const label = f.replace(/\s*[+-]?\d+(?:\.\d+)?$/, '');
+          return <div className="score-bar" key={`${f}-${idx}`}><span>{label}</span><div className="bar"><div className="fill" style={{ width: `${fill}%`, opacity: raw < 0 ? 0.45 : 1 }} /></div></div>;
+        })}
+      </div>
+
+      <div style={{ display: 'grid', gap: 8, marginTop: 10 }}>
+        <button className="ui-btn secondary" onClick={() => navigator.clipboard?.writeText(selected.website || '')}>Copy website</button>
+        <button className="ui-btn secondary" onClick={() => navigator.clipboard?.writeText(selected.linkedin || '')}>Copy LinkedIn</button>
+        <button className="ui-btn secondary" onClick={() => navigator.clipboard?.writeText(selected.email || selected.contacts[0]?.email || '')}>Copy email</button>
+        <button className="ui-btn" onClick={() => exportRows([selected], `${selected.id}-prospect.csv`)}>Export this record as CSV row</button>
+      </div>
+    </div>}
   </div>;
 }
 
