@@ -441,9 +441,9 @@ function StandardTable({ className = "", children }) {
 }
 function AppShell({ sidebar, topbar, children }) {
   return (
-    <div className="app-shell">
+    <div className="app-shell app-layout">
       {sidebar}
-      <main className="app-main">
+      <main className="app-main page-container">
         {topbar}
         {children}
       </main>
@@ -10397,7 +10397,6 @@ function App() {
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
-  const contentOffset = sidebarLayout.sidebarWidth;
   const currentPageMeta = NAV_ITEMS.find((item) => item.id === page) || NAV_ITEMS[0];
 
   return (
@@ -10406,8 +10405,7 @@ function App() {
       topbar={<AppTopBar title={currentPageMeta?.label || "Dashboard"} />}
     >
       <div
-        className="app-main-inner with-sidebar"
-        style={{ marginLeft: contentOffset }}
+        className="app-main-inner with-sidebar page-content"
       >
         <PageShell key={page} className="page-fade">{renderPage()}</PageShell>
       </div>

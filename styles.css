@@ -26,8 +26,10 @@ h1,h2,h3,h4,h5,h6,p,span,label,th,td,button{white-space:normal;overflow-wrap:any
 ::-webkit-scrollbar-track{background:#0D1618;}
 ::-webkit-scrollbar-thumb{background:rgba(99,171,143,0.4);border-radius:3px;}
 
-.app-shell{display:flex;width:100%;min-height:100vh;position:relative;}
-.app-sidebar{width:280px;flex-shrink:0;display:flex;flex-direction:column;padding:20px 14px;box-sizing:border-box;border-right:1px solid rgba(255,255,255,0.1);background:linear-gradient(180deg,#121b30,#17263c);backdrop-filter:blur(10px);min-height:100vh;position:fixed;top:0;left:0;z-index:1000;box-shadow:8px 0 40px rgba(0,0,0,0.35);}
+.app-shell,.app-layout{display:flex;width:100%;min-height:100vh;position:relative;max-width:100%;overflow-x:hidden;}
+.app-sidebar,.sidebar{width:250px;min-width:250px;max-width:250px;flex:0 0 250px;display:flex;flex-direction:column;padding:20px 12px;box-sizing:border-box;border-right:1px solid rgba(255,255,255,0.1);background:linear-gradient(180deg,#121b30,#17263c);backdrop-filter:blur(10px);min-height:100vh;position:fixed;top:0;left:0;z-index:1000;box-shadow:8px 0 40px rgba(0,0,0,0.35);}
+.app-main,.page-container{flex:1;min-width:0;width:calc(100% - 250px);max-width:calc(100% - 250px);margin-left:250px;display:flex;flex-direction:column;}
+.page-content{width:100%;max-width:var(--content-max);margin:0 auto;min-width:0;}
 
 
 .sidebar-top{display:flex;flex-direction:column;gap:14px;margin-bottom:18px;}
@@ -523,7 +525,7 @@ p, li, td, input, select, textarea, button { font-size: 15px; }
 small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px; }
 
 .app-shell { background: var(--bg-app); color: var(--text-primary); }
-.app-main { flex: 1; min-width: 0; width: 100%; max-width: 100%; }
+.app-main,.page-container { flex: 1; min-width: 0; width: calc(100% - 250px); max-width: calc(100% - 250px); margin-left: 250px; }
 .page-shell {
   width: 100%;
   max-width: var(--content-max);
@@ -701,6 +703,11 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
   .app-topbar{padding:16px;}
   .ds-page-header__content{flex-direction:column;}
 }
+@media (max-width:900px){
+  .app-sidebar,.sidebar{position:static !important;min-height:auto;width:100% !important;min-width:0;max-width:100% !important;flex:1 1 auto;}
+  .app-main,.page-container{margin-left:0 !important;width:100% !important;max-width:100% !important;}
+}
+
 
 
 :root[data-theme="light"] .app-sidebar,
