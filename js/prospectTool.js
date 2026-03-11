@@ -104,6 +104,13 @@
     return { score: Math.max(0, Math.min(100, Math.round(score))), factors };
   }
 
+  function getPartnerTier(score) {
+    if (score >= 65) return { label: "Tier 1 – Strategic Target", color: "emerald" };
+    if (score >= 55) return { label: "Tier 2 – Strong Prospect", color: "blue" };
+    if (score >= 40) return { label: "Tier 3 – Opportunistic", color: "amber" };
+    return { label: "Tier 4 – Low Priority", color: "gray" };
+  }
+
   function normalizeRecord(raw, idx) {
     const mapped = {
       id: raw.id || `row-${idx + 1}`,
@@ -146,6 +153,8 @@
     const scoreData = calculateIdealPartnerScore(mapped);
     mapped.idealPartnerScore = scoreData.score;
     mapped.scoreBreakdown = scoreData.factors;
+    mapped.partnerTier = getPartnerTier(scoreData.score);
+    mapped.partnerTierName = mapped.partnerTier.label.split('–')[1]?.trim() || mapped.partnerTier.label;
 
     mapped.searchHaystack = [
       mapped.name, mapped.industry, mapped.category, mapped.channel_role, mapped.channel_segment,
@@ -186,5 +195,6 @@
     normalizeUrl,
     formatCurrency,
     parseNumber,
+    getPartnerTier,
   };
 })();
