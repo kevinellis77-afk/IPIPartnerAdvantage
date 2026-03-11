@@ -349,12 +349,14 @@ function Bg() {
 function AppPageHeader({ eyebrow, title, subtitle, actions = null }) {
   return (
     <div className="ds-page-header">
-      {eyebrow && <div className="ds-page-header__eyebrow">{eyebrow}</div>}
-      <h1 className="ds-page-header__title">
-        {title}
-      </h1>
-      {subtitle && <p className="ds-page-header__subtitle">{subtitle}</p>}
-      {actions}
+      <div className="ds-page-header__content">
+        <div>
+          {eyebrow && <div className="ds-page-header__eyebrow">{eyebrow}</div>}
+          <h1 className="ds-page-header__title">{title}</h1>
+          {subtitle && <p className="ds-page-header__subtitle">{subtitle}</p>}
+        </div>
+        {actions ? <div className="ds-page-header__actions">{actions}</div> : null}
+      </div>
     </div>
   );
 }
@@ -402,9 +404,10 @@ function HighlightCard({ children, className = "", style = {} }) {
   );
 }
 
-function MetricCard({ label, value, tone = "info" }) {
+function MetricCard({ label, value, tone = "info", icon = null }) {
   return (
     <StandardCard className="ds-metric-card">
+      {icon ? <div className="ds-metric-card__icon">{icon}</div> : null}
       <div className="ds-metric-card__label">{label}</div>
       <div className={`ds-metric-card__value tone-${tone}`}>{value}</div>
     </StandardCard>
@@ -417,6 +420,10 @@ function StandardButton({ children, className = "", ...props }) {
 
 function SecondaryButton({ children, className = "", ...props }) {
   return <button className={`ui-btn ui-btn--secondary ${className}`.trim()} {...props}>{children}</button>;
+}
+
+function GhostButton({ children, className = "", ...props }) {
+  return <button className={`ui-btn ui-btn--ghost ${className}`.trim()} {...props}>{children}</button>;
 }
 
 function FormField({ as = "input", className = "", ...props }) {
@@ -496,8 +503,32 @@ function SidebarNavItem({ item, active, onClick, collapsed }) {
   );
 }
 
+function NavIcon({ name }) {
+  const icons = {
+    home: "M3 10.5L12 3l9 7.5V21h-6v-6H9v6H3z",
+    sparkles: "M12 2l1.9 4.7L19 8.6l-4.4 2.7L16 16l-4-2.6L8 16l1.4-4.7L5 8.6l5.1-1.9z",
+    academy: "M3 8l9-4 9 4-9 4-9-4zm2 3.5V16l7 3 7-3v-4.5",
+    users: "M16 11a4 4 0 100-8 4 4 0 000 8zM8 13a4 4 0 100-8 4 4 0 000 8zm8 2c3.3 0 6 1.6 6 3.5V21H10v-2.5c0-1.9 2.7-3.5 6-3.5zM8 15c-3.3 0-6 1.6-6 3.5V21h6",
+    shield: "M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z",
+    money: "M4 6h16v12H4zM8 12h8M12 9v6",
+    megaphone: "M3 11h4l9-4v10l-9-4H3zM7 14l2 6",
+    chart: "M4 19h16M7 15v-4M12 15V8M17 15v-6",
+    search: "M11 4a7 7 0 105.1 11.8l4 4 1.4-1.4-4-4A7 7 0 0011 4z",
+    checklist: "M4 6h2l1 2 3-4M11 7h9M4 12h2l1 2 3-4M11 13h9M4 18h2l1 2 3-4M11 19h9",
+  };
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d={icons[name] || icons.home} />
+    </svg>
+  );
+}
+
 function ActionButton({ children, variant = "primary", className = "", ...props }) {
-  const cls = variant === "secondary" ? "ui-btn ui-btn--secondary" : "ui-btn ui-btn--primary";
+  const cls = variant === "secondary"
+    ? "ui-btn ui-btn--secondary"
+    : variant === "ghost"
+      ? "ui-btn ui-btn--ghost"
+      : "ui-btn ui-btn--primary";
   return <button className={`${cls} ${className}`.trim()} {...props}>{children}</button>;
 }
 
@@ -6283,7 +6314,7 @@ function PartnerProgramPage() {
                 {
                   title: "How We Win This Partner Type",
                   items: t.winStrategies,
-                  icon: "★",
+                  icon: <NavIcon name="users" />,
                 },
               ].map((section) => (
                 <div key={section.title}>
@@ -9900,56 +9931,56 @@ function ChannelMarketingPage() {
 const NAV_ITEMS = [
   {
     id: "main",
-    icon: "⌂",
+    icon: <NavIcon name="home" />,
     label: "IPI Overview",
     sublabel: "IPI Overview",
   },
   {
     id: "bse",
-    icon: "↗",
+    icon: <NavIcon name="sparkles" />,
     label: "Enable, Land, Expand",
     sublabel: "Enable, Land, Expand",
   },
-  { id: "hub", icon: "✓", label: "Partner Enablement", sublabel: "Hub 2026" },
+  { id: "hub", icon: <NavIcon name="academy" />, label: "Partner Enablement", sublabel: "Hub 2026" },
   {
     id: "program",
-    icon: "★",
+    icon: <NavIcon name="users" />,
     label: "Ideal Partner Profile",
     sublabel: "Recruitment & IPP",
   },
   {
     id: "governance",
-    icon: "☰",
+    icon: <NavIcon name="checklist" />,
     label: "Partner Governance",
     sublabel: "Roles & Ownership",
   },
   {
     id: "commercial",
-    icon: "£",
+    icon: <NavIcon name="money" />,
     label: "Commercial Framework",
     sublabel: "Legal & Pricing Model",
   },
   {
     id: "partner-trust",
-    icon: "🛡",
+    icon: <NavIcon name="shield" />,
     label: "Partner Trust",
     sublabel: "/partner-trust",
   },
   {
     id: "channel-marketing",
-    icon: "✦",
+    icon: <NavIcon name="megaphone" />,
     label: "Channel Marketing",
     sublabel: "Partner Website Strategy",
   },
   {
     id: "channel-dashboard",
-    icon: "◫",
+    icon: <NavIcon name="chart" />,
     label: "Channel Cadence",
     sublabel: "Operational Control Centre",
   },
   {
     id: "prospect",
-    icon: "⌕",
+    icon: <NavIcon name="search" />,
     label: "Partner Prospect Tool",
     sublabel: "Deal Intelligence",
   },
@@ -9993,7 +10024,7 @@ function SideNav({ page, setPage, onLayoutChange }) {
   const SIDEBAR_PIN_KEY = "ipi_sidebar_pinned_v2";
   const SIDEBAR_COLLAPSE_KEY = "ipi_sidebar_collapsed_v2";
   const MOBILE_BREAKPOINT = 900;
-  const SIDEBAR_WIDTH = 280;
+  const SIDEBAR_WIDTH = 250;
   const SIDEBAR_COLLAPSED_WIDTH = 72;
 
   const [isMobile, setIsMobile] = React.useState(() =>
@@ -10081,6 +10112,7 @@ function SideNav({ page, setPage, onLayoutChange }) {
           </div>
         </div>
 
+        <div className="sidebar-section-label">Program</div>
         <nav className="sidebar-nav">
             {NAV_ITEMS.map((item) => {
               const active = page === item.id;
@@ -10137,9 +10169,9 @@ function App() {
     sidebarWidth: 280,
   });
 
-  function PageShell({ children }) {
+  function PageShell({ children, className = "" }) {
     return (
-      <div className="page-shell">
+      <div className={`page-shell ${className}`.trim()}>
         {children}
       </div>
     );
@@ -10558,7 +10590,7 @@ function App() {
         className={`app-main-inner ${sidebarLayout.isSidebarPinned && !sidebarLayout.isCollapsed ? "with-sidebar" : ""} ${sidebarLayout.isSidebarPinned && sidebarLayout.isCollapsed ? "with-collapsed-sidebar" : ""}`}
         style={{ marginLeft: contentOffset }}
       >
-        <PageShell>{renderPage()}</PageShell>
+        <PageShell key={page} className="page-fade">{renderPage()}</PageShell>
       </div>
     </AppShell>
   );
