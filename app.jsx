@@ -9579,7 +9579,6 @@ function ChannelMarketingPage() {
         <SectionWrapper>
           <SectionHeader title="Channel Marketing Mission" description="The website must do more than describe technology. It must sell the business opportunity to a reseller." />
           <HighlightCard>
-            <h3 className="cm-highlight-title">Channel Marketing Mission</h3>
             <p className="cm-highlight-copy">Build a partner-first digital experience that positions IP Integration as the easiest and most commercially attractive vendor for resellers to grow recurring CX revenue with.</p>
             <div className="cm-grid-4">
               {CHANNEL_MARKETING_MISSION_PILLARS.map((pillar) => (
