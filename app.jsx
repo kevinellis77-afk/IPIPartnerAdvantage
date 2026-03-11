@@ -8192,6 +8192,87 @@ function normaliseRoleValue(value) {
   return [value];
 }
 
+function MultiRoleDropdown({ id, label, value, options, onChange }) {
+  const selected = normaliseRoleValue(value);
+  const [open, setOpen] = React.useState(false);
+  const wrapRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const handlePointerDown = (event) => {
+      if (!wrapRef.current?.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("touchstart", handlePointerDown);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("touchstart", handlePointerDown);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
+  const toggleOption = (option) => {
+    const exists = selected.includes(option);
+    onChange(exists ? selected.filter((item) => item !== option) : [...selected, option]);
+  };
+
+  return (
+    <div className={`raciMultiSelect ${open ? "is-open" : ""}`} ref={wrapRef}>
+      <button
+        type="button"
+        id={id}
+        className="raciMultiSelectTrigger"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={label}
+        onClick={() => setOpen((prev) => !prev)}
+      >
+        <span className="raciMultiSelectValue">
+          {selected.length === 0 ? (
+            <span className="raciMultiSelectPlaceholder">Select roles</span>
+          ) : selected.length > 2 ? (
+            <span className="raciMultiSelectSummary">{selected.length} selected</span>
+          ) : (
+            selected.map((role) => (
+              <span className="raciTag" key={`${id}-${role}`}>
+                {role}
+              </span>
+            ))
+          )}
+        </span>
+        <span className="raciMultiSelectChevron" aria-hidden="true">▾</span>
+      </button>
+      {open && (
+        <div className="raciMultiSelectMenu" role="listbox" aria-multiselectable="true">
+          {options.map((option) => {
+            const isSelected = selected.includes(option);
+            return (
+              <button
+                type="button"
+                key={`${id}-${option}`}
+                className={`raciMultiSelectOption ${isSelected ? "is-selected" : ""}`}
+                role="option"
+                aria-selected={isSelected}
+                onClick={() => toggleOption(option)}
+              >
+                <input type="checkbox" checked={isSelected} readOnly tabIndex={-1} />
+                <span>{option}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function buildRoleSummary(rows, roles) {
   return roles
     .map((role) => {
@@ -8801,36 +8882,13 @@ function GovernancePage() {
                           ["i", "Informed"],
                         ].map(([field, label]) => (
                           <div key={`${task.id}-${field}`} style={{ padding: "10px" }}>
-                            <select
-                              className="ui-dropdown"
-                              multiple
-                              value={normaliseRoleValue(task[field])}
-                              onChange={(e) =>
-                                updateRaciField(
-                                  task.id,
-                                  field,
-                                  [...e.target.selectedOptions].map((option) => option.value),
-                                )
-                              }
-                              style={{
-                                width: "100%",
-                                boxShadow: "none",
-                                minHeight: 94,
-                              }}
-                            >
-                              {RACI_DROPDOWN_OPTIONS.map((role) => (
-                                <option key={`${task.id}-${field}-${role}`} value={role}>
-                                  {role}
-                                </option>
-                              ))}
-                            </select>
-                            <div className="selectedTags">
-                              {normaliseRoleValue(task[field]).map((role) => (
-                                <span className="raciTag" key={`${task.id}-${field}-${role}`}>
-                                  {role}
-                                </span>
-                              ))}
-                            </div>
+                            <MultiRoleDropdown
+                              id={`raci-${task.id}-${field}`}
+                              label={`${label} roles for ${task.activity}`}
+                              value={task[field]}
+                              options={RACI_DROPDOWN_OPTIONS}
+                              onChange={(values) => updateRaciField(task.id, field, values)}
+                            />
                           </div>
                         ))}
                         <div style={{ padding: "10px" }}>

@@ -432,8 +432,19 @@ tbody tr:nth-child(even){background:rgba(255,255,255,0.015);}
 .raciHeaderCell.col-c,.metric-c{background:rgba(245,158,11,.14);color:#b45309;}
 .raciHeaderCell.col-i,.metric-i{background:rgba(100,116,139,.14);color:#475569;}
 .raciTableRow:hover{background:rgba(123,150,163,.08)!important;}
-.selectedTags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
-.raciTag{padding:4px 8px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(37,99,235,.08);color:#1d4ed8;border:1px solid rgba(37,99,235,.14);}
+.raciMultiSelect{position:relative;width:100%;max-width:100%;}
+.raciMultiSelectTrigger{width:100%;min-height:36px;border:1px solid var(--border-soft);border-radius:10px;background:var(--bg-surface);display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;color:#fff;cursor:pointer;}
+.raciMultiSelectTrigger:focus-visible{outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 40%,transparent);border-color:var(--focus);}
+.raciMultiSelectValue{display:flex;align-items:center;gap:6px;flex:1;min-width:0;overflow:hidden;flex-wrap:wrap;}
+.raciMultiSelectPlaceholder{color:color-mix(in srgb,#fff 70%,transparent);font-size:12px;}
+.raciMultiSelectSummary{color:#fff;font-size:12px;font-weight:600;}
+.raciMultiSelectChevron{color:#fff;flex:0 0 auto;font-size:11px;}
+.raciMultiSelectMenu{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:20;background:var(--bg-surface);border:1px solid var(--border-soft);border-radius:10px;box-shadow:var(--shadow-soft);padding:4px;max-height:210px;overflow:auto;}
+.raciMultiSelectOption{width:100%;border:none;background:transparent;border-radius:8px;padding:7px 8px;display:flex;align-items:center;gap:8px;text-align:left;color:#fff;cursor:pointer;font-size:12px;}
+.raciMultiSelectOption:hover{background:color-mix(in srgb,var(--bg-subtle) 82%, transparent);}
+.raciMultiSelectOption.is-selected{background:color-mix(in srgb,var(--focus) 22%, transparent);}
+.raciMultiSelectOption input{accent-color:var(--focus);width:14px;height:14px;pointer-events:none;}
+.raciTag{padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;background:color-mix(in srgb,var(--focus) 24%, transparent);color:#fff;border:1px solid color-mix(in srgb,var(--focus) 36%, transparent);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .ownershipDashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:20px 0 28px;}
 .ownershipCard{background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(245,248,252,.96));border:1px solid rgba(20,40,80,.08);border-radius:18px;padding:18px;box-shadow:0 10px 24px rgba(15,23,42,.08);}
 .ownershipHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;}
