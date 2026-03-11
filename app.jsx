@@ -3677,6 +3677,49 @@ const RESOURCES = [
 ];
 
 function EnablementHub({ onBack, onNavigate }) {
+  const sectionShell = {
+    maxWidth: "none",
+    margin: "0",
+    padding: "clamp(52px,6vw,72px) 44px 0",
+    width: "100%",
+  };
+  const sectionHeaderWrap = {
+    maxWidth: 780,
+    marginBottom: 26,
+  };
+  const sectionEyebrow = {
+    margin: "0 0 10px",
+    fontSize: 10,
+    fontWeight: 800,
+    color: "rgba(145,196,176,0.78)",
+    letterSpacing: "0.14em",
+    textTransform: "uppercase",
+  };
+  const sectionTitle = {
+    margin: "0 0 10px",
+    fontSize: "clamp(24px,2.7vw,34px)",
+    lineHeight: 1.15,
+    letterSpacing: "-0.025em",
+    color: "#F2FAF7",
+    fontFamily: "'Syne',sans-serif",
+  };
+  const sectionDescription = {
+    margin: 0,
+    fontSize: 14,
+    lineHeight: 1.72,
+    color: "#86ABA3",
+    maxWidth: 720,
+  };
+  const standardCard = {
+    background: "rgba(255,255,255,0.03)",
+    borderRadius: 18,
+    padding: 20,
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
+    boxShadow: "0 14px 32px rgba(6,14,24,0.2)",
+  };
+
   return (
     <React.Fragment>
       <Bg />
@@ -3751,34 +3794,63 @@ function EnablementHub({ onBack, onNavigate }) {
         </header>
 
         {/* HUB HERO */}
-        <div style={{ textAlign: "center", padding: "36px 40px 0" }}>
+        <div
+          style={{
+            textAlign: "center",
+            padding: "clamp(40px,5vw,64px) 44px 0",
+          }}
+        >
           <div
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              background: "rgba(212,168,67,0.08)",
-              border: "1px solid rgba(212,168,67,0.22)",
-              borderRadius: 100,
-              padding: "5px 16px",
-              marginBottom: 14,
-              fontSize: 11,
-              fontWeight: 800,
-              color: "#E8C96A",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
+              maxWidth: 880,
+              margin: "0 auto",
+              padding: "clamp(28px,3.8vw,42px) clamp(20px,3vw,40px)",
+              borderRadius: 24,
+              border: "1px solid rgba(145,196,176,0.16)",
+              background:
+                "linear-gradient(180deg,rgba(15,36,47,0.62) 0%,rgba(10,22,31,0.72) 100%)",
+              boxShadow: "0 20px 48px rgba(6,12,20,0.28)",
             }}
           >
-            IPI Partner Advantage 2026
-          </div>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                background: "rgba(212,168,67,0.08)",
+                border: "1px solid rgba(212,168,67,0.22)",
+                borderRadius: 100,
+                padding: "6px 15px",
+                marginBottom: 12,
+                fontSize: 10,
+                fontWeight: 800,
+                color: "#E8C96A",
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+              }}
+            >
+              Partner Program
+            </div>
+            <div
+              style={{
+                marginBottom: 14,
+                fontSize: 11,
+                fontWeight: 700,
+                color: "rgba(232,201,106,0.8)",
+                letterSpacing: "0.09em",
+                textTransform: "uppercase",
+              }}
+            >
+              IPI Partner Advantage 2026
+            </div>
           <h1
             style={{
-              fontSize: "clamp(24px,3.8vw,48px)",
+              fontSize: "clamp(32px,4.8vw,56px)",
               fontWeight: 800,
-              letterSpacing: "-0.04em",
+              letterSpacing: "-0.045em",
               color: "#fff",
-              lineHeight: 1.05,
-              marginBottom: 12,
+              lineHeight: 1.03,
+              marginBottom: 16,
               fontFamily: "'Syne',sans-serif",
             }}
           >
@@ -3794,27 +3866,37 @@ function EnablementHub({ onBack, onNavigate }) {
           </h1>
           <p
             style={{
-              fontSize: 14,
-              color: "#6E9990",
-              maxWidth: "none",
-              margin: "0",
+              fontSize: "clamp(14px,1.4vw,16px)",
+              color: "#8EB8AF",
+              maxWidth: 640,
+              margin: "0 auto",
               lineHeight: 1.78,
             }}
           >
             Co-sell materials, technical briefs, deal registration guidance, and
             tier information — all in one place for CCaaS and SI partners.
           </p>
+          </div>
         </div>
 
-        <div className="brand-line" style={{ margin: "32px 44px 0" }} />
+        <div className="brand-line" style={{ margin: "40px 44px 0" }} />
 
         {/* PARTNER VALUE BANNER */}
         <section
           style={{
-            width: "100%",
-            padding: "30px 44px 0",
+            ...sectionShell,
+            paddingTop: "clamp(34px,4.5vw,50px)",
           }}
         >
+          <div style={sectionHeaderWrap}>
+            <p style={sectionEyebrow}>Partner Value Banner</p>
+            <h2 style={sectionTitle}>Build Profitable Customer Contact Solutions With IPI</h2>
+            <p style={sectionDescription}>
+              Partner with IPI to deliver secure, AI-powered customer
+              engagement solutions while building recurring revenue and
+              long-term customer relationships.
+            </p>
+          </div>
           <div
             style={{
               width: "100%",
@@ -3831,38 +3913,13 @@ function EnablementHub({ onBack, onNavigate }) {
             }}
           >
             <div>
-              <h2
-                style={{
-                  margin: "0 0 14px",
-                  fontSize: "clamp(28px,3.6vw,46px)",
-                  lineHeight: 1.08,
-                  letterSpacing: "-0.03em",
-                  color: "#fff",
-                  fontFamily: "'Syne',sans-serif",
-                }}
-              >
-                Build Profitable Customer Contact Solutions With IPI
-              </h2>
-              <p
-                style={{
-                  margin: "0 0 18px",
-                  maxWidth: 760,
-                  color: "#9DC2BA",
-                  fontSize: "clamp(14px,1.6vw,17px)",
-                  lineHeight: 1.7,
-                }}
-              >
-                Partner with IPI to deliver secure, AI-powered customer
-                engagement solutions while building recurring revenue and
-                long-term customer relationships.
-              </p>
               <ul
                 style={{
                   margin: 0,
                   padding: 0,
                   listStyle: "none",
                   display: "grid",
-                  gap: 10,
+                  gap: 12,
                 }}
               >
                 {[
@@ -3875,7 +3932,7 @@ function EnablementHub({ onBack, onNavigate }) {
                     style={{
                       display: "flex",
                       alignItems: "flex-start",
-                      gap: 10,
+                      gap: 12,
                       color: "#D6E8E4",
                       fontSize: 14,
                       lineHeight: 1.55,
@@ -3953,60 +4010,24 @@ function EnablementHub({ onBack, onNavigate }) {
         {/* PARTNER TIERS */}
         <div
           style={{
-            maxWidth: "none",
-            margin: "0",
-            padding: "40px 44px 0",
-            width: "100%",
+            margin: "0 44px",
+            height: 1,
+            background:
+              "linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent)",
+            opacity: 0.7,
           }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-              marginBottom: 18,
-            }}
-          >
-            <div
-              style={{
-                height: 1,
-                flex: 1,
-                background:
-                  "linear-gradient(90deg,transparent,rgba(212,168,67,0.3))",
-              }}
-            />
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: 800,
-                color: "rgba(212,168,67,0.6)",
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                whiteSpace: "normal",
-              }}
-            >
-              Partner Tiers
-            </span>
-            <div
-              style={{
-                height: 1,
-                flex: 1,
-                background:
-                  "linear-gradient(90deg,rgba(212,168,67,0.3),transparent)",
-              }}
-            />
+        />
+        <div style={sectionShell}>
+          <div style={sectionHeaderWrap}>
+            <p style={{ ...sectionEyebrow, color: "rgba(212,168,67,0.72)" }}>
+              Program Structure
+            </p>
+            <h2 style={sectionTitle}>Partner Tiers</h2>
+            <p style={sectionDescription}>
+              Each partner tier combines commercial benefits, enablement support,
+              and clear commitments designed to drive mutual growth.
+            </p>
           </div>
-          <p
-            style={{
-              margin: "0 0 24px",
-              fontSize: 14,
-              lineHeight: 1.7,
-              color: "#86ABA3",
-            }}
-          >
-            Each partner tier combines commercial benefits, enablement support,
-            and clear commitments designed to drive mutual growth.
-          </p>
           <div
             style={{
               display: "grid",
@@ -4143,55 +4164,47 @@ function EnablementHub({ onBack, onNavigate }) {
                           gap: 8,
                           fontSize: 13,
                           color: "#D8EBE5",
-                          lineHeight: 1.45,
+                          lineHeight: 1.55,
                         }}
                       >
-                        <span style={{ color: tier.color, lineHeight: 1 }}>✓</span>
+                        <span style={{ color: tier.color, lineHeight: 1 }}>•</span>
                         <span>{item}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    border: `1px solid rgba(${tier.glow},0.3)`,
-                    background: `rgba(${tier.glow},0.08)`,
-                    borderRadius: 14,
-                    padding: "14px 14px 12px",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 8,
-                    marginTop: "auto",
-                  }}
-                >
+                <div>
                   <div
                     style={{
                       fontSize: 11,
                       fontWeight: 800,
-                      color: tier.color,
+                      color: "rgba(255,255,255,0.58)",
                       letterSpacing: "0.08em",
                       textTransform: "uppercase",
+                      marginBottom: 10,
                     }}
                   >
-                    Partner Commitments
+                    Commitments
                   </div>
-                  {tier.commitments.map((item) => (
-                    <div
-                      key={item}
-                      style={{
-                        display: "flex",
-                        alignItems: "flex-start",
-                        gap: 8,
-                        fontSize: 12,
-                        color: "#C6DFD8",
-                        lineHeight: 1.45,
-                      }}
-                    >
-                      <span style={{ color: tier.color, lineHeight: 1 }}>•</span>
-                      <span>{item}</span>
-                    </div>
-                  ))}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+                    {tier.commitments.map((item) => (
+                      <div
+                        key={item}
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: 8,
+                          fontSize: 12,
+                          color: "#C6DFD8",
+                          lineHeight: 1.45,
+                        }}
+                      >
+                        <span style={{ color: tier.color, lineHeight: 1 }}>•</span>
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             ))}
@@ -4201,61 +4214,22 @@ function EnablementHub({ onBack, onNavigate }) {
         {/* HOW PARTNERS GROW WITH IPI */}
         <div
           style={{
-            maxWidth: "none",
-            margin: "0",
-            padding: "40px 44px 0",
-            width: "100%",
+            ...sectionShell,
+            background: "rgba(255,255,255,0.012)",
+            borderRadius: 24,
+            marginTop: 16,
+            paddingBottom: "clamp(24px,3vw,32px)",
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-              marginBottom: 18,
-            }}
-          >
-            <div
-              style={{
-                height: 1,
-                flex: 1,
-                background:
-                  "linear-gradient(90deg,transparent,rgba(145,196,176,0.35))",
-              }}
-            />
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: 800,
-                color: "rgba(145,196,176,0.68)",
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                whiteSpace: "normal",
-              }}
-            >
-              How Partners Grow With IPI
-            </span>
-            <div
-              style={{
-                height: 1,
-                flex: 1,
-                background:
-                  "linear-gradient(90deg,rgba(145,196,176,0.35),transparent)",
-              }}
-            />
+          <div style={sectionHeaderWrap}>
+            <p style={sectionEyebrow}>Growth Journey</p>
+            <h2 style={sectionTitle}>How Partners Grow With IPI</h2>
+            <p style={sectionDescription}>
+              Partners can start with one solution, win their first
+              opportunities, and then expand into broader customer outcomes and
+              larger recurring revenue streams.
+            </p>
           </div>
-          <p
-            style={{
-              margin: "0 0 24px",
-              fontSize: 14,
-              lineHeight: 1.7,
-              color: "#86ABA3",
-            }}
-          >
-            Partners can start with one solution, win their first
-            opportunities, and then expand into broader customer outcomes and
-            larger recurring revenue streams.
-          </p>
           <div
             style={{
               display: "grid",
@@ -4301,12 +4275,10 @@ function EnablementHub({ onBack, onNavigate }) {
               <div
                 key={step.title}
                 style={{
+                  ...standardCard,
                   position: "relative",
-                  background: "rgba(255,255,255,0.03)",
                   border: `1px solid rgba(${step.color},0.3)`,
-                  borderRadius: 18,
-                  padding: 20,
-                  boxShadow: `0 10px 24px rgba(${step.color},0.1)`,
+                  boxShadow: `0 12px 28px rgba(${step.color},0.12)`,
                 }}
               >
                 {idx < arr.length - 1 && (
@@ -4349,7 +4321,7 @@ function EnablementHub({ onBack, onNavigate }) {
                 </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {step.points.map((point) => (
-                    <div key={point} style={{ display: "flex", gap: 8, fontSize: 12, color: "#C0DAD3" }}>
+                    <div key={point} style={{ display: "flex", gap: 8, fontSize: 13, color: "#C0DAD3", lineHeight: 1.55 }}>
                       <span style={{ color: `rgb(${step.color})` }}>•</span>
                       <span>{point}</span>
                     </div>
@@ -4361,50 +4333,10 @@ function EnablementHub({ onBack, onNavigate }) {
         </div>
 
         {/* WHO SHOULD PARTNER */}
-        <div
-          style={{
-            maxWidth: "none",
-            margin: "0",
-            padding: "40px 44px 0",
-            width: "100%",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-              marginBottom: 22,
-            }}
-          >
-            <div
-              style={{
-                height: 1,
-                flex: 1,
-                background:
-                  "linear-gradient(90deg,transparent,rgba(212,168,67,0.3))",
-              }}
-            />
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: 800,
-                color: "rgba(212,168,67,0.6)",
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                whiteSpace: "normal",
-              }}
-            >
-              Who Should Partner With Us
-            </span>
-            <div
-              style={{
-                height: 1,
-                flex: 1,
-                background:
-                  "linear-gradient(90deg,rgba(212,168,67,0.3),transparent)",
-              }}
-            />
+        <div style={sectionShell}>
+          <div style={sectionHeaderWrap}>
+            <p style={{ ...sectionEyebrow, color: "rgba(212,168,67,0.72)" }}>Partner Profile</p>
+            <h2 style={sectionTitle}>Who Should Partner With Us</h2>
           </div>
           <div
             style={{
@@ -4448,11 +4380,11 @@ function EnablementHub({ onBack, onNavigate }) {
                 style={{
                   background: "rgba(255,255,255,0.025)",
                   border: `1px solid rgba(${card.glow},0.26)`,
-                  borderRadius: 16,
-                  padding: 18,
+                  borderRadius: 18,
+                  padding: 20,
                   display: "flex",
                   flexDirection: "column",
-                  gap: 10,
+                  gap: 12,
                 }}
               >
                 <h3 style={{ margin: 0, fontSize: 18, color: "#E6F3EF", fontFamily: "'Syne',sans-serif" }}>
@@ -4476,50 +4408,10 @@ function EnablementHub({ onBack, onNavigate }) {
         </div>
 
         {/* REVENUE OPPORTUNITIES */}
-        <div
-          style={{
-            maxWidth: "none",
-            margin: "0",
-            padding: "40px 44px 0",
-            width: "100%",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-              marginBottom: 22,
-            }}
-          >
-            <div
-              style={{
-                height: 1,
-                flex: 1,
-                background:
-                  "linear-gradient(90deg,transparent,rgba(145,196,176,0.35))",
-              }}
-            />
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: 800,
-                color: "rgba(145,196,176,0.68)",
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                whiteSpace: "normal",
-              }}
-            >
-              Revenue Opportunities
-            </span>
-            <div
-              style={{
-                height: 1,
-                flex: 1,
-                background:
-                  "linear-gradient(90deg,rgba(145,196,176,0.35),transparent)",
-              }}
-            />
+        <div style={sectionShell}>
+          <div style={sectionHeaderWrap}>
+            <p style={sectionEyebrow}>Commercial Outcomes</p>
+            <h2 style={sectionTitle}>Revenue Opportunities</h2>
           </div>
           <div
             style={{
@@ -4578,11 +4470,11 @@ function EnablementHub({ onBack, onNavigate }) {
                 style={{
                   background: "rgba(255,255,255,0.025)",
                   border: `1px solid rgba(${block.glow},0.26)`,
-                  borderRadius: 16,
-                  padding: 18,
+                  borderRadius: 18,
+                  padding: 20,
                   display: "flex",
                   flexDirection: "column",
-                  gap: 10,
+                  gap: 12,
                 }}
               >
                 <div style={{ fontSize: 24 }}>{block.icon}</div>
@@ -4591,7 +4483,7 @@ function EnablementHub({ onBack, onNavigate }) {
                 </h3>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {block.points.map((point) => (
-                    <div key={point} style={{ display: "flex", gap: 8, fontSize: 12, color: "#C6DFD8", lineHeight: 1.4 }}>
+                    <div key={point} style={{ display: "flex", gap: 8, fontSize: 13, color: "#C6DFD8", lineHeight: 1.55 }}>
                       <span style={{ color: "#91C4B0" }}>•</span>
                       <span>{point}</span>
                     </div>
@@ -4603,50 +4495,10 @@ function EnablementHub({ onBack, onNavigate }) {
         </div>
 
         {/* RESOURCES GRID */}
-        <div
-          style={{
-            maxWidth: "none",
-            margin: "0",
-            padding: "40px 44px 0",
-            width: "100%",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-              marginBottom: 24,
-            }}
-          >
-            <div
-              style={{
-                height: 1,
-                flex: 1,
-                background:
-                  "linear-gradient(90deg,transparent,rgba(99,171,143,0.3))",
-              }}
-            />
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: 800,
-                color: "rgba(99,171,143,0.6)",
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                whiteSpace: "normal",
-              }}
-            >
-              Sales & Technical Resources
-            </span>
-            <div
-              style={{
-                height: 1,
-                flex: 1,
-                background:
-                  "linear-gradient(90deg,rgba(99,171,143,0.3),transparent)",
-              }}
-            />
+        <div style={sectionShell}>
+          <div style={{ ...sectionHeaderWrap, marginBottom: 24 }}>
+            <p style={sectionEyebrow}>Enablement Library</p>
+            <h2 style={sectionTitle}>Sales & Technical Resources</h2>
           </div>
           <div
             style={{
@@ -4687,7 +4539,7 @@ function EnablementHub({ onBack, onNavigate }) {
                     display: "flex",
                     alignItems: "flex-start",
                     justifyContent: "space-between",
-                    gap: 10,
+                    gap: 12,
                   }}
                 >
                   <div
@@ -5812,10 +5664,10 @@ function PartnerProgramPage() {
           </h1>
           <p
             style={{
-              fontSize: 14,
-              color: "#6E9990",
-              maxWidth: "none",
-              margin: "0",
+              fontSize: "clamp(14px,1.4vw,16px)",
+              color: "#8EB8AF",
+              maxWidth: 640,
+              margin: "0 auto",
               lineHeight: 1.78,
             }}
           >
@@ -5823,9 +5675,10 @@ function PartnerProgramPage() {
             strategic framework that ensures we build the right ecosystem —
             focused on partners who can drive the fastest path to revenue.
           </p>
+          </div>
         </div>
 
-        <div className="brand-line" style={{ margin: "32px 44px 0" }} />
+        <div className="brand-line" style={{ margin: "40px 44px 0" }} />
 
         {/* TARGET PARTNER PRIORITIES */}
         <div
@@ -6131,7 +5984,7 @@ function PartnerProgramPage() {
                         key={i}
                         style={{
                           display: "flex",
-                          gap: 10,
+                          gap: 12,
                           alignItems: "flex-start",
                         }}
                       >
@@ -6462,7 +6315,7 @@ function PartnerProgramPage() {
                   padding: "20px",
                   display: "flex",
                   flexDirection: "column",
-                  gap: 10,
+                  gap: 12,
                   transition: "all 0.25s",
                 }}
                 onMouseEnter={(e) => {
@@ -6689,7 +6542,7 @@ function CommercialFrameworkPage() {
                     borderRadius: 13,
                     padding: "16px 14px",
                     display: "flex",
-                    gap: 10,
+                    gap: 12,
                     alignItems: "flex-start",
                   }}
                 >
@@ -6839,7 +6692,7 @@ function CommercialFrameworkPage() {
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(auto-fit,minmax(210px,1fr))",
-                gap: 10,
+                gap: 12,
                 marginBottom: 14,
               }}
             >
@@ -7187,7 +7040,7 @@ function CommercialFrameworkPage() {
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
-                  gap: 10,
+                  gap: 12,
                 }}
               >
                 <div>
@@ -7857,7 +7710,7 @@ function GovernancePage() {
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
-              gap: 10,
+              gap: 12,
               marginBottom: 18,
             }}
           >
@@ -7909,7 +7762,7 @@ function GovernancePage() {
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(6,minmax(0,1fr))",
-              gap: 10,
+              gap: 12,
               marginBottom: 14,
             }}
           >
@@ -8347,7 +8200,7 @@ function GovernancePage() {
                       display: "grid",
                       gridTemplateColumns: "2fr repeat(6,minmax(90px,1fr))",
                       alignItems: "center",
-                      gap: 10,
+                      gap: 12,
                       }}
                     >
                     <div>
@@ -8503,7 +8356,7 @@ function GovernancePage() {
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(4,minmax(0,1fr))",
-                gap: 10,
+                gap: 12,
               }}
             >
               {ownershipSummary.map((role) => (
@@ -8592,7 +8445,7 @@ function GovernancePage() {
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    gap: 10,
+                    gap: 12,
                     marginBottom: 10,
                   }}
                 >
