@@ -1,22 +1,7 @@
 (function () {
-  function getDataPaths() {
-    const baseRelative = './data/channel_prospects.csv';
-    const paths = [baseRelative];
-
-    const scriptSrc = document.currentScript && document.currentScript.src;
-    if (scriptSrc) {
-      paths.push(new URL('../data/channel_prospects.csv', scriptSrc).toString());
-    }
-
-    const pathParts = window.location.pathname.split('/').filter(Boolean);
-    if (pathParts.length > 0) {
-      paths.push(`/${pathParts[0]}/data/channel_prospects.csv`);
-    }
-
-    return [...new Set(paths)];
-  }
-
-  const DATA_PATHS = getDataPaths();
+  const BASE_PATH = window.location.hostname.includes("github.io")
+    ? "/IPIPartnerAdvantage"
+    : "";
 
   const SCORE_TERMS = ['reseller', 'msp', 'integrator', 'telecom', 'uc', 'ccaas', 'it services', 'managed services', 'cloud', 'payments', 'cx', 'ai'];
 
@@ -174,16 +159,22 @@
   }
 
   async function loadProspectsCsv() {
-    for (const path of DATA_PATHS) {
-      try {
-        const res = await fetch(path);
-        if (!res.ok) continue;
-        const csvText = await res.text();
-        const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-        return parsed.data.map(normalizeRecord);
-      } catch (err) {}
+    const csvUrl = `${BASE_PATH}/data/channel_prospects.csv`;
+
+    console.log("Fetching CSV from:", csvUrl);
+
+    const response = await fetch(csvUrl, { cache: "no-store" });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch CSV: ${response.status} ${response.statusText}`);
     }
-    throw new Error('Unable to load channel prospects CSV.');
+
+    const csvText = await response.text();
+    console.log("CSV length:", csvText.length);
+    console.log("CSV preview:", csvText.slice(0, 300));
+
+    const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+    return parsed.data.map(normalizeRecord);
   }
 
   function toCsv(records) {
@@ -197,7 +188,6 @@
   }
 
   window.ProspectToolUtils = {
-    DATA_PATHS,
     loadProspectsCsv,
     toCsv,
     normalizeUrl,
