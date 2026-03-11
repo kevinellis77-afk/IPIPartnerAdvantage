@@ -7161,7 +7161,7 @@ function CommercialFrameworkPage() {
   );
 }
 
-const GOVERNANCE_ACTIVITIES = [
+const GOVERNANCE_ACTIVITIES_LEGACY = [
   {
     id: "1",
     activity: "Define Channel Strategy",
@@ -7436,15 +7436,25 @@ const GOVERNANCE_STATUS_OPTIONS = [
 ];
 const PRIORITY_OPTIONS = ["High", "Medium", "Low"];
 const EXECUTION_STORAGE_KEY = "ipi-governance-execution-v1";
-const RACI_ROLE_FIELDS = [
+const LEGACY_RACI_ROLE_FIELDS = [
   ["channelManager", "Channel Manager"],
-  ["salesLeadership", "Sales Leadership"],
-  ["marketing", "Marketing"],
-  ["product", "Product"],
+  ["salesLeadership", "PreSales"],
+  ["executiveLeadership", "Executive"],
   ["legal", "Legal"],
+  ["marketing", "Marketing"],
   ["finance", "Finance"],
-  ["operationsDelivery", "Operations / Delivery"],
-  ["executiveLeadership", "Executive Leadership"],
+  ["product", "Product"],
+  ["operationsDelivery", "Operations"],
+];
+const RACI_DROPDOWN_OPTIONS = [
+  "Channel Manager",
+  "PreSales",
+  "Executive",
+  "Legal",
+  "Marketing",
+  "Finance",
+  "Product",
+  "Operations",
 ];
 
 function getTodayISODate() {
@@ -7459,11 +7469,20 @@ function isTaskOverdue(task) {
   );
 }
 
-function buildRaciText(task, assignment) {
-  return RACI_ROLE_FIELDS.filter(([field]) => task[field] === assignment)
-    .map(([, label]) => label)
-    .join(", ");
+function getLegacyRaciRole(task, assignment) {
+  const match = LEGACY_RACI_ROLE_FIELDS.find(
+    ([field]) => task[field] === assignment,
+  );
+  return match ? match[1] : "";
 }
+
+const GOVERNANCE_ACTIVITIES = GOVERNANCE_ACTIVITIES_LEGACY.map((task) => ({
+  ...task,
+  r: getLegacyRaciRole(task, "R"),
+  a: getLegacyRaciRole(task, "A"),
+  c: getLegacyRaciRole(task, "C"),
+  i: getLegacyRaciRole(task, "I"),
+}));
 
 function GovernancePage() {
   const [view, setView] = React.useState("matrix");
@@ -7485,10 +7504,10 @@ function GovernancePage() {
       targetDate: parsed[item.id]?.targetDate || "",
       notes: parsed[item.id]?.notes || "",
       updatedAt: parsed[item.id]?.updatedAt || "",
-      r: parsed[item.id]?.r || buildRaciText(item, "R"),
-      a: parsed[item.id]?.a || buildRaciText(item, "A"),
-      c: parsed[item.id]?.c || buildRaciText(item, "C"),
-      i: parsed[item.id]?.i || buildRaciText(item, "I"),
+      r: parsed[item.id]?.r || item.r || "",
+      a: parsed[item.id]?.a || item.a || "",
+      c: parsed[item.id]?.c || item.c || "",
+      i: parsed[item.id]?.i || item.i || "",
     }));
   });
 
@@ -8008,12 +8027,12 @@ function GovernancePage() {
                 overflowX: "auto",
               }}
             >
-              <div style={{ minWidth: 1120 }}>
+              <div style={{ minWidth: 1220 }}>
                 <div
                   style={{
                     display: "grid",
                     gridTemplateColumns:
-                      "minmax(260px,2fr) repeat(4,minmax(120px,0.85fr)) minmax(120px,0.9fr) minmax(130px,1fr) minmax(105px,0.8fr) minmax(130px,0.95fr) minmax(120px,0.95fr) minmax(70px,0.55fr)",
+                      "minmax(260px,2fr) repeat(4,minmax(130px,0.9fr)) minmax(120px,0.9fr) minmax(130px,1fr) minmax(105px,0.8fr) minmax(130px,0.95fr) minmax(120px,0.95fr) minmax(70px,0.55fr)",
                     columnGap: 8,
                     background: "rgba(123,150,163,0.14)",
                     borderBottom: "1px solid rgba(123,150,163,0.25)",
@@ -8060,7 +8079,7 @@ function GovernancePage() {
                         style={{
                           display: "grid",
                           gridTemplateColumns:
-                            "minmax(260px,2fr) repeat(4,minmax(120px,0.85fr)) minmax(120px,0.9fr) minmax(130px,1fr) minmax(105px,0.8fr) minmax(130px,0.95fr) minmax(120px,0.95fr) minmax(70px,0.55fr)",
+                            "minmax(260px,2fr) repeat(4,minmax(130px,0.9fr)) minmax(120px,0.9fr) minmax(130px,1fr) minmax(105px,0.8fr) minmax(130px,0.95fr) minmax(120px,0.95fr) minmax(70px,0.55fr)",
                           columnGap: 8,
                           borderTop: idx ? `1px solid ${rowStyle.borderColor}` : "none",
                           alignItems: "center",
@@ -8087,12 +8106,11 @@ function GovernancePage() {
                           ["i", "Informed"],
                         ].map(([field, label]) => (
                           <div key={`${task.id}-${field}`} style={{ padding: "10px" }}>
-                            <input
+                            <select
                               value={task[field] || ""}
                               onChange={(e) =>
                                 updateTask(task.id, { [field]: e.target.value })
                               }
-                              placeholder={label}
                               style={{
                                 width: "100%",
                                 background: "rgba(255,255,255,0.03)",
@@ -8100,9 +8118,16 @@ function GovernancePage() {
                                 borderRadius: 6,
                                 color: "#D9ECE6",
                                 padding: "6px",
-                                fontSize: 12,
+                                fontSize: 11.5,
                               }}
-                            />
+                            >
+                              <option value="">{label}</option>
+                              {RACI_DROPDOWN_OPTIONS.map((role) => (
+                                <option key={`${task.id}-${field}-${role}`} value={role}>
+                                  {role}
+                                </option>
+                              ))}
+                            </select>
                           </div>
                         ))}
                         <div style={{ padding: "10px" }}>
