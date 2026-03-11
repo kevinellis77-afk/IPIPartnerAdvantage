@@ -263,6 +263,13 @@ const PHILOSOPHY = [
   },
 ];
 
+
+const theme = window.appTheme || {
+  colors: { primary: "#63AB8F", primaryHover: "#4D9378", border: "rgba(145,196,176,0.22)", surface: "#17242b", surfaceMuted: "rgba(255,255,255,0.03)", textPrimary: "#e9f4f1", textMuted: "#9bb6b0" },
+  spacing: { xs: "4px", sm: "8px", md: "16px", lg: "24px", xl: "32px" },
+  radius: { sm: "10px", md: "14px", lg: "18px", pill: "999px" }
+};
+
 // ═══════════════════════════════════════════════════════
 // GEOMETRY (SVG diagram)
 // ═══════════════════════════════════════════════════════
@@ -390,6 +397,53 @@ function SectionHeader({ eyebrow, title, description }) {
 
 function SectionWrapper({ children, className = "" }) {
   return <section className={`ds-section ${className}`.trim()}>{children}</section>;
+}
+
+function StandardCard({ children, className = "", style = {} }) {
+  return (
+    <div className={`ds-card ds-card--standard ${className}`.trim()} style={style}>
+      {children}
+    </div>
+  );
+}
+
+function HighlightCard({ children, className = "", style = {} }) {
+  return (
+    <div className={`ds-card ds-card--highlight ${className}`.trim()} style={style}>
+      {children}
+    </div>
+  );
+}
+
+function MetricCard({ label, value, tone = "info" }) {
+  return (
+    <StandardCard className="ds-metric-card">
+      <div className="ds-metric-card__label">{label}</div>
+      <div className={`ds-metric-card__value tone-${tone}`}>{value}</div>
+    </StandardCard>
+  );
+}
+
+function StandardButton({ children, className = "", ...props }) {
+  return <button className={`ui-btn ui-btn--primary ${className}`.trim()} {...props}>{children}</button>;
+}
+
+function SecondaryButton({ children, className = "", ...props }) {
+  return <button className={`ui-btn ui-btn--secondary ${className}`.trim()} {...props}>{children}</button>;
+}
+
+function FormField({ as = "input", className = "", ...props }) {
+  if (as === "select") return <select className={`ui-field ui-dropdown ${className}`.trim()} {...props} />;
+  return <input className={`ui-field ${className}`.trim()} {...props} />;
+}
+
+function StatusBadge({ status }) {
+  const key = String(status || "").toLowerCase().replace(/\s+/g, "-");
+  return <span className={`status-badge status-${key}`}>{status}</span>;
+}
+
+function StandardTable({ className = "", children }) {
+  return <div className={`table-wrapper ds-table-wrap ${className}`.trim()}>{children}</div>;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -7744,38 +7798,20 @@ function GovernancePage() {
                 color: "#A37992",
               },
             ].map((card) => (
-              <div
+              <MetricCard
                 key={card.label}
-                style={{
-                  background: "rgba(255,255,255,0.03)",
-                  border: "1px solid rgba(123,150,163,0.3)",
-                  borderRadius: 10,
-                  padding: "10px 12px",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 10.5,
-                    fontWeight: 800,
-                    color: "#A9C3CE",
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  {card.label}
-                </div>
-                <div
-                  style={{
-                    fontSize: 22,
-                    fontWeight: 800,
-                    color: card.color,
-                    marginTop: 4,
-                    fontFamily: "'Syne',sans-serif",
-                  }}
-                >
-                  {card.value}
-                </div>
-              </div>
+                label={card.label}
+                value={card.value}
+                tone={
+                  card.label === "Complete"
+                    ? "success"
+                    : card.label === "Blocked"
+                      ? "danger"
+                      : card.label === "Overdue"
+                        ? "warning"
+                        : "info"
+                }
+              />
             ))}
           </div>
 
@@ -7836,33 +7872,19 @@ function GovernancePage() {
               marginBottom: 14,
             }}
           >
-            <input
+            <FormField
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search activity or owner"
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(123,150,163,0.3)",
-                borderRadius: 8,
-                color: "#D9ECE6",
-                padding: "8px 10px",
-                fontSize: 12,
-              }}
             />
-            <select
-              className="ui-dropdown"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              style={{ boxShadow: "none" }}
-            >
+            <FormField as="select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ boxShadow: "none" }}>
               {["All", ...GOVERNANCE_STATUS_OPTIONS].map((v) => (
                 <option key={v} value={v}>
                   {v}
                 </option>
               ))}
-            </select>
-            <select
-              className="ui-dropdown"
+            </FormField>
+            <FormField as="select"
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
               style={{ boxShadow: "none" }}
@@ -7872,7 +7894,7 @@ function GovernancePage() {
                   {v}
                 </option>
               ))}
-            </select>
+            </FormField>
             <label
               style={{
                 display: "flex",
@@ -8183,9 +8205,11 @@ function GovernancePage() {
                           : "Not updated yet"}
                       </div>
                     </div>
-                    <select
-                      className="ui-dropdown"
-                      value={task.status}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <StatusBadge status={task.status} />
+                      <select
+                        className="ui-dropdown"
+                        value={task.status}
                       onChange={(e) =>
                         updateTask(task.id, { status: e.target.value })
                       }
@@ -8196,7 +8220,8 @@ function GovernancePage() {
                           {v}
                         </option>
                       ))}
-                    </select>
+                      </select>
+                    </div>
                     <input
                       value={task.owner}
                       onChange={(e) =>
@@ -8818,7 +8843,7 @@ function ChannelManagerDashboardPage() {
 
         <section className="channel-section">
           <h2 className="channel-title">Partner Recruitment Pipeline</h2>
-          <div className="channel-table-wrap">
+          <StandardTable className="channel-table-wrap">
             <table className="channel-table">
               <thead>
                 <tr>
@@ -8845,7 +8870,7 @@ function ChannelManagerDashboardPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </StandardTable>
         </section>
 
         <section className="channel-section channel-two-col">
