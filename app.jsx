@@ -9049,63 +9049,69 @@ function ChannelManagerDashboardPage() {
 const NAV_ITEMS = [
   {
     id: "main",
-    icon: "🏠",
+    icon: "⌂",
     label: "Home - Ecosystem Overview",
     sublabel: "Ecosystem Overview",
   },
   {
     id: "bse",
-    icon: "📈",
+    icon: "↗",
     label: "Build. Sell. Expand",
     sublabel: "Revenue Journey",
   },
-  { id: "hub", icon: "🎓", label: "Partner Enablement", sublabel: "Hub 2026" },
+  { id: "hub", icon: "✓", label: "Partner Enablement", sublabel: "Hub 2026" },
   {
     id: "program",
-    icon: "🎯",
+    icon: "★",
     label: "IPI Partner Advantage (Partner Program)",
     sublabel: "Recruitment & IPP",
   },
   {
     id: "governance",
-    icon: "🧭",
+    icon: "☰",
     label: "Governance & RACI",
     sublabel: "Roles & Ownership",
   },
   {
     id: "commercial",
-    icon: "📜",
+    icon: "£",
     label: "Commercial Framework",
     sublabel: "Legal & Pricing Model",
   },
   {
     id: "channel-dashboard",
-    icon: "📊",
+    icon: "◫",
     label: "Channel Manager Dashboard",
     sublabel: "Operational Control Centre",
   },
   {
     id: "prospect",
-    icon: "🔎",
+    icon: "⌕",
     label: "Partner Prospect Tool",
     sublabel: "Deal Intelligence",
   },
 ];
 
 function SideNav({ page, setPage, onLayoutChange }) {
-  const SIDEBAR_PIN_KEY = "ipi_sidebar_pinned_v1";
+  const SIDEBAR_PIN_KEY = "ipi_sidebar_pinned_v2";
+  const SIDEBAR_COLLAPSE_KEY = "ipi_sidebar_collapsed_v2";
   const MOBILE_BREAKPOINT = 900;
   const SIDEBAR_WIDTH = 280;
+  const SIDEBAR_COLLAPSED_WIDTH = 72;
 
   const [isMobile, setIsMobile] = React.useState(() =>
     window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches,
   );
-  const [isSidebarPinned, setIsSidebarPinned] = React.useState(() => {
+  const [isPinned, setIsPinned] = React.useState(() => {
     const saved = localStorage.getItem(SIDEBAR_PIN_KEY);
     return saved !== null ? JSON.parse(saved) : true;
   });
+  const [isCollapsed, setIsCollapsed] = React.useState(() => {
+    const saved = localStorage.getItem(SIDEBAR_COLLAPSE_KEY);
+    return saved !== null ? JSON.parse(saved) : false;
+  });
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(
-    () => !isMobile && isSidebarPinned,
+    () => !isMobile,
   );
 
   React.useEffect(() => {
@@ -9116,297 +9122,111 @@ function SideNav({ page, setPage, onLayoutChange }) {
   }, []);
 
   React.useEffect(() => {
-    localStorage.setItem(SIDEBAR_PIN_KEY, JSON.stringify(isSidebarPinned));
-  }, [isSidebarPinned]);
+    localStorage.setItem(SIDEBAR_PIN_KEY, JSON.stringify(isPinned));
+  }, [isPinned]);
 
   React.useEffect(() => {
-    if (!isMobile && isSidebarPinned) {
+    localStorage.setItem(SIDEBAR_COLLAPSE_KEY, JSON.stringify(isCollapsed));
+  }, [isCollapsed]);
+
+  React.useEffect(() => {
+    if (!isMobile && isPinned) {
       setIsSidebarOpen(true);
     }
-  }, [isMobile, isSidebarPinned]);
+  }, [isMobile, isPinned]);
 
-  const isSidebarVisible =
-    isMobile ? isSidebarOpen : isSidebarPinned || isSidebarOpen;
-  const canCollapse = isMobile || !isSidebarPinned;
+  const isSidebarVisible = isMobile ? isSidebarOpen : isPinned || isSidebarOpen;
+  const sidebarWidth = isPinned
+    ? isCollapsed
+      ? SIDEBAR_COLLAPSED_WIDTH
+      : SIDEBAR_WIDTH
+    : 0;
 
   React.useEffect(() => {
     onLayoutChange?.({
       isMobile,
-      isSidebarPinned,
+      isSidebarPinned: isPinned,
+      isCollapsed,
       isSidebarVisible,
-      sidebarWidth: SIDEBAR_WIDTH,
+      sidebarWidth,
     });
-  }, [isMobile, isSidebarPinned, isSidebarVisible, onLayoutChange]);
+  }, [isMobile, isPinned, isCollapsed, isSidebarVisible, sidebarWidth, onLayoutChange]);
 
-  const toggleSidebarOpen = () => {
-    if (!canCollapse) return;
-    setIsSidebarOpen((prev) => !prev);
-  };
+  const toggleSidebarOpen = () => setIsSidebarOpen((prev) => !prev);
+  const toggleCollapse = () => setIsCollapsed((prev) => !prev);
+  const togglePin = () => setIsPinned((prev) => !prev);
 
-  const togglePinned = () => {
-    setIsSidebarPinned((prev) => !prev);
-  };
+  const showLauncher = isMobile || !isPinned;
 
   return (
     <React.Fragment>
-      {/* Toggle button — always visible */}
-      <button
-        onClick={toggleSidebarOpen}
-        style={{
-          position: "fixed",
-          top: 22,
-          left: isSidebarVisible && !isMobile ? SIDEBAR_WIDTH - 2 : 18,
-          zIndex: 1001,
-          width: 36,
-          height: 36,
-          borderRadius: 10,
-          background: "rgba(13,24,26,0.92)",
-          border: "1px solid rgba(99,171,143,0.35)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-          transition: "left 0.3s ease",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
-          color: "#91C4B0",
-          fontSize: 16,
-          opacity: canCollapse ? 1 : 0.6,
-        }}
-        title={
-          canCollapse
-            ? isSidebarVisible
-              ? "Close navigation"
-              : "Open navigation"
-            : "Navigation is pinned"
-        }
-      >
-        {canCollapse ? (isSidebarVisible ? "✕" : "☰") : "📌"}
-      </button>
+      {showLauncher && (
+        <button className="sidebar-launcher" onClick={toggleSidebarOpen} type="button" title="Toggle navigation">
+          {isSidebarVisible ? "✕" : "☰"}
+        </button>
+      )}
 
-      {/* Sidebar panel */}
-      <div
-        className={`sidebar ${isSidebarPinned ? "pinned" : "unpinned"} ${isSidebarVisible ? "open" : "closed"}`}
-        style={{
-          position: isMobile ? "fixed" : "sticky",
-          top: 0,
-          left: 0,
-          bottom: 0,
-          zIndex: 1000,
-          width: isSidebarVisible ? SIDEBAR_WIDTH : 0,
-          overflow: "hidden",
-          background: "rgba(10,19,21,0.97)",
-          borderRight: isSidebarVisible
-            ? "1px solid rgba(99,171,143,0.2)"
-            : "none",
-          backdropFilter: "blur(20px)",
-          transition: "width 0.3s ease",
-          display: "flex",
-          flexDirection: "column",
-          boxShadow: isSidebarVisible ? "4px 0 32px rgba(0,0,0,0.5)" : "none",
-          height: "100vh",
-        }}
-      >
-        <div
-          style={{
-            width: SIDEBAR_WIDTH,
-            display: "flex",
-            flexDirection: "column",
-            height: "100%",
-            padding: "18px 0 24px",
-          }}
-        >
-          {/* Logo area */}
-          <div
-            style={{
-              padding: "8px 20px 24px",
-              borderBottom: "1px solid rgba(99,171,143,0.12)",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-              <LogoMark h={36} />
-              <button
-                type="button"
-                onClick={togglePinned}
-                style={{
-                  border: "1px solid rgba(99,171,143,0.36)",
-                  background: "rgba(99,171,143,0.12)",
-                  color: "#91C4B0",
-                  borderRadius: 8,
-                  padding: "6px 10px",
-                  fontSize: 10,
-                  fontWeight: 800,
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                  cursor: "pointer",
-                }}
-              >
-                {isSidebarPinned ? "Unpin Menu" : "Pin Menu"}
-              </button>
-            </div>
-            <div
-              style={{
-                marginTop: 10,
-                fontSize: 10,
-                fontWeight: 800,
-                color: "rgba(99,171,143,0.5)",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-              }}
-            >
-              Partner Advantage 2026
-            </div>
+      <aside className={`app-sidebar ${isPinned ? "pinned" : ""} ${isCollapsed ? "collapsed" : ""} ${isSidebarVisible ? "open" : "closed"}`}>
+        <div className="sidebar-top">
+          <div className="sidebar-brand">
+            <div className="sidebar-brand-mark">IPI</div>
+            {!isCollapsed && (
+              <div className="sidebar-brand-copy">
+                <div className="sidebar-title">Partner Advantage</div>
+                <div className="sidebar-subtitle">Channel Workspace</div>
+              </div>
+            )}
           </div>
+          <div className="sidebar-controls">
+            <button onClick={toggleCollapse} type="button">{isCollapsed ? "Expand" : "Collapse"}</button>
+            <button onClick={togglePin} type="button">{isPinned ? "Unpin" : "Pin"}</button>
+            {isMobile && <button onClick={() => setIsSidebarOpen(false)} type="button">Close</button>}
+          </div>
+        </div>
 
-          {/* Nav items */}
-          <nav
-            style={{
-              flex: 1,
-              padding: "16px 10px",
-              display: "flex",
-              flexDirection: "column",
-              gap: 4,
-            }}
-          >
+        <nav className="sidebar-nav">
             {NAV_ITEMS.map((item) => {
               const active = page === item.id;
               return (
                 <button
                   key={item.id}
+                  className={`sidebar-nav-item ${active ? "active" : ""}`}
                   onClick={() => {
                     setPage(item.id);
-                    if (isMobile || !isSidebarPinned) {
+                    if (isMobile || !isPinned) {
                       setIsSidebarOpen(false);
                     }
                   }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    background: active
-                      ? "rgba(99,171,143,0.12)"
-                      : "transparent",
-                    border: `1px solid ${active ? "rgba(99,171,143,0.3)" : "transparent"}`,
-                    borderRadius: 10,
-                    padding: "10px 14px",
-                    cursor: "pointer",
-                    width: "100%",
-                    textAlign: "left",
-                    transition: "all 0.2s",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!active) {
-                      e.currentTarget.style.background =
-                        "rgba(99,171,143,0.06)";
-                      e.currentTarget.style.borderColor =
-                        "rgba(99,171,143,0.15)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!active) {
-                      e.currentTarget.style.background = "transparent";
-                      e.currentTarget.style.borderColor = "transparent";
-                    }
-                  }}
+                  type="button"
+                  title={isCollapsed ? item.label : ""}
                 >
-                  <div
-                    style={{
-                      width: 34,
-                      height: 34,
-                      borderRadius: 9,
-                      background: active
-                        ? "rgba(99,171,143,0.18)"
-                        : "rgba(255,255,255,0.05)",
-                      border: `1px solid ${active ? "rgba(99,171,143,0.4)" : "rgba(255,255,255,0.08)"}`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 16,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {item.icon}
-                  </div>
-                  <div style={{ minWidth: 0 }}>
-                    <div
-                      style={{
-                        fontSize: 12.5,
-                        fontWeight: 800,
-                        color: active ? "#91C4B0" : "#B0CAC4",
-                        fontFamily: "'Nunito Sans',sans-serif",
-                        letterSpacing: "0.01em",
-                        whiteSpace: "normal",
-                          }}
-                    >
-                      {item.label}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 10,
-                        color: active
-                          ? "rgba(99,171,143,0.55)"
-                          : "rgba(160,190,185,0.35)",
-                        fontWeight: 600,
-                        letterSpacing: "0.04em",
-                        marginTop: 1,
-                      }}
-                    >
-                      {item.sublabel}
-                    </div>
-                  </div>
-                  {active && (
-                    <div
-                      style={{
-                        width: 4,
-                        height: 4,
-                        borderRadius: "50%",
-                        background: "#63AB8F",
-                        boxShadow: "0 0 6px #63AB8F",
-                        flexShrink: 0,
-                        marginLeft: "auto",
-                      }}
-                    />
+                  <span className="sidebar-nav-icon">{item.icon}</span>
+                  {!isCollapsed && (
+                    <span className="sidebar-nav-text">
+                      <span className="sidebar-nav-label">{item.label}</span>
+                      <span className="sidebar-nav-sublabel">{item.sublabel}</span>
+                    </span>
                   )}
                 </button>
               );
             })}
           </nav>
 
-          {/* Footer */}
-          <div
-            style={{
-              padding: "16px 20px 0",
-              borderTop: "1px solid rgba(99,171,143,0.1)",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 9,
-                color: "rgba(99,171,143,0.3)",
-                letterSpacing: "0.07em",
-                textTransform: "uppercase",
-                lineHeight: 1.7,
-              }}
-            >
-              © 2026 IP Integration Ltd
-              <br />
-              Partner Confidential
+        <div className="sidebar-footer">
+          {!isCollapsed && (
+            <div className="sidebar-footer-card">
+              <div className="sidebar-footer-title">Channel Workspace</div>
+              <div className="sidebar-footer-copy">
+                Strategy, governance, enablement and partner planning in one place.
+              </div>
             </div>
-          </div>
+          )}
+          <div className="sidebar-footer-meta">© 2026 IP Integration Ltd · Partner Confidential</div>
         </div>
-      </div>
+      </aside>
 
-      {/* Backdrop */}
-      {isSidebarVisible && canCollapse && (
-        <div
-          onClick={() => setIsSidebarOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 999,
-            background: isMobile ? "rgba(0,0,0,0.3)" : "transparent",
-            pointerEvents: isMobile ? "auto" : "none",
-          }}
-        />
+      {isMobile && isSidebarVisible && (
+        <div className="sidebar-backdrop" onClick={() => setIsSidebarOpen(false)} />
       )}
     </React.Fragment>
   );
@@ -9420,6 +9240,7 @@ function App() {
   const [sidebarLayout, setSidebarLayout] = React.useState({
     isMobile: false,
     isSidebarPinned: true,
+    isCollapsed: false,
     isSidebarVisible: true,
     sidebarWidth: 280,
   });
@@ -9822,15 +9643,12 @@ function App() {
   return (
     <div className="app-shell">
       <SideNav page={page} setPage={setPage} onLayoutChange={setSidebarLayout} />
-      <div
-        className={`main-content ${contentOffset > 0 ? "with-pinned-sidebar" : "full-width"}`}
-        style={{
-          transition: "margin-left 0.3s ease",
-          marginLeft: contentOffset,
-        }}
+      <main
+        className={`app-main ${sidebarLayout.isSidebarPinned && !sidebarLayout.isCollapsed ? "with-sidebar" : ""} ${sidebarLayout.isSidebarPinned && sidebarLayout.isCollapsed ? "with-collapsed-sidebar" : ""}`}
+        style={{ marginLeft: contentOffset }}
       >
         <PageShell>{renderPage()}</PageShell>
-      </div>
+      </main>
     </div>
   );
 }
