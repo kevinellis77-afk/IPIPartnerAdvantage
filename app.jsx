@@ -7116,6 +7116,161 @@ function CommercialFrameworkPage() {
   );
 }
 
+function PartnerTrustPage() {
+  const strategicBenefits = [
+    {
+      title: "Faster Partner Onboarding",
+      text: "Partners can quickly access all documentation required to start selling IPI solutions.",
+    },
+    {
+      title: "Simplified Procurement",
+      text: "Enterprise customers and procurement teams can easily review legal and compliance materials.",
+    },
+    {
+      title: "Reduced Operational Overhead",
+      text: "IPI teams spend less time responding to document requests.",
+    },
+    {
+      title: "Improved Partner Confidence",
+      text: "Transparency strengthens trust within the partner ecosystem.",
+    },
+  ];
+
+  return (
+    <React.Fragment>
+      <AppPageHeader
+        eyebrow="Partner Trust"
+        title="Partner Trust & Compliance Portal"
+        subtitle="To support transparency, compliance and operational efficiency, IP Integration will maintain a central Trust Page accessible via the IPI Partner Portal. This page will serve as the single authoritative source for all legal, compliance and product documentation related to the IPI product and services portfolio. The objective is to ensure partners always have access to the latest approved documentation without requiring direct engagement with legal or commercial teams."
+      />
+
+      <SectionWrapper>
+        <SectionHeader
+          eyebrow="Intro"
+          title="Purpose of the Trust Page"
+          description="The Trust Page will provide partners with easy access to the latest documentation governing the use, resale and delivery of IPI services."
+        />
+        <StandardCard>
+          <ul className="trust-list">
+            <li>Ensures partners always reference the latest versions of agreements and policies</li>
+            <li>Simplifies partner onboarding</li>
+            <li>Reduces delays during customer procurement processes</li>
+            <li>Supports enterprise security and compliance reviews</li>
+          </ul>
+          <p className="trust-note">The Trust Page becomes the central compliance and governance hub for the IPI Partner Advantage program.</p>
+        </StandardCard>
+      </SectionWrapper>
+
+      <SectionWrapper>
+        <SectionHeader
+          eyebrow="Documents Hosted"
+          title="Documents Hosted on the Trust Page"
+          description="The Trust Page will contain the most current versions of all contractual and product governance documentation."
+        />
+        <div className="trust-grid">
+          <StandardCard>
+            <h3 className="trust-card-title">Commercial Agreements</h3>
+            <ul className="trust-list">
+              <li>IPI Reseller Master Agreement</li>
+              <li>Partner Terms & Conditions</li>
+              <li>Partner Tier Structure</li>
+              <li>Partner Commercial Policies</li>
+            </ul>
+          </StandardCard>
+
+          <StandardCard>
+            <h3 className="trust-card-title">Product Schedules</h3>
+            <p className="trust-copy">Each product area will have a dedicated schedule defining service terms and operational details.</p>
+            <ul className="trust-list">
+              <li>Telephony Services Schedule</li>
+              <li>UCaaS & CCaaS Platform Schedule</li>
+              <li>AI & Automation Services Schedule</li>
+              <li>Secure Payments Schedule</li>
+              <li>Managed Services Schedule</li>
+              <li>Professional Services Schedule</li>
+            </ul>
+          </StandardCard>
+
+          <StandardCard>
+            <h3 className="trust-card-title">End User Legal Documentation</h3>
+            <p className="trust-copy">Partners will also be able to access documentation required for customer deployments.</p>
+            <ul className="trust-list">
+              <li>End User Licence Agreements (EULAs)</li>
+              <li>Acceptable Use Policies</li>
+              <li>Service Descriptions</li>
+              <li>Service Level Agreements (SLAs)</li>
+              <li>Data Processing Agreements (DPAs)</li>
+            </ul>
+          </StandardCard>
+
+          <StandardCard>
+            <h3 className="trust-card-title">Security & Compliance Documentation</h3>
+            <p className="trust-copy">To support enterprise procurement and security reviews, the Trust Page may also include:</p>
+            <ul className="trust-list">
+              <li>Data protection policies</li>
+              <li>Security frameworks</li>
+              <li>Compliance certifications</li>
+              <li>PCI related documentation for secure payments services</li>
+            </ul>
+          </StandardCard>
+        </div>
+      </SectionWrapper>
+
+      <SectionWrapper>
+        <SectionHeader
+          eyebrow="Document Governance"
+          title="Document Governance & Updates"
+          description="To ensure documentation remains current and compliant, the Trust Page will follow a clear governance process."
+        />
+        <HighlightCard>
+          <p className="trust-copy">Key principles:</p>
+          <ul className="trust-list">
+            <li>Only the latest approved versions of documents will be published</li>
+            <li>Document version control will be maintained internally</li>
+            <li>Partners will be notified when material updates are made</li>
+            <li>Updates will not require partners to sign new agreements unless legally required</li>
+          </ul>
+          <p className="trust-note">This ensures the commercial framework remains agile while maintaining legal integrity.</p>
+        </HighlightCard>
+      </SectionWrapper>
+
+      <SectionWrapper>
+        <SectionHeader
+          eyebrow="Strategic Benefits"
+          title="Strategic Benefits"
+          description="Establishing a central Trust Page supports the long-term scalability of the IPI Partner Advantage program."
+        />
+        <div className="trust-grid trust-grid--benefits">
+          {strategicBenefits.map((benefit) => (
+            <StandardCard key={benefit.title}>
+              <h3 className="trust-card-title">{benefit.title}</h3>
+              <p className="trust-copy">{benefit.text}</p>
+            </StandardCard>
+          ))}
+        </div>
+      </SectionWrapper>
+
+      <SectionWrapper>
+        <SectionHeader
+          eyebrow="Long Term Vision"
+          title="Long Term Vision"
+          description="Over time, the Trust Page should evolve into a comprehensive partner governance hub."
+        />
+        <StandardCard>
+          <ul className="trust-list">
+            <li>legal documentation</li>
+            <li>security and compliance resources</li>
+            <li>product documentation</li>
+            <li>service descriptions</li>
+            <li>implementation guidelines</li>
+          </ul>
+          <p className="trust-note">This reinforces IP Integration’s positioning as a trusted technology and services partner in the CX market.</p>
+        </StandardCard>
+      </SectionWrapper>
+    </React.Fragment>
+  );
+}
+
 const GOVERNANCE_ACTIVITIES_LEGACY = [
   {
     id: "1",
@@ -8951,12 +9106,6 @@ const NAV_ITEMS = [
     label: "Build. Sell. Expand",
     sublabel: "Revenue Journey",
   },
-  {
-    id: "partner-revenue-journey",
-    icon: "◎",
-    label: "Partner Revenue Journey",
-    sublabel: "Start Anywhere Model",
-  },
   { id: "hub", icon: "✓", label: "Partner Enablement", sublabel: "Hub 2026" },
   {
     id: "program",
@@ -8977,6 +9126,12 @@ const NAV_ITEMS = [
     sublabel: "Legal & Pricing Model",
   },
   {
+    id: "partner-trust",
+    icon: "🛡",
+    label: "Partner Trust",
+    sublabel: "/partner-trust",
+  },
+  {
     id: "channel-dashboard",
     icon: "◫",
     label: "Channel Manager Dashboard",
@@ -8989,6 +9144,22 @@ const NAV_ITEMS = [
     sublabel: "Deal Intelligence",
   },
 ];
+
+const PAGE_PATHS = {
+  main: "/",
+  bse: "/build-sell-expand",
+  hub: "/partner-enablement",
+  program: "/partner-program",
+  governance: "/governance-raci",
+  commercial: "/commercial-framework",
+  "partner-trust": "/partner-trust",
+  "channel-dashboard": "/channel-manager-dashboard",
+  prospect: "/partner-prospect-tool",
+};
+
+const PATH_TO_PAGE = Object.fromEntries(
+  Object.entries(PAGE_PATHS).map(([page, path]) => [path, page]),
+);
 
 function SideNav({ page, setPage, onLayoutChange }) {
   const SIDEBAR_PIN_KEY = "ipi_sidebar_pinned_v2";
@@ -9134,7 +9305,7 @@ function SideNav({ page, setPage, onLayoutChange }) {
 // APP
 // ═══════════════════════════════════════════════════════
 function App() {
-  const [page, setPage] = React.useState("main");
+  const [page, setPage] = React.useState(() => PATH_TO_PAGE[window.location.pathname] || "main");
   const [sidebarLayout, setSidebarLayout] = React.useState({
     isMobile: false,
     isSidebarPinned: true,
@@ -9162,9 +9333,9 @@ function App() {
       );
     if (page === "prospect") return <ProspectToolPage />;
     if (page === "bse") return <BuildSellExpand />;
-    if (page === "partner-revenue-journey") return <PartnerRevenueJourneyPage />;
     if (page === "program") return <PartnerProgramPage />;
     if (page === "commercial") return <CommercialFrameworkPage />;
+    if (page === "partner-trust") return <PartnerTrustPage />;
     if (page === "governance") return <GovernancePage />;
 
     // Page 1 — Home
@@ -9533,6 +9704,14 @@ function App() {
       </React.Fragment>
     );
   }
+
+  React.useEffect(() => {
+    if (!window.location.protocol.startsWith("http")) return;
+    const nextPath = PAGE_PATHS[page] || "/";
+    if (window.location.pathname !== nextPath) {
+      window.history.replaceState({}, "", nextPath);
+    }
+  }, [page]);
 
   const contentOffset =
     !sidebarLayout.isMobile && sidebarLayout.isSidebarPinned
