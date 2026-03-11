@@ -4996,39 +4996,29 @@ function ProspectToolPage() {
               }}
             />
             <select
+              className="ui-dropdown"
               value={sector}
               onChange={(e) => setSector(e.target.value)}
               style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(99,171,143,0.28)",
-                borderRadius: 10,
-                padding: "11px 12px",
-                color: "#E8F5F0",
-                fontSize: 13,
-                outline: "none",
+                boxShadow: "none",
               }}
             >
               {sectors.map((opt) => (
-                <option key={opt} value={opt} style={{ background: "#13211E" }}>
+                <option key={opt} value={opt}>
                   {opt}
                 </option>
               ))}
             </select>
             <select
+              className="ui-dropdown"
               value={size}
               onChange={(e) => setSize(e.target.value)}
               style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(99,171,143,0.28)",
-                borderRadius: 10,
-                padding: "11px 12px",
-                color: "#E8F5F0",
-                fontSize: 13,
-                outline: "none",
+                boxShadow: "none",
               }}
             >
               {sizes.map((opt) => (
-                <option key={opt} value={opt} style={{ background: "#13211E" }}>
+                <option key={opt} value={opt}>
                   {opt}
                 </option>
               ))}
@@ -7945,16 +7935,10 @@ function GovernancePage() {
               }}
             />
             <select
+              className="ui-dropdown"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(123,150,163,0.3)",
-                borderRadius: 8,
-                color: "#D9ECE6",
-                padding: "8px 10px",
-                fontSize: 12,
-              }}
+              style={{ boxShadow: "none" }}
             >
               {["All", ...GOVERNANCE_STATUS_OPTIONS].map((v) => (
                 <option key={v} value={v}>
@@ -7963,16 +7947,10 @@ function GovernancePage() {
               ))}
             </select>
             <select
+              className="ui-dropdown"
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(123,150,163,0.3)",
-                borderRadius: 8,
-                color: "#D9ECE6",
-                padding: "8px 10px",
-                fontSize: 12,
-              }}
+              style={{ boxShadow: "none" }}
             >
               {["All", ...PRIORITY_OPTIONS].map((v) => (
                 <option key={v} value={v}>
@@ -8103,18 +8081,14 @@ function GovernancePage() {
                         ].map(([field, label]) => (
                           <div key={`${task.id}-${field}`} style={{ padding: "10px" }}>
                             <select
+                              className="ui-dropdown"
                               value={task[field] || ""}
                               onChange={(e) =>
                                 updateTask(task.id, { [field]: e.target.value })
                               }
                               style={{
                                 width: "100%",
-                                background: "rgba(255,255,255,0.03)",
-                                border: "1px solid rgba(123,150,163,0.3)",
-                                borderRadius: 6,
-                                color: "#D9ECE6",
-                                padding: "6px",
-                                fontSize: 11.5,
+                                boxShadow: "none",
                               }}
                             >
                               <option value="">{label}</option>
@@ -8128,20 +8102,14 @@ function GovernancePage() {
                         ))}
                         <div style={{ padding: "10px" }}>
                           <select
+                            className="ui-dropdown"
                             value={task.status}
                             onChange={(e) =>
                               updateTask(task.id, { status: e.target.value })
                             }
                             style={{
                               width: "100%",
-                              background: isTaskOverdue(task)
-                                ? "rgba(168,67,67,0.2)"
-                                : "rgba(255,255,255,0.03)",
-                              border: `1px solid ${task.status === "Blocked" ? "rgba(214,138,138,0.6)" : "rgba(123,150,163,0.3)"}`,
-                              borderRadius: 6,
-                              color: "#D9ECE6",
-                              padding: "6px",
-                              fontSize: 12,
+                              boxShadow: "none",
                             }}
                           >
                             {GOVERNANCE_STATUS_OPTIONS.map((v) => (
@@ -8171,18 +8139,14 @@ function GovernancePage() {
                         </div>
                         <div style={{ padding: "10px" }}>
                           <select
+                            className="ui-dropdown"
                             value={task.priority}
                             onChange={(e) =>
                               updateTask(task.id, { priority: e.target.value })
                             }
                             style={{
                               width: "100%",
-                              background: "rgba(255,255,255,0.03)",
-                              border: "1px solid rgba(123,150,163,0.3)",
-                              borderRadius: 6,
-                              color: "#D9ECE6",
-                              padding: "6px",
-                              fontSize: 12,
+                              boxShadow: "none",
                             }}
                           >
                             {PRIORITY_OPTIONS.map((v) => (
@@ -8305,20 +8269,12 @@ function GovernancePage() {
                       </div>
                     </div>
                     <select
+                      className="ui-dropdown"
                       value={task.status}
                       onChange={(e) =>
                         updateTask(task.id, { status: e.target.value })
                       }
-                      style={{
-                        background: isTaskOverdue(task)
-                          ? "rgba(212,168,67,0.2)"
-                          : "rgba(255,255,255,0.03)",
-                        border: `1px solid ${task.status === "Blocked" ? "rgba(214,138,138,0.6)" : "rgba(123,150,163,0.3)"}`,
-                        borderRadius: 6,
-                        color: "#D9ECE6",
-                        padding: "8px",
-                        fontSize: 12,
-                      }}
+                      style={{ boxShadow: "none" }}
                     >
                       {GOVERNANCE_STATUS_OPTIONS.map((v) => (
                         <option key={v} value={v}>
@@ -8342,18 +8298,12 @@ function GovernancePage() {
                       }}
                     />
                     <select
+                      className="ui-dropdown"
                       value={task.priority}
                       onChange={(e) =>
                         updateTask(task.id, { priority: e.target.value })
                       }
-                      style={{
-                        background: "rgba(255,255,255,0.03)",
-                        border: "1px solid rgba(123,150,163,0.3)",
-                        borderRadius: 6,
-                        color: "#D9ECE6",
-                        padding: "8px",
-                        fontSize: 12,
-                      }}
+                      style={{ boxShadow: "none" }}
                     >
                       {PRIORITY_OPTIONS.map((v) => (
                         <option key={v} value={v}>
