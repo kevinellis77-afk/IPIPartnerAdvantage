@@ -4877,6 +4877,55 @@ function BuildSellExpand() {
     { id: "actions", label: "Next Actions" },
   ];
 
+  const journeyPanels = [
+    {
+      title: "Land",
+      text: "Start with the customer’s immediate problem. The entry point could be any solution in the portfolio.",
+      benefit: "Partner benefit: more conversations opened across more customer personas.",
+    },
+    {
+      title: "Expand",
+      text: "Layer adjacent capabilities to solve broader operational, CX, compliance and automation needs.",
+      benefit: "Partner benefit: larger deal sizes and more recurring service attach.",
+    },
+    {
+      title: "Platform",
+      text: "Build toward a full-stack customer contact solution that increases recurring revenue, share of wallet and long-term stickiness.",
+      benefit: "Partner benefit: stronger account control and higher long-term account value.",
+    },
+  ];
+
+  const useCaseExamples = [
+    {
+      title: "Land with Telephony",
+      issue: "Customer needs resilient voice operations across sites.",
+      solution: "Telephony Infrastructure",
+      expand: "UCaaS, CCaaS and Managed Services",
+      revenue: "Grows from core infrastructure sale into recurring platform and support revenue.",
+    },
+    {
+      title: "Land with Secure Payments",
+      issue: "Customer faces payment compliance and risk pressure.",
+      solution: "Secure Payments",
+      expand: "Contact Centre, AI and Compliance-led services",
+      revenue: "Unlocks compliance-led budgets then expands into CX and managed optimisation.",
+    },
+    {
+      title: "Land with AI & Automation",
+      issue: "Customer wants efficiency gains and faster customer response.",
+      solution: "AI & Automation",
+      expand: "CCaaS, UCaaS and Consultancy",
+      revenue: "Turns innovation projects into broader transformation programmes with recurring value.",
+    },
+    {
+      title: "Land with Managed Services",
+      issue: "Customer lacks operational capacity to maintain performance.",
+      solution: "Managed Services",
+      expand: "Core communications and customer engagement platform services",
+      revenue: "Service footprint expands into multi-stack ownership and higher account stickiness.",
+    },
+  ];
+
   return (
     <React.Fragment>
       <Bg />
@@ -5049,9 +5098,54 @@ function BuildSellExpand() {
         <section id="journey" className="bse-section-shell" style={{ paddingTop: 36 }}>
           <div className="bse-section-heading">
             <h2>Partner Revenue Journey</h2>
-            <p>From first sale to full CCaaS, every step deepens the customer relationship and grows recurring revenue at the customer's pace.</p>
+            <p>Start with any customer need, then expand into a broader platform opportunity over time with clear partner upside at each stage.</p>
           </div>
           <PartnerJourney />
+
+          <div className="prj-journey-panels" style={{ marginTop: 16 }}>
+            {journeyPanels.map((card) => (
+              <article key={card.title} className="prj-journey-card">
+                <h3>{card.title}</h3>
+                <p>{card.text}</p>
+                <span>{card.benefit}</span>
+              </article>
+            ))}
+          </div>
+
+          <div className="prj-contrast-grid" style={{ marginTop: 14 }}>
+            <article className="prj-contrast-card muted">
+              <h3>Single-Solution Vendor Model</h3>
+              <ul>
+                <li>Lead with one product only</li>
+                <li>Limited expansion paths</li>
+                <li>Lower wallet share</li>
+                <li>More vulnerable to replacement</li>
+                <li>Channel conversation always forced into CCaaS</li>
+              </ul>
+            </article>
+            <article className="prj-contrast-card positive">
+              <h3>IPI Ecosystem Model</h3>
+              <ul>
+                <li>Start from any customer need</li>
+                <li>Multiple cross-sell and upsell routes</li>
+                <li>Broader customer relevance</li>
+                <li>Higher revenue per account</li>
+                <li>Greater long-term strategic value to the partner</li>
+              </ul>
+            </article>
+          </div>
+
+          <div className="prj-use-cases" style={{ marginTop: 14 }}>
+            {useCaseExamples.map((example) => (
+              <article key={example.title} className="prj-use-case-card">
+                <h3>{example.title}</h3>
+                <p><strong>Initial customer issue:</strong> {example.issue}</p>
+                <p><strong>Initial solution:</strong> {example.solution}</p>
+                <p><strong>Expansion opportunity:</strong> {example.expand}</p>
+                <p><strong>Revenue outcome:</strong> {example.revenue}</p>
+              </article>
+            ))}
+          </div>
         </section>
 
         <section id="six-pillars" className="bse-section-shell" style={{ paddingTop: 52 }}>
@@ -8721,345 +8815,6 @@ function ChannelManagerDashboardPage() {
 }
 
 
-
-const revenueJourneyOptions = [
-  {
-    id: "telephony",
-    shortLabel: "Telephony",
-    label: "Telephony Infrastructure",
-    description: "Core voice infrastructure modernisation and resilience.",
-    credibleEntryPoint:
-      "Many customers start by fixing telephony reliability, cost or compliance before broader CX transformation.",
-    adjacentSales: ["ucaas", "ccaas", "managed-services", "professional-services"],
-    expandsTo: ["ucaas", "ccaas", "managed-services", "professional-services"],
-    revenueMessage:
-      "Telephony-led engagements often unlock multi-year platform and managed service expansion.",
-    customerIssue: "Aging telephony estate, fragmented call routing and rising support costs.",
-  },
-  {
-    id: "ucaas",
-    shortLabel: "UCaaS",
-    label: "UCaaS",
-    description: "Modern collaboration and communications for distributed teams.",
-    credibleEntryPoint:
-      "UC transformation is often funded first, creating a fast route into deeper customer contact conversations.",
-    adjacentSales: ["ccaas", "ai-automation", "secure-payments", "managed-services"],
-    expandsTo: ["ccaas", "ai-automation", "secure-payments", "managed-services"],
-    revenueMessage:
-      "UCaaS creates natural follow-on demand for contact centre, automation and support services.",
-    customerIssue: "Hybrid workforce productivity and legacy PBX replacement pressure.",
-  },
-  {
-    id: "ccaas",
-    shortLabel: "CCaaS",
-    label: "CCaaS",
-    description: "Omnichannel customer engagement and agent experience improvement.",
-    credibleEntryPoint:
-      "CCaaS remains a strong land motion for CX-led buyers, but it is only one of multiple entry routes.",
-    adjacentSales: ["ai-automation", "secure-payments", "managed-services", "professional-services"],
-    expandsTo: ["ai-automation", "secure-payments", "managed-services", "professional-services"],
-    revenueMessage:
-      "CCaaS-led deals scale quickly when paired with AI, payments and managed operations.",
-    customerIssue: "Contact centre inefficiency and customer experience inconsistency.",
-  },
-  {
-    id: "secure-payments",
-    shortLabel: "Payments",
-    label: "Secure Payments",
-    description: "PCI-aligned payment journeys across voice and digital interactions.",
-    credibleEntryPoint:
-      "Compliance and payment security pain can open the door to wider platform modernisation projects.",
-    adjacentSales: ["ccaas", "telephony", "managed-services", "ai-automation"],
-    expandsTo: ["ccaas", "telephony", "managed-services", "ai-automation"],
-    revenueMessage:
-      "Payments-led land motions drive high-value cross-sell into CX, telephony and analytics.",
-    customerIssue: "PCI risk exposure and friction in payment handling journeys.",
-  },
-  {
-    id: "ai-automation",
-    shortLabel: "AI",
-    label: "AI & Automation",
-    description: "Automation, insight and augmentation across the customer lifecycle.",
-    credibleEntryPoint:
-      "AI use cases attract executive sponsorship and quickly surface adjacent platform opportunities.",
-    adjacentSales: ["ccaas", "ucaas", "professional-services", "managed-services"],
-    expandsTo: ["ccaas", "ucaas", "professional-services", "managed-services"],
-    revenueMessage:
-      "AI programmes become recurring revenue engines when operationalised through platform and service layers.",
-    customerIssue: "Need to reduce manual effort while improving response quality and speed.",
-  },
-  {
-    id: "managed-services",
-    shortLabel: "Managed",
-    label: "Managed Services",
-    description: "Ongoing operational support, optimisation and assurance.",
-    credibleEntryPoint:
-      "Service-first engagements build trust and give partners visibility to identify incremental technology opportunities.",
-    adjacentSales: ["telephony", "ucaas", "ccaas", "secure-payments"],
-    expandsTo: ["telephony", "ucaas", "ccaas", "secure-payments"],
-    revenueMessage:
-      "Managed services increase retention and steadily expand wallet share across the stack.",
-    customerIssue: "Under-resourced internal teams and pressure to improve service outcomes.",
-  },
-  {
-    id: "professional-services",
-    shortLabel: "Consultancy",
-    label: "Professional Services / Consultancy",
-    description: "Transformation advisory and delivery expertise.",
-    credibleEntryPoint:
-      "Consultancy-led discovery engagements can shape the full roadmap and influence multiple platform workstreams.",
-    adjacentSales: ["telephony", "ucaas", "ccaas", "ai-automation", "secure-payments"],
-    expandsTo: ["telephony", "ucaas", "ccaas", "ai-automation", "secure-payments"],
-    revenueMessage:
-      "Advisory credibility positions partners to secure larger multi-solution programmes.",
-    customerIssue: "Customer wants a strategic transformation roadmap before platform decisions.",
-  },
-];
-
-const fullCustomerContactStack = [
-  "Telephony",
-  "UCaaS",
-  "CCaaS",
-  "AI & Automation",
-  "Secure Payments",
-  "Managed Services",
-  "Professional Services",
-];
-
-const nodePositions = {
-  telephony: { x: 16, y: 22 },
-  ucaas: { x: 33, y: 10 },
-  ccaas: { x: 50, y: 7 },
-  "secure-payments": { x: 67, y: 10 },
-  "ai-automation": { x: 84, y: 22 },
-  "managed-services": { x: 75, y: 54 },
-  "professional-services": { x: 25, y: 54 },
-};
-
-function SolutionNode({ option, selected, onClick }) {
-  return (
-    <button
-      type="button"
-      className={`prj-solution-node ${selected ? "selected" : ""}`}
-      onClick={onClick}
-    >
-      <span className="prj-node-title">{option.label}</span>
-      <span className="prj-node-copy">{option.description}</span>
-    </button>
-  );
-}
-
-function PartnerRevenueJourneyPage() {
-  const [selectedId, setSelectedId] = React.useState("ccaas");
-  const selectedOption = revenueJourneyOptions.find((item) => item.id === selectedId) || revenueJourneyOptions[0];
-  const optionById = React.useMemo(
-    () => Object.fromEntries(revenueJourneyOptions.map((item) => [item.id, item])),
-    [],
-  );
-  const expansions = selectedOption.expandsTo.map((id) => optionById[id]).filter(Boolean);
-
-  return (
-    <React.Fragment>
-      <Bg />
-      <div className="prj-page">
-        <section className="prj-hero">
-          <p className="prj-eyebrow">Partner Revenue Journey</p>
-          <h1>Start Anywhere. Expand Everywhere.</h1>
-          <p>
-            IPI enables partners to land with any customer problem — Telephony, UC, CCaaS, Payments, AI, Managed Services or Consultancy — then expand into a broader platform opportunity over time.
-          </p>
-          <p className="prj-value-statement">
-            This creates more routes to revenue, more cross-sell opportunities, stronger customer stickiness and higher lifetime value than a single-solution vendor model.
-          </p>
-          <div className="prj-kpi-grid">
-            {[
-              "More Routes to Revenue",
-              "Higher Customer Lifetime Value",
-              "Greater Stickiness Through Expansion",
-            ].map((item) => (
-              <article key={item} className="prj-kpi-card">{item}</article>
-            ))}
-          </div>
-        </section>
-
-        <section className="prj-main-visual">
-          <div className="prj-main-heading">
-            <h2>Interactive Expansion Model</h2>
-            <p>Select any starting point to see credible expansion pathways into a full customer contact stack.</p>
-          </div>
-          <div className="prj-diagram-shell">
-            <div className="prj-orbit">
-              <svg className="prj-lines" viewBox="0 0 100 70" preserveAspectRatio="none" aria-hidden="true">
-                {selectedOption.expandsTo.map((targetId) => {
-                  const from = nodePositions[selectedId];
-                  const to = nodePositions[targetId];
-                  if (!from || !to) return null;
-                  return (
-                    <line
-                      key={targetId}
-                      x1={from.x}
-                      y1={from.y}
-                      x2={to.x}
-                      y2={to.y}
-                    />
-                  );
-                })}
-              </svg>
-              <div className="prj-central-node">
-                <strong>Customer Need / Initial Land Opportunity</strong>
-              </div>
-              {revenueJourneyOptions.map((option) => (
-                <div
-                  key={option.id}
-                  className="prj-orbit-node"
-                  style={{ left: `${nodePositions[option.id].x}%`, top: `${nodePositions[option.id].y}%` }}
-                >
-                  <SolutionNode option={option} selected={selectedId === option.id} onClick={() => setSelectedId(option.id)} />
-                </div>
-              ))}
-            </div>
-
-            <div className="prj-pathway-strip">
-              <article className="prj-pathway-card start">
-                <p className="label">Selected entry point</p>
-                <h3>{selectedOption.label}</h3>
-                <p>{selectedOption.credibleEntryPoint}</p>
-              </article>
-              <div className="prj-arrow">→</div>
-              <article className="prj-pathway-card expand">
-                <p className="label">Suggested next expansions</p>
-                <ul>
-                  {expansions.slice(0, 5).map((option) => (
-                    <li key={option.id}>{option.label}</li>
-                  ))}
-                </ul>
-              </article>
-              <div className="prj-arrow">→</div>
-              <article className="prj-pathway-card full-stack">
-                <p className="label">Final destination</p>
-                <h3>Full Customer Contact Stack</h3>
-                <div className="prj-stack-list">
-                  {fullCustomerContactStack.map((item) => (
-                    <span key={item}>{item}</span>
-                  ))}
-                </div>
-              </article>
-            </div>
-          </div>
-
-          <div className="prj-detail-panel">
-            <h3>Why {selectedOption.label} is a strong land motion</h3>
-            <p>{selectedOption.credibleEntryPoint}</p>
-            <div className="prj-detail-grid">
-              <div>
-                <h4>Adjacent services to sell next</h4>
-                <p>{selectedOption.adjacentSales.map((id) => optionById[id]?.label).filter(Boolean).join(" · ")}</p>
-              </div>
-              <div>
-                <h4>Revenue impact for partners</h4>
-                <p>{selectedOption.revenueMessage}</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="prj-journey-panels">
-          {[
-            {
-              title: "Land",
-              text: "Start with the customer’s immediate problem. The entry point could be any solution in the portfolio.",
-              benefit: "Partner benefit: more conversations opened across more customer personas.",
-            },
-            {
-              title: "Expand",
-              text: "Layer adjacent capabilities to solve broader operational, CX, compliance and automation needs.",
-              benefit: "Partner benefit: larger deal sizes and more recurring service attach.",
-            },
-            {
-              title: "Platform",
-              text: "Build toward a full-stack customer contact solution that increases recurring revenue, share of wallet and long-term stickiness.",
-              benefit: "Partner benefit: stronger account control and higher long-term account value.",
-            },
-          ].map((card) => (
-            <article key={card.title} className="prj-journey-card">
-              <h3>{card.title}</h3>
-              <p>{card.text}</p>
-              <span>{card.benefit}</span>
-            </article>
-          ))}
-        </section>
-
-        <section className="prj-contrast-grid">
-          <article className="prj-contrast-card muted">
-            <h3>Single-Solution Vendor Model</h3>
-            <ul>
-              <li>Lead with one product only</li>
-              <li>Limited expansion paths</li>
-              <li>Lower wallet share</li>
-              <li>More vulnerable to replacement</li>
-              <li>Channel conversation always forced into CCaaS</li>
-            </ul>
-          </article>
-          <article className="prj-contrast-card positive">
-            <h3>IPI Ecosystem Model</h3>
-            <ul>
-              <li>Start from any customer need</li>
-              <li>Multiple cross-sell and upsell routes</li>
-              <li>Broader customer relevance</li>
-              <li>Higher revenue per account</li>
-              <li>Greater long-term strategic value to the partner</li>
-            </ul>
-          </article>
-        </section>
-
-        <section className="prj-use-cases">
-          {[
-            {
-              title: "Land with Telephony",
-              issue: "Customer needs resilient voice operations across sites.",
-              solution: "Telephony Infrastructure",
-              expand: "UCaaS, CCaaS and Managed Services",
-              revenue: "Grows from core infrastructure sale into recurring platform and support revenue.",
-            },
-            {
-              title: "Land with Secure Payments",
-              issue: "Customer faces payment compliance and risk pressure.",
-              solution: "Secure Payments",
-              expand: "Contact Centre, AI and Compliance-led services",
-              revenue: "Unlocks compliance-led budgets then expands into CX and managed optimisation.",
-            },
-            {
-              title: "Land with AI & Automation",
-              issue: "Customer wants efficiency gains and faster customer response.",
-              solution: "AI & Automation",
-              expand: "CCaaS, UCaaS and Consultancy",
-              revenue: "Turns innovation projects into broader transformation programmes with recurring value.",
-            },
-            {
-              title: "Land with Managed Services",
-              issue: "Customer lacks operational capacity to maintain performance.",
-              solution: "Managed Services",
-              expand: "Core communications and customer engagement platform services",
-              revenue: "Service footprint expands into multi-stack ownership and higher account stickiness.",
-            },
-          ].map((example) => (
-            <article key={example.title} className="prj-use-case-card">
-              <h3>{example.title}</h3>
-              <p><strong>Initial customer issue:</strong> {example.issue}</p>
-              <p><strong>Initial solution:</strong> {example.solution}</p>
-              <p><strong>Expansion opportunity:</strong> {example.expand}</p>
-              <p><strong>Revenue outcome:</strong> {example.revenue}</p>
-            </article>
-          ))}
-        </section>
-
-        <section className="prj-banner">
-          IPI gives partners the freedom to land where the customer need is today — and the portfolio depth to grow that customer into a much larger long-term revenue opportunity.
-        </section>
-      </div>
-    </React.Fragment>
-  );
-}
 
 // ═══════════════════════════════════════════════════════
 // SIDEBAR NAV WRAPPER
