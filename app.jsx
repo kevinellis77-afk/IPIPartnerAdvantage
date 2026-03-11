@@ -4056,7 +4056,7 @@ function EnablementHub({ onBack, onNavigate }) {
           </div>
         </div>
 
-        {/* TYPICAL PARTNER JOURNEY */}
+        {/* HOW PARTNERS GROW WITH IPI */}
         <div
           style={{
             maxWidth: "none",
@@ -4091,7 +4091,7 @@ function EnablementHub({ onBack, onNavigate }) {
                 whiteSpace: "normal",
               }}
             >
-              Typical Partner Journey
+              How Partners Grow With IPI
             </span>
             <div
               style={{
@@ -4110,9 +4110,9 @@ function EnablementHub({ onBack, onNavigate }) {
               color: "#86ABA3",
             }}
           >
-            Partners can start with one solution, build capability and
-            confidence, then expand into broader customer outcomes and larger
-            recurring revenue streams.
+            Partners can start with one solution, win their first
+            opportunities, and then expand into broader customer outcomes and
+            larger recurring revenue streams.
           </p>
           <div
             style={{
