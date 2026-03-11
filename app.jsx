@@ -5471,6 +5471,16 @@ const PARTNER_TIERS_DATA = [
       "Flexible telephony",
       "Consultancy expertise",
     ],
+    challenges: [
+      "They are likely already selling at least one UCaaS or CCaaS vendor. Will they want to engage with another platform?",
+      "We must clearly demonstrate what differentiation IPI brings compared with their existing vendor relationships.",
+      "Gaining mindshare alongside their current vendors may require strong commercial or solution advantages.",
+    ],
+    winStrategies: [
+      "Lead with differentiation, showing where IPI adds value beyond their incumbent vendor relationships.",
+      "Position IPI as complementary where appropriate, rather than forcing a full vendor replacement conversation too early.",
+      "Use strong commercial messaging and targeted enablement to show why it is worth their time to engage.",
+    ],
     summary:
       "These partners already sell CCaaS — making them the fastest path to platform revenue. IPI lets them differentiate from single-platform vendors by delivering a complete CX ecosystem.",
   },
@@ -5492,6 +5502,16 @@ const PARTNER_TIERS_DATA = [
       "AI automation",
       "Secure payments",
       "Managed CX solutions",
+    ],
+    challenges: [
+      "They may perceive CCaaS as too complex compared to their current IT or MSP services.",
+      "We must simplify the story so they feel comfortable introducing opportunities.",
+      "They may need strong presales and enablement support before actively positioning solutions.",
+    ],
+    winStrategies: [
+      "Simplify the proposition into clear business outcomes rather than technical complexity.",
+      "Provide easy discovery questions, talk tracks, and first-call support so they feel confident early.",
+      "Reassure them that IPI can provide presales, design, and solution expertise while they build confidence.",
     ],
     summary:
       "Strong mid-market voice bases but limited CCaaS capability. IPI transforms them from telecom providers into full CX solution providers.",
@@ -5519,6 +5539,16 @@ const PARTNER_TIERS_DATA = [
       "Call Recording",
       "IVR & Telephony services",
     ],
+    challenges: [
+      "They may expect deep integration capability across CRM, CX platforms and AI tools.",
+      "They may prefer to stay vendor-agnostic rather than recommend a single platform.",
+      "We must demonstrate credibility as a CX partner, not just a contact centre vendor.",
+    ],
+    winStrategies: [
+      "Position IPI around CX outcomes, integration flexibility, and broader solution capability.",
+      "Show how our portfolio supports their advisory role rather than restricting it.",
+      "Use relevant case studies and solution examples to build credibility beyond core CCaaS.",
+    ],
     summary:
       "These partners enter accounts through specialist capabilities — enabling IPI to land in enterprise accounts through point solutions, then expand.",
   },
@@ -5545,6 +5575,16 @@ const PARTNER_TIERS_DATA = [
       "AI automation",
       "Ongoing platform management",
     ],
+    challenges: [
+      "They will expect strong revenue potential and attractive margins.",
+      "They may already have preferred strategic vendors in place.",
+      "They will want confidence that we can support pipeline growth and multiple deployments.",
+    ],
+    winStrategies: [
+      "Lead with revenue opportunity, partner economics, and growth potential.",
+      "Demonstrate that IPI can support scale through strong presales, delivery, and support capability.",
+      "Create joint planning conversations that show commitment to shared growth rather than one-off wins.",
+    ],
     summary:
       "MSPs can bundle IPI solutions into fully managed CX environments, creating high-value recurring revenue with long customer lifecycles.",
   },
@@ -5569,6 +5609,16 @@ const PARTNER_TIERS_DATA = [
       "Strategic advisory engagements",
       "CX architecture design",
       "Transformation projects",
+    ],
+    challenges: [
+      "They often already work with vendors offering SPIFFs or incentives — do we want to compete on this?",
+      "Strategic partnerships often require executive sponsorship and longer recruitment cycles.",
+      "They will expect strong alignment around enterprise delivery capability and long-term roadmap.",
+    ],
+    winStrategies: [
+      "Avoid relying only on SPIFFs and instead differentiate on strategic value, solution breadth, and services opportunity.",
+      "Engage at executive level early to build sponsorship and long-term alignment.",
+      "Show confidence in enterprise delivery, roadmap strength, and the ability to support complex strategic opportunities.",
     ],
     summary:
       "Consultancies influence enterprise technology decisions even when they don't sell directly. IPI becomes the recommended CX platform within consultancy-led programmes.",
@@ -5821,13 +5871,13 @@ function PartnerProgramPage() {
               border: `1.5px solid rgba(${t.glow},0.35)`,
               borderRadius: 18,
               padding: "28px",
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
+              display: "flex",
+              flexDirection: "column",
               gap: 20,
               animation: "fadeIn 0.25s ease both",
             }}
           >
-            {/* Left: identity */}
+            {/* Header */}
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div
                 style={{
@@ -5909,7 +5959,7 @@ function PartnerProgramPage() {
                     marginBottom: 8,
                   }}
                 >
-                  Typically Sells / Specialises In
+                  Key Partner Types
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {t.vendors.map((v, i) => (
@@ -5933,126 +5983,102 @@ function PartnerProgramPage() {
               </div>
             </div>
 
-            {/* Middle: why they matter */}
-            <div>
-              <div
-                style={{
-                  fontSize: 9,
-                  fontWeight: 800,
-                  color: `rgba(${t.glow},0.6)`,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  marginBottom: 14,
-                }}
-              >
-                Why They Matter
-              </div>
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: 10 }}
-              >
-                {t.whyMatter.map((w, i) => (
+            {/* Ordered playbook sections */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
+                gap: 16,
+              }}
+            >
+              {[
+                {
+                  title: "Benefits",
+                  note: "(Why They Matter)",
+                  items: t.whyMatter,
+                  icon: "✓",
+                },
+                {
+                  title: "Requirements",
+                  note: "(Opportunity for IPI)",
+                  items: t.opportunity,
+                  icon: "→",
+                },
+                {
+                  title: "Partner Acquisition Challenges",
+                  items: t.challenges,
+                  icon: "•",
+                },
+                {
+                  title: "How We Win This Partner Type",
+                  items: t.winStrategies,
+                  icon: "★",
+                },
+              ].map((section) => (
+                <div key={section.title}>
                   <div
-                    key={i}
                     style={{
-                      display: "flex",
-                      gap: 10,
-                      alignItems: "flex-start",
+                      fontSize: 9,
+                      fontWeight: 800,
+                      color: `rgba(${t.glow},0.6)`,
+                      letterSpacing: "0.1em",
+                      textTransform: "uppercase",
+                      marginBottom: 10,
                     }}
                   >
-                    <div
-                      style={{
-                        width: 20,
-                        height: 20,
-                        borderRadius: 6,
-                        background: `rgba(${t.glow},0.18)`,
-                        border: `1px solid rgba(${t.glow},0.35)`,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                        marginTop: 1,
-                      }}
-                    >
-                      <span
+                    {section.title}
+                    {section.note && (
+                      <span style={{ opacity: 0.7, marginLeft: 4 }}>
+                        {section.note}
+                      </span>
+                    )}
+                  </div>
+                  <div
+                    style={{ display: "flex", flexDirection: "column", gap: 10 }}
+                  >
+                    {section.items.map((text, i) => (
+                      <div
+                        key={i}
                         style={{
-                          color: t.color,
-                          fontSize: 10,
-                          fontWeight: 900,
+                          display: "flex",
+                          gap: 10,
+                          alignItems: "flex-start",
                         }}
                       >
-                        ✓
-                      </span>
-                    </div>
-                    <span
-                      style={{
-                        fontSize: 12.5,
-                        color: "#C0DDD6",
-                        lineHeight: 1.6,
-                        fontWeight: 600,
-                      }}
-                    >
-                      {w}
-                    </span>
+                        <div
+                          style={{
+                            width: 20,
+                            height: 20,
+                            borderRadius: 6,
+                            background: `rgba(${t.glow},0.15)`,
+                            border: `1px solid rgba(${t.glow},0.35)`,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                            marginTop: 1,
+                            color: t.color,
+                            fontSize: 10,
+                            fontWeight: 900,
+                          }}
+                        >
+                          {section.icon}
+                        </div>
+                        <span
+                          style={{
+                            fontSize: 12.5,
+                            color: "#C0DDD6",
+                            lineHeight: 1.6,
+                            fontWeight: 600,
+                          }}
+                        >
+                          {text}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Right: opportunity */}
-            <div>
-              <div
-                style={{
-                  fontSize: 9,
-                  fontWeight: 800,
-                  color: `rgba(${t.glow},0.6)`,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  marginBottom: 14,
-                }}
-              >
-                Opportunity for IPI
-              </div>
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: 10 }}
-              >
-                {t.opportunity.map((o, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      display: "flex",
-                      gap: 10,
-                      alignItems: "flex-start",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 20,
-                        height: 20,
-                        borderRadius: 6,
-                        background: `rgba(${t.glow},0.12)`,
-                        border: `1px solid rgba(${t.glow},0.25)`,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                        marginTop: 1,
-                      }}
-                    >
-                      <span style={{ color: t.color, fontSize: 11 }}>→</span>
-                    </div>
-                    <span
-                      style={{
-                        fontSize: 12.5,
-                        color: "#C0DDD6",
-                        lineHeight: 1.6,
-                        fontWeight: 600,
-                      }}
-                    >
-                      {o}
-                    </span>
-                  </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
