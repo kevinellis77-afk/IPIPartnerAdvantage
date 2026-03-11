@@ -5023,6 +5023,33 @@ function useDebouncedValue(value, wait) {
 function BuildSellExpand() {
   const [activePillar, setActivePillar] = React.useState(null);
 
+  const vendorComparisonCards = [
+    {
+      title: "Single Solution Vendor Model",
+      icon: "📦",
+      tone: "muted",
+      points: [
+        "Vendor promotes a single core product (often CCaaS or UC)",
+        "Partner revenue limited to that product category",
+        "Upsell options restricted to vendor roadmap",
+        "Customer needs outside the platform require third-party vendors",
+        "Lower long-term revenue expansion for the partner",
+      ],
+    },
+    {
+      title: "IPI Ecosystem Model",
+      icon: "🧱",
+      tone: "positive",
+      points: [
+        "Partners can start with any solution in the portfolio",
+        "Multiple technology categories across the customer lifecycle",
+        "Solutions can be layered over time as customer needs evolve",
+        "Enables partners to expand account value significantly",
+        "Supports services, integration and managed services revenue",
+      ],
+    },
+  ];
+
   const journeyPanels = [
     {
       title: "Land",
@@ -5188,29 +5215,6 @@ function BuildSellExpand() {
             ))}
           </div>
 
-          <div className="prj-contrast-grid" style={{ marginTop: 14 }}>
-            <article className="prj-contrast-card muted">
-              <h3>Single-Solution Vendor Model</h3>
-              <ul>
-                <li>Lead with one product only</li>
-                <li>Limited expansion paths</li>
-                <li>Lower wallet share</li>
-                <li>More vulnerable to replacement</li>
-                <li>Channel conversation always forced into CCaaS</li>
-              </ul>
-            </article>
-            <article className="prj-contrast-card positive">
-              <h3>IPI Ecosystem Model</h3>
-              <ul>
-                <li>Start from any customer need</li>
-                <li>Multiple cross-sell and upsell routes</li>
-                <li>Broader customer relevance</li>
-                <li>Higher revenue per account</li>
-                <li>Greater long-term strategic value to the partner</li>
-              </ul>
-            </article>
-          </div>
-
           <div className="prj-use-cases" style={{ marginTop: 14 }}>
             {useCaseExamples.map((example) => (
               <article key={example.title} className="prj-use-case-card">
@@ -5271,6 +5275,42 @@ function BuildSellExpand() {
                 onClick={() => setActivePillar((prev) => (prev === pillar.id ? null : pillar.id))}
               />
             ))}
+          </div>
+        </section>
+
+        <section id="ecosystem-comparison" className="bse-section-shell" style={{ paddingTop: 52 }}>
+          <div className="bse-section-heading">
+            <h2>Why the IPI Ecosystem Model Wins for Partners</h2>
+          </div>
+
+          <div className="bse-compare-intro">
+            <p>Many technology vendors promote a single-product strategy where partners are encouraged to sell only their platform.</p>
+            <p>While this can simplify positioning, it often limits a partner&apos;s ability to deliver broader customer outcomes and reduces long-term revenue opportunities.</p>
+            <p>IP Integration takes a different approach.</p>
+            <p>The IPI Ecosystem allows partners to start with any solution — telephony, UC, AI, payments, automation, or contact centre — and expand the customer relationship by layering additional capabilities over time.</p>
+            <p>This enables partners to grow account value, deepen customer relationships and build recurring revenue streams across multiple services.</p>
+          </div>
+
+          <div className="prj-contrast-grid" style={{ marginTop: 16 }}>
+            {vendorComparisonCards.map((card) => (
+              <article key={card.title} className={`prj-contrast-card ${card.tone}`}>
+                <div className="prj-contrast-title-wrap">
+                  <span className="prj-contrast-icon" aria-hidden="true">{card.icon}</span>
+                  <h3>{card.title}</h3>
+                </div>
+                <ul>
+                  {card.points.map((point) => (
+                    <li key={point}>{point}</li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
+
+          <div className="bse-takeaway-banner" style={{ marginTop: 18 }}>
+            <h3>Key Takeaway</h3>
+            <p>Resellers grow faster when they are not limited to a single product line.</p>
+            <p>The IPI ecosystem enables partners to land with one solution and expand across a wider technology stack — increasing revenue, customer stickiness and long-term account value.</p>
           </div>
         </section>
 
