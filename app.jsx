@@ -2704,83 +2704,54 @@ const STACK_LAYERS = [
   {
     id: "prof",
     label: "Professional Services & Consultancy",
-    sublabel: "Spanning the entire platform",
+    sublabel: "Strategic layer spanning the entire ecosystem",
     icon: "🎯",
+    color: "#D4A843",
+    glow: "212,168,67",
+    bg: "linear-gradient(135deg,rgba(212,168,67,0.22),rgba(212,168,67,0.08))",
+    border: "rgba(212,168,67,0.5)",
+    items: ["CX Strategy", "Solution Design", "Integration", "Enablement"],
+    desc: "Strategic services that guide and optimise every deployment — from customer experience strategy and solution design to integration and enablement.",
+    span: "full",
+  },
+  {
+    id: "ai",
+    label: "AI & Automation",
+    sublabel: "Intelligence and optimisation layer",
+    icon: "🤖",
     color: "#A37992",
     glow: "163,121,146",
     bg: "linear-gradient(135deg,rgba(163,121,146,0.18),rgba(163,121,146,0.07))",
     border: "rgba(163,121,146,0.45)",
-    items: ["CX Strategy", "Solution Design", "Integration", "Enablement"],
-    desc: "Expert consultancy at every stage — from initial scoping and CX strategy through to technical integration, deployment and ongoing partner enablement. IPI's professional services team ensures every deployment lands right.",
-    span: "full", // visual: spans full width as a wrap layer
-  },
-  {
-    id: "managed",
-    label: "Managed Services",
-    sublabel: "Ongoing operational excellence",
-    icon: "⚙️",
-    color: "#7B96A3",
-    glow: "123,150,163",
-    bg: "linear-gradient(135deg,rgba(123,150,163,0.18),rgba(123,150,163,0.07))",
-    border: "rgba(123,150,163,0.45)",
-    items: ["SiteConnect", "SD-WAN", "Managed Cloud", "Platform Support"],
-    desc: "End-to-end managed delivery covering network connectivity, cloud infrastructure and platform operations — giving partners a fully outsourced backbone to build their CCaaS proposition on.",
+    items: [
+      "Voicebot",
+      "Chatbot",
+      "AI Sidekick",
+      "AI Insights",
+      "ID Me",
+      "Q4 Me",
+      "Send Me",
+    ],
+    desc: "Intelligent automation and real-time insight that improve self-service outcomes, support agents in-flight and continuously optimise customer interactions.",
     span: "full",
   },
   {
-    id: "aipaym",
-    label: null, // split row
-    sublabel: null,
-    icon: null,
-    color: null,
-    glow: null,
-    bg: null,
-    border: null,
-    items: null,
-    desc: null,
-    span: "split",
-    left: {
-      id: "ai",
-      label: "AI & Automation",
-      sublabel: "Intelligence layer",
-      icon: "🤖",
-      color: "#A37992",
-      glow: "163,121,146",
-      bg: "linear-gradient(135deg,rgba(163,121,146,0.18),rgba(163,121,146,0.07))",
-      border: "rgba(163,121,146,0.45)",
-      items: [
-        "Voicebot",
-        "Chatbot",
-        "AI Sidekick",
-        "AI Insights",
-        "ID Me",
-        "Q4 Me",
-        "Send Me",
-      ],
-      desc: "Intelligent automation and real-time analytics that reduce handling time, improve CSAT and surface actionable insight across every interaction.",
-    },
-    right: {
-      id: "payments",
-      label: "Secure Payments",
-      sublabel: "Compliance layer",
-      icon: "🔐",
-      color: "#C0887B",
-      glow: "192,136,123",
-      bg: "linear-gradient(135deg,rgba(192,136,123,0.18),rgba(192,136,123,0.07))",
-      border: "rgba(192,136,123,0.45)",
-      items: [
-        "PCI Cloud",
-        "DTMF Suppression",
-        "Pauseable",
-        "Digital Pay by Link",
-      ],
-      desc: "PCI-DSS de-scoping solutions that remove the contact centre entirely from card data scope — without disrupting agent workflow.",
-    },
+    id: "payments",
+    label: "Secure Payments Add-Ons",
+    sublabel: "Embedded compliance layer",
+    icon: "🔐",
+    color: "#C0887B",
+    glow: "192,136,123",
+    bg: "linear-gradient(135deg,rgba(192,136,123,0.18),rgba(192,136,123,0.07))",
+    border: "rgba(192,136,123,0.45)",
+    items: ["Pauseable", "PCI Cloud (DTMF Suppression)", "Digital Pay by Link"],
+    desc: "Secure payment add-ons that protect cardholder data and support PCI-DSS compliance without disrupting the live customer conversation.",
+    span: "full",
   },
   {
     id: "platform",
     label: "UCaaS & CCaaS Platform",
-    sublabel: "Core unified platform",
+    sublabel: "Core communications platform",
     icon: "⚡",
     color: "#63AB8F",
     glow: "99,171,143",
@@ -2792,20 +2763,33 @@ const STACK_LAYERS = [
       "Omnichannel Engagement",
       "Workforce Enablement",
     ],
-    desc: "The ECX platform — IPI's flagship unified comms and contact centre solution. The connective core that ties every layer together and delivers a seamless agent and customer experience.",
+    desc: "The ECX core that powers unified communications and contact centre operations across channels, teams and customer journeys.",
     span: "full",
   },
   {
     id: "telephony",
     label: "Telephony Infrastructure",
-    sublabel: "The foundation",
+    sublabel: "Core voice services",
     icon: "📡",
     color: "#91C4B0",
     glow: "99,171,143",
     bg: "linear-gradient(135deg,rgba(145,196,176,0.18),rgba(145,196,176,0.06))",
     border: "rgba(145,196,176,0.4)",
     items: ["SIP", "Numbering", "Routing", "IVR", "Call Recording"],
-    desc: "Enterprise-grade telephony infrastructure providing the resilient, scalable voice foundation on which every layer of the platform is built.",
+    desc: "Resilient telephony infrastructure that provides the voice capability required to run high-performing customer contact operations.",
+    span: "full",
+  },
+  {
+    id: "managed",
+    label: "Managed Services",
+    sublabel: "Foundation layer",
+    icon: "⚙️",
+    color: "#7B96A3",
+    glow: "123,150,163",
+    bg: "linear-gradient(135deg,rgba(68,82,92,0.9),rgba(82,102,114,0.88))",
+    border: "rgba(123,150,163,0.45)",
+    items: ["SiteConnect", "SD-WAN", "Managed Cloud", "Platform Support"],
+    desc: "The operational backbone that underpins the full ecosystem, providing managed connectivity, cloud infrastructure and platform support.",
     span: "full",
   },
 ];
@@ -2984,183 +2968,6 @@ function StackLayerFull({ layer, isActive, onToggle, onProduct }) {
   );
 }
 
-function StackLayerSplit({ layer, activeId, onToggle, onProduct }) {
-  const { left, right } = layer;
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: 10 }}>
-      {[left, right].map((sub) => {
-        const isActive = activeId === sub.id;
-        return (
-          <div
-            key={sub.id}
-            className="stack-layer"
-            style={{
-              background: isActive
-                ? sub.bg.replace(
-                    /0\.\d+\)/g,
-                    (m) => String(parseFloat(m) * 1.6) + ")",
-                  )
-                : sub.bg,
-              border: `1.5px solid ${isActive ? sub.border : sub.border.replace(/0\.\d+\)/, "0.25)")}`,
-              boxShadow: isActive
-                ? `0 0 28px rgba(${sub.glow},0.22),0 8px 28px rgba(0,0,0,0.4)`
-                : "0 2px 12px rgba(0,0,0,0.3)",
-              overflow: "hidden",
-            }}
-            onClick={() => onToggle(sub.id)}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                padding: "16px 18px",
-                cursor: "pointer",
-              }}
-            >
-              <div
-                style={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: 10,
-                  background: `rgba(${sub.glow},0.15)`,
-                  border: `1px solid ${sub.color}40`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 18,
-                  flexShrink: 0,
-                  boxShadow: isActive
-                    ? `0 0 12px rgba(${sub.glow},0.4)`
-                    : "none",
-                }}
-              >
-                {sub.icon}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    fontSize: 14,
-                    fontWeight: 800,
-                    color: isActive ? sub.color : "#D0E8E0",
-                    fontFamily: "'Syne',sans-serif",
-                    transition: "color 0.25s",
-                    textShadow: isActive
-                      ? `0 0 14px rgba(${sub.glow},0.6)`
-                      : "none",
-                  }}
-                >
-                  {sub.label}
-                </div>
-                <div
-                  style={{
-                    fontSize: 10,
-                    color: isActive
-                      ? `rgba(${sub.glow},0.65)`
-                      : "rgba(110,153,144,0.55)",
-                    fontWeight: 600,
-                    marginTop: 2,
-                  }}
-                >
-                  {sub.sublabel}
-                </div>
-              </div>
-              <div
-                style={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: "50%",
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                  transition: "transform 0.25s",
-                  transform: isActive ? "rotate(180deg)" : "none",
-                  color: isActive ? sub.color : "rgba(180,210,204,0.4)",
-                  fontSize: 12,
-                }}
-              >
-                ▾
-              </div>
-            </div>
-            {/* Pills */}
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 5,
-                padding: "0 18px 14px",
-              }}
-            >
-              {sub.items.map((item) => {
-                const hasDetail = !!PRODUCT_DATA[item];
-                return (
-                  <span
-                    key={item}
-                    className="stack-pill"
-                    onClick={
-                      hasDetail
-                        ? (e) => {
-                            e.stopPropagation();
-                            onProduct && onProduct(item);
-                          }
-                        : undefined
-                    }
-                    style={{
-                      fontSize: 10.5,
-                      color: isActive ? sub.color : "rgba(180,210,204,0.6)",
-                      borderColor: isActive
-                        ? `${sub.color}50`
-                        : "rgba(255,255,255,0.1)",
-                      background: isActive
-                        ? `rgba(${sub.glow},0.12)`
-                        : "rgba(255,255,255,0.05)",
-                      cursor: hasDetail ? "pointer" : "default",
-                    }}
-                  >
-                    {item}
-                    {hasDetail && (
-                      <span
-                        style={{ marginLeft: 3, fontSize: 9, opacity: 0.6 }}
-                      >
-                        ↗
-                      </span>
-                    )}
-                  </span>
-                );
-              })}
-            </div>
-            {/* Expanded description */}
-            {isActive && (
-              <div
-                style={{
-                  padding: "0 18px 16px",
-                  animation: "fadeUp 0.25s ease both",
-                }}
-              >
-                <div
-                  style={{
-                    height: 1,
-                    background: `linear-gradient(90deg,rgba(${sub.glow},0.2),transparent)`,
-                    marginBottom: 12,
-                  }}
-                />
-                <p
-                  style={{ fontSize: 12.5, color: "#7aa09a", lineHeight: 1.82 }}
-                >
-                  {sub.desc}
-                </p>
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 function PlatformStack() {
   const [activeId, setActiveId] = React.useState(null);
   const [productModal, setProductModal] = React.useState(null);
@@ -3251,136 +3058,56 @@ function PlatformStack() {
             </div>
           </div>
 
-          <StackLayerFull
-            layer={STACK_LAYERS[0]}
-            isActive={activeId === "prof"}
-            onToggle={() => toggle("prof")}
-            onProduct={setProductModal}
-          />
-          <div className="stack-connector">
-            <svg
-              width="16"
-              height="22"
-              viewBox="0 0 16 22"
-              style={{ zIndex: 1 }}
-            >
-              <path
-                d="M8 0 L8 22"
-                stroke="rgba(99,171,143,0.3)"
-                strokeWidth="1.5"
-                strokeDasharray="3 3"
+          {STACK_LAYERS.map((layer, index) => (
+            <React.Fragment key={layer.id}>
+              <StackLayerFull
+                layer={layer}
+                isActive={activeId === layer.id}
+                onToggle={() => toggle(layer.id)}
+                onProduct={setProductModal}
               />
-              <path
-                d="M3 16 L8 22 L13 16"
-                stroke="rgba(99,171,143,0.4)"
-                strokeWidth="1.5"
-                fill="none"
-              />
-            </svg>
-          </div>
 
-          <StackLayerFull
-            layer={STACK_LAYERS[1]}
-            isActive={activeId === "managed"}
-            onToggle={() => toggle("managed")}
-            onProduct={setProductModal}
-          />
-          <div className="stack-connector">
-            <svg
-              width="16"
-              height="22"
-              viewBox="0 0 16 22"
-              style={{ zIndex: 1 }}
-            >
-              <path
-                d="M8 0 L8 22"
-                stroke="rgba(99,171,143,0.3)"
-                strokeWidth="1.5"
-                strokeDasharray="3 3"
-              />
-              <path
-                d="M3 16 L8 22 L13 16"
-                stroke="rgba(99,171,143,0.4)"
-                strokeWidth="1.5"
-                fill="none"
-              />
-            </svg>
-          </div>
-
-          <StackLayerSplit
-            layer={STACK_LAYERS[2]}
-            activeId={activeId}
-            onToggle={toggle}
-            onProduct={setProductModal}
-          />
-          <div className="stack-connector">
-            <svg
-              width="16"
-              height="22"
-              viewBox="0 0 16 22"
-              style={{ zIndex: 1 }}
-            >
-              <path
-                d="M8 0 L8 22"
-                stroke="rgba(99,171,143,0.3)"
-                strokeWidth="1.5"
-                strokeDasharray="3 3"
-              />
-              <path
-                d="M3 16 L8 22 L13 16"
-                stroke="rgba(99,171,143,0.4)"
-                strokeWidth="1.5"
-                fill="none"
-              />
-            </svg>
-          </div>
-
-          <StackLayerFull
-            layer={STACK_LAYERS[3]}
-            isActive={activeId === "platform"}
-            onToggle={() => toggle("platform")}
-            onProduct={setProductModal}
-          />
-          <div className="stack-connector">
-            <svg
-              width="16"
-              height="22"
-              viewBox="0 0 16 22"
-              style={{ zIndex: 1 }}
-            >
-              <path
-                d="M8 0 L8 22"
-                stroke="rgba(99,171,143,0.3)"
-                strokeWidth="1.5"
-                strokeDasharray="3 3"
-              />
-              <path
-                d="M3 16 L8 22 L13 16"
-                stroke="rgba(99,171,143,0.4)"
-                strokeWidth="1.5"
-                fill="none"
-              />
-            </svg>
-          </div>
-
-          <StackLayerFull
-            layer={STACK_LAYERS[4]}
-            isActive={activeId === "telephony"}
-            onToggle={() => toggle("telephony")}
-            onProduct={setProductModal}
-          />
+              {index < STACK_LAYERS.length - 1 && (
+                <div className="stack-connector">
+                  <svg
+                    width="16"
+                    height="22"
+                    viewBox="0 0 16 22"
+                    style={{ zIndex: 1 }}
+                  >
+                    <path
+                      d="M8 0 L8 22"
+                      stroke="rgba(99,171,143,0.3)"
+                      strokeWidth="1.5"
+                      strokeDasharray="3 3"
+                    />
+                    <path
+                      d="M3 16 L8 22 L13 16"
+                      stroke="rgba(99,171,143,0.4)"
+                      strokeWidth="1.5"
+                      fill="none"
+                    />
+                  </svg>
+                </div>
+              )}
+            </React.Fragment>
+          ))}
 
           <div
             style={{
               textAlign: "center",
-              marginTop: 14,
-              fontSize: 11,
-              color: "rgba(99,171,143,0.35)",
-              letterSpacing: "0.08em",
-              fontWeight: 700,
+              marginTop: 26,
+              fontSize: 13,
+              color: "#8CB5AC",
+              lineHeight: 1.8,
+              maxWidth: 940,
+              marginInline: "auto",
             }}
           >
-            ▲ &nbsp; Foundation layer — every solution builds from here &nbsp; ▲
+            IPI delivers a complete Customer Contact ecosystem. Managed services
+            provide the foundation, telephony and ECX power communications, AI
+            and Secure Payments enhance customer engagement, while Professional
+            Services ensure successful design, deployment and optimisation.
           </div>
         </div>
       </section>
