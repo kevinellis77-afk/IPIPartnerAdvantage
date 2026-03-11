@@ -4877,6 +4877,55 @@ function BuildSellExpand() {
     { id: "actions", label: "Next Actions" },
   ];
 
+  const journeyPanels = [
+    {
+      title: "Land",
+      text: "Start with the customer’s immediate problem. The entry point could be any solution in the portfolio.",
+      benefit: "Partner benefit: more conversations opened across more customer personas.",
+    },
+    {
+      title: "Expand",
+      text: "Layer adjacent capabilities to solve broader operational, CX, compliance and automation needs.",
+      benefit: "Partner benefit: larger deal sizes and more recurring service attach.",
+    },
+    {
+      title: "Platform",
+      text: "Build toward a full-stack customer contact solution that increases recurring revenue, share of wallet and long-term stickiness.",
+      benefit: "Partner benefit: stronger account control and higher long-term account value.",
+    },
+  ];
+
+  const useCaseExamples = [
+    {
+      title: "Land with Telephony",
+      issue: "Customer needs resilient voice operations across sites.",
+      solution: "Telephony Infrastructure",
+      expand: "UCaaS, CCaaS and Managed Services",
+      revenue: "Grows from core infrastructure sale into recurring platform and support revenue.",
+    },
+    {
+      title: "Land with Secure Payments",
+      issue: "Customer faces payment compliance and risk pressure.",
+      solution: "Secure Payments",
+      expand: "Contact Centre, AI and Compliance-led services",
+      revenue: "Unlocks compliance-led budgets then expands into CX and managed optimisation.",
+    },
+    {
+      title: "Land with AI & Automation",
+      issue: "Customer wants efficiency gains and faster customer response.",
+      solution: "AI & Automation",
+      expand: "CCaaS, UCaaS and Consultancy",
+      revenue: "Turns innovation projects into broader transformation programmes with recurring value.",
+    },
+    {
+      title: "Land with Managed Services",
+      issue: "Customer lacks operational capacity to maintain performance.",
+      solution: "Managed Services",
+      expand: "Core communications and customer engagement platform services",
+      revenue: "Service footprint expands into multi-stack ownership and higher account stickiness.",
+    },
+  ];
+
   return (
     <React.Fragment>
       <Bg />
@@ -5049,9 +5098,54 @@ function BuildSellExpand() {
         <section id="journey" className="bse-section-shell" style={{ paddingTop: 36 }}>
           <div className="bse-section-heading">
             <h2>Partner Revenue Journey</h2>
-            <p>From first sale to full CCaaS, every step deepens the customer relationship and grows recurring revenue at the customer's pace.</p>
+            <p>Start with any customer need, then expand into a broader platform opportunity over time with clear partner upside at each stage.</p>
           </div>
           <PartnerJourney />
+
+          <div className="prj-journey-panels" style={{ marginTop: 16 }}>
+            {journeyPanels.map((card) => (
+              <article key={card.title} className="prj-journey-card">
+                <h3>{card.title}</h3>
+                <p>{card.text}</p>
+                <span>{card.benefit}</span>
+              </article>
+            ))}
+          </div>
+
+          <div className="prj-contrast-grid" style={{ marginTop: 14 }}>
+            <article className="prj-contrast-card muted">
+              <h3>Single-Solution Vendor Model</h3>
+              <ul>
+                <li>Lead with one product only</li>
+                <li>Limited expansion paths</li>
+                <li>Lower wallet share</li>
+                <li>More vulnerable to replacement</li>
+                <li>Channel conversation always forced into CCaaS</li>
+              </ul>
+            </article>
+            <article className="prj-contrast-card positive">
+              <h3>IPI Ecosystem Model</h3>
+              <ul>
+                <li>Start from any customer need</li>
+                <li>Multiple cross-sell and upsell routes</li>
+                <li>Broader customer relevance</li>
+                <li>Higher revenue per account</li>
+                <li>Greater long-term strategic value to the partner</li>
+              </ul>
+            </article>
+          </div>
+
+          <div className="prj-use-cases" style={{ marginTop: 14 }}>
+            {useCaseExamples.map((example) => (
+              <article key={example.title} className="prj-use-case-card">
+                <h3>{example.title}</h3>
+                <p><strong>Initial customer issue:</strong> {example.issue}</p>
+                <p><strong>Initial solution:</strong> {example.solution}</p>
+                <p><strong>Expansion opportunity:</strong> {example.expand}</p>
+                <p><strong>Revenue outcome:</strong> {example.revenue}</p>
+              </article>
+            ))}
+          </div>
         </section>
 
         <section id="six-pillars" className="bse-section-shell" style={{ paddingTop: 52 }}>
@@ -8719,6 +8813,8 @@ function ChannelManagerDashboardPage() {
     </React.Fragment>
   );
 }
+
+
 
 // ═══════════════════════════════════════════════════════
 // SIDEBAR NAV WRAPPER
