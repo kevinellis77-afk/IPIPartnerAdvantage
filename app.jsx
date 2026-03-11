@@ -633,8 +633,7 @@ function SegmentModal({ zone, onClose }) {
                       display: "-webkit-box",
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                    }}
+                      }}
                   >
                     {item.desc}
                   </div>
@@ -818,7 +817,7 @@ function Diagram({ activeZone, complete, onZone }) {
         position: "relative",
         width: "100%",
         maxWidth: SZ,
-        margin: "0 auto",
+        margin: "0",
         aspectRatio: "1/1",
       }}
     >
@@ -1125,7 +1124,7 @@ function PartnerJourney() {
           transform: "translateX(-50%)",
           background: "#131E20",
           padding: "0 14px",
-          whiteSpace: "nowrap",
+          whiteSpace: "normal",
         }}
       >
         <span
@@ -1190,7 +1189,7 @@ function PartnerJourney() {
                       ? `0 0 12px rgba(${step.glow},0.45)`
                       : "none",
                     transition: "box-shadow 0.3s",
-                    whiteSpace: "nowrap",
+                    whiteSpace: "normal",
                   }}
                 >
                   {step.tag}
@@ -1273,7 +1272,7 @@ function PartnerJourney() {
                     letterSpacing: "0.05em",
                     textTransform: "uppercase",
                     transition: "all 0.3s",
-                    whiteSpace: "nowrap",
+                    whiteSpace: "normal",
                     marginTop: 6,
                   }}
                 >
@@ -2502,7 +2501,7 @@ function ProductModal({ productName, onClose, onNavigate }) {
             style={{
               padding: "20px 28px 0",
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
+              gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
               gap: 12,
             }}
           >
@@ -2560,7 +2559,7 @@ function ProductModal({ productName, onClose, onNavigate }) {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
+              gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
               gap: "6px 14px",
             }}
           >
@@ -2988,7 +2987,7 @@ function StackLayerFull({ layer, isActive, onToggle, onProduct }) {
 function StackLayerSplit({ layer, activeId, onToggle, onProduct }) {
   const { left, right } = layer;
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: 10 }}>
       {[left, right].map((sub) => {
         const isActive = activeId === sub.id;
         return (
@@ -3174,8 +3173,8 @@ function PlatformStack() {
     <React.Fragment>
       <section
         style={{
-          maxWidth: 1100,
-          margin: "0 auto",
+          maxWidth: "none",
+          margin: "0",
           padding: "52px 44px 0",
           width: "100%",
         }}
@@ -3201,8 +3200,8 @@ function PlatformStack() {
             style={{
               fontSize: 14,
               color: "#6E9990",
-              maxWidth: 560,
-              margin: "0 auto",
+              maxWidth: "none",
+              margin: "0",
               lineHeight: 1.75,
             }}
           >
@@ -3245,7 +3244,7 @@ function PlatformStack() {
                 color: "rgba(99,171,143,0.3)",
                 letterSpacing: "0.15em",
                 textTransform: "uppercase",
-                whiteSpace: "nowrap",
+                whiteSpace: "normal",
               }}
             >
               Adding value ↑ · Building upwards
@@ -4072,8 +4071,8 @@ function EnablementHub({ onBack, onNavigate }) {
             style={{
               fontSize: 14,
               color: "#6E9990",
-              maxWidth: 620,
-              margin: "0 auto",
+              maxWidth: "none",
+              margin: "0",
               lineHeight: 1.78,
             }}
           >
@@ -4087,8 +4086,8 @@ function EnablementHub({ onBack, onNavigate }) {
         {/* PARTNER TYPES TABLE */}
         <div
           style={{
-            maxWidth: 1100,
-            margin: "0 auto",
+            maxWidth: "none",
+            margin: "0",
             padding: "40px 44px 0",
             width: "100%",
           }}
@@ -4116,7 +4115,7 @@ function EnablementHub({ onBack, onNavigate }) {
                 color: "rgba(212,168,67,0.6)",
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
-                whiteSpace: "nowrap",
+                whiteSpace: "normal",
               }}
             >
               Who Should Partner With Us
@@ -4133,7 +4132,7 @@ function EnablementHub({ onBack, onNavigate }) {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(4,1fr)",
+              gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
               gap: 14,
               alignItems: "stretch",
             }}
@@ -4334,8 +4333,8 @@ function EnablementHub({ onBack, onNavigate }) {
         {/* PARTNER TIERS */}
         <div
           style={{
-            maxWidth: 1100,
-            margin: "0 auto",
+            maxWidth: "none",
+            margin: "0",
             padding: "32px 44px 0",
             width: "100%",
           }}
@@ -4363,7 +4362,7 @@ function EnablementHub({ onBack, onNavigate }) {
                 color: "rgba(212,168,67,0.6)",
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
-                whiteSpace: "nowrap",
+                whiteSpace: "normal",
               }}
             >
               Partner Tiers
@@ -4380,7 +4379,7 @@ function EnablementHub({ onBack, onNavigate }) {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(3,1fr)",
+              gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
               gap: 14,
             }}
           >
@@ -4596,8 +4595,8 @@ function EnablementHub({ onBack, onNavigate }) {
         {/* RESOURCES GRID */}
         <div
           style={{
-            maxWidth: 1100,
-            margin: "0 auto",
+            maxWidth: "none",
+            margin: "0",
             padding: "40px 44px 0",
             width: "100%",
           }}
@@ -4625,7 +4624,7 @@ function EnablementHub({ onBack, onNavigate }) {
                 color: "rgba(99,171,143,0.6)",
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
-                whiteSpace: "nowrap",
+                whiteSpace: "normal",
               }}
             >
               Sales & Technical Resources
@@ -4642,7 +4641,7 @@ function EnablementHub({ onBack, onNavigate }) {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(3,1fr)",
+              gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
               gap: 14,
             }}
           >
@@ -4942,8 +4941,8 @@ function ProspectToolPage() {
 
         <div
           style={{
-            maxWidth: 1100,
-            margin: "0 auto",
+            maxWidth: "none",
+            margin: "0",
             padding: "34px 44px 0",
             width: "100%",
           }}
@@ -4965,7 +4964,7 @@ function ProspectToolPage() {
             style={{
               fontSize: 13.5,
               color: "#6E9990",
-              maxWidth: 760,
+              maxWidth: "none",
               lineHeight: 1.75,
               marginBottom: 20,
             }}
@@ -5212,7 +5211,7 @@ function BuildSellExpand() {
               fontSize: 16,
               fontWeight: 400,
               color: "#6E9990",
-              maxWidth: 760,
+              maxWidth: "none",
               margin: "0 auto 12px",
               lineHeight: 1.78,
             }}
@@ -5223,8 +5222,8 @@ function BuildSellExpand() {
             style={{
               fontSize: 13.5,
               color: "rgba(110,153,144,0.65)",
-              maxWidth: 620,
-              margin: "0 auto",
+              maxWidth: "none",
+              margin: "0",
               lineHeight: 1.72,
               fontStyle: "italic",
             }}
@@ -5392,8 +5391,8 @@ function BuildSellExpand() {
           <div className="brand-line" style={{ marginBottom: 34 }} />
           <div
             style={{
-              maxWidth: 1000,
-              margin: "0 auto",
+              maxWidth: "none",
+              margin: "0",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
@@ -5401,7 +5400,7 @@ function BuildSellExpand() {
               gap: 28,
             }}
           >
-            <div style={{ maxWidth: 600 }}>
+            <div style={{ maxWidth: "none" }}>
               <h2
                 style={{
                   fontSize: "clamp(20px,2.6vw,30px)",
@@ -5721,8 +5720,8 @@ function PartnerProgramPage() {
             style={{
               fontSize: 14,
               color: "#6E9990",
-              maxWidth: 620,
-              margin: "0 auto",
+              maxWidth: "none",
+              margin: "0",
               lineHeight: 1.78,
             }}
           >
@@ -5737,8 +5736,8 @@ function PartnerProgramPage() {
         {/* TARGET PARTNER PRIORITIES */}
         <div
           style={{
-            maxWidth: 1200,
-            margin: "0 auto",
+            maxWidth: "none",
+            margin: "0",
             padding: "36px 44px 0",
             width: "100%",
           }}
@@ -5766,7 +5765,7 @@ function PartnerProgramPage() {
                 color: "rgba(99,171,143,0.6)",
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
-                whiteSpace: "nowrap",
+                whiteSpace: "normal",
               }}
             >
               Target Partner Priorities
@@ -5786,7 +5785,7 @@ function PartnerProgramPage() {
               fontSize: 13,
               color: "#6E9990",
               lineHeight: 1.75,
-              maxWidth: 700,
+              maxWidth: "none",
               marginBottom: 28,
             }}
           >
@@ -5851,10 +5850,7 @@ function PartnerProgramPage() {
                     fontWeight: 600,
                     opacity: 0.7,
                     fontSize: 10,
-                    maxWidth: 100,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
+                    whiteSpace: "normal",
                   }}
                 >
                   {pt.label}
@@ -6088,8 +6084,8 @@ function PartnerProgramPage() {
         {/* STRATEGIC RECRUITMENT FOCUS */}
         <div
           style={{
-            maxWidth: 1200,
-            margin: "0 auto",
+            maxWidth: "none",
+            margin: "0",
             padding: "36px 44px 0",
             width: "100%",
           }}
@@ -6117,7 +6113,7 @@ function PartnerProgramPage() {
                 color: "rgba(212,168,67,0.6)",
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
-                whiteSpace: "nowrap",
+                whiteSpace: "normal",
               }}
             >
               Strategic Recruitment Focus
@@ -6135,7 +6131,7 @@ function PartnerProgramPage() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
+              gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
               gap: 16,
               marginBottom: 0,
             }}
@@ -6299,8 +6295,8 @@ function PartnerProgramPage() {
         {/* IDEAL PARTNER PROFILE */}
         <div
           style={{
-            maxWidth: 1200,
-            margin: "0 auto",
+            maxWidth: "none",
+            margin: "0",
             padding: "36px 44px 52px",
             width: "100%",
           }}
@@ -6328,7 +6324,7 @@ function PartnerProgramPage() {
                 color: "rgba(99,171,143,0.6)",
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
-                whiteSpace: "nowrap",
+                whiteSpace: "normal",
               }}
             >
               Ideal Partner Profile (IPP)
@@ -6347,7 +6343,7 @@ function PartnerProgramPage() {
               fontSize: 13,
               color: "#6E9990",
               lineHeight: 1.75,
-              maxWidth: 700,
+              maxWidth: "none",
               marginBottom: 24,
             }}
           >
@@ -6358,7 +6354,7 @@ function PartnerProgramPage() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(3,1fr)",
+              gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
               gap: 14,
             }}
           >
@@ -6483,8 +6479,8 @@ function CommercialFrameworkPage() {
       >
         <div
           style={{
-            maxWidth: 1160,
-            margin: "0 auto",
+            maxWidth: "none",
+            margin: "0",
             display: "flex",
             flexDirection: "column",
             gap: 26,
@@ -6529,8 +6525,8 @@ function CommercialFrameworkPage() {
                 fontSize: 14,
                 color: "#6E9990",
                 lineHeight: 1.85,
-                maxWidth: 920,
-                margin: "0 auto",
+                maxWidth: "none",
+                margin: "0",
               }}
             >
               The IPI Partner Advantage program is designed to provide a simple,
@@ -6546,7 +6542,7 @@ function CommercialFrameworkPage() {
                 fontSize: 14,
                 color: "#6E9990",
                 lineHeight: 1.85,
-                maxWidth: 920,
+                maxWidth: "none",
                 margin: "12px auto 0",
               }}
             >
@@ -6900,7 +6896,7 @@ function CommercialFrameworkPage() {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
+                  gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
                   gap: 8,
                 }}
               >
@@ -7096,7 +7092,7 @@ function CommercialFrameworkPage() {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
+                  gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
                   gap: 10,
                 }}
               >
@@ -7693,8 +7689,8 @@ function GovernancePage() {
 
         <div
           style={{
-            maxWidth: 1140,
-            margin: "0 auto",
+            maxWidth: "none",
+            margin: "0",
             padding: "34px 44px 0",
             width: "100%",
           }}
@@ -7717,7 +7713,7 @@ function GovernancePage() {
             style={{
               fontSize: 13.5,
               color: "#6E9990",
-              maxWidth: 860,
+              maxWidth: "none",
               lineHeight: 1.75,
               marginBottom: 18,
             }}
@@ -7766,7 +7762,7 @@ function GovernancePage() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(4,1fr)",
+              gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
               gap: 10,
               marginBottom: 18,
             }}
@@ -8061,7 +8057,7 @@ function GovernancePage() {
                         letterSpacing: "0.08em",
                         textTransform: "uppercase",
                         minWidth: 0,
-                        whiteSpace: "nowrap",
+                        whiteSpace: "normal",
                         textAlign: h.length === 1 ? "center" : "left",
                       }}
                     >
@@ -8531,7 +8527,7 @@ function GovernancePage() {
               <div
                 className="modal-box"
                 style={{
-                  maxWidth: 620,
+                  maxWidth: "none",
                   border: "1px solid rgba(123,150,163,0.35)",
                   background: "linear-gradient(160deg,#162422,#0E1A18)",
                   padding: 20,
@@ -9247,10 +9243,8 @@ function SideNav({ page, setPage }) {
                         color: active ? "#91C4B0" : "#B0CAC4",
                         fontFamily: "'Nunito Sans',sans-serif",
                         letterSpacing: "0.01em",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
+                        whiteSpace: "normal",
+                          }}
                     >
                       {item.label}
                     </div>
@@ -9331,6 +9325,17 @@ function SideNav({ page, setPage }) {
 // ═══════════════════════════════════════════════════════
 function App() {
   const [page, setPage] = React.useState("main");
+
+  function PageShell({ children }) {
+    return (
+      <div
+        className="page-shell"
+        style={{ width: "100%", maxWidth: "none", padding: "24px 32px", boxSizing: "border-box" }}
+      >
+        {children}
+      </div>
+    );
+  }
 
   function renderPage() {
     if (page === "channel-dashboard") return <ChannelManagerDashboardPage />;
@@ -9456,8 +9461,8 @@ function App() {
                 fontSize: 15,
                 fontWeight: 500,
                 color: "#6E9990",
-                maxWidth: 660,
-                margin: "0 auto",
+                maxWidth: "none",
+                margin: "0",
                 lineHeight: 1.78,
               }}
             >
@@ -9470,7 +9475,7 @@ function App() {
           <div className="fade-up" style={{ animationDelay: "0.12s" }}>
             <section
               style={{
-                maxWidth: 1100,
+                maxWidth: "none",
                 margin: "36px auto 0",
                 padding: "0 44px",
                 width: "100%",
@@ -9499,7 +9504,7 @@ function App() {
                     color: "#91C4B0",
                     letterSpacing: "0.14em",
                     textTransform: "uppercase",
-                    whiteSpace: "nowrap",
+                    whiteSpace: "normal",
                   }}
                 >
                   Our Channel Philosophy
@@ -9532,8 +9537,8 @@ function App() {
                   style={{
                     fontSize: 13.5,
                     color: "#6E9990",
-                    maxWidth: 520,
-                    margin: "0 auto",
+                    maxWidth: "none",
+                    margin: "0",
                     lineHeight: 1.75,
                   }}
                 >
@@ -9544,7 +9549,7 @@ function App() {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(4,1fr)",
+                  gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
                   gap: 18,
                 }}
               >
@@ -9617,8 +9622,8 @@ function App() {
             <div className="brand-line" style={{ marginBottom: 34 }} />
             <div
               style={{
-                maxWidth: 1000,
-                margin: "0 auto",
+                maxWidth: "none",
+                margin: "0",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
@@ -9626,7 +9631,7 @@ function App() {
                 gap: 28,
               }}
             >
-              <div style={{ maxWidth: 520 }}>
+              <div style={{ maxWidth: "none" }}>
                 <div
                   style={{
                     fontSize: 11,
@@ -9714,7 +9719,9 @@ function App() {
   return (
     <React.Fragment>
       <SideNav page={page} setPage={setPage} />
-      <div style={{ transition: "margin-left 0.3s ease" }}>{renderPage()}</div>
+      <div style={{ transition: "margin-left 0.3s ease" }}>
+        <PageShell>{renderPage()}</PageShell>
+      </div>
     </React.Fragment>
   );
 }
