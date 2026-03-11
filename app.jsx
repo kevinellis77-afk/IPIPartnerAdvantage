@@ -7571,6 +7571,126 @@ function PartnerTrustPage() {
   );
 }
 
+const PARTNER_OPERATIONAL_SUPPORT_SECTIONS = [
+  {
+    title: "Partner Enablement",
+    points: [
+      "Sales accreditation programmes",
+      "Technical certification pathways",
+      "Solution architecture documentation",
+      "Sales playbooks and competitive positioning",
+      "Implementation and deployment guides",
+      "Partner onboarding programmes",
+    ],
+  },
+  {
+    title: "Sales & Marketing Support",
+    points: [
+      "Co-branded marketing campaigns",
+      "Sales presentation decks",
+      "Customer case studies",
+      "Campaign assets and messaging guides",
+      "Joint webinars and events",
+      "Partner landing page support",
+    ],
+  },
+  {
+    title: "Demo & Pre-Sales Environments",
+    points: [
+      "Partner demo environments",
+      "Preconfigured demo scenarios",
+      "Sandbox environments for testing",
+      "Pre-sales engineering support",
+      "Solution architecture validation",
+    ],
+  },
+  {
+    title: "Order & Provisioning Management",
+    points: [
+      "Deal registration process",
+      "Pricing and discount approvals",
+      "Partner order submission",
+      "Automated provisioning workflows",
+      "Contract and agreement management",
+    ],
+  },
+  {
+    title: "Service Delivery & Support",
+    points: [
+      "Partner service desk access",
+      "Defined escalation paths",
+      "Incident management process",
+      "Service level agreements (SLA)",
+      "Technical support resources",
+      "Implementation assistance",
+    ],
+  },
+  {
+    title: "Product Communication",
+    points: [
+      "Quarterly product roadmap briefings",
+      "Product release notifications",
+      "Technical change documentation",
+      "Early access programmes",
+      "Feature announcements",
+    ],
+  },
+  {
+    title: "Operational Governance",
+    points: [
+      "Monthly pipeline reviews",
+      "Partner support reviews",
+      "Quarterly business reviews",
+      "Partner performance tracking",
+      "Strategic planning sessions",
+    ],
+  },
+];
+
+function PartnerOperationalSupportPage() {
+  return (
+    <React.Fragment>
+      <AppPageHeader
+        eyebrow="Operational Excellence"
+        title="Partner Operational Support Framework"
+        subtitle="IP Integration provides structured operational support to enable partners to successfully sell, deploy and support solutions across the IPI ecosystem. This operational framework ensures partners have the tools, processes and support needed to consistently deliver strong customer outcomes."
+      />
+
+      <SectionWrapper>
+        <SectionHeader
+          eyebrow="Introduction"
+          title="Structured Support Across the Partner Lifecycle"
+          description="Our operational framework is designed to reduce friction, improve execution consistency and help every partner scale with confidence."
+        />
+        <StandardCard>
+          <p className="trust-copy" style={{ margin: 0 }}>
+            From onboarding and accreditation through to order management,
+            service delivery and quarterly governance reviews, partners are
+            supported by a repeatable operating model. This ensures teams can
+            move faster, maintain quality standards and deliver measurable
+            customer outcomes at every stage.
+          </p>
+        </StandardCard>
+      </SectionWrapper>
+
+      <SectionWrapper>
+        <div className="trust-grid">
+          {PARTNER_OPERATIONAL_SUPPORT_SECTIONS.map((section) => (
+            <StandardCard key={section.title}>
+              <h3 className="trust-card-title">{section.title}</h3>
+              <ul className="trust-list">
+                {section.points.map((point) => (
+                  <li key={point}>{point}</li>
+                ))}
+              </ul>
+            </StandardCard>
+          ))}
+        </div>
+      </SectionWrapper>
+    </React.Fragment>
+  );
+}
+
 const GOVERNANCE_ACTIVITIES_LEGACY = [
   {
     id: "1",
@@ -9552,6 +9672,12 @@ const NAV_ITEMS = [
     sublabel: "/partner-trust",
   },
   {
+    id: "partner-operational-support",
+    icon: <NavIcon name="checklist" />,
+    label: "Partner Operational Support",
+    sublabel: "Support Framework",
+  },
+  {
     id: "channel-marketing",
     icon: <NavIcon name="megaphone" />,
     label: "Channel Marketing",
@@ -9582,6 +9708,7 @@ const PAGE_PATHS = {
   commercial: "/commercial-framework",
   "channel-marketing": "/channel-marketing",
   "partner-trust": "/partner-trust",
+  "partner-operational-support": "/partner-operational-support",
   "channel-dashboard": "/channel-manager-dashboard",
   prospect: "/partner-prospect-tool",
 };
@@ -9699,6 +9826,8 @@ function App() {
     if (page === "commercial") return <CommercialFrameworkPage />;
     if (page === "channel-marketing") return <ChannelMarketingPage />;
     if (page === "partner-trust") return <PartnerTrustPage />;
+    if (page === "partner-operational-support")
+      return <PartnerOperationalSupportPage />;
     if (page === "governance") return <GovernancePage />;
 
     // Page 1 — Home
