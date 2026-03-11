@@ -3808,6 +3808,148 @@ function EnablementHub({ onBack, onNavigate }) {
 
         <div className="brand-line" style={{ margin: "32px 44px 0" }} />
 
+        {/* PARTNER VALUE BANNER */}
+        <section
+          style={{
+            width: "100%",
+            padding: "30px 44px 0",
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              borderRadius: 26,
+              border: "1px solid rgba(212,168,67,0.22)",
+              background:
+                "linear-gradient(130deg,rgba(17,52,51,0.94) 0%,rgba(18,34,40,0.95) 48%,rgba(23,31,45,0.96) 100%)",
+              boxShadow: "0 20px 46px rgba(5,10,15,0.32)",
+              padding: "clamp(24px,3.4vw,44px)",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+              gap: "clamp(20px,3vw,36px)",
+              alignItems: "center",
+            }}
+          >
+            <div>
+              <h2
+                style={{
+                  margin: "0 0 14px",
+                  fontSize: "clamp(28px,3.6vw,46px)",
+                  lineHeight: 1.08,
+                  letterSpacing: "-0.03em",
+                  color: "#fff",
+                  fontFamily: "'Syne',sans-serif",
+                }}
+              >
+                Build Profitable Customer Contact Solutions With IPI
+              </h2>
+              <p
+                style={{
+                  margin: "0 0 18px",
+                  maxWidth: 760,
+                  color: "#9DC2BA",
+                  fontSize: "clamp(14px,1.6vw,17px)",
+                  lineHeight: 1.7,
+                }}
+              >
+                Partner with IPI to deliver secure, AI-powered customer
+                engagement solutions while building recurring revenue and
+                long-term customer relationships.
+              </p>
+              <ul
+                style={{
+                  margin: 0,
+                  padding: 0,
+                  listStyle: "none",
+                  display: "grid",
+                  gap: 10,
+                }}
+              >
+                {[
+                  "Deliver complete CX solutions across CCaaS, UCaaS, AI and Secure Payments",
+                  "Build recurring revenue through platform, services and managed solutions",
+                  "Differentiate your business with white-label customer contact capabilities",
+                ].map((item) => (
+                  <li
+                    key={item}
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 10,
+                      color: "#D6E8E4",
+                      fontSize: 14,
+                      lineHeight: 1.55,
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 8,
+                        height: 8,
+                        marginTop: 7,
+                        borderRadius: "50%",
+                        background: "#D4A843",
+                        boxShadow: "0 0 10px rgba(212,168,67,0.45)",
+                        flex: "0 0 auto",
+                      }}
+                    />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div
+              style={{
+                borderRadius: 20,
+                border: "1px solid rgba(145,196,176,0.28)",
+                background:
+                  "linear-gradient(150deg,rgba(14,44,50,0.78),rgba(14,32,41,0.62))",
+                padding: "clamp(18px,2.4vw,26px)",
+                display: "grid",
+                gridTemplateColumns: "repeat(2,minmax(110px,1fr))",
+                gap: 12,
+              }}
+            >
+              {[
+                { label: "Cloud Communications", icon: "☁️" },
+                { label: "AI", icon: "✨" },
+                { label: "Payments", icon: "💳" },
+                { label: "Managed Services", icon: "🛠️" },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  style={{
+                    borderRadius: 14,
+                    border: "1px solid rgba(145,196,176,0.2)",
+                    background: "rgba(145,196,176,0.08)",
+                    minHeight: 96,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    textAlign: "center",
+                    gap: 6,
+                    padding: "10px 8px",
+                  }}
+                >
+                  <span style={{ fontSize: 24 }}>{item.icon}</span>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      letterSpacing: "0.04em",
+                      textTransform: "uppercase",
+                      fontWeight: 700,
+                      color: "#B9D8D1",
+                    }}
+                  >
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* PARTNER TIERS */}
         <div
           style={{
