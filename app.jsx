@@ -2939,9 +2939,14 @@ const STACK_LAYERS = [
     span: "full",
   },
   {
+    id: "ai-compliance",
+    span: "half-row",
+    layers: ["ai", "payments"],
+  },
+  {
     id: "payments",
     label: "Compliance",
-    sublabel: "Embedded compliance layer",
+    sublabel: "Compliance add-ons for UCaaS & CCaaS",
     icon: "🔐",
     color: "#C0887B",
     glow: "255,154,108",
@@ -2949,12 +2954,12 @@ const STACK_LAYERS = [
     border: "rgba(255,154,108,0.45)",
     items: ["Pauseable", "PCI Cloud (DTMF Suppression)", "Digital Pay by Link"],
     desc: "Secure payment add-ons that protect cardholder data and support PCI-DSS compliance without disrupting the live customer conversation.",
-    span: "full",
+    span: "half",
   },
   {
     id: "ai",
     label: "AI & Automation",
-    sublabel: "Intelligence and optimisation layer",
+    sublabel: "AI add-ons for UCaaS & CCaaS",
     icon: "🤖",
     color: "#A37992",
     glow: "177,143,255",
@@ -2970,7 +2975,7 @@ const STACK_LAYERS = [
       "Send Me",
     ],
     desc: "Intelligent automation and real-time insight that improve self-service outcomes, support agents in-flight and continuously optimise customer interactions.",
-    span: "full",
+    span: "half",
   },
   {
     id: "platform",
@@ -3200,6 +3205,28 @@ function PlatformStack() {
     setActiveId((prev) => (prev === id ? null : id));
   }
 
+  const layerById = React.useMemo(() => {
+    const entries = STACK_LAYERS.filter((layer) => layer.label).map((layer) => [
+      layer.id,
+      layer,
+    ]);
+    return new Map(entries);
+  }, []);
+
+  const visibleLayers = React.useMemo(
+    () =>
+      STACK_LAYERS.filter((layer) => layer.span !== "half").map((layer) => {
+        if (layer.span === "half-row") {
+          return {
+            ...layer,
+            layers: layer.layers.map((id) => layerById.get(id)).filter(Boolean),
+          };
+        }
+        return layer;
+      }),
+    [layerById],
+  );
+
   return (
     <React.Fragment>
       <section
@@ -3282,16 +3309,37 @@ function PlatformStack() {
             </div>
           </div>
 
-          {STACK_LAYERS.map((layer, index) => (
+          {visibleLayers.map((layer, index) => (
             <React.Fragment key={layer.id}>
-              <StackLayerFull
-                layer={layer}
-                isActive={activeId === layer.id}
-                onToggle={() => toggle(layer.id)}
-                onProduct={setProductModal}
-              />
+              {layer.span === "half-row" ? (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                    gap: 12,
+                    width: "100%",
+                  }}
+                >
+                  {layer.layers.map((subLayer) => (
+                    <StackLayerFull
+                      key={subLayer.id}
+                      layer={subLayer}
+                      isActive={activeId === subLayer.id}
+                      onToggle={() => toggle(subLayer.id)}
+                      onProduct={setProductModal}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <StackLayerFull
+                  layer={layer}
+                  isActive={activeId === layer.id}
+                  onToggle={() => toggle(layer.id)}
+                  onProduct={setProductModal}
+                />
+              )}
 
-              {index < STACK_LAYERS.length - 1 && (
+              {index < visibleLayers.length - 1 && (
                 <div className="stack-connector">
                   <svg
                     width="16"
