@@ -359,6 +359,39 @@ function Bg() {
   );
 }
 
+
+
+function AppPageHeader({ eyebrow, title, subtitle, actions = null }) {
+  return (
+    <div className="ds-page-header">
+      {eyebrow && <div className="ds-page-header__eyebrow">{eyebrow}</div>}
+      <h1 className="ds-page-header__title">
+        {title}
+      </h1>
+      {subtitle && <p className="ds-page-header__subtitle">{subtitle}</p>}
+      {actions}
+    </div>
+  );
+}
+
+function SectionHeader({ eyebrow, title, description }) {
+  return (
+    <div className="ds-section-header">
+      {eyebrow ? (
+        <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(145,196,176,0.78)" }}>
+          {eyebrow}
+        </div>
+      ) : null}
+      <h2>{title}</h2>
+      {description ? <p>{description}</p> : null}
+    </div>
+  );
+}
+
+function SectionWrapper({ children, className = "" }) {
+  return <section className={`ds-section ${className}`.trim()}>{children}</section>;
+}
+
 // ═══════════════════════════════════════════════════════
 // TOGGLE
 // ═══════════════════════════════════════════════════════
@@ -4805,35 +4838,14 @@ function ProspectToolPage() {
           style={{
             maxWidth: "none",
             margin: "0",
-            padding: "34px 44px 0",
             width: "100%",
           }}
         >
-          <h1
-            style={{
-              fontSize: "clamp(24px,3.8vw,46px)",
-              fontWeight: 800,
-              letterSpacing: "-0.04em",
-              color: "#fff",
-              lineHeight: 1.05,
-              marginBottom: 10,
-              fontFamily: "'Syne',sans-serif",
-            }}
-          >
-            Prospect <span style={{ color: "#63AB8F" }}>Search Tool</span>
-          </h1>
-          <p
-            style={{
-              fontSize: 13.5,
-              color: "#6E9990",
-              maxWidth: "none",
-              lineHeight: 1.75,
-              marginBottom: 20,
-            }}
-          >
-            Find best-fit accounts by sector, company profile and current estate
-            to position ECX, AI & Automation and Secure Payments opportunities.
-          </p>
+          <AppPageHeader
+            eyebrow="Partner Prospect Tool"
+            title={<>Prospect <span style={{ color: "#63AB8F" }}>Search Tool</span></>}
+            subtitle="Find best-fit accounts by sector, company profile and current estate to position ECX, AI & Automation and Secure Payments opportunities."
+          />
 
           <div
             style={{
@@ -5074,64 +5086,11 @@ function BuildSellExpand() {
           animation: "fadeIn 0.35s ease both",
         }}
       >
-        <div style={{ textAlign: "center", padding: "64px 40px 12px" }}>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              background: "rgba(99,171,143,0.08)",
-              border: "1px solid rgba(99,171,143,0.22)",
-              borderRadius: 100,
-              padding: "5px 16px",
-              marginBottom: 18,
-              fontSize: 11,
-              fontWeight: 800,
-              color: "#91C4B0",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-            }}
-          >
-            Customer Contact Ecosystem
-          </div>
-          <h1
-            style={{
-              fontSize: "clamp(36px,6vw,72px)",
-              fontWeight: 800,
-              letterSpacing: "-0.04em",
-              color: "#fff",
-              lineHeight: 1.0,
-              marginBottom: 18,
-              fontFamily: "'Syne',sans-serif",
-            }}
-          >
-            Build. <span style={{ color: "#63AB8F", textShadow: "0 0 40px rgba(99,171,143,0.65)" }}>Sell.</span> Expand.
-          </h1>
-          <p
-            style={{
-              fontSize: 16,
-              fontWeight: 400,
-              color: "#6E9990",
-              maxWidth: "none",
-              margin: "0 auto 12px",
-              lineHeight: 1.78,
-            }}
-          >
-            A single partner growth framework that combines the Build · Sell · Expand motion with IPI's Six Product Pillars, helping teams move from first opportunity to long-term recurring value.
-          </p>
-          <p
-            style={{
-              fontSize: 13.5,
-              color: "rgba(110,153,144,0.65)",
-              maxWidth: "none",
-              margin: "0",
-              lineHeight: 1.72,
-              fontStyle: "italic",
-            }}
-          >
-            Enabling our partners to deliver Exceptional Customer Contact through IP Integration's platform, services and expertise.
-          </p>
-        </div>
+        <AppPageHeader
+          eyebrow="Customer Contact Ecosystem"
+          title={<>Build. <span style={{ color: "#63AB8F" }}>Sell.</span> Expand.</>}
+          subtitle="A single partner growth framework that combines the Build · Sell · Expand motion with IPI's Six Product Pillars, helping teams move from first opportunity to long-term recurring value."
+        />
 
         <div className="bse-section-index-wrap">
           <div className="bse-section-index">
