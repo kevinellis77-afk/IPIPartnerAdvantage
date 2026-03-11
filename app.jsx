@@ -432,10 +432,42 @@ function StatusBadge({ status }) {
 function StandardTable({ className = "", children }) {
   return <div className={`table-wrapper ds-table-wrap ${className}`.trim()}>{children}</div>;
 }
+function AppShell({ sidebar, topbar, children }) {
+  return (
+    <div className="app-shell">
+      {sidebar}
+      <main className="app-main">
+        {topbar}
+        {children}
+      </main>
+    </div>
+  );
+}
+
+function SharedSidebar(props) {
+  return <SideNav {...props} />;
+}
 
 function PageHeader(props) {
   return <AppPageHeader {...props} />;
 }
+
+function SectionBlock({ children, className = "" }) {
+  return <SectionWrapper className={className}>{children}</SectionWrapper>;
+}
+
+function Card({ children, className = "", style = {} }) {
+  return <StandardCard className={className} style={style}>{children}</StandardCard>;
+}
+
+function StatTile(props) {
+  return <MetricCard {...props} />;
+}
+
+function DataTable({ className = "", children }) {
+  return <StandardTable className={className}>{children}</StandardTable>;
+}
+
 
 function SectionCard({ children, className = "", style = {} }) {
   return <StandardCard className={className} style={style}>{children}</StandardCard>;
@@ -471,6 +503,52 @@ function ActionButton({ children, variant = "primary", className = "", ...props 
 
 function FilterBar({ children, className = "" }) {
   return <div className={`filter-bar ${className}`.trim()}>{children}</div>;
+}
+
+
+function ThemeToggle() {
+  const [mode, setMode] = React.useState(() => window.appTheme?.getMode?.() || "system");
+
+  React.useEffect(() => {
+    const sync = (event) => {
+      if (event?.detail?.mode) setMode(event.detail.mode);
+      else setMode(window.appTheme?.getMode?.() || "system");
+    };
+    window.addEventListener("ipi-theme-change", sync);
+    return () => window.removeEventListener("ipi-theme-change", sync);
+  }, []);
+
+  const changeTheme = (next) => {
+    setMode(next);
+    window.appTheme?.setMode?.(next);
+  };
+
+  return (
+    <div className="theme-toggle" role="group" aria-label="Theme selection">
+      {["light", "dark", "system"].map((option) => (
+        <button
+          key={option}
+          type="button"
+          className={`theme-toggle__btn ${mode === option ? "is-active" : ""}`}
+          onClick={() => changeTheme(option)}
+        >
+          {option}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function AppTopBar({ title }) {
+  return (
+    <header className="app-topbar">
+      <div>
+        <div className="app-topbar__eyebrow">IPI Partner Advantage</div>
+        <div className="app-topbar__title">{title}</div>
+      </div>
+      <ThemeToggle />
+    </header>
+  );
 }
 
 // ═══════════════════════════════════════════════════════
@@ -10061,10 +10139,7 @@ function App() {
 
   function PageShell({ children }) {
     return (
-      <div
-        className="page-shell"
-        style={{ width: "100%", maxWidth: "none", padding: "24px 32px", boxSizing: "border-box" }}
-      >
+      <div className="page-shell">
         {children}
       </div>
     );
@@ -10472,17 +10547,20 @@ function App() {
     !sidebarLayout.isMobile && sidebarLayout.isSidebarPinned
       ? sidebarLayout.sidebarWidth
       : 0;
+  const currentPageMeta = NAV_ITEMS.find((item) => item.id === page) || NAV_ITEMS[0];
 
   return (
-    <div className="app-shell">
-      <SideNav page={page} setPage={setPage} onLayoutChange={setSidebarLayout} />
-      <main
-        className={`app-main ${sidebarLayout.isSidebarPinned && !sidebarLayout.isCollapsed ? "with-sidebar" : ""} ${sidebarLayout.isSidebarPinned && sidebarLayout.isCollapsed ? "with-collapsed-sidebar" : ""}`}
+    <AppShell
+      sidebar={<SharedSidebar page={page} setPage={setPage} onLayoutChange={setSidebarLayout} />}
+      topbar={<AppTopBar title={currentPageMeta?.label || "Dashboard"} />}
+    >
+      <div
+        className={`app-main-inner ${sidebarLayout.isSidebarPinned && !sidebarLayout.isCollapsed ? "with-sidebar" : ""} ${sidebarLayout.isSidebarPinned && sidebarLayout.isCollapsed ? "with-collapsed-sidebar" : ""}`}
         style={{ marginLeft: contentOffset }}
       >
         <PageShell>{renderPage()}</PageShell>
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }
 
