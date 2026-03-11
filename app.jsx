@@ -3890,8 +3890,8 @@ const RESOURCES = [
     id: "prospect-search",
     icon: "🔎",
     category: "Deal Intelligence",
-    title: "Prospect Search Tool",
-    desc: "Search prospect accounts by sector, size and installed estate to find best-fit opportunities for ECX, AI and Secure Payments conversations.",
+    title: "Partner Prospect Tool",
+    desc: "Explore, filter and rank channel prospects directly from the in-app CSV-powered dataset.",
     tags: ["Web App", "ICP"],
     tagColor: "#36C6FF",
     glow: "54,198,255",
@@ -4786,288 +4786,127 @@ function EnablementHub({ onBack, onNavigate }) {
   );
 }
 
-const PROSPECT_SAMPLE = [
-  {
-    id: "p-001",
-    company: "Acme Utilities",
-    channelRole: "Reseller",
-    channelSegment: "Communications",
-    industry: "Utilities",
-    companySize: "Enterprise",
-    technologyStack: ["Mitel", "Microsoft Teams"],
-    keyVendors: ["Mitel", "Microsoft"],
-    adopterProfile: "Early Majority",
-    creditRating: "A",
-    country: "United Kingdom",
-    varType: "Managed Service VAR",
-    website: "acmeutilities.co.uk",
-    linkedin: "https://www.linkedin.com/company/acme-utilities",
-    summary: "National utilities integrator modernising contact centre estates.",
-    contacts: [{ name: "Sophie Reynolds", role: "Head of CX", email: "s.reynolds@acmeutilities.co.uk" }],
-  },
-  {
-    id: "p-002", company: "Northbank Finance", channelRole: "MSP", channelSegment: "Financial Services", industry: "Banking", companySize: "Mid-Market", technologyStack: ["Genesys Cloud", "Salesforce"], keyVendors: ["Genesys", "Salesforce"], adopterProfile: "Innovator", creditRating: "A", country: "United Kingdom", varType: "Security-led VAR", website: "northbankfinance.com", linkedin: "https://www.linkedin.com/company/northbank-finance", summary: "Fast-growth fintech group with cloud-first roadmap.", contacts: [{ name: "Tom Ahmed", role: "Operations Director", email: "tom.ahmed@northbankfinance.com" }]
-  },
-  {
-    id: "p-003", company: "Harbour Retail Group", channelRole: "Reseller", channelSegment: "Retail & eCommerce", industry: "Retail", companySize: "Enterprise", technologyStack: ["Avaya", "Zendesk"], keyVendors: ["Avaya", "Zendesk"], adopterProfile: "Early Adopter", creditRating: "BBB", country: "United Kingdom", varType: "UC Specialist", website: "harbourretail.co.uk", linkedin: "https://www.linkedin.com/company/harbour-retail-group", summary: "Omnichannel retail estate seeking secure payments uplift.", contacts: []
-  },
-  {
-    id: "p-004", company: "BlueStone Housing", channelRole: "Distributor", channelSegment: "Public Sector", industry: "Housing", companySize: "SMB", technologyStack: ["3CX", "HubSpot"], keyVendors: ["3CX", "HubSpot"], adopterProfile: "Late Majority", creditRating: "BB", country: "United Kingdom", varType: "Generalist VAR", website: "bluestonehousing.org", linkedin: "https://www.linkedin.com/company/bluestone-housing", summary: "Regional housing provider with legacy telephony footprint.", contacts: [{ name: "Leah Grant", role: "Transformation Manager", email: "l.grant@bluestonehousing.org" }]
-  },
-  {
-    id: "p-005", company: "Pioneer Healthcare IT", channelRole: "MSP", channelSegment: "Healthcare", industry: "Healthcare", companySize: "Mid-Market", technologyStack: ["RingCentral", "ServiceNow"], keyVendors: ["RingCentral", "ServiceNow"], adopterProfile: "Early Adopter", creditRating: "A", country: "Ireland", varType: "Managed Service VAR", website: "pioneerhealthit.ie", linkedin: "https://www.linkedin.com/company/pioneer-healthcare-it", summary: "Healthcare-focused service provider with compliance-led sales motion.", contacts: [{ name: "Ella Morgan", role: "Commercial Lead", email: "ella.morgan@pioneerhealthit.ie" }]
-  },
-  {
-    id: "p-006", company: "Summit Telecom Solutions", channelRole: "Agent", channelSegment: "Telecoms", industry: "Telecommunications", companySize: "SMB", technologyStack: ["Gamma", "Microsoft Teams"], keyVendors: ["Gamma", "Microsoft"], adopterProfile: "Early Majority", creditRating: "BBB", country: "United Kingdom", varType: "UC Specialist", website: "summittelecom.co.uk", linkedin: "https://www.linkedin.com/company/summit-telecom-solutions", summary: "Independent telecom reseller building CCaaS practices.", contacts: []
-  },
-];
-
-const PROSPECT_LISTS_KEY = "ipi-prospect-lists-v1";
-const PROSPECT_FILTER_KEYS = ["channelRole", "channelSegment", "industry", "companySize", "technologyStack", "keyVendors", "adopterProfile", "creditRating", "country", "varType"];
-
 function ProspectToolPage() {
-  const [activeTab, setActiveTab] = React.useState("explore");
-  const [selectedIds, setSelectedIds] = React.useState(new Set());
-  const [activeCompany, setActiveCompany] = React.useState(null);
-  const [newListName, setNewListName] = React.useState("");
-  const [toasts, setToasts] = React.useState([]);
-  const [keyword, setKeyword] = React.useState("");
-  const [listedStatus, setListedStatus] = React.useState("all");
-  const [filters, setFilters] = React.useState(() => Object.fromEntries(PROSPECT_FILTER_KEYS.map((k) => [k, new Set()])));
+  const [rows, setRows] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState('');
+  const [selected, setSelected] = React.useState(null);
+  const [view, setView] = React.useState('table');
+  const [top50, setTop50] = React.useState(false);
+  const [pageSize, setPageSize] = React.useState(25);
+  const [page, setPage] = React.useState(1);
+  const [sort, setSort] = React.useState('score_desc');
+  const [searchInput, setSearchInput] = React.useState('');
+  const [filters, setFilters] = React.useState({ name:'', industry:'', category:'', channel_role:'', channel_segment:'', country:'', city:'', trading_status:'', adopter_profile:'', minEmployees:'', maxEmployees:'', minRevenue:'', maxRevenue:'', hasWebsite:false, hasLinkedIn:false, hasEmail:false, minScore:0 });
+  const keyword = useDebouncedValue(searchInput, 180);
 
-  const [lists, setLists] = React.useState(() => {
-    try {
-      const raw = localStorage.getItem(PROSPECT_LISTS_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  React.useEffect(() => {
-    localStorage.setItem(PROSPECT_LISTS_KEY, JSON.stringify(lists));
-  }, [lists]);
-
-  const notify = React.useCallback((message) => {
-    const id = `${Date.now()}-${Math.random()}`;
-    setToasts((prev) => [...prev, { id, message }]);
-    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 2200);
+  const loadData = React.useCallback(async () => {
+    setLoading(true); setError('');
+    try { setRows(await window.ProspectToolUtils.loadProspectsCsv()); }
+    catch (e) { setError(e.message || 'Failed to load CSV'); }
+    finally { setLoading(false); }
   }, []);
 
-  const companyLists = React.useMemo(() => {
-    const map = {};
-    lists.forEach((list) => list.companyIds.forEach((id) => { map[id] = [...(map[id] || []), list.name]; }));
-    return map;
-  }, [lists]);
+  React.useEffect(() => { loadData(); }, [loadData]);
+  React.useEffect(() => { setPage(1); }, [keyword, filters, sort, top50]);
 
-  const optionValues = React.useMemo(() => {
-    const uniq = (arr) => Array.from(new Set(arr)).sort((a, b) => String(a).localeCompare(String(b)));
-    return {
-      channelRole: uniq(PROSPECT_SAMPLE.map((p) => p.channelRole)),
-      channelSegment: uniq(PROSPECT_SAMPLE.map((p) => p.channelSegment)),
-      industry: uniq(PROSPECT_SAMPLE.map((p) => p.industry)),
-      companySize: uniq(PROSPECT_SAMPLE.map((p) => p.companySize)),
-      technologyStack: uniq(PROSPECT_SAMPLE.flatMap((p) => p.technologyStack)),
-      keyVendors: uniq(PROSPECT_SAMPLE.flatMap((p) => p.keyVendors)),
-      adopterProfile: uniq(PROSPECT_SAMPLE.map((p) => p.adopterProfile)),
-      creditRating: uniq(PROSPECT_SAMPLE.map((p) => p.creditRating)),
-      country: uniq(PROSPECT_SAMPLE.map((p) => p.country)),
-      varType: uniq(PROSPECT_SAMPLE.map((p) => p.varType)),
-    };
-  }, []);
+  const options = React.useMemo(() => {
+    const make = (k) => [...new Set(rows.map((r)=>r[k]).filter(Boolean))].sort();
+    return { industry:make('industry'), category:make('category'), channel_role:make('channel_role'), channel_segment:make('channel_segment'), country:make('country'), city:make('city'), trading_status:make('trading_status'), adopter_profile:make('adopter_profile') };
+  }, [rows]);
 
-  const filteredProspects = React.useMemo(() => {
-    const search = keyword.trim().toLowerCase();
-    return PROSPECT_SAMPLE.filter((p) => {
-      if (search) {
-        const hay = [p.company, p.channelRole, p.channelSegment, p.industry, p.companySize, p.technologyStack.join(" "), p.keyVendors.join(" "), p.summary, p.country, p.varType].join(" ").toLowerCase();
-        if (!hay.includes(search)) return false;
-      }
-      for (const key of PROSPECT_FILTER_KEYS) {
-        const picked = filters[key];
-        if (!picked.size) continue;
-        if (key === "technologyStack" || key === "keyVendors") {
-          const hasOne = (p[key] || []).some((item) => picked.has(item));
-          if (!hasOne) return false;
-        } else if (!picked.has(p[key])) return false;
-      }
-      const inList = !!companyLists[p.id]?.length;
-      if (listedStatus === "in-list" && !inList) return false;
-      if (listedStatus === "not-listed" && inList) return false;
-      return true;
+  const filtered = React.useMemo(() => rows.filter((r)=>{
+    if (keyword && !r.searchHaystack.includes(keyword.toLowerCase())) return false;
+    const textKeys=['name','industry','category','channel_role','channel_segment','country','city','trading_status','adopter_profile'];
+    for (const k of textKeys) if (filters[k] && (r[k]||'') !== filters[k]) return false;
+    if (filters.minEmployees && (r.numericEmployees===null || r.numericEmployees < Number(filters.minEmployees))) return false;
+    if (filters.maxEmployees && (r.numericEmployees===null || r.numericEmployees > Number(filters.maxEmployees))) return false;
+    if (filters.minRevenue && (r.numericRevenue===null || r.numericRevenue < Number(filters.minRevenue))) return false;
+    if (filters.maxRevenue && (r.numericRevenue===null || r.numericRevenue > Number(filters.maxRevenue))) return false;
+    if (filters.hasWebsite && !r.hasWebsite) return false;
+    if (filters.hasLinkedIn && !r.hasLinkedIn) return false;
+    if (filters.hasEmail && !r.hasEmail) return false;
+    if (r.idealPartnerScore < Number(filters.minScore||0)) return false;
+    return true;
+  }), [rows, keyword, filters]);
+
+  const sorted = React.useMemo(() => {
+    const list=[...filtered];
+    const [field,dir]=sort.split('_');
+    list.sort((a,b)=>{
+      const av=field==='score'?a.idealPartnerScore:field==='revenue'?a.numericRevenue||0:field==='employees'?a.numericEmployees||0:(a.name||'');
+      const bv=field==='score'?b.idealPartnerScore:field==='revenue'?b.numericRevenue||0:field==='employees'?b.numericEmployees||0:(b.name||'');
+      if (typeof av==='string') return dir==='asc'?av.localeCompare(bv):bv.localeCompare(av);
+      return dir==='asc'?av-bv:bv-av;
     });
-  }, [companyLists, filters, keyword, listedStatus]);
+    return top50 ? list.slice(0,50) : list;
+  }, [filtered, sort, top50]);
 
-  const allVisibleSelected = filteredProspects.length > 0 && filteredProspects.every((p) => selectedIds.has(p.id));
+  const pageCount = Math.max(1, Math.ceil(sorted.length / pageSize));
+  const pageRows = sorted.slice((page-1)*pageSize, (page-1)*pageSize+pageSize);
+  const avgScore = sorted.length ? (sorted.reduce((a,b)=>a+b.idealPartnerScore,0)/sorted.length).toFixed(1) : '0.0';
+  const kpis = { total: rows.length, web: rows.filter(r=>r.hasWebsite).length, li: rows.filter(r=>r.hasLinkedIn).length, email: rows.filter(r=>r.hasEmail).length, avgAll: rows.length?(rows.reduce((a,b)=>a+b.idealPartnerScore,0)/rows.length).toFixed(1):'0.0', filtered: sorted.length };
 
-  const toggleFilter = (key, value) => {
-    setFilters((prev) => {
-      const next = { ...prev, [key]: new Set(prev[key]) };
-      next[key].has(value) ? next[key].delete(value) : next[key].add(value);
-      return next;
-    });
+  const exportRows = (records, name) => {
+    const blob = new Blob([window.ProspectToolUtils.toCsv(records)], {type:'text/csv;charset=utf-8;'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href);
   };
 
-  const clearFilters = () => {
-    setKeyword("");
-    setListedStatus("all");
-    setFilters(Object.fromEntries(PROSPECT_FILTER_KEYS.map((k) => [k, new Set()])));
-  };
+  const activeChips=[keyword&&`Search: ${keyword}`, ...Object.entries(filters).filter(([k,v])=>v&&v!==0).map(([k,v])=>`${k}: ${v}`)].filter(Boolean);
+  const resetFilters=()=>{ setFilters({ name:'', industry:'', category:'', channel_role:'', channel_segment:'', country:'', city:'', trading_status:'', adopter_profile:'', minEmployees:'', maxEmployees:'', minRevenue:'', maxRevenue:'', hasWebsite:false, hasLinkedIn:false, hasEmail:false, minScore:0 }); setSearchInput(''); setTop50(false); };
 
-  const toggleSelected = (id) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
+  if (loading) return <div className="prospect-shell"><PageHeader title="Partner Prospect Tool" subtitle="Loading CSV dataset…" /><div className="ds-card">Loading data…</div></div>;
+  if (error) return <div className="prospect-shell"><PageHeader title="Partner Prospect Tool" subtitle="Unable to load dataset" /><div className="ds-card">{error}<div style={{marginTop:10}}><button className="ui-btn" onClick={loadData}>Retry</button></div></div></div>;
 
-  const toggleSelectAllVisible = () => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (allVisibleSelected) filteredProspects.forEach((p) => next.delete(p.id));
-      else filteredProspects.forEach((p) => next.add(p.id));
-      return next;
-    });
-  };
+  return <div className="prospect-shell">
+    <PageHeader title="Partner Prospect Tool" eyebrow="Partner Prospect Tool" subtitle="Explore, filter and rank reseller prospects from the channel dataset" right={<span className="pill">{rows.length} records</span>} />
 
-  const deselectAll = () => setSelectedIds(new Set());
+    <div className="kpi-grid">{[
+      ['Total Prospects',kpis.total],['Prospects with Website',kpis.web],['Prospects with LinkedIn',kpis.li],['Prospects with Contact Email',kpis.email],['Average Ideal Partner Score',kpis.avgAll],['Filtered Results',kpis.filtered]
+    ].map(([l,v])=><div key={l} className="kpi-card"><div className="kpi-label">{l}</div><div className="kpi-value">{v}</div></div>)}</div>
 
-  const createList = () => {
-    const name = newListName.trim();
-    if (!name) return;
-    if (lists.some((l) => l.name.toLowerCase() === name.toLowerCase())) return notify("List already exists");
-    setLists((prev) => [...prev, { id: `list-${Date.now()}`, name, companyIds: [] }]);
-    setNewListName("");
-    notify(`Created list: ${name}`);
-  };
+    <div className="ds-card"><div className="filter-grid">
+      <input className="ui-search" placeholder="Global keyword search" value={searchInput} onChange={(e)=>setSearchInput(e.target.value)} />
+      {['name','industry','category','channel_role','channel_segment','country','city','trading_status','adopter_profile'].map((k)=> k==='name' ? <input key={k} className="ui-search" placeholder="Company name" value={filters.name} onChange={(e)=>setFilters({...filters,name:e.target.value})} /> : <select key={k} className="ui-search" value={filters[k]} onChange={(e)=>setFilters({...filters,[k]:e.target.value})}><option value="">{k.replace('_',' ')}</option>{options[k].map(v=><option key={v} value={v}>{v}</option>)}</select>)}
+      <input className="ui-search" placeholder="Min employees" value={filters.minEmployees} onChange={(e)=>setFilters({...filters,minEmployees:e.target.value})} />
+      <input className="ui-search" placeholder="Max employees" value={filters.maxEmployees} onChange={(e)=>setFilters({...filters,maxEmployees:e.target.value})} />
+      <input className="ui-search" placeholder="Min revenue" value={filters.minRevenue} onChange={(e)=>setFilters({...filters,minRevenue:e.target.value})} />
+      <input className="ui-search" placeholder="Max revenue" value={filters.maxRevenue} onChange={(e)=>setFilters({...filters,maxRevenue:e.target.value})} />
+      <label><input type="checkbox" checked={filters.hasWebsite} onChange={(e)=>setFilters({...filters,hasWebsite:e.target.checked})} /> Has website</label>
+      <label><input type="checkbox" checked={filters.hasLinkedIn} onChange={(e)=>setFilters({...filters,hasLinkedIn:e.target.checked})} /> Has LinkedIn</label>
+      <label><input type="checkbox" checked={filters.hasEmail} onChange={(e)=>setFilters({...filters,hasEmail:e.target.checked})} /> Has contact email</label>
+      <label style={{fontSize:12,color:'#9bb6b0'}}>Minimum ideal partner score: {filters.minScore}
+        <input type="range" min="0" max="100" value={filters.minScore} onChange={(e)=>setFilters({...filters,minScore:Number(e.target.value)})} style={{width:'100%'}} />
+      </label>
+    </div></div>
 
-  const addSelectedToList = (listId) => {
-    if (!selectedIds.size) return notify("Select companies first");
-    setLists((prev) => prev.map((l) => (l.id === listId ? { ...l, companyIds: Array.from(new Set([...l.companyIds, ...selectedIds])) } : l)));
-    notify("Added selected companies to list");
-  };
-
-  const removeFromList = (listId, companyId) => setLists((prev) => prev.map((l) => (l.id === listId ? { ...l, companyIds: l.companyIds.filter((id) => id !== companyId) } : l)));
-
-  const selectedCount = selectedIds.size;
-
-  return (
-    <div className="page-shell" style={{ maxWidth: 1600, margin: "0 auto", width: "100%" }}>
-      <PageSection
-        id="prospect"
-        title="Partner Prospect Tool"
-        eyebrow="Partner Prospect Tool"
-        subtitle="Prospect search and list management adapted from the repository's Prospect Search HTML workflow."
-      >
-        <div className="prospect-stats-grid" style={{ display: "grid", gap: 12, marginBottom: 12 }}>
-          <div className="ds-card"><strong>{PROSPECT_SAMPLE.length}</strong><div style={{ color: "#9bb6b0", fontSize: 12 }}>Total companies</div></div>
-          <div className="ds-card"><strong>{filteredProspects.length}</strong><div style={{ color: "#9bb6b0", fontSize: 12 }}>Filtered companies</div></div>
-          <div className="ds-card"><strong>{selectedCount}</strong><div style={{ color: "#9bb6b0", fontSize: 12 }}>Selected companies</div></div>
-        </div>
-
-        <div className="ds-card" style={{ marginBottom: 12, padding: 8, display: "inline-flex", gap: 8 }}>
-          {["explore", "lists"].map((tab) => <button key={tab} className={`ui-btn ${activeTab === tab ? "" : "secondary"}`} onClick={() => setActiveTab(tab)}>{tab === "explore" ? "Explore" : "Prospect Lists"}</button>)}
-        </div>
-
-        {activeTab === "explore" ? (
-          <div className="prospect-main-grid" style={{ display: "grid", gap: 14, alignItems: "start" }}>
-            <div className="ds-card" style={{ position: "sticky", top: 12 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <strong>Filters</strong><button className="ui-btn secondary" onClick={clearFilters}>Clear</button>
-              </div>
-              <input className="ui-search" placeholder="Keyword search" value={keyword} onChange={(e) => setKeyword(e.target.value)} style={{ width: "100%", marginBottom: 10 }} />
-              {Object.entries(optionValues).map(([key, values]) => (
-                <div key={key} style={{ marginBottom: 10 }}>
-                  <div style={{ fontSize: 11, color: "#9bb6b0", marginBottom: 6 }}>{key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase())}</div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                    {values.map((value) => (
-                      <button key={value} className="ui-btn secondary" style={{ height: 30, fontSize: 11, borderColor: filters[key].has(value) ? "#36c6ff" : undefined }} onClick={() => toggleFilter(key, value)}>{value}</button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-              <div>
-                <div style={{ fontSize: 11, color: "#9bb6b0", marginBottom: 6 }}>Prospect List Status</div>
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                  {[ ["all", "All"], ["in-list", "In a list"], ["not-listed", "Not listed"] ].map(([value, label]) => (
-                    <button key={value} className="ui-btn secondary" style={{ height: 30, fontSize: 11, borderColor: listedStatus === value ? "#36c6ff" : undefined }} onClick={() => setListedStatus(value)}>{label}</button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="ds-card" style={{ padding: 12 }}>
-              <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
-                <button className="ui-btn secondary" onClick={toggleSelectAllVisible}>{allVisibleSelected ? "Deselect visible" : "Select visible"}</button>
-                <button className="ui-btn secondary" onClick={deselectAll}>Deselect all</button>
-                <select className="ui-search" style={{ maxWidth: 260 }} onChange={(e) => e.target.value && addSelectedToList(e.target.value)} defaultValue="">
-                  <option value="">Add selected to list…</option>
-                  {lists.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-                </select>
-              </div>
-              <div className="channel-table-wrap">
-                <table className="channel-table">
-                  <thead><tr><th><input type="checkbox" checked={allVisibleSelected} onChange={toggleSelectAllVisible} /></th><th>Company</th><th>Channel Role</th><th>Segment</th><th>Industry</th><th>Company Size</th><th>Tech Stack</th><th>Key Vendors</th><th>Credit</th><th>Country</th><th>VAR Type</th><th>List status</th></tr></thead>
-                  <tbody>
-                    {filteredProspects.map((p) => (
-                      <tr key={p.id} onClick={() => setActiveCompany(p)} style={{ cursor: "pointer" }}>
-                        <td onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={selectedIds.has(p.id)} onChange={() => toggleSelected(p.id)} /></td>
-                        <td>{p.company}</td><td>{p.channelRole}</td><td>{p.channelSegment}</td><td>{p.industry}</td><td>{p.companySize}</td><td>{p.technologyStack.join(", ")}</td><td>{p.keyVendors.join(", ")}</td><td>{p.creditRating}</td><td>{p.country}</td><td>{p.varType}</td><td>{companyLists[p.id]?.length ? `In ${companyLists[p.id].length} list(s)` : "Not listed"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="ds-card" style={{ padding: 14 }}>
-            <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
-              <input className="ui-search" placeholder="Create list" value={newListName} onChange={(e) => setNewListName(e.target.value)} style={{ maxWidth: 320 }} />
-              <button className="ui-btn" onClick={createList}>Create List</button>
-            </div>
-            {lists.map((list) => {
-              const listCompanies = list.companyIds.map((id) => PROSPECT_SAMPLE.find((p) => p.id === id)).filter(Boolean);
-              return (
-                <div key={list.id} className="channel-card" style={{ marginBottom: 10, padding: 12 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                    <strong>{list.name}</strong>
-                    <button className="ui-btn secondary" onClick={() => addSelectedToList(list.id)}>Add selected</button>
-                  </div>
-                  <div style={{ color: "#9bb6b0", fontSize: 12, marginBottom: 8 }}>{listCompanies.length} companies</div>
-                  {listCompanies.slice(0, 8).map((p) => (
-                    <div key={p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12, marginBottom: 5 }}>
-                      <span>{p.company}</span>
-                      <button className="ui-btn secondary" style={{ height: 28, fontSize: 11 }} onClick={() => removeFromList(list.id, p.id)}>Remove</button>
-                    </div>
-                  ))}
-                </div>
-              );
-            })}
-            {!lists.length && <div style={{ color: "#9bb6b0", fontSize: 13 }}>No lists yet. Create one, then add selected companies from Explore.</div>}
-          </div>
-        )}
-      </PageSection>
-
-      {activeCompany && (
-        <div style={{ position: "fixed", right: 0, top: 0, width: "min(460px,100%)", height: "100vh", background: "#16242d", borderLeft: "1px solid rgba(145,196,176,0.3)", zIndex: 1200, padding: 18, overflowY: "auto" }}>
-          <button className="ui-btn secondary" onClick={() => setActiveCompany(null)} style={{ marginBottom: 10 }}>Close</button>
-          <h3 style={{ color: "#fff", fontFamily: "'Syne',sans-serif", marginBottom: 8 }}>{activeCompany.company}</h3>
-          <p style={{ color: "#9bb6b0", fontSize: 13 }}>{activeCompany.summary}</p>
-          <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
-            <a href={`https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(`${activeCompany.company} decision maker`)}`} target="_blank" rel="noreferrer" style={{ color: "#67D8FF", fontSize: 12 }}>LinkedIn people search</a>
-            <a href={`https://www.google.com/search?q=${encodeURIComponent(`${activeCompany.company} contact centre director`)}`} target="_blank" rel="noreferrer" style={{ color: "#67D8FF", fontSize: 12 }}>Google role search</a>
-            <a href={activeCompany.linkedin} target="_blank" rel="noreferrer" style={{ color: "#67D8FF", fontSize: 12 }}>LinkedIn company page</a>
-          </div>
-        </div>
-      )}
-
-      <div style={{ position: "fixed", right: 14, bottom: 14, display: "grid", gap: 8, zIndex: 1400 }}>
-        {toasts.map((t) => <div key={t.id} style={{ background: "rgba(22,36,45,0.95)", border: "1px solid rgba(145,196,176,0.32)", borderRadius: 10, padding: "10px 12px", fontSize: 12 }}>{t.message}</div>)}
-      </div>
+    <div className="ds-card" style={{display:'flex',flexWrap:'wrap',gap:8}}>
+      <button className="ui-btn secondary" onClick={resetFilters}>Reset Filters</button>
+      <button className="ui-btn" onClick={()=>setTop50(true)}>Show Top 50 Ideal Partners</button>
+      <button className="ui-btn secondary" onClick={()=>exportRows(sorted,'filtered-prospects.csv')}>Export Filtered CSV</button>
+      <button className="ui-btn secondary" onClick={()=>exportRows([...filtered].sort((a,b)=>b.idealPartnerScore-a.idealPartnerScore).slice(0,50),'top-50-prospects.csv')}>Export Top 50 CSV</button>
+      <select className="ui-search" value={sort} onChange={(e)=>setSort(e.target.value)} style={{maxWidth:220}}><option value="score_desc">Sort: Score ↓</option><option value="score_asc">Sort: Score ↑</option><option value="name_asc">Sort: Name A-Z</option><option value="employees_desc">Sort: Employees ↓</option><option value="revenue_desc">Sort: Revenue ↓</option></select>
+      <button className={`ui-btn ${view==='table'?'':'secondary'}`} onClick={()=>setView('table')}>Table</button>
+      <button className={`ui-btn ${view==='cards'?'':'secondary'}`} onClick={()=>setView('cards')}>Cards</button>
+      {top50 && <span className="top50-badge">Top 50 mode</span>}
     </div>
-  );
+
+    {activeChips.length>0 && <div className="chip-row">{activeChips.map((c)=><span className="chip" key={c}>{c}</span>)}</div>}
+
+    {top50 && <div className="ds-card" style={{display:'flex',gap:12,flexWrap:'wrap',fontSize:12}}><strong>Top 50 summary</strong><span>Avg score: {avgScore}</span><span>Websites: {sorted.filter(r=>r.hasWebsite).length}</span><span>LinkedIn: {sorted.filter(r=>r.hasLinkedIn).length}</span><span>Emails: {sorted.filter(r=>r.hasEmail).length}</span></div>}
+
+    {sorted.length===0 ? <div className="ds-card">No results found.</div> : view==='table' ? <div className="prospect-table-wrap"><table className="prospect-table"><thead><tr>{['Rank','Company Name','Ideal Partner Score','Industry','Category','Channel Role','Channel Segment','Employees','Revenue','City','Country','Website','LinkedIn','Contacts','Trading Status'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{pageRows.map((r,i)=><tr key={r.id} onClick={()=>setSelected(r)} style={{cursor:'pointer'}}><td>{(page-1)*pageSize+i+1}</td><td><strong>{r.displayName}</strong>{r.ch_link&&<div><a href={window.ProspectToolUtils.normalizeUrl(r.ch_link)} target="_blank" rel="noreferrer">Companies House</a></div>}</td><td><span className="score-badge">{r.idealPartnerScore}</span></td><td>{r.industry||'—'}</td><td>{r.category||'—'}</td><td>{r.channel_role||'—'}</td><td>{r.channel_segment||'—'}</td><td>{r.displayEmployees}</td><td>{r.displayRevenue}</td><td>{r.city||'—'}</td><td>{r.country||'—'}</td><td>{r.website?<a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>:'—'}</td><td>{r.linkedin?<a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>:'—'}</td><td>{r.contactCount}</td><td>{r.trading_status||'—'}</td></tr>)}</tbody></table></div> : <div className="prospect-cards">{pageRows.map((r)=><div className="prospect-card" key={r.id} onClick={()=>setSelected(r)}><div style={{display:'flex',justifyContent:'space-between'}}><strong>{r.displayName}</strong><span className="score-badge">{r.idealPartnerScore}</span></div><div>{r.industry||'—'}</div><div>{r.channel_role||'—'} / {r.channel_segment||'—'}</div><div>{r.city||'—'}, {r.country||'—'}</div><div>{r.displayRevenue} · {r.displayEmployees}</div><div>{r.keywords||'—'}</div><div style={{display:'flex',gap:8}}>{r.website&&<a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>}{r.linkedin&&<a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}</div></div>)}</div>}
+
+    <div style={{display:'flex',gap:8,alignItems:'center'}}><button className="ui-btn secondary" disabled={page<=1} onClick={()=>setPage(p=>p-1)}>Prev</button><span style={{fontSize:12,color:'#9bb6b0'}}>Page {page} / {pageCount}</span><button className="ui-btn secondary" disabled={page>=pageCount} onClick={()=>setPage(p=>p+1)}>Next</button><select className="ui-search" value={pageSize} onChange={(e)=>setPageSize(Number(e.target.value))} style={{maxWidth:90}}><option>25</option><option>50</option><option>100</option></select></div>
+
+    {selected && <div className="drawer"><button className="ui-btn secondary" onClick={()=>setSelected(null)}>Close</button><h3>{selected.displayName}</h3><div className="score-badge">Ideal Partner Score: {selected.idealPartnerScore}</div><h4>Overview</h4><p>{selected.industry||'—'} · {selected.category||'—'} · {selected.trading_status||'—'}</p><p>Employees {selected.displayEmployees} · Revenue {selected.displayRevenue} · Net Worth {window.ProspectToolUtils.formatCurrency(selected.numericNetWorth)}</p><p>{selected.displayLocation} {selected.postcode}</p><h4>Digital Presence</h4><p>Website: {selected.website||'—'}</p><p>LinkedIn: {selected.linkedin||'—'}</p><p>Email: {selected.email||'—'}</p><h4>Channel Fit</h4><p>{selected.channel_role||'—'} / {selected.channel_segment||'—'} / {selected.adopter_profile||'—'}</p><p>Partners: {selected.partners||'—'}</p><h4>Technology Signals</h4><p>{selected.tech_stack||'—'}</p><p>{selected.keywords||'—'}</p><h4>Contacts</h4>{selected.contacts.length?selected.contacts.map((c,idx)=><div key={idx}>{c.name||'—'} · {c.role||'—'} · {c.email||'—'}</div>):<p>—</p>}<h4>Score Breakdown</h4><ul>{selected.scoreBreakdown.map((f)=><li key={f}>{f}</li>)}</ul><div style={{display:'grid',gap:8,marginTop:10}}><button className="ui-btn secondary" onClick={()=>navigator.clipboard?.writeText(selected.website||'')}>Copy website</button><button className="ui-btn secondary" onClick={()=>navigator.clipboard?.writeText(selected.linkedin||'')}>Copy LinkedIn</button><button className="ui-btn secondary" onClick={()=>navigator.clipboard?.writeText(selected.email||selected.contacts[0]?.email||'')}>Copy email</button><button className="ui-btn" onClick={()=>exportRows([selected],`${selected.id}-prospect.csv`)}>Export this record as CSV row</button></div></div>}
+  </div>;
+}
+
+function useDebouncedValue(value, wait) {
+  const [debounced, setDebounced] = React.useState(value);
+  React.useEffect(() => { const t = setTimeout(() => setDebounced(value), wait); return () => clearTimeout(t); }, [value, wait]);
+  return debounced;
 }
 
 // ═══════════════════════════════════════════════════════
