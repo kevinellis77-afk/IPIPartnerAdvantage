@@ -332,4 +332,10 @@ tbody tr:nth-child(even){background:rgba(255,255,255,0.015);}
 .ds-table-wrap table{width:100%;border-collapse:collapse;}
 .ds-table-wrap th,.ds-table-wrap td{padding:12px 14px;text-align:left;border-bottom:1px solid color-mix(in srgb,var(--ds-border) 70%, transparent);font-size:12px;color:var(--ds-text-secondary);vertical-align:top;}
 .ds-table-wrap th{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ds-primary);font-weight:800;background:rgba(99,171,143,.08);}
+.trust-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;align-items:stretch;}
+.trust-grid--benefits{grid-template-columns:repeat(auto-fit,minmax(240px,1fr));}
+.trust-card-title{font-family:var(--ds-title);font-size:20px;line-height:1.2;color:#fff;margin:0 0 10px;}
+.trust-copy{font-size:13px;color:var(--ds-text-muted);line-height:1.72;margin:0 0 10px;}
+.trust-list{margin:0;padding-left:20px;display:grid;gap:8px;color:#bfdad3;font-size:13px;line-height:1.7;}
+.trust-note{font-size:13px;color:#8ab9ad;line-height:1.72;margin:14px 0 0;}
 .ds-section{padding-top:var(--ds-space-xl);padding-bottom:var(--ds-space-xl);}
