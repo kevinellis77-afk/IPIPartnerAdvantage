@@ -2715,6 +2715,19 @@ const STACK_LAYERS = [
     span: "full",
   },
   {
+    id: "payments",
+    label: "Compliance",
+    sublabel: "Embedded compliance layer",
+    icon: "🔐",
+    color: "#C0887B",
+    glow: "192,136,123",
+    bg: "linear-gradient(135deg,rgba(192,136,123,0.18),rgba(192,136,123,0.07))",
+    border: "rgba(192,136,123,0.45)",
+    items: ["Pauseable", "PCI Cloud (DTMF Suppression)", "Digital Pay by Link"],
+    desc: "Secure payment add-ons that protect cardholder data and support PCI-DSS compliance without disrupting the live customer conversation.",
+    span: "full",
+  },
+  {
     id: "ai",
     label: "AI & Automation",
     sublabel: "Intelligence and optimisation layer",
@@ -2733,19 +2746,6 @@ const STACK_LAYERS = [
       "Send Me",
     ],
     desc: "Intelligent automation and real-time insight that improve self-service outcomes, support agents in-flight and continuously optimise customer interactions.",
-    span: "full",
-  },
-  {
-    id: "payments",
-    label: "Secure Payments Add-Ons",
-    sublabel: "Embedded compliance layer",
-    icon: "🔐",
-    color: "#C0887B",
-    glow: "192,136,123",
-    bg: "linear-gradient(135deg,rgba(192,136,123,0.18),rgba(192,136,123,0.07))",
-    border: "rgba(192,136,123,0.45)",
-    items: ["Pauseable", "PCI Cloud (DTMF Suppression)", "Digital Pay by Link"],
-    desc: "Secure payment add-ons that protect cardholder data and support PCI-DSS compliance without disrupting the live customer conversation.",
     span: "full",
   },
   {
@@ -3106,7 +3106,7 @@ function PlatformStack() {
           >
             IPI delivers a complete Customer Contact ecosystem. Managed services
             provide the foundation, telephony and ECX power communications, AI
-            and Secure Payments enhance customer engagement, while Professional
+            and Compliance enhance customer engagement, while Professional
             Services ensure successful design, deployment and optimisation.
           </div>
         </div>
