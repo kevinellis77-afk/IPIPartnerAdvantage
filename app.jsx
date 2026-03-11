@@ -7674,9 +7674,10 @@ function PartnerOperationalSupportPage() {
       </SectionWrapper>
 
       <SectionWrapper>
-        <div className="trust-grid">
-          {PARTNER_OPERATIONAL_SUPPORT_SECTIONS.map((section) => (
-            <StandardCard key={section.title}>
+        <div className="operational-framework-grid">
+          {PARTNER_OPERATIONAL_SUPPORT_SECTIONS.map((section, index) => (
+            <StandardCard key={section.title} className={`operational-framework-card operational-framework-card--${index + 1}`}>
+              <div className="operational-framework-step">{String(index + 1).padStart(2, "0")}</div>
               <h3 className="trust-card-title">{section.title}</h3>
               <ul className="trust-list">
                 {section.points.map((point) => (
