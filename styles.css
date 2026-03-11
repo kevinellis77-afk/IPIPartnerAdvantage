@@ -277,7 +277,7 @@ tbody tr:nth-child(even){background:rgba(255,255,255,0.015);}
   .bse-section-index-link{font-size:11px;}
 }
 
-/* Partner Revenue Journey content blocks (embedded in Build · Sell · Expand page) */
+/* Revenue Journey content blocks (embedded in Build · Sell · Expand page) */
 .prj-journey-panels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
 .prj-journey-card{border-radius:16px;border:1px solid rgba(99,171,143,0.25);background:rgba(255,255,255,0.03);padding:16px;transition:transform .2s ease,border-color .2s ease;}
 .prj-journey-card:hover{transform:translateY(-2px);border-color:rgba(145,196,176,0.5);}

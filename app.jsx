@@ -5245,7 +5245,7 @@ function BuildSellExpand() {
 
         <section id="journey" className="bse-section-shell" style={{ paddingTop: 36 }}>
           <div className="bse-section-heading">
-            <h2>Partner Revenue Journey</h2>
+            <h2>Revenue Journey</h2>
             <p>Start with any customer need, then expand into a broader platform opportunity over time with clear partner upside at each stage.</p>
           </div>
           <PartnerJourney />
@@ -9370,26 +9370,26 @@ const NAV_ITEMS = [
   {
     id: "main",
     icon: "⌂",
-    label: "Home - Ecosystem Overview",
-    sublabel: "Ecosystem Overview",
+    label: "IPI Overview",
+    sublabel: "IPI Overview",
   },
   {
     id: "bse",
     icon: "↗",
-    label: "Build. Sell. Expand",
-    sublabel: "Revenue Journey",
+    label: "Enable, Land, Expand",
+    sublabel: "Enable, Land, Expand",
   },
   { id: "hub", icon: "✓", label: "Partner Enablement", sublabel: "Hub 2026" },
   {
     id: "program",
     icon: "★",
-    label: "IPI Partner Advantage (Partner Program)",
+    label: "Ideal Partner Profile",
     sublabel: "Recruitment & IPP",
   },
   {
     id: "governance",
     icon: "☰",
-    label: "Governance & RACI",
+    label: "Partner Governance",
     sublabel: "Roles & Ownership",
   },
   {
@@ -9397,6 +9397,12 @@ const NAV_ITEMS = [
     icon: "£",
     label: "Commercial Framework",
     sublabel: "Legal & Pricing Model",
+  },
+  {
+    id: "partner-trust",
+    icon: "🛡",
+    label: "Partner Trust",
+    sublabel: "/partner-trust",
   },
   {
     id: "channel-marketing",
@@ -9407,14 +9413,8 @@ const NAV_ITEMS = [
   {
     id: "channel-dashboard",
     icon: "◫",
-    label: "Channel Manager Dashboard",
+    label: "Channel Cadence",
     sublabel: "Operational Control Centre",
-  },
-  {
-    id: "partner-trust",
-    icon: "🛡",
-    label: "Partner Trust",
-    sublabel: "/partner-trust",
   },
   {
     id: "prospect",
