@@ -377,6 +377,15 @@ function SectionWrapper({ children, className = "" }) {
   return <section className={`ds-section ${className}`.trim()}>{children}</section>;
 }
 
+function PageSection({ id, eyebrow, title, subtitle, children }) {
+  return (
+    <section id={id} className="ds-section">
+      <AppPageHeader eyebrow={eyebrow} title={title} subtitle={subtitle} />
+      {children}
+    </section>
+  );
+}
+
 function StandardCard({ children, className = "", style = {} }) {
   return (
     <div className={`ds-card ds-card--standard ${className}`.trim()} style={style}>
