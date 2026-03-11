@@ -534,8 +534,8 @@ function SegmentModal({ zone, onClose }) {
               ×
             </button>
           </div>
-        </div>
 
+        </div>
         {/* Breadcrumb if item selected */}
         {selItem && (
           <div
@@ -5676,7 +5676,6 @@ function PartnerProgramPage() {
             focused on partners who can drive the fastest path to revenue.
           </p>
           </div>
-        </div>
 
         <div className="brand-line" style={{ margin: "40px 44px 0" }} />
 
