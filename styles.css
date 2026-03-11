@@ -647,8 +647,8 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
 .app-main-inner{min-width:0;}
 
 /* ===== SaaS dashboard refinement pass ===== */
-.app-main-inner{width:100%;max-width:100%;min-width:0;}
-.page-shell{width:100%;max-width:var(--content-max);margin:0 auto;padding:24px;box-sizing:border-box;min-width:0;}
+.app-main-inner{width:100%;max-width:100%;min-width:0;padding-inline:clamp(12px,2vw,24px);}
+.page-shell{width:100%;max-width:100%;margin:0;padding:24px 0;box-sizing:border-box;min-width:0;}
 .page-fade{animation:pageFadeIn .22s ease both;}
 @keyframes pageFadeIn{from{opacity:.0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 
@@ -701,7 +701,8 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
 .ui-field:focus,.ui-dropdown:focus,select:focus,input:focus,textarea:focus{outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 35%,transparent) !important;border-color:var(--focus) !important;}
 
 @media (max-width:900px){
-  .page-shell{padding:16px;}
+  .app-main-inner{padding-inline:16px;}
+  .page-shell{padding:16px 0;}
   .app-topbar{padding:16px;}
   .ds-page-header__content{flex-direction:column;}
 }
