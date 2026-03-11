@@ -9047,31 +9047,30 @@ function ChannelManagerDashboardPage() {
 // SIDEBAR NAV WRAPPER
 // ═══════════════════════════════════════════════════════
 const NAV_ITEMS = [
-  { id: "main", icon: "🏠", label: "Home", sublabel: "Ecosystem Overview" },
   {
-    id: "channel-dashboard",
-    icon: "📊",
-    label: "Channel Manager Dashboard",
-    sublabel: "Operational Control Centre",
+    id: "main",
+    icon: "🏠",
+    label: "Home - Ecosystem Overview",
+    sublabel: "Ecosystem Overview",
   },
   {
     id: "bse",
     icon: "📈",
-    label: "Build. Sell. Expand.",
+    label: "Build. Sell. Expand",
     sublabel: "Revenue Journey",
   },
   { id: "hub", icon: "🎓", label: "Partner Enablement", sublabel: "Hub 2026" },
   {
-    id: "prospect",
-    icon: "🔎",
-    label: "Partner Prospect Tool",
-    sublabel: "Deal Intelligence",
-  },
-  {
     id: "program",
     icon: "🎯",
-    label: "Partner Program",
+    label: "IPI Partner Advantage (Partner Program)",
     sublabel: "Recruitment & IPP",
+  },
+  {
+    id: "governance",
+    icon: "🧭",
+    label: "Governance & RACI",
+    sublabel: "Roles & Ownership",
   },
   {
     id: "commercial",
@@ -9080,24 +9079,83 @@ const NAV_ITEMS = [
     sublabel: "Legal & Pricing Model",
   },
   {
-    id: "governance",
-    icon: "🧭",
-    label: "Governance & RACI",
-    sublabel: "Roles & Ownership",
+    id: "channel-dashboard",
+    icon: "📊",
+    label: "Channel Manager Dashboard",
+    sublabel: "Operational Control Centre",
+  },
+  {
+    id: "prospect",
+    icon: "🔎",
+    label: "Partner Prospect Tool",
+    sublabel: "Deal Intelligence",
   },
 ];
 
-function SideNav({ page, setPage }) {
-  const [open, setOpen] = React.useState(false);
+function SideNav({ page, setPage, onLayoutChange }) {
+  const SIDEBAR_PIN_KEY = "ipi_sidebar_pinned_v1";
+  const MOBILE_BREAKPOINT = 900;
+  const SIDEBAR_WIDTH = 280;
+
+  const [isMobile, setIsMobile] = React.useState(() =>
+    window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches,
+  );
+  const [isSidebarPinned, setIsSidebarPinned] = React.useState(() => {
+    const saved = localStorage.getItem(SIDEBAR_PIN_KEY);
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(
+    () => !isMobile && isSidebarPinned,
+  );
+
+  React.useEffect(() => {
+    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
+    const onChange = (event) => setIsMobile(event.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+
+  React.useEffect(() => {
+    localStorage.setItem(SIDEBAR_PIN_KEY, JSON.stringify(isSidebarPinned));
+  }, [isSidebarPinned]);
+
+  React.useEffect(() => {
+    if (!isMobile && isSidebarPinned) {
+      setIsSidebarOpen(true);
+    }
+  }, [isMobile, isSidebarPinned]);
+
+  const isSidebarVisible =
+    isMobile ? isSidebarOpen : isSidebarPinned || isSidebarOpen;
+  const canCollapse = isMobile || !isSidebarPinned;
+
+  React.useEffect(() => {
+    onLayoutChange?.({
+      isMobile,
+      isSidebarPinned,
+      isSidebarVisible,
+      sidebarWidth: SIDEBAR_WIDTH,
+    });
+  }, [isMobile, isSidebarPinned, isSidebarVisible, onLayoutChange]);
+
+  const toggleSidebarOpen = () => {
+    if (!canCollapse) return;
+    setIsSidebarOpen((prev) => !prev);
+  };
+
+  const togglePinned = () => {
+    setIsSidebarPinned((prev) => !prev);
+  };
+
   return (
     <React.Fragment>
       {/* Toggle button — always visible */}
       <button
-        onClick={() => setOpen((o) => !o)}
+        onClick={toggleSidebarOpen}
         style={{
           position: "fixed",
           top: 22,
-          left: open ? 258 : 18,
+          left: isSidebarVisible && !isMobile ? SIDEBAR_WIDTH - 2 : 18,
           zIndex: 1001,
           width: 36,
           height: 36,
@@ -9112,34 +9170,45 @@ function SideNav({ page, setPage }) {
           boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
           color: "#91C4B0",
           fontSize: 16,
+          opacity: canCollapse ? 1 : 0.6,
         }}
-        title={open ? "Close navigation" : "Open navigation"}
+        title={
+          canCollapse
+            ? isSidebarVisible
+              ? "Close navigation"
+              : "Open navigation"
+            : "Navigation is pinned"
+        }
       >
-        {open ? "✕" : "☰"}
+        {canCollapse ? (isSidebarVisible ? "✕" : "☰") : "📌"}
       </button>
 
       {/* Sidebar panel */}
       <div
+        className={`sidebar ${isSidebarPinned ? "pinned" : "unpinned"} ${isSidebarVisible ? "open" : "closed"}`}
         style={{
-          position: "fixed",
+          position: isMobile ? "fixed" : "sticky",
           top: 0,
           left: 0,
           bottom: 0,
           zIndex: 1000,
-          width: open ? 260 : 0,
+          width: isSidebarVisible ? SIDEBAR_WIDTH : 0,
           overflow: "hidden",
           background: "rgba(10,19,21,0.97)",
-          borderRight: open ? "1px solid rgba(99,171,143,0.2)" : "none",
+          borderRight: isSidebarVisible
+            ? "1px solid rgba(99,171,143,0.2)"
+            : "none",
           backdropFilter: "blur(20px)",
           transition: "width 0.3s ease",
           display: "flex",
           flexDirection: "column",
-          boxShadow: open ? "4px 0 32px rgba(0,0,0,0.5)" : "none",
+          boxShadow: isSidebarVisible ? "4px 0 32px rgba(0,0,0,0.5)" : "none",
+          height: "100vh",
         }}
       >
         <div
           style={{
-            width: 260,
+            width: SIDEBAR_WIDTH,
             display: "flex",
             flexDirection: "column",
             height: "100%",
@@ -9153,7 +9222,27 @@ function SideNav({ page, setPage }) {
               borderBottom: "1px solid rgba(99,171,143,0.12)",
             }}
           >
-            <LogoMark h={36} />
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+              <LogoMark h={36} />
+              <button
+                type="button"
+                onClick={togglePinned}
+                style={{
+                  border: "1px solid rgba(99,171,143,0.36)",
+                  background: "rgba(99,171,143,0.12)",
+                  color: "#91C4B0",
+                  borderRadius: 8,
+                  padding: "6px 10px",
+                  fontSize: 10,
+                  fontWeight: 800,
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                }}
+              >
+                {isSidebarPinned ? "Unpin Menu" : "Pin Menu"}
+              </button>
+            </div>
             <div
               style={{
                 marginTop: 10,
@@ -9185,7 +9274,9 @@ function SideNav({ page, setPage }) {
                   key={item.id}
                   onClick={() => {
                     setPage(item.id);
-                    setOpen(false);
+                    if (isMobile || !isSidebarPinned) {
+                      setIsSidebarOpen(false);
+                    }
                   }}
                   style={{
                     display: "flex",
@@ -9305,14 +9396,15 @@ function SideNav({ page, setPage }) {
       </div>
 
       {/* Backdrop */}
-      {open && (
+      {isSidebarVisible && canCollapse && (
         <div
-          onClick={() => setOpen(false)}
+          onClick={() => setIsSidebarOpen(false)}
           style={{
             position: "fixed",
             inset: 0,
             zIndex: 999,
-            background: "rgba(0,0,0,0.3)",
+            background: isMobile ? "rgba(0,0,0,0.3)" : "transparent",
+            pointerEvents: isMobile ? "auto" : "none",
           }}
         />
       )}
@@ -9325,6 +9417,12 @@ function SideNav({ page, setPage }) {
 // ═══════════════════════════════════════════════════════
 function App() {
   const [page, setPage] = React.useState("main");
+  const [sidebarLayout, setSidebarLayout] = React.useState({
+    isMobile: false,
+    isSidebarPinned: true,
+    isSidebarVisible: true,
+    sidebarWidth: 280,
+  });
 
   function PageShell({ children }) {
     return (
@@ -9716,13 +9814,24 @@ function App() {
     );
   }
 
+  const contentOffset =
+    !sidebarLayout.isMobile && sidebarLayout.isSidebarPinned
+      ? sidebarLayout.sidebarWidth
+      : 0;
+
   return (
-    <React.Fragment>
-      <SideNav page={page} setPage={setPage} />
-      <div style={{ transition: "margin-left 0.3s ease" }}>
+    <div className="app-shell">
+      <SideNav page={page} setPage={setPage} onLayoutChange={setSidebarLayout} />
+      <div
+        className={`main-content ${contentOffset > 0 ? "with-pinned-sidebar" : "full-width"}`}
+        style={{
+          transition: "margin-left 0.3s ease",
+          marginLeft: contentOffset,
+        }}
+      >
         <PageShell>{renderPage()}</PageShell>
       </div>
-    </React.Fragment>
+    </div>
   );
 }
 
