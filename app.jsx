@@ -9568,7 +9568,7 @@ function SideNav({ page, setPage, onLayoutChange }) {
           </div>
           <div className="sidebar-controls">
             <button onClick={toggleCollapse} type="button">{isCollapsed ? "+" : "-"}</button>
-            <button onClick={togglePin} type="button">{isPinned ? "Unpin" : "Pin"}</button>
+            {!isPinned && <button onClick={togglePin} type="button">Pin</button>}
             {isMobile && <button onClick={() => setIsSidebarOpen(false)} type="button">Close</button>}
           </div>
         </div>
