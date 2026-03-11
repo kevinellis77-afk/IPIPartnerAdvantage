@@ -9111,239 +9111,315 @@ function GovernancePage() {
 }
 
 const CHANNEL_MANAGER_DATA = {
-  lastUpdated: "Updated 04 Mar 2026",
+  lastUpdated: "Updated 11 Mar 2026",
   mission:
-    "Recruit, enable and support partners who can scale the IPI CX ecosystem faster than direct sales alone.",
+    "Create a repeatable channel operating model that recruits the right partners, enables them effectively and scales shared revenue over time.",
   missionSupport:
-    "The Channel Manager Dashboard is the operating centre for the IPI Partner Advantage program. It provides a clear view of partner recruitment, activation, pipeline development and program execution, helping IP Integration build a scalable and predictable channel revenue engine.",
+    "This Channel Cadence page is designed for Channel Managers to run a practical partner rhythm across recruitment, enablement, joint selling and governance without forcing unrealistic short-term outcomes.",
   kpis: [
     {
-      label: "Target Partners",
-      value: "50",
-      hint: "FY26 recruitment objective",
+      label: "Signed Partners",
+      current: "25",
+      target: "30",
+      trend: "+3 this quarter",
+      status: "On Track",
     },
     {
-      label: "Active Recruitment Conversations",
-      value: "18",
-      hint: "Across all priority types",
+      label: "Active Leads",
+      current: "40",
+      target: "50",
+      trend: "+8 month-on-month",
+      status: "Growing",
     },
-    { label: "Signed Partners", value: "14", hint: "Contracts executed" },
     {
       label: "Activated Partners",
-      value: "9",
-      hint: "Onboarded and selling-ready",
-    },
-    {
-      label: "Registered Opportunities",
-      value: "37",
-      hint: "Current quarter submissions",
+      current: "10",
+      target: "18",
+      trend: "+2 this month",
+      status: "In Progress",
     },
     {
       label: "Partner Pipeline Value",
-      value: "£2.8m",
-      hint: "Weighted opportunity value",
+      current: "£2.5M",
+      target: "£4.0M",
+      trend: "Weighted view",
+      status: "Building",
     },
     {
       label: "Closed Won Revenue",
-      value: "£1.1m",
-      hint: "YTD channel contribution",
+      current: "£500k",
+      target: "£1.5M",
+      trend: "Early-stage contribution",
+      status: "Foundation Phase",
     },
     {
       label: "Partner Activation Rate",
-      value: "64%",
-      hint: "Activated partners / signed",
-    },
-  ],
-  pillars: [
-    {
-      title: "Partner Recruitment",
-      desc: "Identify, target and recruit the right partners across the priority tiers for IPI Partner Advantage.",
-    },
-    {
-      title: "Partner Enablement",
-      desc: "Equip partners with the messaging, training and commercial clarity required to sell the IPI portfolio.",
-    },
-    {
-      title: "Pipeline Development",
-      desc: "Work with partners to generate, progress and support qualified revenue opportunities.",
-    },
-    {
-      title: "Governance & Performance",
-      desc: "Maintain program visibility through reviews, execution tracking, commercial structure and internal alignment.",
-    },
-  ],
-  cadence: [
-    {
-      day: "Monday",
-      title: "Pipeline & Partner Review",
-      desc: "Review partner opportunities, deal registrations, blocked deals and internal sales alignment.",
-    },
-    {
-      day: "Tuesday",
-      title: "Partner Recruitment",
-      desc: "Prospect target partners, run outreach activity and hold introductory discovery calls.",
-    },
-    {
-      day: "Wednesday",
-      title: "Partner Enablement",
-      desc: "Deliver training, messaging, product walkthroughs and solution positioning.",
-    },
-    {
-      day: "Thursday",
-      title: "Joint Selling",
-      desc: "Support live opportunities through account mapping, workshops and joint customer engagement.",
-    },
-    {
-      day: "Friday",
-      title: "Strategy & Program Development",
-      desc: "Refine partner assets, review progress, update governance trackers and improve the program.",
+      current: "40%",
+      target: "60%",
+      trend: "+5 pts quarter-on-quarter",
+      status: "Improving",
     },
   ],
   lifecycle: [
     {
-      stage: "Recruit",
-      desc: "Identify and engage target partners aligned to IPI’s channel strategy.",
+      stage: "Partner Recruitment",
+      what: "Prioritise and engage partners aligned to the Ideal Partner Profile.",
+      activities: [
+        "Identify target partners aligned to Ideal Partner Profile",
+        "Engage existing relationships and personal network",
+        "Prioritise strategic targets",
+        "Position the IPI partner value proposition",
+      ],
+      outcome:
+        "A qualified target list and initial partner engagement underway",
     },
     {
-      stage: "Onboard",
-      desc: "Complete agreements, portal setup and initial program access.",
+      stage: "Partner Enablement",
+      what: "Build readiness for consistent partner and internal execution.",
+      activities: [
+        "Onboarding process",
+        "Sales and technical enablement",
+        "Partner program documentation",
+        "Trust/compliance materials",
+        "Partner tools, messaging and essentials",
+      ],
+      outcome:
+        "Partners and internal teams are prepared to engage consistently",
     },
     {
-      stage: "Enable",
-      desc: "Deliver sales, technical and commercial readiness.",
+      stage: "Pipeline Development",
+      what: "Turn readiness into structured joint opportunity planning.",
+      activities: [
+        "Account mapping",
+        "Joint opportunity identification",
+        "Co-marketing readiness",
+        "Early customer planning",
+      ],
+      outcome:
+        "Partners positioned to begin building pipeline once enabled",
     },
     {
-      stage: "Sell",
-      desc: "Support partner-led pipeline creation and opportunity progression.",
-    },
-    {
-      stage: "Scale",
-      desc: "Expand the partner’s footprint, solution mix and revenue contribution.",
-    },
-  ],
-  priorities: [
-    {
-      rank: 1,
-      title: "CCaaS Resellers",
-      desc: "Fastest path to platform revenue and CX-led opportunity creation.",
-    },
-    {
-      rank: 2,
-      title: "Telecom & UC Resellers",
-      desc: "Strong installed bases that can expand into broader CX solutions.",
-    },
-    {
-      rank: 3,
-      title: "Specialist Solution Providers",
-      desc: "High-value entry point for point solutions such as payments, IVR and AI.",
-    },
-    {
-      rank: 4,
-      title: "Managed Service Providers",
-      desc: "Long-term recurring revenue potential through managed CX environments.",
-    },
-    {
-      rank: 5,
-      title: "CX & Digital Transformation Consultancies",
-      desc: "Strategic influencers that can shape enterprise transformation decisions.",
-    },
-  ],
-  recruitment: [
-    {
-      name: "Nimbus Comms",
-      type: "CCaaS Reseller",
-      stage: "Discovery Booked",
-      action: "Prepare solution overview deck",
-      owner: "Channel Manager",
-      notes: "Intro call confirmed for Wed",
-    },
-    {
-      name: "Vertex Telecom",
-      type: "Telecom & UC Reseller",
-      stage: "Commercial Review",
-      action: "Align tier and margin model",
-      owner: "Finance + Channel",
-      notes: "Awaiting revised volume profile",
-    },
-    {
-      name: "FlowDigital CX",
-      type: "CX Consultancy",
-      stage: "Outreach Sent",
-      action: "Follow-up with case studies",
-      owner: "Channel Manager",
-      notes: "Opened email and downloaded pack",
-    },
-    {
-      name: "SignalPath MSP",
-      type: "Managed Service Provider",
-      stage: "In Evaluation",
-      action: "Book technical architecture workshop",
-      owner: "Solutions",
-      notes: "Strong fit for managed CX offer",
-    },
-    {
-      name: "Payline Integrations",
-      type: "Specialist Provider",
-      stage: "Signed",
-      action: "Confirm onboarding checklist",
-      owner: "Operations",
-      notes: "Agreement signed, portal pending",
-    },
-    {
-      name: "Apex Engage",
-      type: "CCaaS Reseller",
-      stage: "Activated",
-      action: "Launch first joint opportunity plan",
-      owner: "Sales",
-      notes: "First two accounts identified",
+      stage: "Governance & Performance Review",
+      what: "Run an ongoing cadence that tracks progress and optimises execution.",
+      activities: [
+        "Partner reviews",
+        "KPI tracking",
+        "Internal alignment",
+        "Business planning",
+        "Program optimisation",
+      ],
+      outcome:
+        "A structured cadence for managing partner progress and performance",
     },
   ],
-  actions: [
-    { task: "Finalise partner tier framework", status: "In Progress" },
-    { task: "Launch Trust & Compliance page", status: "Not Started" },
+  first90Days: [
     {
-      task: "Complete Reseller Master Agreement review",
-      status: "In Progress",
+      key: "A",
+      title: "Define the Partner Strategy",
+      items: [
+        "Confirm Ideal Partner Profile",
+        "Agree target partner types",
+        "Align partner tiers and incentives",
+        "Define partner value proposition",
+        "Align leadership on expectations and success measures",
+      ],
+      outcome:
+        "Clear strategic agreement on who we want to recruit and how the program will operate",
     },
     {
-      task: "Build first 25-partner recruitment target list",
-      status: "Complete",
+      key: "B",
+      title: "Build the Program Essentials",
+      items: [
+        "Build core partner program structure",
+        "Finalise onboarding approach",
+        "Create enablement materials",
+        "Build partner messaging and sales tools",
+        "Stand up trust/documentation access",
+        "Define the channel cadence framework",
+      ],
+      outcome: "A partner-ready operating foundation",
     },
     {
-      task: "Schedule first partner enablement webinar",
-      status: "Not Started",
+      key: "C",
+      title: "Review Existing Partners",
+      items: [
+        "Identify current partners / reseller relationships",
+        "Assess existing partner potential",
+        "Map current engagement levels",
+        "Introduce them into a more structured channel journey",
+        "Begin transitioning them into proper channel management",
+      ],
+      outcome:
+        "Existing relationships brought into a formal managed partner model",
+    },
+    {
+      key: "D",
+      title: "Identify and Engage Priority Targets",
+      items: [
+        "Leverage personal network",
+        "Identify strategic target accounts",
+        "Prioritise best-fit partner prospects",
+        "Begin discovery and early engagement",
+        "Test resonance of the proposition",
+      ],
+      outcome:
+        "Initial recruitment activity focused on quality rather than volume",
+    },
+    {
+      key: "E",
+      title: "Establish Internal Alignment",
+      items: [
+        "Align sales leadership",
+        "Align pre-sales support expectations",
+        "Align marketing support",
+        "Align operations / onboarding / order processes",
+        "Agree governance and reporting rhythm",
+      ],
+      outcome:
+        "Internal readiness to support the channel strategy effectively",
     },
   ],
-  progress: [
-    { label: "Partners Signed vs Target", value: "14 / 50", percent: 28 },
-    { label: "Activated vs Signed", value: "9 / 14", percent: 64 },
-    { label: "Opportunities Registered", value: "37", percent: 74 },
-    { label: "Revenue Progress vs Plan", value: "£1.1m / £2.4m", percent: 46 },
+  successMeasures: [
+    "Partner strategy agreed",
+    "Program essentials defined",
+    "Existing partners reviewed",
+    "Priority target list created",
+    "Discovery meetings started",
+    "Internal roles aligned",
+    "Cadence and governance model established",
   ],
-  teams: [
+  engagementMatrix: [
     {
-      team: "Sales",
-      desc: "Joint selling, opportunity support and pipeline progression.",
+      tier: "Strategic / Gold Partners",
+      calls: "Weekly or bi-weekly",
+      bdm: "Monthly",
+      events: "Quarterly / joint attendance",
+      marketing: "Active quarterly planning",
+      selling: "Ongoing on priority opportunities",
+      reviews: "Quarterly",
+      development: "Active feedback and roadmap input",
+    },
+    {
+      tier: "Growth / Silver Partners",
+      calls: "Monthly",
+      bdm: "Every 6–8 weeks",
+      events: "Selective participation",
+      marketing: "Campaign-based",
+      selling: "On active opportunities",
+      reviews: "Twice yearly or quarterly based on activity",
+      development: "Periodic feedback",
+    },
+    {
+      tier: "Registered / Developing Partners",
+      calls: "Ad hoc / light-touch",
+      bdm: "Quarterly where relevant",
+      events: "Broad enablement events / webinars",
+      marketing: "Optional / syndication-led",
+      selling: "Reactive support",
+      reviews: "Annual or by exception",
+      development: "Nurture into higher engagement where potential exists",
+    },
+  ],
+  workingModel: [
+    {
+      title: "Communicate Consistently",
+      points: [
+        "Clear regular touchpoints",
+        "Shared priorities",
+        "Active follow-up",
+        "Predictable engagement rhythm",
+      ],
+    },
+    {
+      title: "Plan Together",
+      points: [
+        "Joint account mapping",
+        "Target account selection",
+        "Opportunity planning",
+        "Shared growth priorities",
+      ],
+    },
+    {
+      title: "Sell Together",
+      points: [
+        "Joint selling on the right opportunities",
+        "Access to pre-sales and subject matter experts",
+        "Collaborative deal shaping",
+        "Support through the sales cycle",
+      ],
+    },
+    {
+      title: "Review and Improve",
+      points: [
+        "Performance tracking",
+        "Governance reviews",
+        "Program feedback loops",
+        "Continuous improvement",
+      ],
+    },
+  ],
+  maturityTimeline: [
+    {
+      phase: "0–90 Days: Foundation",
+      items: [
+        "Strategy alignment",
+        "Program build",
+        "Existing partner review",
+        "Early target engagement",
+      ],
+    },
+    {
+      phase: "3–6 Months: Partner Activation",
+      items: [
+        "Onboarding",
+        "Enablement",
+        "First structured joint planning",
+        "Initial partner participation",
+      ],
+    },
+    {
+      phase: "6–12 Months: Pipeline Growth",
+      items: [
+        "Account mapping",
+        "Co-marketing",
+        "Opportunity creation",
+        "Joint selling motion begins to scale",
+      ],
+    },
+    {
+      phase: "12+ Months: Scaled Ecosystem Revenue",
+      items: [
+        "Recurring cadence",
+        "Strong governance",
+        "Repeatable recruitment and activation",
+        "Revenue contribution from the ecosystem",
+      ],
+    },
+  ],
+  internalAlignment: [
+    {
+      team: "Sales Leadership",
+      desc: "Support channel strategy, align field sales with partner motion and reinforce rules of engagement.",
+    },
+    {
+      team: "Pre-Sales",
+      desc: "Support joint opportunities and strengthen enablement with technical credibility.",
     },
     {
       team: "Marketing",
-      desc: "Partner campaigns, messaging and enablement assets.",
+      desc: "Support campaigns, events and co-marketing programs with partner-ready messaging.",
     },
     {
-      team: "Product",
-      desc: "Solution positioning, packaging and technical alignment.",
+      team: "Operations",
+      desc: "Ensure onboarding, ordering and service processes are channel-friendly.",
     },
     {
-      team: "Legal",
-      desc: "Reseller agreements, terms and compliance frameworks.",
+      team: "Product / Strategy",
+      desc: "Provide roadmap context and a clear feedback loop for partner input.",
     },
     {
-      team: "Finance",
-      desc: "Pricing, discounting and commercial structures.",
-    },
-    {
-      team: "Operations / Delivery",
-      desc: "Onboarding, implementation and service readiness.",
+      team: "Finance / Commercial",
+      desc: "Support partner agreements, pricing, incentives and commercial clarity.",
     },
   ],
 };
@@ -9360,60 +9436,42 @@ function ChannelManagerDashboardPage() {
         </header>
 
         <section className="channel-hero">
-          <div className="channel-hero-label">Channel Manager Mission</div>
+          <div className="channel-hero-label">Channel Cadence Operating Framework</div>
           <h1>Channel Manager Dashboard</h1>
           <p className="channel-mission">{CHANNEL_MANAGER_DATA.mission}</p>
-          <p className="channel-support">
-            {CHANNEL_MANAGER_DATA.missionSupport}
-          </p>
+          <p className="channel-support">{CHANNEL_MANAGER_DATA.missionSupport}</p>
         </section>
 
         <section className="channel-section">
+          <h2 className="channel-title">Annual Partner KPI Dashboard</h2>
           <div className="channel-grid-kpi">
             {CHANNEL_MANAGER_DATA.kpis.map((kpi) => (
               <div key={kpi.label} className="channel-card channel-kpi-card">
                 <div className="channel-kpi-label">{kpi.label}</div>
-                <div className="channel-kpi-value">{kpi.value}</div>
-                <div className="channel-kpi-hint">{kpi.hint}</div>
+                <div className="channel-kpi-value">{kpi.current}</div>
+                <div className="channel-kpi-meta">Target: {kpi.target}</div>
+                <div className="channel-kpi-hint">{kpi.trend}</div>
+                <span className="channel-chip">{kpi.status}</span>
               </div>
             ))}
           </div>
         </section>
 
         <section className="channel-section">
-          <h2 className="channel-title">Operating Plan Overview</h2>
-          <div className="channel-grid-4">
-            {CHANNEL_MANAGER_DATA.pillars.map((item) => (
-              <div key={item.title} className="channel-card">
-                <h3>{item.title}</h3>
-                <p>{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="channel-section">
-          <h2 className="channel-title">Weekly Operating Cadence</h2>
-          <div className="channel-grid-5">
-            {CHANNEL_MANAGER_DATA.cadence.map((item) => (
-              <div key={item.day} className="channel-card">
-                <div className="channel-day">{item.day}</div>
-                <h3>{item.title}</h3>
-                <p>{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="channel-section">
-          <h2 className="channel-title">Partner Lifecycle</h2>
-          <div className="channel-lifecycle-wrap">
-            {CHANNEL_MANAGER_DATA.lifecycle.map((item, idx) => (
-              <React.Fragment key={item.stage}>
-                <div className="channel-card channel-life-card">
-                  <div className="channel-step">{item.stage}</div>
-                  <p>{item.desc}</p>
-                </div>
+          <h2 className="channel-title">Partner Lifecycle & Operating Plan</h2>
+          <div className="channel-lifecycle-flow">
+            {CHANNEL_MANAGER_DATA.lifecycle.map((stage, idx) => (
+              <React.Fragment key={stage.stage}>
+                <article className="channel-card channel-life-stage">
+                  <div className="channel-step">{idx + 1}. {stage.stage}</div>
+                  <p className="channel-life-what">{stage.what}</p>
+                  <ul className="channel-list">
+                    {stage.activities.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                  <div className="channel-outcome">Outcome: {stage.outcome}</div>
+                </article>
                 {idx < CHANNEL_MANAGER_DATA.lifecycle.length - 1 && (
                   <div className="channel-arrow">→</div>
                 )}
@@ -9423,43 +9481,61 @@ function ChannelManagerDashboardPage() {
         </section>
 
         <section className="channel-section">
-          <h2 className="channel-title">Target Partner Priority</h2>
-          <div className="channel-grid-5">
-            {CHANNEL_MANAGER_DATA.priorities.map((item) => (
-              <div key={item.title} className="channel-card">
-                <div className="channel-priority-rank">{item.rank}</div>
-                <h3>{item.title}</h3>
-                <p>{item.desc}</p>
-              </div>
+          <h2 className="channel-title">Channel Manager Focus: First 90 Days</h2>
+          <p className="channel-support">
+            The first 90 days should focus on agreeing the strategy, building the essential elements of the partner program, reviewing existing partners, and beginning structured engagement with priority targets. The objective is to create the foundations for scalable channel growth, not to force near-term pipeline too early.
+          </p>
+          <div className="channel-grid-4">
+            {CHANNEL_MANAGER_DATA.first90Days.map((stream) => (
+              <article key={stream.key} className="channel-card channel-workstream-card">
+                <div className="channel-day">Workstream {stream.key}</div>
+                <h3>{stream.title}</h3>
+                <ul className="channel-list">
+                  {stream.items.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+                <div className="channel-outcome">Outcome: {stream.outcome}</div>
+              </article>
             ))}
+          </div>
+          <div className="channel-closing-panel">
+            <h2>Realistic 90-Day Success Measures</h2>
+            <div className="channel-measure-list">
+              {CHANNEL_MANAGER_DATA.successMeasures.map((item) => (
+                <span key={item} className="channel-chip">{item}</span>
+              ))}
+            </div>
           </div>
         </section>
 
         <section className="channel-section">
-          <h2 className="channel-title">Partner Recruitment Pipeline</h2>
+          <h2 className="channel-title">Partner Communication & Engagement Cadence</h2>
           <StandardTable className="channel-table-wrap">
             <table className="channel-table">
               <thead>
                 <tr>
-                  <th>Partner Name</th>
-                  <th>Partner Type</th>
-                  <th>Stage</th>
-                  <th>Next Action</th>
-                  <th>Owner</th>
-                  <th>Notes</th>
+                  <th>Partner Level</th>
+                  <th>Calls</th>
+                  <th>Business Development Meetings</th>
+                  <th>Events</th>
+                  <th>Co-marketing</th>
+                  <th>Joint Selling</th>
+                  <th>Business Reviews</th>
+                  <th>Program Development</th>
                 </tr>
               </thead>
               <tbody>
-                {CHANNEL_MANAGER_DATA.recruitment.map((row) => (
-                  <tr key={row.name}>
-                    <td>{row.name}</td>
-                    <td>{row.type}</td>
-                    <td>
-                      <span className="channel-chip">{row.stage}</span>
-                    </td>
-                    <td>{row.action}</td>
-                    <td>{row.owner}</td>
-                    <td>{row.notes}</td>
+                {CHANNEL_MANAGER_DATA.engagementMatrix.map((row) => (
+                  <tr key={row.tier}>
+                    <td><strong>{row.tier}</strong></td>
+                    <td>{row.calls}</td>
+                    <td>{row.bdm}</td>
+                    <td>{row.events}</td>
+                    <td>{row.marketing}</td>
+                    <td>{row.selling}</td>
+                    <td>{row.reviews}</td>
+                    <td>{row.development}</td>
                   </tr>
                 ))}
               </tbody>
@@ -9467,60 +9543,51 @@ function ChannelManagerDashboardPage() {
           </StandardTable>
         </section>
 
-        <section className="channel-section channel-two-col">
-          <div>
-            <h2 className="channel-title">Channel Manager Priorities</h2>
-            <div className="channel-stack">
-              {CHANNEL_MANAGER_DATA.actions.map((item) => (
-                <div
-                  key={item.task}
-                  className="channel-card channel-action-card"
-                >
-                  <span>{item.task}</span>
-                  <span className="channel-chip">{item.status}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h2 className="channel-title">Program Progress Snapshot</h2>
-            <div className="channel-stack">
-              {CHANNEL_MANAGER_DATA.progress.map((metric) => (
-                <div key={metric.label} className="channel-card">
-                  <div className="channel-metric-head">
-                    <span>{metric.label}</span>
-                    <strong>{metric.value}</strong>
-                  </div>
-                  <div className="channel-progress">
-                    <span style={{ width: `${metric.percent}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         <section className="channel-section">
-          <h2 className="channel-title">Internal Alignment</h2>
-          <div className="channel-grid-3">
-            {CHANNEL_MANAGER_DATA.teams.map((item) => (
-              <div key={item.team} className="channel-card">
-                <h3>{item.team}</h3>
-                <p>{item.desc}</p>
+          <h2 className="channel-title">How We Work Alongside Partners</h2>
+          <div className="channel-grid-4">
+            {CHANNEL_MANAGER_DATA.workingModel.map((item) => (
+              <div key={item.title} className="channel-card">
+                <h3>{item.title}</h3>
+                <ul className="channel-list">
+                  {item.points.map((point) => (
+                    <li key={point}>{point}</li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="channel-closing-panel">
-          <h2>Why This Dashboard Matters</h2>
-          <p>
-            The Channel Manager Dashboard creates a single operational view of
-            how IP Integration recruits, enables and scales partners. It
-            connects strategy with execution, helping the business build a
-            repeatable channel model, support the right partners and grow
-            predictable revenue through the IPI Partner Advantage program.
-          </p>
+        <section className="channel-section">
+          <h2 className="channel-title">Channel Program Maturity Timeline</h2>
+          <div className="channel-timeline-grid">
+            {CHANNEL_MANAGER_DATA.maturityTimeline.map((phase, idx) => (
+              <article key={phase.phase} className="channel-card channel-timeline-card">
+                <div className="channel-step">{phase.phase}</div>
+                <ul className="channel-list">
+                  {phase.items.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+                {idx < CHANNEL_MANAGER_DATA.maturityTimeline.length - 1 && (
+                  <div className="channel-timeline-line" />
+                )}
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="channel-section">
+          <h2 className="channel-title">Internal Alignment Required</h2>
+          <div className="channel-grid-3">
+            {CHANNEL_MANAGER_DATA.internalAlignment.map((item) => (
+              <article key={item.team} className="channel-card">
+                <h3>{item.team}</h3>
+                <p>{item.desc}</p>
+              </article>
+            ))}
+          </div>
         </section>
       </div>
     </React.Fragment>
