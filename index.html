@@ -11,6 +11,17 @@
 
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <script>
+    (function (location) {
+      if (location.search.startsWith("?/")) {
+        const rewrittenPath = location.search
+          .slice(1)
+          .replace(/~and~/g, "&");
+        window.history.replaceState(null, "", rewrittenPath + location.hash);
+      }
+    })(window.location);
+  </script>
 </head>
 
 <body>

@@ -9464,6 +9464,8 @@ const NAV_ITEMS = [
   },
 ];
 
+const GH_PAGES_BASENAME = "/IPIPartnerAdvantage";
+
 const PAGE_PATHS = {
   main: "/",
   bse: "/build-sell-expand",
@@ -9480,6 +9482,21 @@ const PAGE_PATHS = {
 const PATH_TO_PAGE = Object.fromEntries(
   Object.entries(PAGE_PATHS).map(([page, path]) => [path, page]),
 );
+
+function toBaseRelativePath(pathname) {
+  if (!pathname) return "/";
+  if (pathname === GH_PAGES_BASENAME) return "/";
+  if (pathname.startsWith(`${GH_PAGES_BASENAME}/`)) {
+    const stripped = pathname.slice(GH_PAGES_BASENAME.length);
+    return stripped || "/";
+  }
+  return pathname;
+}
+
+function withBase(pathname) {
+  const normalized = pathname === "/" ? "" : pathname;
+  return `${GH_PAGES_BASENAME}${normalized}`;
+}
 
 function SideNav({ page, setPage, onLayoutChange }) {
   const SIDEBAR_PIN_KEY = "ipi_sidebar_pinned_v2";
@@ -9617,7 +9634,10 @@ function SideNav({ page, setPage, onLayoutChange }) {
 // APP
 // ═══════════════════════════════════════════════════════
 function App() {
-  const [page, setPage] = React.useState(() => PATH_TO_PAGE[window.location.pathname] || "main");
+  const [page, setPage] = React.useState(() => {
+    const relativePath = toBaseRelativePath(window.location.pathname);
+    return PATH_TO_PAGE[relativePath] || "main";
+  });
   const [sidebarLayout, setSidebarLayout] = React.useState({
     isMobile: false,
     isSidebarPinned: true,
@@ -10021,10 +10041,20 @@ function App() {
   React.useEffect(() => {
     if (!window.location.protocol.startsWith("http")) return;
     const nextPath = PAGE_PATHS[page] || "/";
-    if (window.location.pathname !== nextPath) {
-      window.history.replaceState({}, "", nextPath);
+    const nextFullPath = withBase(nextPath);
+    if (window.location.pathname !== nextFullPath) {
+      window.history.replaceState({}, "", nextFullPath);
     }
   }, [page]);
+
+  React.useEffect(() => {
+    const onPopState = () => {
+      const relativePath = toBaseRelativePath(window.location.pathname);
+      setPage(PATH_TO_PAGE[relativePath] || "main");
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
 
   const contentOffset =
     !sidebarLayout.isMobile && sidebarLayout.isSidebarPinned
