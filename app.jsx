@@ -513,6 +513,7 @@ function NavIcon({ name }) {
     money: "M4 6h16v12H4zM8 12h8M12 9v6",
     megaphone: "M3 11h4l9-4v10l-9-4H3zM7 14l2 6",
     chart: "M4 19h16M7 15v-4M12 15V8M17 15v-6",
+    support: "M12 4a8 8 0 00-8 8v3a2 2 0 002 2h2v-5H6v-1a6 6 0 1112 0v1h-2v5h2a2 2 0 002-2v-3a8 8 0 00-8-8z",
     search: "M11 4a7 7 0 105.1 11.8l4 4 1.4-1.4-4-4A7 7 0 0011 4z",
     checklist: "M4 6h2l1 2 3-4M11 7h9M4 12h2l1 2 3-4M11 13h9M4 18h2l1 2 3-4M11 19h9",
   };
@@ -9890,6 +9891,12 @@ const NAV_ITEMS = [
     icon: <NavIcon name="shield" />,
     label: "Partner Trust",
     sublabel: "Trust Portal",
+  },
+  {
+    id: "partner-operational-support",
+    icon: <NavIcon name="support" />,
+    label: "Partner Operations",
+    sublabel: "Partner Support",
   },
   {
     id: "channel-marketing",
