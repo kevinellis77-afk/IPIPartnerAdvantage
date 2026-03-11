@@ -1,21 +1,21 @@
 window.appTheme = {
   colors: {
-    background: "#0f171c",
-    surface: "#17242b",
-    surfaceAlt: "#1c2b33",
-    surfaceMuted: "rgba(255,255,255,0.03)",
-    border: "rgba(145,196,176,0.22)",
-    borderStrong: "rgba(145,196,176,0.36)",
-    primary: "#63AB8F",
-    primaryHover: "#4D9378",
-    secondaryBg: "rgba(255,255,255,0.05)",
-    textPrimary: "#e9f4f1",
-    textSecondary: "#c5ddd6",
-    textMuted: "#9bb6b0",
-    success: "#63AB8F",
-    warning: "#D4A843",
-    danger: "#D68A8A",
-    info: "#7B96A3"
+    background: "#070b14",
+    surface: "#0f1727",
+    surfaceAlt: "#162033",
+    surfaceMuted: "rgba(143, 193, 255, 0.05)",
+    border: "rgba(127, 164, 216, 0.22)",
+    borderStrong: "rgba(102, 203, 255, 0.45)",
+    primary: "#36c6ff",
+    primaryHover: "#1cb2f0",
+    secondaryBg: "rgba(255,255,255,0.06)",
+    textPrimary: "#f5fbff",
+    textSecondary: "#c7d9ea",
+    textMuted: "#8ea6bf",
+    success: "#2fd49f",
+    warning: "#f2bd53",
+    danger: "#ff6a84",
+    info: "#72b5ff"
   },
   typography: {
     fontFamily: "'Nunito Sans','Helvetica Neue',Arial,sans-serif",
@@ -27,11 +27,11 @@ window.appTheme = {
     small: "12px"
   },
   spacing: { xs: "4px", sm: "8px", md: "16px", lg: "24px", xl: "32px", xxl: "48px" },
-  radius: { sm: "10px", md: "14px", lg: "18px", pill: "999px" },
+  radius: { sm: "12px", md: "18px", lg: "22px", pill: "999px" },
   shadows: {
-    subtle: "0 8px 20px rgba(5,12,18,0.22)",
-    medium: "0 14px 36px rgba(5,12,18,0.35)",
-    elevated: "0 22px 48px rgba(5,12,18,0.45)"
+    subtle: "0 12px 28px rgba(3,10,24,0.32)",
+    medium: "0 16px 36px rgba(2,8,20,0.46)",
+    elevated: "0 24px 54px rgba(2,8,20,0.6)"
   },
   layout: {
     pagePaddingX: "44px",

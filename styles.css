@@ -407,3 +407,93 @@ tbody tr:nth-child(even){background:rgba(255,255,255,0.015);}
 .metric{border-radius:14px;padding:10px 8px;text-align:center;}
 .metricValue{font-size:22px;font-weight:800;line-height:1.1;}
 .metricLabel{margin-top:4px;font-size:12px;font-weight:700;opacity:.85;}
+
+/* 2026 Premium command-centre redesign overrides */
+:root{
+  --ds-bg:#070b14;
+  --ds-surface:#0f1727;
+  --ds-surface-soft:#162033;
+  --ds-panel:#121d30;
+  --ds-glow:54,198,255;
+}
+body{
+  background:
+    radial-gradient(1000px 600px at 85% -10%, rgba(var(--ds-glow),0.18), transparent 60%),
+    radial-gradient(900px 500px at 10% 0%, rgba(177,143,255,0.12), transparent 60%),
+    var(--ds-bg);
+  color:var(--ds-text);
+  font-family:var(--ds-body);
+}
+.app-main{width:100%;}
+.page-shell{padding:20px 28px !important;}
+.ds-page-header{
+  background:linear-gradient(145deg, rgba(54,198,255,0.1), rgba(12,19,35,0.9));
+  border:1px solid var(--ds-border);
+  border-radius:24px;
+  box-shadow:var(--ds-shadow-md);
+  margin-bottom:16px;
+}
+.ds-page-header__subtitle{font-size:16px;color:var(--ds-text-secondary);}
+.ds-section{padding:22px 8px 0;}
+.ds-card,.card,.panel,.table-wrapper,.channel-card,.prj-journey-card,.prj-contrast-card,.prj-use-case-card,.bse-section-index,
+.platform-layer-card,.governance-card,.raci-card{
+  background:linear-gradient(155deg, rgba(255,255,255,0.03), rgba(17,26,43,0.92)) !important;
+  border:1px solid var(--ds-border) !important;
+  border-radius:20px !important;
+  box-shadow:var(--ds-shadow-sm) !important;
+}
+.ds-card:hover,.card:hover,.panel:hover,.channel-card:hover{border-color:var(--ds-border-strong) !important;box-shadow:var(--ds-shadow-md) !important;transform:translateY(-2px);}
+.ds-metric-card__value{font-size:42px;line-height:1.02;letter-spacing:-0.03em;font-family:var(--ds-title);}
+.ds-metric-card__label{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--ds-text-muted);}
+.tone-success{color:var(--ds-success)!important}.tone-warning{color:var(--ds-warning)!important}.tone-danger{color:var(--ds-danger)!important}.tone-info{color:var(--ds-primary)!important}
+
+.ui-btn,button.ui-btn,.btn-p,.btn-s,.sidebar-controls button{
+  height:40px;
+  border-radius:12px;
+  border:1px solid var(--ds-border-strong);
+  background:linear-gradient(135deg, rgba(54,198,255,0.35), rgba(54,198,255,0.17));
+  color:#f3fbff;
+  font-weight:800;
+  letter-spacing:.01em;
+}
+.ui-btn.secondary,.ui-btn--secondary,.btn-s{background:rgba(255,255,255,0.06);border-color:var(--ds-border);color:var(--ds-text-secondary);}
+.ui-field,.ui-dropdown,select,input,textarea{
+  background:#0c1524 !important;
+  color:var(--ds-text)!important;
+  border:1px solid var(--ds-border)!important;
+  border-radius:12px!important;
+  min-height:40px;
+}
+.ui-field::placeholder,input::placeholder,textarea::placeholder{color:var(--ds-text-muted);}
+
+.status-badge,.channel-chip{
+  border-radius:999px;
+  padding:4px 10px;
+  border:1px solid rgba(54,198,255,0.4);
+  background:rgba(54,198,255,0.12);
+  color:#9de9ff;
+}
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;padding:12px;border:1px solid var(--ds-border);border-radius:14px;background:rgba(255,255,255,0.02);}
+
+.app-sidebar{
+  background:linear-gradient(180deg,#0c1322 0%,#101a2c 55%,#0d1523 100%);
+  border-right:1px solid rgba(96,175,255,0.25);
+  box-shadow:12px 0 45px rgba(0,0,0,0.5);
+}
+.sidebar-nav{gap:10px;}
+.sidebar-nav-item{border:1px solid transparent;border-radius:14px;padding:13px 14px;}
+.sidebar-nav-item:hover{border-color:rgba(127,164,216,0.32);background:rgba(255,255,255,0.06);}
+.sidebar-nav-item.active{
+  background:linear-gradient(145deg, rgba(54,198,255,0.23), rgba(54,198,255,0.08));
+  border-color:rgba(54,198,255,0.5);
+}
+.sidebar-nav-item.active::before{background:#36c6ff;box-shadow:0 0 12px rgba(54,198,255,0.85);}
+.sidebar-nav-sublabel{color:#a8bfd8;}
+
+.table-wrapper table th{color:#a7dfff;background:rgba(54,198,255,0.12);}
+.table-wrapper table td{color:#d6e4f3;}
+
+@media (min-width:1300px){
+  .page-shell{padding:24px 34px !important;}
+  .ds-section{padding-top:26px;}
+}
