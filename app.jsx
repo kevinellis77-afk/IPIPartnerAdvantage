@@ -7545,7 +7545,8 @@ const GOVERNANCE_STATUS_OPTIONS = [
   "Complete",
 ];
 const PRIORITY_OPTIONS = ["High", "Medium", "Low"];
-const EXECUTION_STORAGE_KEY = "ipi-governance-execution-v1";
+const EXECUTION_STORAGE_KEY = "ipi_partner_governance_tracker_v1";
+const LEGACY_EXECUTION_STORAGE_KEY = "ipi-governance-execution-v1";
 const LEGACY_RACI_ROLE_FIELDS = [
   ["channelManager", "Channel Manager"],
   ["salesLeadership", "PreSales"],
@@ -7566,6 +7567,39 @@ const RACI_DROPDOWN_OPTIONS = [
   "Product",
   "Operations",
 ];
+
+function normaliseRoleValue(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (!value) return [];
+  return [value];
+}
+
+function buildRoleSummary(rows, roles) {
+  return roles
+    .map((role) => {
+      let responsible = 0;
+      let accountable = 0;
+      let consulted = 0;
+      let informed = 0;
+
+      rows.forEach((row) => {
+        if ((row.r || []).includes(role)) responsible += 1;
+        if ((row.a || []).includes(role)) accountable += 1;
+        if ((row.c || []).includes(role)) consulted += 1;
+        if ((row.i || []).includes(role)) informed += 1;
+      });
+
+      return {
+        name: role,
+        responsible,
+        accountable,
+        consulted,
+        informed,
+        total: responsible + accountable + consulted + informed,
+      };
+    })
+    .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name));
+}
 
 function getTodayISODate() {
   return new Date().toISOString().slice(0, 10);
@@ -7603,7 +7637,9 @@ function GovernancePage() {
   const [showOverdueOnly, setShowOverdueOnly] = React.useState(false);
   const [noteTaskId, setNoteTaskId] = React.useState(null);
   const [tasks, setTasks] = React.useState(() => {
-    const stored = localStorage.getItem(EXECUTION_STORAGE_KEY);
+    const stored =
+      localStorage.getItem(EXECUTION_STORAGE_KEY) ||
+      localStorage.getItem(LEGACY_EXECUTION_STORAGE_KEY);
     const parsed = stored ? JSON.parse(stored) : {};
     return GOVERNANCE_ACTIVITIES.map((item) => ({
       ...item,
@@ -7614,10 +7650,10 @@ function GovernancePage() {
       targetDate: parsed[item.id]?.targetDate || "",
       notes: parsed[item.id]?.notes || "",
       updatedAt: parsed[item.id]?.updatedAt || "",
-      r: parsed[item.id]?.r || item.r || "",
-      a: parsed[item.id]?.a || item.a || "",
-      c: parsed[item.id]?.c || item.c || "",
-      i: parsed[item.id]?.i || item.i || "",
+      r: normaliseRoleValue(parsed[item.id]?.r ?? item.r),
+      a: normaliseRoleValue(parsed[item.id]?.a ?? item.a),
+      c: normaliseRoleValue(parsed[item.id]?.c ?? item.c),
+      i: normaliseRoleValue(parsed[item.id]?.i ?? item.i),
     }));
   });
 
@@ -7630,10 +7666,10 @@ function GovernancePage() {
         targetDate: task.targetDate,
         notes: task.notes,
         updatedAt: task.updatedAt,
-        r: task.r,
-        a: task.a,
-        c: task.c,
-        i: task.i,
+        r: normaliseRoleValue(task.r),
+        a: normaliseRoleValue(task.a),
+        c: normaliseRoleValue(task.c),
+        i: normaliseRoleValue(task.i),
       };
       return acc;
     }, {});
@@ -7658,6 +7694,26 @@ function GovernancePage() {
         return next;
       }),
     );
+  };
+
+  const updateRaciField = (id, field, values) => {
+    updateTask(id, { [field]: normaliseRoleValue(values) });
+  };
+
+  const exportRaciPDF = () => {
+    const element = document.getElementById("raciExportArea");
+    if (!element || !window.html2pdf) return;
+
+    const options = {
+      margin: 0.4,
+      filename: "IPI_RACI_Matrix.pdf",
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+      jsPDF: { unit: "in", format: "a3", orientation: "landscape" },
+      pagebreak: { mode: ["avoid-all", "css", "legacy"] },
+    };
+
+    window.html2pdf().set(options).from(element).save();
   };
 
   const filteredTasks = tasks.filter((task) => {
@@ -7722,22 +7778,7 @@ function GovernancePage() {
     };
   };
 
-  const ownershipSummary = [
-    { role: "Channel Manager", key: "channelManager" },
-    { role: "Sales Leadership", key: "salesLeadership" },
-    { role: "Marketing", key: "marketing" },
-    { role: "Product", key: "product" },
-    { role: "Legal", key: "legal" },
-    { role: "Finance", key: "finance" },
-    { role: "Operations / Delivery", key: "operationsDelivery" },
-    { role: "Executive Leadership", key: "executiveLeadership" },
-  ].map((role) => ({
-    ...role,
-    accountable: GOVERNANCE_ACTIVITIES.filter((row) => row[role.key] === "A")
-      .length,
-    responsible: GOVERNANCE_ACTIVITIES.filter((row) => row[role.key] === "R")
-      .length,
-  }));
+  const ownershipSummary = buildRoleSummary(tasks, RACI_DROPDOWN_OPTIONS);
 
   return (
     <React.Fragment>
@@ -8017,6 +8058,9 @@ function GovernancePage() {
             <div style={{ fontSize: 11, color: "#7FA39A" }}>
               Status options: Not Started · In Progress · Blocked · Complete
             </div>
+            <button className="exportButton" onClick={exportRaciPDF}>
+              Download RACI Matrix as PDF
+            </button>
           </div>
 
           <div
@@ -8084,25 +8128,14 @@ function GovernancePage() {
             </label>
           </div>
 
+          <div id="raciExportArea">
           {view === "matrix" ? (
             <div
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(123,150,163,0.3)",
-                borderRadius: 14,
-                overflowX: "auto",
-              }}
+              className="raciTableWrap"
             >
-              <div style={{ minWidth: 1220 }}>
+              <div className="raciTableGrid">
                 <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns:
-                      "minmax(260px,2fr) repeat(4,minmax(130px,0.9fr)) minmax(120px,0.9fr) minmax(130px,1fr) minmax(105px,0.8fr) minmax(130px,0.95fr) minmax(120px,0.95fr) minmax(70px,0.55fr)",
-                    columnGap: 8,
-                    background: "rgba(123,150,163,0.14)",
-                    borderBottom: "1px solid rgba(123,150,163,0.25)",
-                  }}
+                  className="raciTableHeader"
                 >
                   {[
                     "Activity",
@@ -8119,17 +8152,7 @@ function GovernancePage() {
                   ].map((h) => (
                     <div
                       key={h}
-                      style={{
-                        padding: "10px 10px",
-                        fontSize: h.length === 1 ? 12 : 10.5,
-                        fontWeight: 800,
-                        color: "#A9C3CE",
-                        letterSpacing: "0.08em",
-                        textTransform: "uppercase",
-                        minWidth: 0,
-                        whiteSpace: "normal",
-                        textAlign: h.length === 1 ? "center" : "left",
-                      }}
+                      className={`raciHeaderCell ${h.length === 1 ? `col-${h.toLowerCase()}` : ""}`}
                     >
                       {h}
                     </div>
@@ -8140,18 +8163,7 @@ function GovernancePage() {
                     const rowStyle = getTaskRowStyle(task);
                     const taskCompleted = task.status === "Complete" || task.status === "Completed";
                     return (
-                      <div
-                        key={task.id}
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns:
-                            "minmax(260px,2fr) repeat(4,minmax(130px,0.9fr)) minmax(120px,0.9fr) minmax(130px,1fr) minmax(105px,0.8fr) minmax(130px,0.95fr) minmax(120px,0.95fr) minmax(70px,0.55fr)",
-                          columnGap: 8,
-                          borderTop: idx ? `1px solid ${rowStyle.borderColor}` : "none",
-                          alignItems: "center",
-                          background: rowStyle.background,
-                        }}
-                      >
+                      <div key={task.id} className="raciTableRow" style={{ borderTop: idx ? `1px solid ${rowStyle.borderColor}` : "none", background: rowStyle.background }}>
                         <div
                           style={{
                             padding: "10px",
@@ -8174,22 +8186,34 @@ function GovernancePage() {
                           <div key={`${task.id}-${field}`} style={{ padding: "10px" }}>
                             <select
                               className="ui-dropdown"
-                              value={task[field] || ""}
+                              multiple
+                              value={normaliseRoleValue(task[field])}
                               onChange={(e) =>
-                                updateTask(task.id, { [field]: e.target.value })
+                                updateRaciField(
+                                  task.id,
+                                  field,
+                                  [...e.target.selectedOptions].map((option) => option.value),
+                                )
                               }
                               style={{
                                 width: "100%",
                                 boxShadow: "none",
+                                minHeight: 94,
                               }}
                             >
-                              <option value="">{label}</option>
                               {RACI_DROPDOWN_OPTIONS.map((role) => (
                                 <option key={`${task.id}-${field}-${role}`} value={role}>
                                   {role}
                                 </option>
                               ))}
                             </select>
+                            <div className="selectedTags">
+                              {normaliseRoleValue(task[field]).map((role) => (
+                                <span className="raciTag" key={`${task.id}-${field}-${role}`}>
+                                  {role}
+                                </span>
+                              ))}
+                            </div>
                           </div>
                         ))}
                         <div style={{ padding: "10px" }}>
@@ -8490,40 +8514,36 @@ function GovernancePage() {
             >
               Key Ownership Summary
             </div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(4,minmax(0,1fr))",
-                gap: 12,
-              }}
-            >
+            <div className="ownershipDashboard">
               {ownershipSummary.map((role) => (
-                <div
-                  key={role.role}
-                  style={{
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px solid rgba(123,150,163,0.24)",
-                    borderRadius: 10,
-                    padding: "10px 12px",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 12,
-                      color: "#E8F5F0",
-                      fontWeight: 700,
-                      marginBottom: 6,
-                    }}
-                  >
-                    {role.role}
+                <div className="ownershipCard" key={role.name}>
+                  <div className="ownershipHeader">
+                    <div className="ownershipRole">{role.name}</div>
+                    <div className="ownershipTotal">{role.total}</div>
                   </div>
-                  <div style={{ fontSize: 11, color: "#A6C6BE" }}>
-                    A: {role.accountable} · R: {role.responsible}
+                  <div className="ownershipMetrics">
+                    <div className="metric metric-r">
+                      <div className="metricValue">{role.responsible}</div>
+                      <div className="metricLabel">R</div>
+                    </div>
+                    <div className="metric metric-a">
+                      <div className="metricValue">{role.accountable}</div>
+                      <div className="metricLabel">A</div>
+                    </div>
+                    <div className="metric metric-c">
+                      <div className="metricValue">{role.consulted}</div>
+                      <div className="metricLabel">C</div>
+                    </div>
+                    <div className="metric metric-i">
+                      <div className="metricValue">{role.informed}</div>
+                      <div className="metricLabel">I</div>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
           </section>
+          </div>
 
           <section
             style={{
