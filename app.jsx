@@ -6939,7 +6939,14 @@ function CommercialFrameworkPage() {
 
           <div className="brand-line" />
 
-          <section>
+          <section
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(54,198,255,0.24)",
+              borderRadius: 14,
+              padding: "18px",
+            }}
+          >
             <div
               style={{
                 fontSize: 11,
@@ -7030,26 +7037,27 @@ function CommercialFrameworkPage() {
             </div>
             <div
               style={{
-                background:
-                  "linear-gradient(140deg,rgba(54,198,255,0.1),rgba(54,198,255,0.04))",
-                border: "1px solid rgba(54,198,255,0.32)",
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(177,143,255,0.32)",
                 borderRadius: 14,
-                padding: "18px 20px",
+                padding: "18px",
               }}
             >
-              <h3
+              <div
                 style={{
-                  fontSize: 18,
-                  color: "#fff",
-                  marginBottom: 10,
-                  fontFamily: "'Syne',sans-serif",
+                  fontSize: 11,
+                  fontWeight: 800,
+                  color: "rgba(177,143,255,0.72)",
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  marginBottom: 8,
                 }}
               >
                 Reseller Master Agreement (RMA)
-              </h3>
+              </div>
               <p
                 style={{
-                  fontSize: 13,
+                  fontSize: 12.5,
                   color: "#8EA6BF",
                   lineHeight: 1.75,
                   marginBottom: 12,
@@ -7061,11 +7069,11 @@ function CommercialFrameworkPage() {
               <ul
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
-                  gap: "6px 16px",
+                  gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+                  gap: 8,
                   paddingLeft: 18,
-                  color: "#67D8FF",
-                  fontSize: 12.5,
+                  color: "#D8B9CB",
+                  fontSize: 12,
                   lineHeight: 1.7,
                   margin: 0,
                 }}
@@ -7079,8 +7087,8 @@ function CommercialFrameworkPage() {
               </ul>
               <p
                 style={{
-                  fontSize: 12.5,
-                  color: "#7FB3A6",
+                  fontSize: 12,
+                  color: "#A88BA0",
                   lineHeight: 1.75,
                   marginTop: 12,
                 }}
@@ -7091,7 +7099,14 @@ function CommercialFrameworkPage() {
             </div>
           </section>
 
-          <section>
+          <section
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(54,198,255,0.24)",
+              borderRadius: 14,
+              padding: "18px",
+            }}
+          >
             <div
               style={{
                 fontSize: 11,
@@ -7308,11 +7323,10 @@ function CommercialFrameworkPage() {
 
           <section
             style={{
-              background:
-                "linear-gradient(135deg,rgba(54,198,255,0.18),rgba(54,198,255,0.06))",
-              border: "1px solid rgba(54,198,255,0.36)",
-              borderRadius: 15,
-              padding: "20px",
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(54,198,255,0.24)",
+              borderRadius: 14,
+              padding: "18px",
             }}
           >
             <div
@@ -7465,6 +7479,27 @@ function CommercialFrameworkPage() {
               </div>
               <div
                 style={{
+                  fontSize: 18,
+                  color: "#fff",
+                  fontFamily: "'Syne',sans-serif",
+                  marginBottom: 8,
+                }}
+              >
+                Why This Model Works
+              </div>
+              <p
+                style={{
+                  fontSize: 12.5,
+                  color: "#8EA6BF",
+                  lineHeight: 1.75,
+                  marginBottom: 10,
+                }}
+              >
+                The model creates consistent benefits for both partners and IP
+                Integration while reducing legal and commercial friction.
+              </p>
+              <div
+                style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
                   gap: 12,
@@ -7473,7 +7508,7 @@ function CommercialFrameworkPage() {
                 <div>
                   <div
                     style={{
-                      fontSize: 12,
+                      fontSize: 12.5,
                       fontWeight: 800,
                       color: "#67D8FF",
                       marginBottom: 6,
@@ -7485,8 +7520,8 @@ function CommercialFrameworkPage() {
                     style={{
                       paddingLeft: 18,
                       color: "#A6D5C6",
-                      fontSize: 12,
-                      lineHeight: 1.65,
+                      fontSize: 12.5,
+                      lineHeight: 1.7,
                       margin: 0,
                     }}
                   >
@@ -7499,7 +7534,7 @@ function CommercialFrameworkPage() {
                 <div>
                   <div
                     style={{
-                      fontSize: 12,
+                      fontSize: 12.5,
                       fontWeight: 800,
                       color: "#67D8FF",
                       marginBottom: 6,
@@ -7511,8 +7546,8 @@ function CommercialFrameworkPage() {
                     style={{
                       paddingLeft: 18,
                       color: "#A6D5C6",
-                      fontSize: 12,
-                      lineHeight: 1.65,
+                      fontSize: 12.5,
+                      lineHeight: 1.7,
                       margin: 0,
                     }}
                   >
@@ -7523,6 +7558,17 @@ function CommercialFrameworkPage() {
                   </ul>
                 </div>
               </div>
+              <p
+                style={{
+                  fontSize: 12,
+                  color: "#87A3AF",
+                  lineHeight: 1.75,
+                  marginTop: 10,
+                }}
+              >
+                This consistent structure supports repeatable partner onboarding
+                and predictable commercial scaling.
+              </p>
             </div>
           </section>
         </div>
