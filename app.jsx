@@ -9918,94 +9918,28 @@ function withBase(pathname) {
 }
 
 function SideNav({ page, setPage, onLayoutChange }) {
-  const SIDEBAR_PIN_KEY = "ipi_sidebar_pinned_v2";
-  const SIDEBAR_COLLAPSE_KEY = "ipi_sidebar_collapsed_v2";
-  const MOBILE_BREAKPOINT = 900;
   const SIDEBAR_WIDTH = 250;
-  const SIDEBAR_COLLAPSED_WIDTH = 72;
-
-  const [isMobile, setIsMobile] = React.useState(() =>
-    window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches,
-  );
-  const [isPinned, setIsPinned] = React.useState(() => {
-    const saved = localStorage.getItem(SIDEBAR_PIN_KEY);
-    return saved !== null ? JSON.parse(saved) : true;
-  });
-  const [isCollapsed, setIsCollapsed] = React.useState(() => {
-    const saved = localStorage.getItem(SIDEBAR_COLLAPSE_KEY);
-    return saved !== null ? JSON.parse(saved) : false;
-  });
-  const [isSidebarOpen, setIsSidebarOpen] = React.useState(
-    () => !isMobile,
-  );
-
-  React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
-    const onChange = (event) => setIsMobile(event.matches);
-    mql.addEventListener("change", onChange);
-    return () => mql.removeEventListener("change", onChange);
-  }, []);
-
-  React.useEffect(() => {
-    localStorage.setItem(SIDEBAR_PIN_KEY, JSON.stringify(isPinned));
-  }, [isPinned]);
-
-  React.useEffect(() => {
-    localStorage.setItem(SIDEBAR_COLLAPSE_KEY, JSON.stringify(isCollapsed));
-  }, [isCollapsed]);
-
-  React.useEffect(() => {
-    if (!isMobile && isPinned) {
-      setIsSidebarOpen(true);
-    }
-  }, [isMobile, isPinned]);
-
-  const isSidebarVisible = isMobile ? isSidebarOpen : isPinned || isSidebarOpen;
-  const sidebarWidth = isPinned
-    ? isCollapsed
-      ? SIDEBAR_COLLAPSED_WIDTH
-      : SIDEBAR_WIDTH
-    : 0;
 
   React.useEffect(() => {
     onLayoutChange?.({
-      isMobile,
-      isSidebarPinned: isPinned,
-      isCollapsed,
-      isSidebarVisible,
-      sidebarWidth,
+      isMobile: false,
+      isSidebarPinned: true,
+      isCollapsed: false,
+      isSidebarVisible: true,
+      sidebarWidth: SIDEBAR_WIDTH,
     });
-  }, [isMobile, isPinned, isCollapsed, isSidebarVisible, sidebarWidth, onLayoutChange]);
-
-  const toggleSidebarOpen = () => setIsSidebarOpen((prev) => !prev);
-  const toggleCollapse = () => setIsCollapsed((prev) => !prev);
-  const togglePin = () => setIsPinned((prev) => !prev);
-
-  const showLauncher = isMobile || !isPinned;
+  }, [onLayoutChange]);
 
   return (
     <React.Fragment>
-      {showLauncher && (
-        <button className="sidebar-launcher" onClick={toggleSidebarOpen} type="button" title="Toggle navigation">
-          {isSidebarVisible ? "✕" : "☰"}
-        </button>
-      )}
-
-      <aside className={`app-sidebar ${isPinned ? "pinned" : ""} ${isCollapsed ? "collapsed" : ""} ${isSidebarVisible ? "open" : "closed"}`}>
+      <aside className="app-sidebar">
         <div className="sidebar-top">
           <div className="sidebar-brand">
             <div className="sidebar-brand-mark">IPI</div>
-            {!isCollapsed && (
-              <div className="sidebar-brand-copy">
-                <div className="sidebar-title">Partner Advantage</div>
-                <div className="sidebar-subtitle">Channel Workspace</div>
-              </div>
-            )}
-          </div>
-          <div className="sidebar-controls">
-            <button onClick={toggleCollapse} type="button">{isCollapsed ? "+" : "-"}</button>
-            {!isPinned && <button onClick={togglePin} type="button">Pin</button>}
-            {isMobile && <button onClick={() => setIsSidebarOpen(false)} type="button">Close</button>}
+            <div className="sidebar-brand-copy">
+              <div className="sidebar-title">Partner Advantage</div>
+              <div className="sidebar-subtitle">Channel Workspace</div>
+            </div>
           </div>
         </div>
 
@@ -10018,12 +9952,9 @@ function SideNav({ page, setPage, onLayoutChange }) {
                   key={item.id}
                   item={item}
                   active={active}
-                  collapsed={isCollapsed}
+                  collapsed={false}
                   onClick={() => {
                     setPage(item.id);
-                    if (isMobile || !isPinned) {
-                      setIsSidebarOpen(false);
-                    }
                   }}
                 />
               );
@@ -10031,21 +9962,15 @@ function SideNav({ page, setPage, onLayoutChange }) {
           </nav>
 
         <div className="sidebar-footer">
-          {!isCollapsed && (
-            <div className="sidebar-footer-card">
-              <div className="sidebar-footer-title">Channel Workspace</div>
-              <div className="sidebar-footer-copy">
-                Strategy, governance, enablement and partner planning in one place.
-              </div>
+          <div className="sidebar-footer-card">
+            <div className="sidebar-footer-title">Channel Workspace</div>
+            <div className="sidebar-footer-copy">
+              Strategy, governance, enablement and partner planning in one place.
             </div>
-          )}
+          </div>
           <div className="sidebar-footer-meta">© 2026 IP Integration Ltd · Partner Confidential</div>
         </div>
       </aside>
-
-      {isMobile && isSidebarVisible && (
-        <div className="sidebar-backdrop" onClick={() => setIsSidebarOpen(false)} />
-      )}
     </React.Fragment>
   );
 }
@@ -10063,7 +9988,7 @@ function App() {
     isSidebarPinned: true,
     isCollapsed: false,
     isSidebarVisible: true,
-    sidebarWidth: 280,
+    sidebarWidth: 250,
   });
 
   function PageShell({ children, className = "" }) {
@@ -10472,10 +10397,7 @@ function App() {
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
-  const contentOffset =
-    !sidebarLayout.isMobile && sidebarLayout.isSidebarPinned
-      ? sidebarLayout.sidebarWidth
-      : 0;
+  const contentOffset = sidebarLayout.sidebarWidth;
   const currentPageMeta = NAV_ITEMS.find((item) => item.id === page) || NAV_ITEMS[0];
 
   return (
@@ -10484,7 +10406,7 @@ function App() {
       topbar={<AppTopBar title={currentPageMeta?.label || "Dashboard"} />}
     >
       <div
-        className={`app-main-inner ${sidebarLayout.isSidebarPinned && !sidebarLayout.isCollapsed ? "with-sidebar" : ""} ${sidebarLayout.isSidebarPinned && sidebarLayout.isCollapsed ? "with-collapsed-sidebar" : ""}`}
+        className="app-main-inner with-sidebar"
         style={{ marginLeft: contentOffset }}
       >
         <PageShell key={page} className="page-fade">{renderPage()}</PageShell>
