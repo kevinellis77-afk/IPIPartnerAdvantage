@@ -8832,6 +8832,12 @@ const NAV_ITEMS = [
     label: "Build. Sell. Expand",
     sublabel: "Revenue Journey",
   },
+  {
+    id: "partner-revenue-journey",
+    icon: "◎",
+    label: "Partner Revenue Journey",
+    sublabel: "Start Anywhere Model",
+  },
   { id: "hub", icon: "✓", label: "Partner Enablement", sublabel: "Hub 2026" },
   {
     id: "program",
@@ -9037,6 +9043,7 @@ function App() {
       );
     if (page === "prospect") return <ProspectToolPage />;
     if (page === "bse") return <BuildSellExpand />;
+    if (page === "partner-revenue-journey") return <PartnerRevenueJourneyPage />;
     if (page === "program") return <PartnerProgramPage />;
     if (page === "commercial") return <CommercialFrameworkPage />;
     if (page === "governance") return <GovernancePage />;
