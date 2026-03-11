@@ -3677,8 +3677,6 @@ const RESOURCES = [
 ];
 
 function EnablementHub({ onBack, onNavigate }) {
-  const [activeTier, setActiveTier] = React.useState(null);
-
   return (
     <React.Fragment>
       <Bg />
@@ -3810,7 +3808,7 @@ function EnablementHub({ onBack, onNavigate }) {
 
         <div className="brand-line" style={{ margin: "32px 44px 0" }} />
 
-        {/* PARTNER TYPES TABLE */}
+        {/* PARTNER TIERS */}
         <div
           style={{
             maxWidth: "none",
@@ -3824,7 +3822,417 @@ function EnablementHub({ onBack, onNavigate }) {
               display: "flex",
               alignItems: "center",
               gap: 14,
-              marginBottom: 28,
+              marginBottom: 18,
+            }}
+          >
+            <div
+              style={{
+                height: 1,
+                flex: 1,
+                background:
+                  "linear-gradient(90deg,transparent,rgba(212,168,67,0.3))",
+              }}
+            />
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: 800,
+                color: "rgba(212,168,67,0.6)",
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                whiteSpace: "normal",
+              }}
+            >
+              Partner Tiers
+            </span>
+            <div
+              style={{
+                height: 1,
+                flex: 1,
+                background:
+                  "linear-gradient(90deg,rgba(212,168,67,0.3),transparent)",
+              }}
+            />
+          </div>
+          <p
+            style={{
+              margin: "0 0 24px",
+              fontSize: 14,
+              lineHeight: 1.7,
+              color: "#86ABA3",
+            }}
+          >
+            Each partner tier combines commercial benefits, enablement support,
+            and clear commitments designed to drive mutual growth.
+          </p>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+              gap: 16,
+              alignItems: "stretch",
+            }}
+          >
+            {[
+              {
+                name: "Gold",
+                subtitle: "Strategic growth partners",
+                color: "#D4A843",
+                glow: "212,168,67",
+                featured: true,
+                benefits: [
+                  "Highest partner margin tier",
+                  "Priority partner enablement",
+                  "Dedicated partner management",
+                  "Marketing collaboration support",
+                  "20 hours of SDR resource per month",
+                ],
+                commitments: [
+                  "Attain Certification across Pro Services, Pre Sales & Sales",
+                  "Attain Revenue Quotas of £500k per year",
+                  "Monthly Pipeline Reviews & Support Reviews",
+                  "Quarterly QBRs",
+                  "Account Mapping Sessions",
+                ],
+              },
+              {
+                name: "Silver",
+                subtitle: "Scaling partners",
+                color: "#91C4B0",
+                glow: "145,196,176",
+                benefits: [
+                  "Competitive partner margins",
+                  "Partner enablement and training",
+                  "Marketing support",
+                  "Access to sales and solution resources",
+                  "8 hours of SDR resource per month",
+                ],
+                commitments: [
+                  "Attain Certification across Pro Services, Pre Sales & Sales",
+                  "Attain Revenue Quotas of £250k per year",
+                  "Monthly Pipeline Reviews & Bi Monthly Support Reviews",
+                  "Quarterly QBRs",
+                  "Account Mapping Sessions",
+                ],
+              },
+              {
+                name: "Registered",
+                subtitle: "Entry partner tier",
+                color: "#7B96A3",
+                glow: "123,150,163",
+                benefits: [
+                  "Entry access to the partner program",
+                  "Sales and presales onboarding",
+                  "Access to partner resources",
+                  "Apply for SDR resource for adhoc Campaigns",
+                ],
+                commitments: [
+                  "Attain Certification for Pre Sales & Sales",
+                  "Attain Revenue Quotas of £50k per year",
+                  "Quarterly Pipeline Reviews",
+                  "Bi Annual Business Reviews",
+                  "Account Mapping Sessions",
+                ],
+              },
+            ].map((tier) => (
+              <div
+                key={tier.name}
+                style={{
+                  background: tier.featured
+                    ? `linear-gradient(145deg,rgba(${tier.glow},0.16),rgba(255,255,255,0.03))`
+                    : "rgba(255,255,255,0.03)",
+                  border: tier.featured
+                    ? `1px solid rgba(${tier.glow},0.45)`
+                    : `1px solid rgba(${tier.glow},0.24)`,
+                  borderRadius: 20,
+                  padding: 22,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 16,
+                  boxShadow: tier.featured
+                    ? `0 14px 34px rgba(${tier.glow},0.2)`
+                    : `0 10px 28px rgba(${tier.glow},0.1)`,
+                }}
+              >
+                <div>
+                  <h3
+                    style={{
+                      margin: 0,
+                      fontSize: 28,
+                      color: tier.color,
+                      letterSpacing: "-0.03em",
+                      fontFamily: "'Syne',sans-serif",
+                    }}
+                  >
+                    {tier.name}
+                  </h3>
+                  <p
+                    style={{
+                      margin: "6px 0 0",
+                      fontSize: 13,
+                      color: "#B7D0CA",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {tier.subtitle}
+                  </p>
+                </div>
+
+                <div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 800,
+                      color: "rgba(255,255,255,0.58)",
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                      marginBottom: 10,
+                    }}
+                  >
+                    Benefits
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+                    {tier.benefits.map((item) => (
+                      <div
+                        key={item}
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: 8,
+                          fontSize: 13,
+                          color: "#D8EBE5",
+                          lineHeight: 1.45,
+                        }}
+                      >
+                        <span style={{ color: tier.color, lineHeight: 1 }}>✓</span>
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    border: `1px solid rgba(${tier.glow},0.3)`,
+                    background: `rgba(${tier.glow},0.08)`,
+                    borderRadius: 14,
+                    padding: "14px 14px 12px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 8,
+                    marginTop: "auto",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 800,
+                      color: tier.color,
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Partner Commitments
+                  </div>
+                  {tier.commitments.map((item) => (
+                    <div
+                      key={item}
+                      style={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: 8,
+                        fontSize: 12,
+                        color: "#C6DFD8",
+                        lineHeight: 1.45,
+                      }}
+                    >
+                      <span style={{ color: tier.color, lineHeight: 1 }}>•</span>
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* TYPICAL PARTNER JOURNEY */}
+        <div
+          style={{
+            maxWidth: "none",
+            margin: "0",
+            padding: "40px 44px 0",
+            width: "100%",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+              marginBottom: 18,
+            }}
+          >
+            <div
+              style={{
+                height: 1,
+                flex: 1,
+                background:
+                  "linear-gradient(90deg,transparent,rgba(145,196,176,0.35))",
+              }}
+            />
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: 800,
+                color: "rgba(145,196,176,0.68)",
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                whiteSpace: "normal",
+              }}
+            >
+              Typical Partner Journey
+            </span>
+            <div
+              style={{
+                height: 1,
+                flex: 1,
+                background:
+                  "linear-gradient(90deg,rgba(145,196,176,0.35),transparent)",
+              }}
+            />
+          </div>
+          <p
+            style={{
+              margin: "0 0 24px",
+              fontSize: 14,
+              lineHeight: 1.7,
+              color: "#86ABA3",
+            }}
+          >
+            Partners can start with one solution, build capability and
+            confidence, then expand into broader customer outcomes and larger
+            recurring revenue streams.
+          </p>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
+              gap: 14,
+            }}
+          >
+            {[
+              {
+                title: "Enable",
+                desc: "Prepare partners with the skills, knowledge and resources required to succeed.",
+                points: [
+                  "Complete sales and presales onboarding",
+                  "Achieve certification across relevant roles",
+                  "Align on target markets and propositions",
+                  "Identify initial opportunities and campaigns",
+                ],
+                color: "145,196,176",
+              },
+              {
+                title: "Land",
+                desc: "Win the first customer opportunities and establish recurring revenue foundations.",
+                points: [
+                  "Launch active pipeline development",
+                  "Progress opportunities with IPI sales and presales support",
+                  "Use marketing campaigns and SDR assistance",
+                  "Secure initial customer wins",
+                ],
+                color: "212,168,67",
+              },
+              {
+                title: "Expand",
+                desc: "Grow revenue and deepen customer relationships through broader solutions.",
+                points: [
+                  "Expand within existing customer accounts",
+                  "Cross-sell AI, payments and managed services",
+                  "Increase recurring and services revenue",
+                  "Move toward strategic partner status",
+                ],
+                color: "123,150,163",
+              },
+            ].map((step, idx, arr) => (
+              <div
+                key={step.title}
+                style={{
+                  position: "relative",
+                  background: "rgba(255,255,255,0.03)",
+                  border: `1px solid rgba(${step.color},0.3)`,
+                  borderRadius: 18,
+                  padding: 20,
+                  boxShadow: `0 10px 24px rgba(${step.color},0.1)`,
+                }}
+              >
+                {idx < arr.length - 1 && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      right: -8,
+                      transform: "translateY(-50%)",
+                      color: `rgba(${step.color},0.7)`,
+                      fontWeight: 800,
+                      fontSize: 18,
+                    }}
+                  >
+                    →
+                  </div>
+                )}
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minWidth: 86,
+                    padding: "5px 10px",
+                    borderRadius: 999,
+                    border: `1px solid rgba(${step.color},0.35)`,
+                    background: `rgba(${step.color},0.12)`,
+                    fontSize: 11,
+                    fontWeight: 800,
+                    color: `rgb(${step.color})`,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    marginBottom: 12,
+                  }}
+                >
+                  {step.title}
+                </div>
+                <p style={{ margin: "0 0 12px", fontSize: 13, color: "#C9DFD9", lineHeight: 1.6 }}>
+                  {step.desc}
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {step.points.map((point) => (
+                    <div key={point} style={{ display: "flex", gap: 8, fontSize: 12, color: "#C0DAD3" }}>
+                      <span style={{ color: `rgb(${step.color})` }}>•</span>
+                      <span>{point}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* WHO SHOULD PARTNER */}
+        <div
+          style={{
+            maxWidth: "none",
+            margin: "0",
+            padding: "40px 44px 0",
+            width: "100%",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+              marginBottom: 22,
             }}
           >
             <div
@@ -3861,208 +4269,76 @@ function EnablementHub({ onBack, onNavigate }) {
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
               gap: 14,
-              alignItems: "stretch",
             }}
           >
             {[
               {
-                icon: "🤝",
                 title: "Reseller Partners",
-                color: "#91C4B0",
+                who: "Telecom, UC and CX resellers selling directly to end customers.",
+                fit: "They already own customer relationships and can embed IPI into broader communications roadmaps.",
+                gain: "Platform margin, deployment revenue and recurring account growth.",
                 glow: "99,171,143",
-                desc: "Traditional telecom, UC and CX resellers that sell IPI solutions directly to end customers as part of their communications portfolio.",
-                revenue:
-                  "Recurring platform margin, project revenue from deployments, and ongoing customer account management opportunities.",
-                revenueLabel: "Revenue Opportunity",
               },
               {
-                icon: "⚙️",
                 title: "Managed Service Providers",
-                color: "#7B96A3",
+                who: "Providers packaging solutions as managed services with long-term contracts.",
+                fit: "They combine platform delivery with support, monitoring and optimisation expertise.",
+                gain: "Recurring margin plus high-value managed services revenue.",
                 glow: "123,150,163",
-                desc: "Service providers that package IPI platforms into their own managed service offerings, delivering ongoing management, monitoring and support.",
-                revenue:
-                  "Recurring platform margin combined with high-margin managed services, infrastructure management and long-term customer lifecycle revenue.",
-                revenueLabel: "Revenue Opportunity",
               },
               {
-                icon: "💡",
                 title: "Consulting Partners",
-                color: "#A37992",
+                who: "CX and transformation consultancies shaping customer strategy and technology choices.",
+                fit: "They influence solution selection and lead business case development.",
+                gain: "Referral income, project consulting fees and strategic programme engagements.",
                 glow: "163,121,146",
-                desc: "CX consultants and digital transformation specialists who design customer contact strategies and recommend IPI solutions as part of larger transformation projects.",
-                revenue:
-                  "Referral fees, consulting engagement revenue, and strategic transformation projects that include CX platform design and implementation.",
-                revenueLabel: "Revenue Opportunity",
               },
               {
-                icon: "🔗",
                 title: "Technology & ISV Partners",
-                color: "#C0887B",
+                who: "Software vendors and ecosystem players integrating products with IPI platforms.",
+                fit: "They create differentiated joint solutions and improve customer outcomes.",
+                gain: "Co-sell motion, integration-led opportunities and shared account expansion.",
                 glow: "192,136,123",
-                desc: "Software vendors and technology companies that integrate their applications with IPI platforms to create joint solutions and expand ecosystem capabilities.",
-                revenue:
-                  "Joint solution revenue, technology integrations, marketplace opportunities and co-selling into shared customer bases.",
-                revenueLabel: "Revenue Opportunity",
               },
-            ].map((pt, i) => (
+            ].map((card) => (
               <div
-                key={i}
+                key={card.title}
                 style={{
                   background: "rgba(255,255,255,0.025)",
-                  border: `1px solid rgba(${pt.glow},0.22)`,
+                  border: `1px solid rgba(${card.glow},0.26)`,
                   borderRadius: 16,
-                  overflow: "hidden",
+                  padding: 18,
                   display: "flex",
                   flexDirection: "column",
-                  transition: "all 0.25s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = `rgba(${pt.glow},0.07)`;
-                  e.currentTarget.style.borderColor = `rgba(${pt.glow},0.42)`;
-                  e.currentTarget.style.transform = "translateY(-4px)";
-                  e.currentTarget.style.boxShadow = `0 12px 36px rgba(${pt.glow},0.15)`;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "rgba(255,255,255,0.025)";
-                  e.currentTarget.style.borderColor = `rgba(${pt.glow},0.22)`;
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow = "none";
+                  gap: 10,
                 }}
               >
-                {/* Card header */}
-                <div
-                  style={{
-                    padding: "20px 20px 16px",
-                    borderBottom: `1px solid rgba(${pt.glow},0.15)`,
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 42,
-                      height: 42,
-                      borderRadius: 12,
-                      background: `rgba(${pt.glow},0.14)`,
-                      border: `1px solid rgba(${pt.glow},0.3)`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 20,
-                      marginBottom: 12,
-                    }}
-                  >
-                    {pt.icon}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 13.5,
-                      fontWeight: 900,
-                      color: pt.color,
-                      fontFamily: "'Syne',sans-serif",
-                      lineHeight: 1.25,
-                      marginBottom: 10,
-                    }}
-                  >
-                    {pt.title}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 800,
-                      color: "rgba(200,225,218,0.4)",
-                      letterSpacing: "0.1em",
-                      textTransform: "uppercase",
-                      marginBottom: 8,
-                    }}
-                  >
-                    Description
-                  </div>
-                  <p
-                    style={{
-                      fontSize: 11.5,
-                      color: "#7AADA0",
-                      lineHeight: 1.72,
-                      margin: 0,
-                    }}
-                  >
-                    {pt.desc}
-                  </p>
+                <h3 style={{ margin: 0, fontSize: 18, color: "#E6F3EF", fontFamily: "'Syne',sans-serif" }}>
+                  {card.title}
+                </h3>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.08em", color: "#D4A843", textTransform: "uppercase" }}>
+                  Who They Are
                 </div>
-                {/* Revenue section */}
-                <div
-                  style={{
-                    padding: "14px 20px 20px",
-                    flex: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 8,
-                    background: `rgba(${pt.glow},0.06)`,
-                    borderTop: `1px solid rgba(${pt.glow},0.22)`,
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 7,
-                      marginBottom: 4,
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 22,
-                        height: 22,
-                        borderRadius: 6,
-                        background: `rgba(${pt.glow},0.2)`,
-                        border: `1px solid rgba(${pt.glow},0.4)`,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 12,
-                        flexShrink: 0,
-                      }}
-                    >
-                      💰
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 800,
-                        color: pt.color,
-                        letterSpacing: "0.1em",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      {pt.revenueLabel}
-                    </div>
-                  </div>
-                  <p
-                    style={{
-                      fontSize: 11.5,
-                      color: "#C0DDD6",
-                      lineHeight: 1.72,
-                      margin: 0,
-                      fontWeight: 600,
-                      borderLeft: `2px solid rgba(${pt.glow},0.4)`,
-                      paddingLeft: 10,
-                    }}
-                  >
-                    {pt.revenue}
-                  </p>
+                <p style={{ margin: 0, fontSize: 13, color: "#BCD6D0", lineHeight: 1.55 }}>{card.who}</p>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.08em", color: "#91C4B0", textTransform: "uppercase" }}>
+                  Why They Fit
                 </div>
+                <p style={{ margin: 0, fontSize: 13, color: "#BCD6D0", lineHeight: 1.55 }}>{card.fit}</p>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.08em", color: "#C4DBD5", textTransform: "uppercase" }}>
+                  What They Can Gain
+                </div>
+                <p style={{ margin: 0, fontSize: 13, color: "#D8ECE7", lineHeight: 1.55 }}>{card.gain}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="brand-line" style={{ margin: "36px 44px 0" }} />
-
-        {/* PARTNER TIERS */}
+        {/* REVENUE OPPORTUNITIES */}
         <div
           style={{
             maxWidth: "none",
             margin: "0",
-            padding: "32px 44px 0",
+            padding: "40px 44px 0",
             width: "100%",
           }}
         >
@@ -4071,7 +4347,7 @@ function EnablementHub({ onBack, onNavigate }) {
               display: "flex",
               alignItems: "center",
               gap: 14,
-              marginBottom: 24,
+              marginBottom: 22,
             }}
           >
             <div
@@ -4079,243 +4355,108 @@ function EnablementHub({ onBack, onNavigate }) {
                 height: 1,
                 flex: 1,
                 background:
-                  "linear-gradient(90deg,transparent,rgba(212,168,67,0.3))",
+                  "linear-gradient(90deg,transparent,rgba(145,196,176,0.35))",
               }}
             />
             <span
               style={{
                 fontSize: 10,
                 fontWeight: 800,
-                color: "rgba(212,168,67,0.6)",
+                color: "rgba(145,196,176,0.68)",
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
                 whiteSpace: "normal",
               }}
             >
-              Partner Tiers
+              Revenue Opportunities
             </span>
             <div
               style={{
                 height: 1,
                 flex: 1,
                 background:
-                  "linear-gradient(90deg,rgba(212,168,67,0.3),transparent)",
+                  "linear-gradient(90deg,rgba(145,196,176,0.35),transparent)",
               }}
             />
           </div>
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
+              gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
               gap: 14,
             }}
           >
-            {TIERS.map((tier) => {
-              const isActive = activeTier === tier.id;
-              return (
-                <div
-                  key={tier.id}
-                  onClick={() =>
-                    setActiveTier((p) => (p === tier.id ? null : tier.id))
-                  }
-                  style={{
-                    background: isActive
-                      ? tier.bg.replace(
-                          /0\.\d+\)/g,
-                          (m) =>
-                            String(Math.min(parseFloat(m) * 1.5, 0.99)) + ")",
-                        )
-                      : tier.bg,
-                    border: `1.5px solid ${isActive ? tier.border : tier.border.replace(/0\.\d+\)/, "0.2)")}`,
-                    borderRadius: 16,
-                    padding: "22px",
-                    cursor: "pointer",
-                    boxShadow: isActive
-                      ? `0 0 28px rgba(${tier.glow},0.2),0 8px 28px rgba(0,0,0,0.35)`
-                      : "0 2px 12px rgba(0,0,0,0.25)",
-                    transition: "all 0.25s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.transform = "translateY(-3px)";
-                      e.currentTarget.style.boxShadow = `0 8px 28px rgba(${tier.glow},0.15)`;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.transform = "translateY(0)";
-                      e.currentTarget.style.boxShadow =
-                        "0 2px 12px rgba(0,0,0,0.25)";
-                    }
-                  }}
-                >
-                  {/* Tier header */}
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      marginBottom: 14,
-                    }}
-                  >
-                    <div
-                      style={{ display: "flex", alignItems: "center", gap: 10 }}
-                    >
-                      <span style={{ fontSize: 22 }}>{tier.icon}</span>
-                      <div>
-                        <div
-                          style={{
-                            fontSize: 16,
-                            fontWeight: 900,
-                            color: isActive ? tier.color : "#D0E8E0",
-                            fontFamily: "'Syne',sans-serif",
-                            transition: "color 0.2s",
-                          }}
-                        >
-                          {tier.label}
-                        </div>
-                        <div
-                          style={{
-                            fontSize: 10,
-                            fontWeight: 800,
-                            color: tier.color,
-                            opacity: 0.75,
-                            letterSpacing: "0.1em",
-                            textTransform: "uppercase",
-                            marginTop: 2,
-                          }}
-                        >
-                          {tier.badge}
-                        </div>
-                      </div>
+            {[
+              {
+                icon: "🔁",
+                title: "Recurring Revenue",
+                points: [
+                  "Monthly recurring revenue from CCaaS and UCaaS platforms",
+                  "SIP, telephony and connectivity services",
+                  "Ongoing platform subscriptions",
+                ],
+                glow: "145,196,176",
+              },
+              {
+                icon: "📈",
+                title: "Cross-Sell & Upsell",
+                points: [
+                  "Secure Payments solutions",
+                  "AI automation services",
+                  "Workforce engagement capabilities",
+                  "Additional platform modules",
+                ],
+                glow: "212,168,67",
+              },
+              {
+                icon: "🛠️",
+                title: "Services Revenue",
+                points: [
+                  "Solution design",
+                  "Professional services",
+                  "Implementation projects",
+                  "Customer consultancy",
+                ],
+                glow: "123,150,163",
+              },
+              {
+                icon: "🏢",
+                title: "Strategic Account Growth",
+                points: [
+                  "Expansion across departments",
+                  "Platform standardisation across organisations",
+                  "Multi-site deployments",
+                  "Long-term managed service opportunities",
+                ],
+                glow: "163,121,146",
+              },
+            ].map((block) => (
+              <div
+                key={block.title}
+                style={{
+                  background: "rgba(255,255,255,0.025)",
+                  border: `1px solid rgba(${block.glow},0.26)`,
+                  borderRadius: 16,
+                  padding: 18,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                }}
+              >
+                <div style={{ fontSize: 24 }}>{block.icon}</div>
+                <h3 style={{ margin: 0, fontSize: 17, color: "#EAF4F1", fontFamily: "'Syne',sans-serif" }}>
+                  {block.title}
+                </h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {block.points.map((point) => (
+                    <div key={point} style={{ display: "flex", gap: 8, fontSize: 12, color: "#C6DFD8", lineHeight: 1.4 }}>
+                      <span style={{ color: "#91C4B0" }}>•</span>
+                      <span>{point}</span>
                     </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "flex-end",
-                        gap: 3,
-                      }}
-                    >
-                      <div
-                        style={{
-                          background: `rgba(${tier.glow},0.15)`,
-                          border: `1px solid rgba(${tier.glow},0.4)`,
-                          borderRadius: 8,
-                          padding: "4px 10px",
-                          fontSize: 16,
-                          fontWeight: 900,
-                          color: tier.color,
-                          fontFamily: "'Syne',sans-serif",
-                          letterSpacing: "-0.02em",
-                        }}
-                      >
-                        {tier.margin}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: 9,
-                          fontWeight: 700,
-                          color: `rgba(${tier.glow},0.55)`,
-                          letterSpacing: "0.08em",
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        Margin
-                      </div>
-                    </div>
-                    <div
-                      style={{
-                        width: 26,
-                        height: 26,
-                        borderRadius: "50%",
-                        background: "rgba(255,255,255,0.06)",
-                        border: "1px solid rgba(255,255,255,0.12)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "rgba(180,210,204,0.4)",
-                        fontSize: 14,
-                        transition: "transform 0.25s",
-                        transform: isActive ? "rotate(180deg)" : "none",
-                      }}
-                    >
-                      ▾
-                    </div>
-                  </div>
-                  {/* Benefits */}
-                  <div
-                    style={{ display: "flex", flexDirection: "column", gap: 8 }}
-                  >
-                    {tier.items.map((item, i) => (
-                      <div
-                        key={i}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 9,
-                          ...(item.highlight
-                            ? {
-                                background: `rgba(${tier.glow},0.08)`,
-                                border: `1px solid rgba(${tier.glow},0.3)`,
-                                borderRadius: 8,
-                                padding: "5px 8px",
-                                marginTop: 4,
-                              }
-                            : {}),
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: 18,
-                            height: 18,
-                            borderRadius: 5,
-                            flexShrink: 0,
-                            background: item.check
-                              ? `rgba(${tier.glow},0.18)`
-                              : "rgba(255,255,255,0.04)",
-                            border: `1px solid ${item.check ? tier.color + "50" : "rgba(255,255,255,0.1)"}`,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: 10,
-                          }}
-                        >
-                          {item.check ? (
-                            <span style={{ color: tier.color }}>✓</span>
-                          ) : (
-                            <span style={{ color: "rgba(255,255,255,0.25)" }}>
-                              ~
-                            </span>
-                          )}
-                        </div>
-                        <span
-                          style={{
-                            fontSize: 12,
-                            color: item.check
-                              ? item.highlight
-                                ? tier.color
-                                : "#C0DDD6"
-                              : "rgba(180,200,196,0.4)",
-                            fontWeight: item.check
-                              ? item.highlight
-                                ? 800
-                                : 600
-                              : 400,
-                            lineHeight: 1.35,
-                          }}
-                        >
-                          {item.highlight && (
-                            <span style={{ marginRight: 5 }}>🏷️</span>
-                          )}
-                          {item.text}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                  ))}
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </div>
 
