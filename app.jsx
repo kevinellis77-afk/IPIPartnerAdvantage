@@ -7837,6 +7837,8 @@ function PartnerTrustPage() {
 const PARTNER_OPERATIONAL_SUPPORT_SECTIONS = [
   {
     title: "Partner Enablement",
+    icon: "🎓",
+    accent: "cyan",
     points: [
       "Sales accreditation programmes",
       "Technical certification pathways",
@@ -7848,6 +7850,8 @@ const PARTNER_OPERATIONAL_SUPPORT_SECTIONS = [
   },
   {
     title: "Sales & Marketing Support",
+    icon: "📣",
+    accent: "violet",
     points: [
       "Co-branded marketing campaigns",
       "Sales presentation decks",
@@ -7859,6 +7863,8 @@ const PARTNER_OPERATIONAL_SUPPORT_SECTIONS = [
   },
   {
     title: "Demo & Pre-Sales Environments",
+    icon: "🧪",
+    accent: "teal",
     points: [
       "Partner demo environments",
       "Preconfigured demo scenarios",
@@ -7869,6 +7875,8 @@ const PARTNER_OPERATIONAL_SUPPORT_SECTIONS = [
   },
   {
     title: "Order & Provisioning Management",
+    icon: "🧾",
+    accent: "amber",
     points: [
       "Deal registration process",
       "Pricing and discount approvals",
@@ -7879,6 +7887,8 @@ const PARTNER_OPERATIONAL_SUPPORT_SECTIONS = [
   },
   {
     title: "Service Delivery & Support",
+    icon: "🛠️",
+    accent: "sky",
     points: [
       "Partner service desk access",
       "Defined escalation paths",
@@ -7890,6 +7900,8 @@ const PARTNER_OPERATIONAL_SUPPORT_SECTIONS = [
   },
   {
     title: "Product Communication",
+    icon: "📡",
+    accent: "purple",
     points: [
       "Quarterly product roadmap briefings",
       "Product release notifications",
@@ -7900,6 +7912,8 @@ const PARTNER_OPERATIONAL_SUPPORT_SECTIONS = [
   },
   {
     title: "Operational Governance",
+    icon: "📊",
+    accent: "green",
     points: [
       "Monthly pipeline reviews",
       "Partner support reviews",
@@ -7913,6 +7927,7 @@ const PARTNER_OPERATIONAL_SUPPORT_SECTIONS = [
 function PartnerOperationalSupportPage() {
   return (
     <React.Fragment>
+      <Bg />
       <AppPageHeader
         eyebrow="Operational Excellence"
         title="Partner Operational Support Framework"
@@ -7926,21 +7941,35 @@ function PartnerOperationalSupportPage() {
           description="Our operational framework is designed to reduce friction, improve execution consistency and help every partner scale with confidence."
         />
         <StandardCard>
-          <p className="trust-copy" style={{ margin: 0 }}>
-            From onboarding and accreditation through to order management,
-            service delivery and quarterly governance reviews, partners are
-            supported by a repeatable operating model. This ensures teams can
-            move faster, maintain quality standards and deliver measurable
-            customer outcomes at every stage.
-          </p>
+          <div className="ops-hero">
+            <div>
+              <p className="trust-copy" style={{ margin: 0 }}>
+                From onboarding and accreditation through to order management,
+                service delivery and quarterly governance reviews, partners are
+                supported by a repeatable operating model. This ensures teams
+                can move faster, maintain quality standards and deliver
+                measurable customer outcomes at every stage.
+              </p>
+              <div className="ops-pillars">
+                <span><strong>⚡ Faster</strong> time to first deal</span>
+                <span><strong>🧭 Clear</strong> operating playbooks</span>
+                <span><strong>🛡️ Stronger</strong> delivery confidence</span>
+              </div>
+            </div>
+            <div className="ops-hero-visual" aria-hidden="true">
+              <div>🤝</div>
+              <p>Partner Success Engine</p>
+            </div>
+          </div>
         </StandardCard>
       </SectionWrapper>
 
       <SectionWrapper>
         <div className="operational-framework-grid">
           {PARTNER_OPERATIONAL_SUPPORT_SECTIONS.map((section, index) => (
-            <StandardCard key={section.title} className={`operational-framework-card operational-framework-card--${index + 1}`}>
+            <StandardCard key={section.title} className={`operational-framework-card operational-framework-card--${section.accent} operational-framework-card--${index + 1}`}>
               <div className="operational-framework-step">{String(index + 1).padStart(2, "0")}</div>
+              <div className="operational-framework-icon">{section.icon}</div>
               <h3 className="trust-card-title">{section.title}</h3>
               <ul className="trust-list">
                 {section.points.map((point) => (
