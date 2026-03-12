@@ -10175,6 +10175,381 @@ function ChannelMarketingPage() {
 
 
 
+
+
+const PARTNER_ACCOUNT_PLAN_STORAGE_KEY = "ipi_partner_account_plans_v1";
+
+const PLAN_SECTIONS = [
+  ["overview", "Overview"],
+  ["contacts", "Contacts"],
+  ["alignment", "Alignment"],
+  ["objectives", "Objectives"],
+  ["targetAccounts", "Target Accounts"],
+  ["pipeline", "Pipeline"],
+  ["gtm", "GTM"],
+  ["enablement", "Enablement"],
+  ["governance", "Governance"],
+  ["growth", "Growth"],
+  ["risks", "Risks"],
+  ["scorecard", "Scorecard"],
+  ["actionPlan", "90 Day Plan"],
+  ["summary", "Summary"],
+];
+
+function planId() {
+  return `plan_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function safeNumber(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function formatCurrency(v) {
+  return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", maximumFractionDigits: 0 }).format(safeNumber(v));
+}
+
+function daysSince(dateValue) {
+  if (!dateValue) return null;
+  const ms = Date.now() - new Date(dateValue).getTime();
+  return Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24)));
+}
+
+function createEmptyPlan() {
+  return {
+    id: planId(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    partnerOverview: {
+      partnerName: "",
+      partnerTier: "",
+      partnerType: "",
+      primaryGeography: "",
+      verticalStrengths: "",
+      coreCapabilities: "",
+      existingVendorRelationships: "",
+      installedBaseNotes: "",
+      strategicImportanceRating: "3",
+    },
+    contacts: {
+      executiveSponsorVendor: "",
+      executiveSponsorPartner: "",
+      channelManager: "",
+      partnerSalesLead: "",
+      partnerTechnicalLead: "",
+      marketingContact: "",
+      customerSuccessContact: "",
+    },
+    strategicAlignment: { whyThisPartnerMatters: "", marketAccess: "", customerBaseValue: "", technicalCapability: "", growthPotential: "", competitivePositioningNotes: "" },
+    objectives: { planningPeriod: "", newCustomerLogoTarget: "", pipelineTargetValue: "", closedWonRevenueTarget: "", certificationsTarget: "", jointCampaignsTarget: "", partnerLedDemosTarget: "", expansionRevenueTarget: "" },
+    targetAccounts: [],
+    pipelineInitiatives: [],
+    gtmActivities: [],
+    enablement: { salesCertifiedCount: "", preSalesCertifiedCount: "", servicesCertifiedCount: "", demoEnvironmentStatus: "", firstJointDemoDate: "", firstOpportunityDate: "", firstDealDate: "", enablementGaps: "", supportNeededFromVendor: "", milestones: [] },
+    governanceCadence: [],
+    growthOpportunities: [],
+    risksMitigation: [],
+    scorecard: {
+      pipelineCurrent: "", pipelineTarget: "", closedWonCurrent: "", closedWonTarget: "", activeOpportunitiesCurrent: "", activeOpportunitiesTarget: "", certificationsCurrent: "", certificationsTarget: "", jointMarketingActivitiesCurrent: "", jointMarketingActivitiesTarget: "",
+    },
+    actionPlan90Day: [],
+    metadata: { planStatus: "Draft", lastExecutiveReviewDate: "", nextQbrDate: "", internalNotes: "", partnerFacingSummary: "" },
+  };
+}
+
+function createSeedPlans() {
+  const a = createEmptyPlan();
+  a.partnerOverview = { ...a.partnerOverview, partnerName: "Strategic CX Partner UK", partnerTier: "Strategic", partnerType: "UC Reseller", primaryGeography: "United Kingdom", verticalStrengths: "Financial Services, Retail", coreCapabilities: "Genesys Cloud, SIP migration, AI chat", strategicImportanceRating: "5" };
+  a.contacts.channelManager = "Emma Hughes";
+  a.contacts.partnerSalesLead = "Marcus Lee";
+  a.objectives = { ...a.objectives, planningPeriod: "FY26", pipelineTargetValue: 1200000, closedWonRevenueTarget: 620000, newCustomerLogoTarget: 9, certificationsTarget: 14 };
+  a.targetAccounts = [{ id: planId(), accountName: "NorthBridge Insurance", segment: "Enterprise", opportunityType: "CCaaS Migration", estimatedValue: 180000, owner: "Marcus Lee", stage: "Discovery", nextStep: "Solution workshop", closeDate: "2026-06-15", strategicNotes: "Board-level digital transformation." }];
+  a.pipelineInitiatives = [{ id: planId(), sourceType: "Installed Base", initiativeName: "SIP to UCaaS Conversion", description: "Convert top 20 SIP customers to full UC+CC solution.", owner: "Emma Hughes", startDate: "2026-04-01", targetOutcome: "10 qualified opportunities", expectedPipelineValue: 420000, status: "In Progress" }];
+  a.growthOpportunities = [{ id: planId(), solutionArea: "AI Automation", opportunityDescription: "AI virtual agent expansion into retail estate", revenuePotential: 240000, priority: "High", owner: "Emma Hughes", timeline: "Q3" }];
+  a.risksMitigation = [{ id: planId(), risk: "Slow technical pre-sales capacity", impact: "High", likelihood: "Medium", mitigationPlan: "Add shared solution architect resource", owner: "Emma Hughes", reviewDate: "2026-05-10", status: "Open" }];
+  a.actionPlan90Day = [{ id: planId(), action: "Deliver joint executive alignment session", owner: "Emma Hughes", dueDate: "2026-04-20", priority: "High", status: "In Progress", notes: "Include finance and services leaders" }];
+  a.scorecard = { ...a.scorecard, pipelineCurrent: 640000, pipelineTarget: 1200000, closedWonCurrent: 280000, closedWonTarget: 620000, activeOpportunitiesCurrent: 11, activeOpportunitiesTarget: 18, certificationsCurrent: 8, certificationsTarget: 14, jointMarketingActivitiesCurrent: 3, jointMarketingActivitiesTarget: 8 };
+  a.metadata.planStatus = "Active";
+
+  const b = createEmptyPlan();
+  b.partnerOverview = { ...b.partnerOverview, partnerName: "Enterprise UC & Contact Centre Reseller", partnerTier: "Gold", partnerType: "CC Specialist", primaryGeography: "UK & Ireland", verticalStrengths: "Public Sector, Healthcare", coreCapabilities: "Consultative selling, managed services", strategicImportanceRating: "4" };
+  b.contacts.channelManager = "Daniel Brooks";
+  b.objectives = { ...b.objectives, planningPeriod: "FY26-H1", pipelineTargetValue: 850000, closedWonRevenueTarget: 380000, newCustomerLogoTarget: 6, jointCampaignsTarget: 4 };
+  b.targetAccounts = [{ id: planId(), accountName: "Midlands NHS Trust", segment: "Public", opportunityType: "PCI + Contact Centre", estimatedValue: 260000, owner: "Daniel Brooks", stage: "Proposal", nextStep: "Security review", closeDate: "2026-07-01", strategicNotes: "Needs rapid compliance delivery" }];
+  b.pipelineInitiatives = [{ id: planId(), sourceType: "Marketing", initiativeName: "NHS roundtable", description: "Regional event and webinar follow-up", owner: "Partner marketing", startDate: "2026-04-14", targetOutcome: "6 SQLs", expectedPipelineValue: 190000, status: "Planned" }];
+  b.growthOpportunities = [{ id: planId(), solutionArea: "Managed Services", opportunityDescription: "Add managed SD-WAN as attach", revenuePotential: 150000, priority: "Medium", owner: "Daniel Brooks", timeline: "Q2-Q3" }];
+  b.risksMitigation = [{ id: planId(), risk: "Competing vendor discounting", impact: "Medium", likelihood: "High", mitigationPlan: "Value-selling enablement + executive sponsor meetings", owner: "Daniel Brooks", reviewDate: "2026-05-01", status: "Open" }];
+  b.actionPlan90Day = [{ id: planId(), action: "Run 2 joint campaigns", owner: "Partner marketing", dueDate: "2026-06-01", priority: "Medium", status: "Not Started", notes: "Focus on healthcare." }];
+  b.scorecard = { ...b.scorecard, pipelineCurrent: 310000, pipelineTarget: 850000, closedWonCurrent: 140000, closedWonTarget: 380000, activeOpportunitiesCurrent: 7, activeOpportunitiesTarget: 13, certificationsCurrent: 6, certificationsTarget: 10, jointMarketingActivitiesCurrent: 2, jointMarketingActivitiesTarget: 6 };
+  b.metadata.planStatus = "At Risk";
+
+  return [a, b];
+}
+
+function readPlansFromStorage() {
+  const raw = window.localStorage.getItem(PARTNER_ACCOUNT_PLAN_STORAGE_KEY);
+  if (!raw) return createSeedPlans();
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (_error) {
+    return [];
+  }
+}
+
+function writePlansToStorage(plans) {
+  window.localStorage.setItem(PARTNER_ACCOUNT_PLAN_STORAGE_KEY, JSON.stringify(plans));
+}
+
+function AccountPlanFormSection({ title, helper, children, defaultOpen = true }) {
+  const [open, setOpen] = React.useState(defaultOpen);
+  return <section className="plan-section-card"><button type="button" className="plan-section-header" onClick={() => setOpen((v) => !v)}><div><h3>{title}</h3>{helper && <p>{helper}</p>}</div><span>{open ? "−" : "+"}</span></button>{open && <div className="plan-section-body">{children}</div>}</section>;
+}
+
+function DynamicTableField({ title, columns, rows, onChange, createRow, readOnly = false }) {
+  return (
+    <div className="plan-dynamic">
+      <div className="plan-dynamic-header"><h4>{title}</h4>{!readOnly && <button className="ui-btn ui-btn--secondary" type="button" onClick={() => onChange([...(rows || []), createRow()])}>Add</button>}</div>
+      {!rows?.length ? <div className="plan-empty-inline">No items added yet.</div> : null}
+      {(rows || []).map((row, idx) => (
+        <div key={row.id || idx} className="plan-dynamic-row">
+          <div className="plan-grid-3">
+            {columns.map((col) => (
+              <label key={col.key} className={col.full ? "plan-field plan-field--full" : "plan-field"}>
+                <span>{col.label}</span>
+                {col.type === "textarea" ? <textarea value={row[col.key] || ""} readOnly={readOnly} onChange={(e) => { const next = [...rows]; next[idx] = { ...row, [col.key]: e.target.value }; onChange(next); }} /> : <input type={col.type || "text"} value={row[col.key] || ""} readOnly={readOnly} onChange={(e) => { const next = [...rows]; next[idx] = { ...row, [col.key]: e.target.value }; onChange(next); }} />}
+              </label>
+            ))}
+          </div>
+          {!readOnly && <button className="ui-btn ui-btn--ghost" type="button" onClick={() => onChange(rows.filter((_, i) => i !== idx))}>Remove</button>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ScorecardCards({ scorecard }) {
+  const metrics = [
+    ["Pipeline", scorecard.pipelineCurrent, scorecard.pipelineTarget],
+    ["Closed Won", scorecard.closedWonCurrent, scorecard.closedWonTarget],
+    ["Active Opportunities", scorecard.activeOpportunitiesCurrent, scorecard.activeOpportunitiesTarget],
+    ["Certifications", scorecard.certificationsCurrent, scorecard.certificationsTarget],
+    ["Marketing Activities", scorecard.jointMarketingActivitiesCurrent, scorecard.jointMarketingActivitiesTarget],
+  ];
+  return <div className="plan-scorecards">{metrics.map(([label, current, target]) => { const pct = safeNumber(target) > 0 ? Math.min(100, Math.round((safeNumber(current) / safeNumber(target)) * 100)) : 0; return <div className="plan-stat-card" key={label}><div className="plan-stat-label">{label}</div><div className="plan-stat-value">{current || 0} / {target || 0}</div><div className="plan-progress"><span style={{ width: `${pct}%` }} /></div><small>{pct}% complete</small></div>; })}</div>;
+}
+
+function SummaryMetrics({ plans }) {
+  const now = Date.now();
+  const totalPipeline = plans.reduce((acc, p) => acc + safeNumber(p?.objectives?.pipelineTargetValue), 0);
+  const totalWon = plans.reduce((acc, p) => acc + safeNumber(p?.objectives?.closedWonRevenueTarget), 0);
+  const recent = plans.filter((p) => now - new Date(p.updatedAt).getTime() <= 30 * 24 * 60 * 60 * 1000).length;
+  const strategic = plans.filter((p) => p?.partnerOverview?.partnerTier === "Strategic").length;
+  const cards = [["Total Plans", plans.length], ["Strategic Partners", strategic], ["Total Pipeline Value", formatCurrency(totalPipeline)], ["Total Closed Won Value", formatCurrency(totalWon)], ["Updated in Last 30 Days", recent]];
+  return <div className="plan-scorecards">{cards.map(([label, val]) => <div key={label} className="plan-stat-card"><div className="plan-stat-label">{label}</div><div className="plan-stat-value">{val}</div></div>)}</div>;
+}
+
+function SavedPlansTable({ plans, onView, onEdit, onDuplicate, onDelete }) {
+  return <div className="plan-table-wrap"><table className="plan-table"><thead><tr><th>Partner Name</th><th>Tier</th><th>Type</th><th>Geography</th><th>Owner</th><th>Status</th><th>Pipeline</th><th>Closed Won</th><th>Last Updated</th><th>Actions</th></tr></thead><tbody>{plans.map((plan) => <tr key={plan.id}><td>{plan.partnerOverview.partnerName || "—"}</td><td>{plan.partnerOverview.partnerTier || "—"}</td><td>{plan.partnerOverview.partnerType || "—"}</td><td>{plan.partnerOverview.primaryGeography || "—"}</td><td>{plan.contacts.channelManager || "—"}</td><td>{plan.metadata.planStatus || "—"}</td><td>{formatCurrency(plan.objectives.pipelineTargetValue)}</td><td>{formatCurrency(plan.objectives.closedWonRevenueTarget)}</td><td>{new Date(plan.updatedAt).toLocaleDateString()}</td><td><div className="plan-actions-inline"><button className="ui-btn ui-btn--ghost" onClick={() => onView(plan)}>View</button><button className="ui-btn ui-btn--secondary" onClick={() => onEdit(plan)}>Edit</button><button className="ui-btn ui-btn--ghost" onClick={() => onDuplicate(plan)}>Duplicate</button><button className="ui-btn ui-btn--ghost" onClick={() => onDelete(plan)}>Delete</button></div></td></tr>)}</tbody></table></div>;
+}
+
+function PartnerAccountPlanToolPage() {
+  const [plans, setPlans] = React.useState(() => readPlansFromStorage());
+  const [mode, setMode] = React.useState("dashboard");
+  const [editingPlan, setEditingPlan] = React.useState(null);
+  const [errors, setErrors] = React.useState({});
+  const [search, setSearch] = React.useState("");
+  const [tierFilter, setTierFilter] = React.useState("all");
+  const [typeFilter, setTypeFilter] = React.useState("all");
+  const [statusFilter, setStatusFilter] = React.useState("all");
+  const [sortBy, setSortBy] = React.useState("updated");
+  const [printView, setPrintView] = React.useState(false);
+
+  React.useEffect(() => { writePlansToStorage(plans); }, [plans]);
+
+  const filteredPlans = React.useMemo(() => {
+    const next = plans.filter((p) => (p.partnerOverview.partnerName || "").toLowerCase().includes(search.toLowerCase()) && (tierFilter === "all" || p.partnerOverview.partnerTier === tierFilter) && (typeFilter === "all" || p.partnerOverview.partnerType === typeFilter) && (statusFilter === "all" || p.metadata.planStatus === statusFilter));
+    next.sort((a, b) => {
+      if (sortBy === "name") return (a.partnerOverview.partnerName || "").localeCompare(b.partnerOverview.partnerName || "");
+      if (sortBy === "pipeline") return safeNumber(b.objectives.pipelineTargetValue) - safeNumber(a.objectives.pipelineTargetValue);
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    });
+    return next;
+  }, [plans, search, tierFilter, typeFilter, statusFilter, sortBy]);
+
+  const calc = React.useMemo(() => {
+    if (!editingPlan) return {};
+    const totalTargetAccountValue = (editingPlan.targetAccounts || []).reduce((a, b) => a + safeNumber(b.estimatedValue), 0);
+    const totalPipelineInitiativeExpectedValue = (editingPlan.pipelineInitiatives || []).reduce((a, b) => a + safeNumber(b.expectedPipelineValue), 0);
+    const totalGrowthOpportunityValue = (editingPlan.growthOpportunities || []).reduce((a, b) => a + safeNumber(b.revenuePotential), 0);
+    const overdueActionItems = (editingPlan.actionPlan90Day || []).filter((x) => x.dueDate && new Date(x.dueDate).getTime() < Date.now() && x.status !== "Completed").length;
+    const openRisks = (editingPlan.risksMitigation || []).filter((x) => x.status !== "Closed").length;
+    return { totalTargetAccountValue, totalPipelineInitiativeExpectedValue, totalGrowthOpportunityValue, overdueActionItems, openRisks, daysSinceLastUpdate: daysSince(editingPlan.updatedAt) };
+  }, [editingPlan]);
+
+  const beginNewPlan = () => { setErrors({}); setEditingPlan(createEmptyPlan()); setMode("edit"); };
+
+  const validate = (plan) => {
+    const nextErrors = {};
+    if (!plan.partnerOverview.partnerName) nextErrors.partnerName = "Partner Name is required.";
+    if (!plan.partnerOverview.partnerTier) nextErrors.partnerTier = "Partner Tier is required.";
+    if (!plan.partnerOverview.partnerType) nextErrors.partnerType = "Partner Type is required.";
+    if (!plan.contacts.channelManager) nextErrors.channelManager = "Channel Manager is required.";
+    if (!plan.objectives.planningPeriod) nextErrors.planningPeriod = "Planning Period is required.";
+    if (!plan.metadata.planStatus) nextErrors.planStatus = "Plan Status is required.";
+    return nextErrors;
+  };
+
+  const savePlan = (saveAsNew = false) => {
+    if (!editingPlan) return;
+    const foundErrors = validate(editingPlan);
+    setErrors(foundErrors);
+    if (Object.keys(foundErrors).length) return;
+    const stamp = new Date().toISOString();
+    const payload = { ...editingPlan, id: saveAsNew ? planId() : editingPlan.id, createdAt: saveAsNew ? stamp : editingPlan.createdAt, updatedAt: stamp };
+    setPlans((prev) => {
+      const exists = prev.some((p) => p.id === payload.id);
+      return exists ? prev.map((p) => (p.id === payload.id ? payload : p)) : [payload, ...prev];
+    });
+    setEditingPlan(payload);
+    setMode("view");
+  };
+
+  const handleDelete = (plan) => {
+    if (!window.confirm(`Delete plan for ${plan.partnerOverview.partnerName || "this partner"}?`)) return;
+    setPlans((prev) => prev.filter((p) => p.id !== plan.id));
+    if (editingPlan?.id === plan.id) {
+      setEditingPlan(null);
+      setMode("dashboard");
+    }
+  };
+
+  const duplicatePlan = (plan) => {
+    const stamp = new Date().toISOString();
+    const dup = { ...plan, id: planId(), createdAt: stamp, updatedAt: stamp, partnerOverview: { ...plan.partnerOverview, partnerName: `${plan.partnerOverview.partnerName || "Plan"} Copy` } };
+    setPlans((prev) => [dup, ...prev]);
+  };
+
+  const updateField = (path, value) => {
+    setEditingPlan((prev) => {
+      const next = { ...prev };
+      let ref = next;
+      for (let i = 0; i < path.length - 1; i += 1) ref = ref[path[i]];
+      ref[path[path.length - 1]] = value;
+      return next;
+    });
+  };
+
+  const triggerPrint = () => {
+    setPrintView(true);
+    setTimeout(() => window.print(), 150);
+  };
+
+  if (!plans.length && mode === "dashboard") {
+    return <div className="partner-plan-page"><AppTopBar title="Partner Account Plan Tool" /><div className="plan-empty"><h2>No plans saved yet</h2><p>Create, manage and track strategic account plans for key partners across recruitment, enablement, pipeline development and growth.</p><button className="ui-btn ui-btn--primary" onClick={beginNewPlan}>New Plan</button></div></div>;
+  }
+
+  const current = editingPlan;
+
+  return (
+    <div className={`partner-plan-page ${printView ? "print-mode" : ""}`}>
+      <AppTopBar title="Partner Account Plan Tool" />
+      <div className="partner-plan-head">
+        <div>
+          <h1>Partner Account Plan Tool</h1>
+          <p>Create, manage and track strategic account plans for key partners across recruitment, enablement, pipeline development and growth.</p>
+        </div>
+        <div className="plan-actions-inline">
+          <button className="ui-btn ui-btn--primary" onClick={beginNewPlan}>New Plan</button>
+          {current && <button className="ui-btn ui-btn--secondary" onClick={triggerPrint}>Export Current Plan</button>}
+          {current && <button className="ui-btn ui-btn--ghost" onClick={triggerPrint}>Print View</button>}
+          {printView && <button className="ui-btn ui-btn--ghost" onClick={() => setPrintView(false)}>Exit Print View</button>}
+        </div>
+      </div>
+
+      {mode === "dashboard" ? (
+        <>
+          <SummaryMetrics plans={plans} />
+          <div className="plan-filter-grid">
+            <input className="ui-search" placeholder="Search by Partner Name" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <select className="ui-search" value={tierFilter} onChange={(e) => setTierFilter(e.target.value)}><option value="all">All Tiers</option><option>Strategic</option><option>Gold</option><option>Silver</option><option>Emerging</option><option>Other</option></select>
+            <select className="ui-search" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}><option value="all">All Types</option><option>UC Reseller</option><option>CC Specialist</option><option>MSP</option><option>SI</option><option>Agent</option><option>Distributor</option><option>Other</option></select>
+            <select className="ui-search" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}><option value="all">All Statuses</option><option>Draft</option><option>Active</option><option>At Risk</option><option>On Track</option><option>Closed</option><option>Archived</option></select>
+            <select className="ui-search" value={sortBy} onChange={(e) => setSortBy(e.target.value)}><option value="updated">Sort: Last Updated</option><option value="name">Sort: Partner Name</option><option value="pipeline">Sort: Pipeline Value</option></select>
+          </div>
+          {filteredPlans.length ? <SavedPlansTable plans={filteredPlans} onView={(plan) => { setEditingPlan(plan); setMode("view"); }} onEdit={(plan) => { setEditingPlan(JSON.parse(JSON.stringify(plan))); setMode("edit"); setErrors({}); }} onDuplicate={duplicatePlan} onDelete={handleDelete} /> : <div className="plan-empty"><h2>No plans match filters</h2><p>Try widening your filters or create a new plan.</p></div>}
+        </>
+      ) : current ? (
+        <>
+          <div className="plan-sticky-actions">
+            <button className="ui-btn ui-btn--ghost" onClick={() => { setMode("dashboard"); setPrintView(false); }}>Back to Plans</button>
+            {mode === "view" ? <button className="ui-btn ui-btn--secondary" onClick={() => setMode("edit")}>Edit</button> : <button className="ui-btn ui-btn--primary" onClick={() => savePlan(false)}>Save Plan</button>}
+            {mode === "edit" && <button className="ui-btn ui-btn--secondary" onClick={() => savePlan(true)}>Save As New</button>}
+            <button className="ui-btn ui-btn--ghost" onClick={() => handleDelete(current)}>Delete</button>
+            <button className="ui-btn ui-btn--ghost" onClick={triggerPrint}>Print View</button>
+          </div>
+
+          {!!Object.keys(errors).length && <div className="plan-error-banner">Please complete required fields before saving.</div>}
+
+          <div className="plan-scorecards">
+            <div className="plan-stat-card"><div className="plan-stat-label">Total Target Account Value</div><div className="plan-stat-value">{formatCurrency(calc.totalTargetAccountValue)}</div></div>
+            <div className="plan-stat-card"><div className="plan-stat-label">Pipeline Initiatives Value</div><div className="plan-stat-value">{formatCurrency(calc.totalPipelineInitiativeExpectedValue)}</div></div>
+            <div className="plan-stat-card"><div className="plan-stat-label">Growth Opportunity Value</div><div className="plan-stat-value">{formatCurrency(calc.totalGrowthOpportunityValue)}</div></div>
+            <div className="plan-stat-card"><div className="plan-stat-label">Overdue Action Items</div><div className="plan-stat-value">{calc.overdueActionItems || 0}</div></div>
+            <div className="plan-stat-card"><div className="plan-stat-label">Open Risks</div><div className="plan-stat-value">{calc.openRisks || 0}</div></div>
+            <div className="plan-stat-card"><div className="plan-stat-label">Days Since Last Update</div><div className="plan-stat-value">{calc.daysSinceLastUpdate ?? 0}</div></div>
+          </div>
+
+          <div className="plan-section-tabs">{PLAN_SECTIONS.map(([id, label]) => <a href={`#plan-section-${id}`} key={id}>{label}</a>)}</div>
+
+          <div className="plan-form-stack">
+            <AccountPlanFormSection title="Partner Overview" helper="Core profile and strategic positioning." defaultOpen={true}>
+              <div id="plan-section-overview" className="plan-grid-3">
+                <label className="plan-field"><span>Partner Name *</span><input value={current.partnerOverview.partnerName} readOnly={mode === "view"} onChange={(e) => updateField(["partnerOverview", "partnerName"], e.target.value)} />{errors.partnerName && <small>{errors.partnerName}</small>}</label>
+                <label className="plan-field"><span>Partner Tier *</span><select value={current.partnerOverview.partnerTier} disabled={mode === "view"} onChange={(e) => updateField(["partnerOverview", "partnerTier"], e.target.value)}><option value="">Select</option><option>Strategic</option><option>Gold</option><option>Silver</option><option>Emerging</option><option>Other</option></select>{errors.partnerTier && <small>{errors.partnerTier}</small>}</label>
+                <label className="plan-field"><span>Partner Type *</span><select value={current.partnerOverview.partnerType} disabled={mode === "view"} onChange={(e) => updateField(["partnerOverview", "partnerType"], e.target.value)}><option value="">Select</option><option>UC Reseller</option><option>CC Specialist</option><option>MSP</option><option>SI</option><option>Agent</option><option>Distributor</option><option>Other</option></select>{errors.partnerType && <small>{errors.partnerType}</small>}</label>
+                <label className="plan-field"><span>Primary Geography</span><input value={current.partnerOverview.primaryGeography} readOnly={mode === "view"} onChange={(e) => updateField(["partnerOverview", "primaryGeography"], e.target.value)} /></label>
+                <label className="plan-field plan-field--full"><span>Vertical Strengths</span><textarea value={current.partnerOverview.verticalStrengths} readOnly={mode === "view"} onChange={(e) => updateField(["partnerOverview", "verticalStrengths"], e.target.value)} /></label>
+                <label className="plan-field plan-field--full"><span>Core Capabilities</span><textarea value={current.partnerOverview.coreCapabilities} readOnly={mode === "view"} onChange={(e) => updateField(["partnerOverview", "coreCapabilities"], e.target.value)} /></label>
+              </div>
+            </AccountPlanFormSection>
+
+            <AccountPlanFormSection title="Partner Contacts / Leadership" helper="Primary ownership and key stakeholder roles." defaultOpen={mode !== "view"}>
+              <div id="plan-section-contacts" className="plan-grid-3">
+                {[["executiveSponsorVendor","Executive Sponsor (Vendor)"],["executiveSponsorPartner","Executive Sponsor (Partner)"],["channelManager","Channel Manager *"],["partnerSalesLead","Partner Sales Lead"],["partnerTechnicalLead","Partner Technical Lead"],["marketingContact","Marketing Contact"],["customerSuccessContact","Customer Success / Services Contact"]].map(([key,label]) => <label className="plan-field" key={key}><span>{label}</span><input value={current.contacts[key]} readOnly={mode === "view"} onChange={(e)=>updateField(["contacts",key],e.target.value)} />{key === "channelManager" && errors.channelManager && <small>{errors.channelManager}</small>}</label>)}
+              </div>
+            </AccountPlanFormSection>
+
+            <AccountPlanFormSection title="Strategic Alignment" defaultOpen={false}><div id="plan-section-alignment" className="plan-grid-2">{[["whyThisPartnerMatters","Why This Partner Matters"],["marketAccess","Market Access"],["customerBaseValue","Customer Base Value"],["technicalCapability","Technical Capability"],["growthPotential","Growth Potential"],["competitivePositioningNotes","Competitive Positioning Notes"]].map(([key,label]) => <label className="plan-field plan-field--full" key={key}><span>{label}</span><textarea value={current.strategicAlignment[key]} readOnly={mode === "view"} onChange={(e)=>updateField(["strategicAlignment",key],e.target.value)} /></label>)}</div></AccountPlanFormSection>
+
+            <AccountPlanFormSection title="Joint Business Objectives" defaultOpen={false}><div id="plan-section-objectives" className="plan-grid-3">{[["planningPeriod","Planning Period *","text"],["newCustomerLogoTarget","New Customer Logo Target","number"],["pipelineTargetValue","Pipeline Target Value","number"],["closedWonRevenueTarget","Closed Won Revenue Target","number"],["certificationsTarget","Certifications Target","number"],["jointCampaignsTarget","Joint Campaigns Target","number"],["partnerLedDemosTarget","Partner-Led Demos Target","number"],["expansionRevenueTarget","Expansion Revenue Target","number"]].map(([key,label,type]) => <label className="plan-field" key={key}><span>{label}</span><input type={type} value={current.objectives[key]} readOnly={mode === "view"} onChange={(e)=>updateField(["objectives",key],e.target.value)} />{key === "planningPeriod" && errors.planningPeriod && <small>{errors.planningPeriod}</small>}</label>)}</div></AccountPlanFormSection>
+
+            <AccountPlanFormSection title="Target Account Strategy" defaultOpen={false}><div id="plan-section-targetAccounts"><DynamicTableField readOnly={mode === "view"} title="Target Accounts" rows={current.targetAccounts} onChange={(rows) => updateField(["targetAccounts"], rows)} createRow={() => ({ id: planId(), accountName: "", segment: "", opportunityType: "", estimatedValue: "", owner: "", stage: "", nextStep: "", closeDate: "", strategicNotes: "" })} columns={[{ key: "accountName", label: "Account Name" }, { key: "segment", label: "Segment" }, { key: "opportunityType", label: "Opportunity Type" }, { key: "estimatedValue", label: "Estimated Value", type: "number" }, { key: "owner", label: "Owner" }, { key: "stage", label: "Stage" }, { key: "nextStep", label: "Next Step", full: true }, { key: "closeDate", label: "Close Date", type: "date" }, { key: "strategicNotes", label: "Strategic Notes", type: "textarea", full: true }]} /></div></AccountPlanFormSection>
+
+            <AccountPlanFormSection title="Pipeline Development Plan" defaultOpen={false}><div id="plan-section-pipeline"><DynamicTableField readOnly={mode === "view"} title="Pipeline Initiatives" rows={current.pipelineInitiatives} onChange={(rows) => updateField(["pipelineInitiatives"], rows)} createRow={() => ({ id: planId(), sourceType: "Installed Base", initiativeName: "", description: "", owner: "", startDate: "", targetOutcome: "", expectedPipelineValue: "", status: "Planned" })} columns={[{ key: "sourceType", label: "Source Type" }, { key: "initiativeName", label: "Initiative Name" }, { key: "description", label: "Description", type: "textarea", full: true }, { key: "owner", label: "Owner" }, { key: "startDate", label: "Start Date", type: "date" }, { key: "targetOutcome", label: "Target Outcome" }, { key: "expectedPipelineValue", label: "Expected Pipeline Value", type: "number" }, { key: "status", label: "Status" }]} /></div></AccountPlanFormSection>
+
+            <AccountPlanFormSection title="Joint Go-To-Market Plan" defaultOpen={false}><div id="plan-section-gtm"><DynamicTableField readOnly={mode === "view"} title="GTM Activities" rows={current.gtmActivities} onChange={(rows) => updateField(["gtmActivities"], rows)} createRow={() => ({ id: planId(), activityType: "Webinar", description: "", quarter: "", owner: "", plannedDate: "", status: "Planned", expectedOutcome: "" })} columns={[{ key: "activityType", label: "Activity Type" }, { key: "description", label: "Description", type: "textarea", full: true }, { key: "quarter", label: "Quarter" }, { key: "owner", label: "Owner" }, { key: "plannedDate", label: "Planned Date", type: "date" }, { key: "status", label: "Status" }, { key: "expectedOutcome", label: "Expected Outcome", full: true }]} /></div></AccountPlanFormSection>
+
+            <AccountPlanFormSection title="Enablement & Capability Development" defaultOpen={false}><div id="plan-section-enablement" className="plan-grid-3">{[["salesCertifiedCount","Sales Certified Count","number"],["preSalesCertifiedCount","Pre-Sales Certified Count","number"],["servicesCertifiedCount","Services Certified Count","number"],["demoEnvironmentStatus","Demo Environment Status","text"],["firstJointDemoDate","First Joint Demo Date","date"],["firstOpportunityDate","First Opportunity Date","date"],["firstDealDate","First Deal Date","date"],["enablementGaps","Enablement Gaps","text"],["supportNeededFromVendor","Support Needed from Vendor","text"]].map(([key,label,type]) => <label key={key} className={"plan-field" + (["enablementGaps","supportNeededFromVendor"].includes(key) ? " plan-field--full" : "")}><span>{label}</span>{["enablementGaps","supportNeededFromVendor"].includes(key) ? <textarea value={current.enablement[key]} readOnly={mode === "view"} onChange={(e)=>updateField(["enablement",key],e.target.value)} /> : <input type={type} value={current.enablement[key]} readOnly={mode === "view"} onChange={(e)=>updateField(["enablement",key],e.target.value)} />}</label>)}<div className="plan-field plan-field--full"><DynamicTableField readOnly={mode === "view"} title="Capability Milestones" rows={current.enablement.milestones} onChange={(rows)=>updateField(["enablement","milestones"],rows)} createRow={() => ({ id: planId(), milestoneName: "", owner: "", targetDate: "", status: "", notes: "" })} columns={[{ key: "milestoneName", label: "Milestone Name" }, { key: "owner", label: "Owner" }, { key: "targetDate", label: "Target Date", type: "date" }, { key: "status", label: "Status" }, { key: "notes", label: "Notes", type: "textarea", full: true }]} /></div></div></AccountPlanFormSection>
+
+            <AccountPlanFormSection title="Governance & Cadence" defaultOpen={false}><div id="plan-section-governance"><DynamicTableField readOnly={mode === "view"} title="Cadence Entries" rows={current.governanceCadence} onChange={(rows)=>updateField(["governanceCadence"],rows)} createRow={() => ({ id: planId(), meetingType: "Weekly", frequency: "", owner: "", attendees: "", purpose: "", nextScheduledDate: "" })} columns={[{ key: "meetingType", label: "Meeting Type" }, { key: "frequency", label: "Frequency" }, { key: "owner", label: "Owner" }, { key: "attendees", label: "Attendees" }, { key: "purpose", label: "Purpose", full: true }, { key: "nextScheduledDate", label: "Next Scheduled Date", type: "date" }]} /></div></AccountPlanFormSection>
+
+            <AccountPlanFormSection title="Growth Opportunities" defaultOpen={false}><div id="plan-section-growth"><DynamicTableField readOnly={mode === "view"} title="Growth Opportunities" rows={current.growthOpportunities} onChange={(rows)=>updateField(["growthOpportunities"],rows)} createRow={() => ({ id: planId(), solutionArea: "", opportunityDescription: "", revenuePotential: "", priority: "", owner: "", timeline: "" })} columns={[{ key: "solutionArea", label: "Product / Solution Area" }, { key: "opportunityDescription", label: "Opportunity Description", full: true }, { key: "revenuePotential", label: "Revenue Potential", type: "number" }, { key: "priority", label: "Priority" }, { key: "owner", label: "Owner" }, { key: "timeline", label: "Timeline" }]} /></div></AccountPlanFormSection>
+
+            <AccountPlanFormSection title="Risks & Mitigation" defaultOpen={false}><div id="plan-section-risks"><DynamicTableField readOnly={mode === "view"} title="Risk Register" rows={current.risksMitigation} onChange={(rows)=>updateField(["risksMitigation"],rows)} createRow={() => ({ id: planId(), risk: "", impact: "", likelihood: "", mitigationPlan: "", owner: "", reviewDate: "", status: "Open" })} columns={[{ key: "risk", label: "Risk", full: true }, { key: "impact", label: "Impact" }, { key: "likelihood", label: "Likelihood" }, { key: "mitigationPlan", label: "Mitigation Plan", full: true }, { key: "owner", label: "Owner" }, { key: "reviewDate", label: "Review Date", type: "date" }, { key: "status", label: "Status" }]} /></div></AccountPlanFormSection>
+
+            <AccountPlanFormSection title="Scorecard" defaultOpen={false}><div id="plan-section-scorecard" className="plan-grid-2">{Object.entries({ pipelineCurrent: "Pipeline Current", pipelineTarget: "Pipeline Target", closedWonCurrent: "Closed Won Current", closedWonTarget: "Closed Won Target", activeOpportunitiesCurrent: "Active Opportunities Current", activeOpportunitiesTarget: "Active Opportunities Target", certificationsCurrent: "Certifications Current", certificationsTarget: "Certifications Target", jointMarketingActivitiesCurrent: "Joint Marketing Activities Current", jointMarketingActivitiesTarget: "Joint Marketing Activities Target" }).map(([key,label]) => <label className="plan-field" key={key}><span>{label}</span><input type="number" value={current.scorecard[key]} readOnly={mode === "view"} onChange={(e)=>updateField(["scorecard",key],e.target.value)} /></label>)}<div className="plan-field plan-field--full"><ScorecardCards scorecard={current.scorecard} /></div></div></AccountPlanFormSection>
+
+            <AccountPlanFormSection title="90 Day Action Plan" defaultOpen={false}><div id="plan-section-actionPlan"><DynamicTableField readOnly={mode === "view"} title="Action Items" rows={current.actionPlan90Day} onChange={(rows)=>updateField(["actionPlan90Day"],rows)} createRow={() => ({ id: planId(), action: "", owner: "", dueDate: "", priority: "", status: "", notes: "" })} columns={[{ key: "action", label: "Action", full: true }, { key: "owner", label: "Owner" }, { key: "dueDate", label: "Due Date", type: "date" }, { key: "priority", label: "Priority" }, { key: "status", label: "Status" }, { key: "notes", label: "Notes", type: "textarea", full: true }]} /></div></AccountPlanFormSection>
+
+            <AccountPlanFormSection title="Plan Status / Metadata" defaultOpen={false}><div id="plan-section-summary" className="plan-grid-2"><label className="plan-field"><span>Plan Status *</span><select value={current.metadata.planStatus} disabled={mode === "view"} onChange={(e)=>updateField(["metadata","planStatus"],e.target.value)}><option>Draft</option><option>Active</option><option>At Risk</option><option>On Track</option><option>Closed</option><option>Archived</option></select>{errors.planStatus && <small>{errors.planStatus}</small>}</label><label className="plan-field"><span>Last Executive Review Date</span><input type="date" value={current.metadata.lastExecutiveReviewDate} readOnly={mode === "view"} onChange={(e)=>updateField(["metadata","lastExecutiveReviewDate"],e.target.value)} /></label><label className="plan-field"><span>Next QBR Date</span><input type="date" value={current.metadata.nextQbrDate} readOnly={mode === "view"} onChange={(e)=>updateField(["metadata","nextQbrDate"],e.target.value)} /></label><label className="plan-field plan-field--full"><span>Internal Notes</span><textarea value={current.metadata.internalNotes} readOnly={mode === "view"} onChange={(e)=>updateField(["metadata","internalNotes"],e.target.value)} /></label><label className="plan-field plan-field--full"><span>Partner-Facing Summary</span><textarea value={current.metadata.partnerFacingSummary} readOnly={mode === "view"} onChange={(e)=>updateField(["metadata","partnerFacingSummary"],e.target.value)} /></label></div></AccountPlanFormSection>
+          </div>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════════════════
 // SIDEBAR NAV WRAPPER
 // ═══════════════════════════════════════════════════════
@@ -10234,6 +10609,12 @@ const NAV_ITEMS = [
     sublabel: "Partner Website",
   },
   {
+    id: "partner-account-plan",
+    icon: <NavIcon name="checklist" />,
+    label: "Partner Account Plan Tool",
+    sublabel: "Account Planning",
+  },
+  {
     id: "channel-dashboard",
     icon: <NavIcon name="chart" />,
     label: "Channel Cadence",
@@ -10260,6 +10641,7 @@ const PAGE_PATHS = {
   "partner-trust": "/partner-trust",
   "partner-operational-support": "/partner-operational-support",
   "channel-dashboard": "/channel-manager-dashboard",
+  "partner-account-plan": "/partner-account-plan-tool",
   prospect: "/partner-prospect-tool",
 };
 
@@ -10370,6 +10752,7 @@ function App() {
 
   function renderPage() {
     if (page === "channel-dashboard") return <ChannelManagerDashboardPage />;
+    if (page === "partner-account-plan") return <PartnerAccountPlanToolPage />;
     if (page === "hub")
       return (
         <EnablementHub onBack={() => setPage("main")} onNavigate={setPage} />
