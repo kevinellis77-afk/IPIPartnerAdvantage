@@ -10456,11 +10456,11 @@ function TopBottomPartnerTables({ plans }) {
           <table className="ranking-table">
             <thead>
               <tr>
-                <th>Company Name</th>
-                <th>Score</th>
-                <th>Ranking</th>
-                <th>Pipeline Value</th>
-                <th>RAG Status</th>
+                <th>Company</th>
+                <th>Health</th>
+                <th>Rank</th>
+                <th>£</th>
+                <th>RAG</th>
               </tr>
             </thead>
             <tbody>
