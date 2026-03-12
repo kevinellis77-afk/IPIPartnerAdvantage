@@ -10872,6 +10872,7 @@ function App() {
       <React.Fragment>
         <Bg />
         <div
+          className="home-page-shell"
           style={{
             position: "relative",
             zIndex: 1,
