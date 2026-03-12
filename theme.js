@@ -22,6 +22,17 @@
       "--chart-3": "#C8988C",
       "--chart-4": "#D7F5FF",
       "--chart-5": "#5E6A72",
+      "--ds-bg": "#F1F7FA",
+      "--ds-surface": "#FFFFFF",
+      "--ds-surface-soft": "#EEF5F8",
+      "--ds-surface-muted": "rgba(31, 62, 78, 0.04)",
+      "--ds-border": "rgba(79, 106, 124, 0.22)",
+      "--ds-border-strong": "rgba(79, 106, 124, 0.36)",
+      "--ds-text": "#2E3E49",
+      "--ds-text-muted": "#5B6B76",
+      "--ds-shadow-sm": "0 8px 20px rgba(18,34,46,0.10)",
+      "--ds-shadow-md": "0 14px 36px rgba(18,34,46,0.16)",
+      "--ds-shadow-lg": "0 22px 48px rgba(18,34,46,0.20)",
     },
     dark: {
       "--bg-app": "#1F272B",
@@ -42,6 +53,17 @@
       "--chart-3": "#C8988C",
       "--chart-4": "#91C4B0",
       "--chart-5": "#D0E5DD",
+      "--ds-bg": "#0F171C",
+      "--ds-surface": "#17242B",
+      "--ds-surface-soft": "#1C2B33",
+      "--ds-surface-muted": "rgba(255,255,255,0.03)",
+      "--ds-border": "rgba(145,196,176,0.22)",
+      "--ds-border-strong": "rgba(145,196,176,0.36)",
+      "--ds-text": "#E9F4F1",
+      "--ds-text-muted": "#9BB6B0",
+      "--ds-shadow-sm": "0 8px 20px rgba(5,12,18,0.22)",
+      "--ds-shadow-md": "0 14px 36px rgba(5,12,18,0.35)",
+      "--ds-shadow-lg": "0 22px 48px rgba(5,12,18,0.45)",
     },
   };
 
@@ -91,8 +113,7 @@
     if (getMode() === "system") applyMode("system");
   });
 
-  // Always launch in dark mode, regardless of previously persisted preference.
-  setMode("dark");
+  applyMode(getMode());
 
   window.appTheme = { setMode, getMode, resolveTheme };
 })();
