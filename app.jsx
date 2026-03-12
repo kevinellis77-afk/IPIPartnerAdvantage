@@ -8283,6 +8283,8 @@ const GOVERNANCE_STATUS_OPTIONS = [
 const PRIORITY_OPTIONS = ["High", "Medium", "Low"];
 const EXECUTION_STORAGE_KEY = "ipi_partner_governance_tracker_v1";
 const LEGACY_EXECUTION_STORAGE_KEY = "ipi-governance-execution-v1";
+const RACI_CURRENT_STORAGE_KEY = "ipi_raci_current_v1";
+const RACI_SAVED_VERSIONS_STORAGE_KEY = "ipi_raci_saved_versions_v1";
 const LEGACY_RACI_ROLE_FIELDS = [
   ["channelManager", "Channel Manager"],
   ["salesLeadership", "PreSales"],
@@ -8303,6 +8305,52 @@ const RACI_DROPDOWN_OPTIONS = [
   "Product",
   "Operations",
 ];
+
+const RACI_FIELDS = ["r", "a", "c", "i"];
+
+function safeReadStorage(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(raw);
+  } catch (error) {
+    return fallback;
+  }
+}
+
+function safeWriteStorage(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+function makeVersionId() {
+  return `raci_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function formatTimestamp(dateLike = new Date()) {
+  const date = new Date(dateLike);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString();
+}
+
+function deepCloneMatrix(matrix) {
+  return JSON.parse(JSON.stringify(matrix));
+}
+
+function getMatrixOnlyRows(rows) {
+  return rows.map((row) => ({
+    id: row.id,
+    activity: row.activity,
+    r: normaliseRoleValue(row.r),
+    a: normaliseRoleValue(row.a),
+    c: normaliseRoleValue(row.c),
+    i: normaliseRoleValue(row.i),
+  }));
+}
 
 function normaliseRoleValue(value) {
   if (Array.isArray(value)) return value.filter(Boolean);
@@ -8453,26 +8501,64 @@ function GovernancePage() {
   const [showIncompleteOnly, setShowIncompleteOnly] = React.useState(false);
   const [showOverdueOnly, setShowOverdueOnly] = React.useState(false);
   const [noteTaskId, setNoteTaskId] = React.useState(null);
-  const [tasks, setTasks] = React.useState(() => {
-    const stored =
-      localStorage.getItem(EXECUTION_STORAGE_KEY) ||
-      localStorage.getItem(LEGACY_EXECUTION_STORAGE_KEY);
-    const parsed = stored ? JSON.parse(stored) : {};
-    return GOVERNANCE_ACTIVITIES.map((item) => ({
-      ...item,
-      status: parsed[item.id]?.status || "Not Started",
-      completed: parsed[item.id]?.status === "Complete",
-      owner: parsed[item.id]?.owner || "",
-      priority: parsed[item.id]?.priority || "Medium",
-      targetDate: parsed[item.id]?.targetDate || "",
-      notes: parsed[item.id]?.notes || "",
-      updatedAt: parsed[item.id]?.updatedAt || "",
-      r: normaliseRoleValue(parsed[item.id]?.r ?? item.r),
-      a: normaliseRoleValue(parsed[item.id]?.a ?? item.a),
-      c: normaliseRoleValue(parsed[item.id]?.c ?? item.c),
-      i: normaliseRoleValue(parsed[item.id]?.i ?? item.i),
-    }));
+  const [showVersions, setShowVersions] = React.useState(false);
+  const [toast, setToast] = React.useState(null);
+  const [versionForm, setVersionForm] = React.useState({ mode: "create", versionId: "", name: "", description: "" });
+  const [savedVersions, setSavedVersions] = React.useState(() => {
+    const versions = safeReadStorage(RACI_SAVED_VERSIONS_STORAGE_KEY, []);
+    return Array.isArray(versions) ? versions : [];
   });
+  const [loadedVersionId, setLoadedVersionId] = React.useState(null);
+
+  const [tasks, setTasks] = React.useState(() => {
+    const defaultRows = GOVERNANCE_ACTIVITIES.map((item) => ({
+      ...item,
+      status: "Not Started",
+      completed: false,
+      owner: "",
+      priority: "Medium",
+      targetDate: "",
+      notes: "",
+      updatedAt: "",
+      r: normaliseRoleValue(item.r),
+      a: normaliseRoleValue(item.a),
+      c: normaliseRoleValue(item.c),
+      i: normaliseRoleValue(item.i),
+    }));
+
+    const storedCurrent = safeReadStorage(RACI_CURRENT_STORAGE_KEY, null);
+    const legacy = safeReadStorage(EXECUTION_STORAGE_KEY, safeReadStorage(LEGACY_EXECUTION_STORAGE_KEY, {}));
+
+    return defaultRows.map((item) => {
+      const currentRow = storedCurrent?.find?.((row) => row.id === item.id) || {};
+      const legacyRow = legacy?.[item.id] || {};
+      return {
+        ...item,
+        status: legacyRow.status || item.status,
+        completed: (legacyRow.status || item.status) === "Complete",
+        owner: legacyRow.owner || item.owner,
+        priority: legacyRow.priority || item.priority,
+        targetDate: legacyRow.targetDate || item.targetDate,
+        notes: legacyRow.notes || item.notes,
+        updatedAt: legacyRow.updatedAt || item.updatedAt,
+        r: normaliseRoleValue(currentRow.r ?? legacyRow.r ?? item.r),
+        a: normaliseRoleValue(currentRow.a ?? legacyRow.a ?? item.a),
+        c: normaliseRoleValue(currentRow.c ?? legacyRow.c ?? item.c),
+        i: normaliseRoleValue(currentRow.i ?? legacyRow.i ?? item.i),
+      };
+    });
+  });
+
+  const initialMatrixRef = React.useRef(JSON.stringify(getMatrixOnlyRows(tasks)));
+
+  const showToast = (message) => {
+    setToast(message);
+    setTimeout(() => setToast(null), 2400);
+  };
+
+  const persistCurrentRaci = React.useCallback((rows) => {
+    safeWriteStorage(RACI_CURRENT_STORAGE_KEY, getMatrixOnlyRows(rows));
+  }, []);
 
   React.useEffect(() => {
     const serializable = tasks.reduce((acc, task) => {
@@ -8490,8 +8576,17 @@ function GovernancePage() {
       };
       return acc;
     }, {});
-    localStorage.setItem(EXECUTION_STORAGE_KEY, JSON.stringify(serializable));
-  }, [tasks]);
+    safeWriteStorage(EXECUTION_STORAGE_KEY, serializable);
+    persistCurrentRaci(tasks);
+  }, [tasks, persistCurrentRaci]);
+
+  React.useEffect(() => {
+    safeWriteStorage(RACI_SAVED_VERSIONS_STORAGE_KEY, savedVersions);
+  }, [savedVersions]);
+
+  const matrixSignature = JSON.stringify(getMatrixOnlyRows(tasks));
+  const unsavedChanges = matrixSignature !== initialMatrixRef.current;
+  const loadedVersion = savedVersions.find((item) => item.id === loadedVersionId);
 
   const updateTask = (id, patch) => {
     setTasks((prev) =>
@@ -8499,11 +8594,8 @@ function GovernancePage() {
         if (task.id !== id) return task;
         const next = { ...task, ...patch, updatedAt: new Date().toISOString() };
         if (Object.prototype.hasOwnProperty.call(patch, "completed")) {
-          if (patch.completed) {
-            next.status = "Complete";
-          } else if (next.status === "Complete") {
-            next.status = "Not Started";
-          }
+          if (patch.completed) next.status = "Complete";
+          else if (next.status === "Complete") next.status = "Not Started";
         }
         if (Object.prototype.hasOwnProperty.call(patch, "status")) {
           next.completed = patch.status === "Complete";
@@ -8517,934 +8609,315 @@ function GovernancePage() {
     updateTask(id, { [field]: normaliseRoleValue(values) });
   };
 
-  const exportRaciPDF = async () => {
-    const source = document.getElementById("raciExportArea");
-    if (!source) return;
+  const clearRaciMatrix = () => {
+    if (!window.confirm("Clear all R/A/C/I assignments for every activity?")) return;
+    setTasks((prev) => prev.map((task) => ({ ...task, r: [], a: [], c: [], i: [], updatedAt: new Date().toISOString() })));
+    showToast("RACI assignments cleared.");
+  };
 
-    if (!window.html2pdf) {
-      window.alert("PDF export is unavailable right now. Please refresh and try again.");
+  const saveRaciVersion = () => {
+    const name = versionForm.name.trim();
+    if (!name) return window.alert("Version name is required.");
+    const now = new Date().toISOString();
+    const existing = savedVersions.find((item) => item.name.toLowerCase() === name.toLowerCase());
+    if (existing && existing.id !== versionForm.versionId) {
+      const ok = window.confirm(`A version named "${name}" already exists. Overwrite it?`);
+      if (!ok) return;
+      overwriteRaciVersion(existing.id, { name, description: versionForm.description.trim() });
+      return;
+    }
+    if (versionForm.mode === "edit" && versionForm.versionId) {
+      renameRaciVersion(versionForm.versionId, { name, description: versionForm.description.trim() });
       return;
     }
 
-    const clone = source.cloneNode(true);
+    const next = {
+      id: makeVersionId(),
+      name,
+      description: versionForm.description.trim(),
+      createdAt: now,
+      updatedAt: now,
+      matrix: deepCloneMatrix(getMatrixOnlyRows(tasks)),
+    };
+    setSavedVersions((prev) => [next, ...prev]);
+    initialMatrixRef.current = matrixSignature;
+    setVersionForm({ mode: "create", versionId: "", name: "", description: "" });
+    showToast("Version saved.");
+  };
+
+  const loadRaciVersion = (versionId) => {
+    const version = savedVersions.find((item) => item.id === versionId);
+    if (!version) return;
+    if (unsavedChanges && !window.confirm("You have unsaved changes. Load selected version anyway?")) return;
+
+    setTasks((prev) => prev.map((task) => {
+      const source = version.matrix.find((row) => row.id === task.id) || {};
+      return {
+        ...task,
+        r: normaliseRoleValue(source.r),
+        a: normaliseRoleValue(source.a),
+        c: normaliseRoleValue(source.c),
+        i: normaliseRoleValue(source.i),
+        updatedAt: new Date().toISOString(),
+      };
+    }));
+    setLoadedVersionId(versionId);
+    initialMatrixRef.current = JSON.stringify(version.matrix);
+    showToast(`Loaded version: ${version.name}`);
+  };
+
+  const renameRaciVersion = (versionId, updates) => {
+    setSavedVersions((prev) => prev.map((item) => item.id === versionId ? { ...item, ...updates, updatedAt: new Date().toISOString() } : item));
+    setVersionForm({ mode: "create", versionId: "", name: "", description: "" });
+    showToast("Version updated.");
+  };
+
+  const overwriteRaciVersion = (versionId, updates = {}) => {
+    const version = savedVersions.find((item) => item.id === versionId);
+    if (!version) return;
+    if (!window.confirm(`Overwrite "${version.name}" with the current matrix?`)) return;
+    setSavedVersions((prev) => prev.map((item) => item.id === versionId ? {
+      ...item,
+      ...updates,
+      matrix: deepCloneMatrix(getMatrixOnlyRows(tasks)),
+      updatedAt: new Date().toISOString(),
+    } : item));
+    initialMatrixRef.current = matrixSignature;
+    showToast("Version overwritten.");
+  };
+
+  const deleteRaciVersion = (versionId) => {
+    const version = savedVersions.find((item) => item.id === versionId);
+    if (!version) return;
+    if (!window.confirm(`Delete version "${version.name}"?`)) return;
+    setSavedVersions((prev) => prev.filter((item) => item.id !== versionId));
+    if (loadedVersionId === versionId) setLoadedVersionId(null);
+    showToast("Version deleted.");
+  };
+
+  async function downloadRaciPDF() {
+    const source = document.getElementById("raci-export-container");
+    if (!source) return;
+    if (!window.html2canvas || !window.jspdf?.jsPDF) {
+      window.alert("PDF export dependencies are not available.");
+      return;
+    }
+
     const exportHost = document.createElement("div");
     exportHost.style.position = "fixed";
     exportHost.style.left = "-99999px";
     exportHost.style.top = "0";
-    exportHost.style.width = "1600px";
-    exportHost.style.padding = "16px";
-    exportHost.style.background = "#0C1518";
-    exportHost.style.zIndex = "-1";
+    exportHost.style.width = "1800px";
+    exportHost.style.background = getComputedStyle(document.body).backgroundColor || "#0C1518";
+    exportHost.style.padding = "20px";
 
-    clone.querySelectorAll(".raciTableWrap, .raciTableGrid").forEach((node) => {
-      node.style.overflow = "visible";
-      node.style.maxWidth = "none";
-      node.style.width = "100%";
-      node.style.minWidth = "0";
-    });
-
-    clone.querySelectorAll(".raciTableHeader").forEach((node) => {
-      node.style.position = "static";
-    });
-
+    const clone = source.cloneNode(true);
     exportHost.appendChild(clone);
     document.body.appendChild(exportHost);
 
     try {
-      const options = {
-        margin: 0.3,
-        filename: "IPI_RACI_Matrix.pdf",
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          scrollX: 0,
-          scrollY: 0,
-          windowWidth: exportHost.scrollWidth,
-        },
-        jsPDF: { unit: "in", format: "a3", orientation: "landscape" },
-        pagebreak: { mode: ["css", "legacy"] },
-      };
+      const canvas = await window.html2canvas(exportHost, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: null,
+        windowWidth: exportHost.scrollWidth,
+      });
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+      const margin = 8;
+      const headerHeight = 14;
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pageWidth - margin * 2;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const pageContentHeight = pageHeight - (margin * 2 + headerHeight);
+      const pageCount = Math.max(1, Math.ceil(imgHeight / pageContentHeight));
+      const timestamp = formatTimestamp();
 
-      await window.html2pdf().set(options).from(clone).save();
-    } finally {
-      if (document.body.contains(exportHost)) {
-        document.body.removeChild(exportHost);
+      for (let i = 0; i < pageCount; i += 1) {
+        if (i > 0) pdf.addPage();
+        pdf.setFontSize(12);
+        pdf.text("Partner Governance RACI Matrix", margin, margin + 4);
+        pdf.setFontSize(9);
+        pdf.text(`Exported: ${timestamp}`, margin, margin + 9);
+
+        const sliceY = i * pageContentHeight;
+        pdf.addImage(
+          canvas.toDataURL("image/png", 1),
+          "PNG",
+          margin,
+          margin + headerHeight,
+          imgWidth,
+          imgHeight,
+          undefined,
+          "FAST",
+          0,
+          -sliceY,
+        );
       }
+
+      const fileDate = new Date().toISOString().slice(0, 10);
+      pdf.save(`RACI_Matrix_${fileDate}.pdf`);
+      showToast("PDF exported.");
+    } finally {
+      if (document.body.contains(exportHost)) document.body.removeChild(exportHost);
     }
-  };
+  }
 
   const filteredTasks = tasks.filter((task) => {
     const matchStatus = statusFilter === "All" || task.status === statusFilter;
-    const matchPriority =
-      priorityFilter === "All" || task.priority === priorityFilter;
+    const matchPriority = priorityFilter === "All" || task.priority === priorityFilter;
     const text = searchTerm.trim().toLowerCase();
-    const matchSearch =
-      !text ||
-      task.activity.toLowerCase().includes(text) ||
-      task.owner.toLowerCase().includes(text);
+    const matchSearch = !text || task.activity.toLowerCase().includes(text) || task.owner.toLowerCase().includes(text);
     const matchIncomplete = !showIncompleteOnly || task.status !== "Complete";
     const matchOverdue = !showOverdueOnly || isTaskOverdue(task);
-    return (
-      matchStatus &&
-      matchPriority &&
-      matchSearch &&
-      matchIncomplete &&
-      matchOverdue
-    );
+    return matchStatus && matchPriority && matchSearch && matchIncomplete && matchOverdue;
   });
 
-  const summary = tasks.reduce(
-    (acc, task) => {
-      acc.total += 1;
-      if (task.status === "Complete") acc.complete += 1;
-      if (task.status === "In Progress") acc.inProgress += 1;
-      if (task.status === "Blocked") acc.blocked += 1;
-      if (isTaskOverdue(task)) acc.overdue += 1;
-      return acc;
-    },
-    { total: 0, complete: 0, inProgress: 0, blocked: 0, overdue: 0 },
-  );
+  const summary = tasks.reduce((acc, task) => {
+    acc.total += 1;
+    if (task.status === "Complete") acc.complete += 1;
+    if (task.status === "In Progress") acc.inProgress += 1;
+    if (task.status === "Blocked") acc.blocked += 1;
+    if (isTaskOverdue(task)) acc.overdue += 1;
+    return acc;
+  }, { total: 0, complete: 0, inProgress: 0, blocked: 0, overdue: 0 });
 
-  const completePct = summary.total
-    ? Math.round((summary.complete / summary.total) * 100)
-    : 0;
+  const completePct = summary.total ? Math.round((summary.complete / summary.total) * 100) : 0;
+  const ownershipSummary = buildRoleSummary(tasks, RACI_DROPDOWN_OPTIONS);
   const currentNoteTask = tasks.find((task) => task.id === noteTaskId);
 
   const getTaskRowStyle = (task) => {
-    if (isTaskOverdue(task)) {
-      return {
-        background: "rgba(168,67,67,0.18)",
-        borderColor: "rgba(214,138,138,0.45)",
-      };
-    }
-    if (task.status === "In Progress") {
-      return {
-        background: "rgba(123,150,163,0.1)",
-        borderColor: "rgba(123,150,163,0.28)",
-      };
-    }
-    if (task.status === "Complete") {
-      return {
-        background: "rgba(54,198,255,0.12)",
-        borderColor: "rgba(103,216,255,0.32)",
-      };
-    }
-    return {
-      background: "transparent",
-      borderColor: "rgba(255,255,255,0.07)",
-    };
+    if (isTaskOverdue(task)) return { background: "rgba(168,67,67,0.18)", borderColor: "rgba(214,138,138,0.45)" };
+    if (task.status === "Complete") return { background: "rgba(57,117,87,0.18)", borderColor: "rgba(126,188,158,0.32)" };
+    if (task.status === "Blocked") return { background: "rgba(126,95,49,0.18)", borderColor: "rgba(212,168,67,0.35)" };
+    if (task.status === "In Progress") return { background: "rgba(66,109,140,0.16)", borderColor: "rgba(103,216,255,0.32)" };
+    return { background: "transparent", borderColor: "rgba(123,150,163,0.24)" };
   };
 
-  const ownershipSummary = buildRoleSummary(tasks, RACI_DROPDOWN_OPTIONS);
+  const iconButton = (icon, label, onClick, danger = false) => (
+    <button type="button" className={`raciToolbarIconBtn ${danger ? "is-danger" : ""}`} title={label} aria-label={label} onClick={onClick}>{icon}</button>
+  );
 
   return (
     <React.Fragment>
-      <Bg />
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          animation: "fadeIn 0.35s ease both",
-        }}
-      >
-        <header
-          style={{
-            padding: "22px 44px 0",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 12,
-            paddingLeft: 68,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              background:
-                "linear-gradient(135deg,rgba(123,150,163,0.15),rgba(54,198,255,0.08))",
-              border: "1px solid rgba(123,150,163,0.35)",
-              borderRadius: 100,
-              padding: "7px 18px",
-            }}
-          >
-            <div
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: "50%",
-                background: "#7B96A3",
-                boxShadow: "0 0 8px #7B96A3",
-                animation: "liveDot 2.2s ease-in-out infinite",
-              }}
-            />
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 800,
-                color: "#A9C3CE",
-                letterSpacing: "0.07em",
-                textTransform: "uppercase",
-              }}
-            >
-              Governance & RACI
-            </span>
-          </div>
-          <div style={{ width: 36 }} />
-        </header>
+      <div className="page-shell">
+        <div className="content-shell">
+          <PageHeader
+            eyebrow="Partner Governance"
+            title={<React.Fragment>Partner <span style={{ color: "#7B96A3" }}>Governance</span> RACI</React.Fragment>}
+            subtitle="A practical governance dashboard for ownership, version control and operational tracking."
+          />
 
-        <div
-          style={{
-            maxWidth: "none",
-            margin: "0",
-            padding: "34px 44px 0",
-            width: "100%",
-          }}
-        >
-          <h1
-            style={{
-              fontSize: "clamp(24px,3.8vw,46px)",
-              fontWeight: 800,
-              letterSpacing: "-0.04em",
-              color: "#fff",
-              lineHeight: 1.05,
-              marginBottom: 10,
-              fontFamily: "'Syne',sans-serif",
-            }}
-          >
-            Partner <span style={{ color: "#7B96A3" }}>Governance</span> RACI
-            Matrix
-          </h1>
-          <p
-            style={{
-              fontSize: 13.5,
-              color: "#8EA6BF",
-              maxWidth: "none",
-              lineHeight: 1.75,
-              marginBottom: 18,
-            }}
-          >
-            This view clarifies delivery accountability across IP Integration,
-            partner teams and internal governance functions so opportunities
-            progress with clear ownership.
-          </p>
-
-          <section
-            style={{
-              background: "rgba(123,150,163,0.08)",
-              border: "1px solid rgba(123,150,163,0.28)",
-              borderRadius: 14,
-              padding: "16px 18px",
-              marginBottom: 16,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 11,
-                fontWeight: 800,
-                color: "#9DB8C5",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                marginBottom: 6,
-              }}
-            >
-              Execution Tracking
+          <div className="raciToolbar">
+            <div className="raciToolbarLeft">
+              {iconButton("💾", "Save version", () => setVersionForm({ mode: "create", versionId: "", name: "", description: "" }))}
+              {iconButton("🧽", "Clear RACI", clearRaciMatrix, true)}
+              {iconButton("📄", "Download PDF", downloadRaciPDF)}
             </div>
-            <p
-              style={{
-                fontSize: 12.5,
-                color: "#C0DDD6",
-                lineHeight: 1.75,
-                margin: 0,
-              }}
-            >
-              This page not only defines governance across the IPI Partner
-              Advantage program, it also acts as a lightweight execution tracker
-              to manage progress, ownership and next steps across key partner
-              program activities.
-            </p>
-          </section>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
-              gap: 12,
-              marginBottom: 18,
-            }}
-          >
-            {[
-              { k: "R", l: "Responsible", c: "#36C6FF" },
-              { k: "A", l: "Accountable", c: "#D4A843" },
-              { k: "C", l: "Consulted", c: "#A37992" },
-              { k: "I", l: "Informed", c: "#7B96A3" },
-            ].map((item) => (
-              <div
-                key={item.k}
-                style={{
-                  background: "rgba(255,255,255,0.03)",
-                  border: `1px solid ${item.c}55`,
-                  borderRadius: 10,
-                  padding: "9px 10px",
-                  display: "flex",
-                  gap: 8,
-                  alignItems: "center",
-                }}
-              >
-                <span
-                  style={{
-                    width: 20,
-                    height: 20,
-                    borderRadius: 6,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 11,
-                    fontWeight: 900,
-                    background: `${item.c}22`,
-                    color: item.c,
-                    border: `1px solid ${item.c}66`,
-                  }}
-                >
-                  {item.k}
-                </span>
-                <span
-                  style={{ fontSize: 12, color: "#C0DDD6", fontWeight: 700 }}
-                >
-                  {item.l}
-                </span>
+            <div className="raciToolbarRight">
+              <div className="raciVersionStatus">
+                <div>Currently Loaded: <strong>{loadedVersion?.name || "Working Copy"}</strong></div>
+                <div className={`raciDirtyChip ${unsavedChanges ? "is-dirty" : ""}`}>{unsavedChanges ? "Unsaved Changes" : "Saved"}</div>
               </div>
-            ))}
-          </div>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(6,minmax(0,1fr))",
-              gap: 12,
-              marginBottom: 14,
-            }}
-          >
-            {[
-              {
-                label: "Total Activities",
-                value: summary.total,
-                color: "#9DB8C5",
-              },
-              { label: "Complete", value: summary.complete, color: "#36C6FF" },
-              {
-                label: "In Progress",
-                value: summary.inProgress,
-                color: "#7B96A3",
-              },
-              { label: "Blocked", value: summary.blocked, color: "#D68A8A" },
-              { label: "Overdue", value: summary.overdue, color: "#D4A843" },
-              {
-                label: "% Complete",
-                value: `${completePct}%`,
-                color: "#A37992",
-              },
-            ].map((card) => (
-              <MetricCard
-                key={card.label}
-                label={card.label}
-                value={card.value}
-                tone={
-                  card.label === "Complete"
-                    ? "success"
-                    : card.label === "Blocked"
-                      ? "danger"
-                      : card.label === "Overdue"
-                        ? "warning"
-                        : "info"
-                }
-              />
-            ))}
-          </div>
-
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: 12,
-              flexWrap: "wrap",
-              marginBottom: 10,
-            }}
-          >
-            <div
-              style={{
-                display: "inline-flex",
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(123,150,163,0.3)",
-                borderRadius: 999,
-                padding: 4,
-              }}
-            >
-              {[
-                { id: "matrix", label: "Matrix View" },
-                { id: "action", label: "Action Plan View" },
-              ].map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => setView(option.id)}
-                  style={{
-                    border: "none",
-                    cursor: "pointer",
-                    background:
-                      view === option.id
-                        ? "rgba(123,150,163,0.28)"
-                        : "transparent",
-                    color: view === option.id ? "#EAF5FF" : "#8EB1A8",
-                    padding: "8px 14px",
-                    borderRadius: 999,
-                    fontSize: 12,
-                    fontWeight: 700,
-                  }}
-                >
-                  {option.label}
-                </button>
-              ))}
+              {iconButton("🗂️", "Open saved versions", () => setShowVersions((v) => !v))}
             </div>
-            <div style={{ fontSize: 11, color: "#7FA39A" }}>
-              Status options: Not Started · In Progress · Blocked · Complete
-            </div>
-            <button className="exportButton" onClick={exportRaciPDF}>
-              Download RACI Matrix as PDF
-            </button>
           </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1.1fr 1fr 1fr auto auto",
-              gap: 8,
-              marginBottom: 14,
-            }}
-          >
-            <FormField
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search activity or owner"
-            />
-            <FormField as="select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ boxShadow: "none" }}>
-              {["All", ...GOVERNANCE_STATUS_OPTIONS].map((v) => (
-                <option key={v} value={v}>
-                  {v}
-                </option>
-              ))}
-            </FormField>
-            <FormField as="select"
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
-              style={{ boxShadow: "none" }}
-            >
-              {["All", ...PRIORITY_OPTIONS].map((v) => (
-                <option key={v} value={v}>
-                  {v}
-                </option>
-              ))}
-            </FormField>
-            <label
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                fontSize: 12,
-                color: "#BFD8D2",
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={showIncompleteOnly}
-                onChange={(e) => setShowIncompleteOnly(e.target.checked)}
-              />
-              Incomplete
-            </label>
-            <label
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                fontSize: 12,
-                color: "#BFD8D2",
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={showOverdueOnly}
-                onChange={(e) => setShowOverdueOnly(e.target.checked)}
-              />
-              Overdue
-            </label>
-          </div>
-
-          <div id="raciExportArea">
-          {view === "matrix" ? (
-            <div
-              className="raciTableWrap"
-            >
-              <div className="raciTableGrid">
-                <div
-                  className="raciTableHeader"
-                >
-                  {[
-                    "Name of Task",
-                    "R",
-                    "A",
-                    "C",
-                    "I",
-                    "Status",
-                    "Owner",
-                  ].map((h) => (
-                    <div
-                      key={h}
-                      className={`raciHeaderCell ${h.length === 1 ? `col-${h.toLowerCase()}` : ""}`}
-                    >
-                      {h}
-                    </div>
-                  ))}
-                </div>
-                {filteredTasks.length ? (
-                  filteredTasks.map((task, idx) => {
-                    const rowStyle = getTaskRowStyle(task);
-                    return (
-                      <div key={task.id} className="raciTableRow" style={{ borderTop: idx ? `1px solid ${rowStyle.borderColor}` : "none", background: rowStyle.background }}>
-                        <div
-                          style={{
-                            padding: "10px 14px",
-                            fontSize: 12.5,
-                            fontWeight: 700,
-                            color: "#EAF5FF",
-                            display: "flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          {task.activity}
-                        </div>
-                        {[
-                          ["r", "Responsible"],
-                          ["a", "Accountable"],
-                          ["c", "Consulted"],
-                          ["i", "Informed"],
-                        ].map(([field, label]) => (
-                          <div key={`${task.id}-${field}`} style={{ padding: "10px" }}>
-                            <MultiRoleDropdown
-                              id={`raci-${task.id}-${field}`}
-                              label={`${label} roles for ${task.activity}`}
-                              value={task[field]}
-                              options={RACI_DROPDOWN_OPTIONS}
-                              onChange={(values) => updateRaciField(task.id, field, values)}
-                            />
-                          </div>
-                        ))}
-                        <div style={{ padding: "10px" }}>
-                          <select
-                            className="ui-dropdown"
-                            value={task.status}
-                            onChange={(e) =>
-                              updateTask(task.id, { status: e.target.value })
-                            }
-                            style={{
-                              width: "100%",
-                              boxShadow: "none",
-                            }}
-                          >
-                            {GOVERNANCE_STATUS_OPTIONS.map((v) => (
-                              <option key={v} value={v}>
-                                {v}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div style={{ padding: "10px" }}>
-                          <input
-                            value={task.owner}
-                            onChange={(e) =>
-                              updateTask(task.id, { owner: e.target.value })
-                            }
-                            placeholder="Owner"
-                            style={{
-                              width: "100%",
-                              background: "rgba(255,255,255,0.03)",
-                              border: "1px solid rgba(123,150,163,0.3)",
-                              borderRadius: 6,
-                              color: "#D9ECE6",
-                              padding: "6px",
-                              fontSize: 12,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div
-                    style={{
-                      padding: "24px",
-                      fontSize: 12.5,
-                      color: "#8EB1A8",
-                    }}
-                  >
-                    No activities match the current filters.
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div style={{ display: "grid", gap: 10 }}>
-              {filteredTasks.length ? (
-                filteredTasks.map((task) => {
-                  const rowStyle = getTaskRowStyle(task);
-                  const taskCompleted =
-                    task.status === "Complete" || task.status === "Completed";
-                  return (
-                    <div
-                      key={task.id}
-                      style={{
-                      background: rowStyle.background,
-                      border: `1px solid ${rowStyle.borderColor}`,
-                      borderRadius: 12,
-                      padding: "12px 14px",
-                      display: "grid",
-                      gridTemplateColumns: "2fr repeat(6,minmax(90px,1fr))",
-                      alignItems: "center",
-                      gap: 12,
-                      }}
-                    >
-                    <div>
-                      <div
-                        style={{
-                          fontSize: 13,
-                          fontWeight: 700,
-                          color: "#EAF5FF",
-                          textDecoration: taskCompleted ? "line-through" : "none",
-                          textDecorationColor: taskCompleted
-                            ? "rgba(160,214,194,0.9)"
-                            : "transparent",
-                        }}
-                      >
-                        {task.activity}
-                      </div>
-                      <div
-                        style={{ fontSize: 11, color: "#7FA39A", marginTop: 4 }}
-                      >
-                        {task.updatedAt
-                          ? `Last updated ${new Date(task.updatedAt).toLocaleString()}`
-                          : "Not updated yet"}
-                      </div>
-                    </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                      <StatusBadge status={task.status} />
-                      <select
-                        className="ui-dropdown"
-                        value={task.status}
-                      onChange={(e) =>
-                        updateTask(task.id, { status: e.target.value })
-                      }
-                      style={{ boxShadow: "none" }}
-                    >
-                      {GOVERNANCE_STATUS_OPTIONS.map((v) => (
-                        <option key={v} value={v}>
-                          {v}
-                        </option>
-                      ))}
-                      </select>
-                    </div>
-                    <input
-                      value={task.owner}
-                      onChange={(e) =>
-                        updateTask(task.id, { owner: e.target.value })
-                      }
-                      placeholder="Owner"
-                      style={{
-                        background: "rgba(255,255,255,0.03)",
-                        border: "1px solid rgba(123,150,163,0.3)",
-                        borderRadius: 6,
-                        color: "#D9ECE6",
-                        padding: "8px",
-                        fontSize: 12,
-                      }}
-                    />
-                    <select
-                      className="ui-dropdown"
-                      value={task.priority}
-                      onChange={(e) =>
-                        updateTask(task.id, { priority: e.target.value })
-                      }
-                      style={{ boxShadow: "none" }}
-                    >
-                      {PRIORITY_OPTIONS.map((v) => (
-                        <option key={v} value={v}>
-                          {v}
-                        </option>
-                      ))}
-                    </select>
-                    <input
-                      type="date"
-                      value={task.targetDate}
-                      onChange={(e) =>
-                        updateTask(task.id, { targetDate: e.target.value })
-                      }
-                      style={{
-                        background: "rgba(255,255,255,0.03)",
-                        border: "1px solid rgba(123,150,163,0.3)",
-                        borderRadius: 6,
-                        color: "#D9ECE6",
-                        padding: "8px",
-                        fontSize: 12,
-                      }}
-                    />
-                    <button
-                      onClick={() => setNoteTaskId(task.id)}
-                      style={{
-                        border: "1px solid rgba(123,150,163,0.35)",
-                        background: task.notes
-                          ? "rgba(54,198,255,0.14)"
-                          : "rgba(255,255,255,0.03)",
-                        color: "#C0DDD6",
-                        borderRadius: 6,
-                        padding: "8px",
-                        fontSize: 11,
-                        fontWeight: 700,
-                        cursor: "pointer",
-                      }}
-                    >
-                      {task.notes ? "View / Edit Notes" : "Add Notes"}
-                    </button>
-                    <label
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: 6,
-                        fontSize: 11,
-                        color: "#BFD8D2",
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={task.completed}
-                        onChange={(e) =>
-                          updateTask(task.id, { completed: e.target.checked })
-                        }
-                      />
-                      Done
-                    </label>
-                  </div>
-                  );
-                })
-              ) : (
-                <div
-                  style={{
-                    padding: "24px",
-                    fontSize: 12.5,
-                    color: "#8EB1A8",
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px solid rgba(123,150,163,0.3)",
-                    borderRadius: 12,
-                  }}
-                >
-                  No activities match the current filters.
-                </div>
-              )}
+          {versionForm.mode !== "idle" && (
+            <div className="raciVersionForm">
+              <input value={versionForm.name} onChange={(e) => setVersionForm((prev) => ({ ...prev, name: e.target.value }))} placeholder="Version name" />
+              <input value={versionForm.description} onChange={(e) => setVersionForm((prev) => ({ ...prev, description: e.target.value }))} placeholder="Description (optional)" />
+              <button className="ui-btn ui-btn--primary" onClick={saveRaciVersion}>{versionForm.mode === "edit" ? "Update" : "Save"}</button>
+              <button className="ui-btn ui-btn--ghost" onClick={() => setVersionForm({ mode: "idle", versionId: "", name: "", description: "" })}>Close</button>
             </div>
           )}
 
-          <section style={{ marginTop: 20 }}>
-            <div
-              style={{
-                fontSize: 12,
-                fontWeight: 800,
-                color: "#9DB8C5",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                marginBottom: 8,
-              }}
-            >
-              Key Ownership Summary
-            </div>
-            <div className="ownershipDashboard">
-              {ownershipSummary.map((role) => (
-                <div className="ownershipCard" key={role.name}>
-                  <div className="ownershipHeader">
-                    <div className="ownershipRole">{role.name}</div>
-                    <div className="ownershipTotal">{role.total}</div>
-                  </div>
-                  <div className="ownershipMetrics">
-                    <div className="metric metric-r">
-                      <div className="metricValue">{role.responsible}</div>
-                      <div className="metricLabel">R</div>
-                    </div>
-                    <div className="metric metric-a">
-                      <div className="metricValue">{role.accountable}</div>
-                      <div className="metricLabel">A</div>
-                    </div>
-                    <div className="metric metric-c">
-                      <div className="metricValue">{role.consulted}</div>
-                      <div className="metricLabel">C</div>
-                    </div>
-                    <div className="metric metric-i">
-                      <div className="metricValue">{role.informed}</div>
-                      <div className="metricLabel">I</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10, marginBottom: 12 }}>
+            {[{ label: "Total", value: summary.total }, { label: "Complete", value: summary.complete }, { label: "In Progress", value: summary.inProgress }, { label: "Blocked", value: summary.blocked }, { label: "Overdue", value: summary.overdue }, { label: "% Complete", value: `${completePct}%` }].map((card) => (
+              <MetricCard key={card.label} label={card.label} value={card.value} />
+            ))}
           </div>
 
-          <section
-            style={{
-              marginTop: 14,
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(123,150,163,0.24)",
-              borderRadius: 12,
-              padding: "14px 16px",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 12,
-                fontWeight: 800,
-                color: "#9DB8C5",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                marginBottom: 8,
-              }}
-            >
-              Why This Matters
+          <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr 1fr auto auto", gap: 8, marginBottom: 14 }}>
+            <FormField value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search activity or owner" />
+            <FormField as="select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ boxShadow: "none" }}>{["All", ...GOVERNANCE_STATUS_OPTIONS].map((v) => <option key={v} value={v}>{v}</option>)}</FormField>
+            <FormField as="select" value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)} style={{ boxShadow: "none" }}>{["All", ...PRIORITY_OPTIONS].map((v) => <option key={v} value={v}>{v}</option>)}</FormField>
+            <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#BFD8D2" }}><input type="checkbox" checked={showIncompleteOnly} onChange={(e) => setShowIncompleteOnly(e.target.checked)} />Incomplete</label>
+            <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#BFD8D2" }}><input type="checkbox" checked={showOverdueOnly} onChange={(e) => setShowOverdueOnly(e.target.checked)} />Overdue</label>
+          </div>
+
+          <div id="raci-export-container">
+            <div className="raciTableWrap">
+              <div className="raciTableGrid">
+                <div className="raciTableHeader">{["Name of Task", "R", "A", "C", "I", "Status", "Owner"].map((h) => <div key={h} className={`raciHeaderCell ${h.length === 1 ? `col-${h.toLowerCase()}` : ""}`}>{h}</div>)}</div>
+                {filteredTasks.map((task, idx) => {
+                  const rowStyle = getTaskRowStyle(task);
+                  return (
+                    <div key={task.id} className="raciTableRow" style={{ borderTop: idx ? `1px solid ${rowStyle.borderColor}` : "none", background: rowStyle.background }}>
+                      <div style={{ padding: "10px 14px", fontSize: 12.5, fontWeight: 700, color: "#EAF5FF", display: "flex", alignItems: "center" }}>{task.activity}</div>
+                      {[["r", "Responsible"], ["a", "Accountable"], ["c", "Consulted"], ["i", "Informed"]].map(([field, label]) => (
+                        <div key={`${task.id}-${field}`} style={{ padding: "10px" }}>
+                          <MultiRoleDropdown id={`raci-${task.id}-${field}`} label={`${label} roles for ${task.activity}`} value={task[field]} options={RACI_DROPDOWN_OPTIONS} onChange={(values) => updateRaciField(task.id, field, values)} />
+                        </div>
+                      ))}
+                      <div style={{ padding: "10px" }}><select className="ui-dropdown" value={task.status} onChange={(e) => updateTask(task.id, { status: e.target.value })} style={{ width: "100%", boxShadow: "none" }}>{GOVERNANCE_STATUS_OPTIONS.map((v) => <option key={v} value={v}>{v}</option>)}</select></div>
+                      <div style={{ padding: "10px" }}><input value={task.owner} onChange={(e) => updateTask(task.id, { owner: e.target.value })} placeholder="Owner" style={{ width: "100%", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(123,150,163,0.3)", borderRadius: 6, color: "#D9ECE6", padding: "6px", fontSize: 12 }} /></div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-            <p
-              style={{
-                fontSize: 12.5,
-                color: "#BFD8D2",
-                lineHeight: 1.75,
-                margin: 0,
-              }}
-            >
-              The RACI model remains the governance backbone, while execution
-              tracking adds day-to-day clarity around ownership, priorities and
-              delivery risk. Leadership gets board-level visibility, and
-              delivery teams gain a practical action plan to move the partner
-              program forward without losing strategic alignment.
-            </p>
-          </section>
+
+            {showVersions && (
+              <section className="raciVersionsPanel">
+                <h3>Saved RACI Versions</h3>
+                <div className="raciVersionCards">
+                  {savedVersions.length ? savedVersions.map((version) => (
+                    <article className="raciVersionCard" key={version.id}>
+                      <div className="raciVersionCardHeader">
+                        <strong>{version.name}</strong>
+                        {loadedVersionId === version.id && <span className="raciChip">Loaded</span>}
+                      </div>
+                      <p>{version.description || "No description"}</p>
+                      <small>Created: {formatTimestamp(version.createdAt)} · Updated: {formatTimestamp(version.updatedAt)}</small>
+                      <div className="raciVersionActions">
+                        {iconButton("📥", "Load version", () => loadRaciVersion(version.id))}
+                        {iconButton("✏️", "Edit version", () => setVersionForm({ mode: "edit", versionId: version.id, name: version.name, description: version.description || "" }))}
+                        {iconButton("🔄", "Overwrite version", () => overwriteRaciVersion(version.id))}
+                        {iconButton("🗑️", "Delete version", () => deleteRaciVersion(version.id), true)}
+                      </div>
+                    </article>
+                  )) : <div className="raciEmpty">No saved versions yet.</div>}
+                </div>
+              </section>
+            )}
+
+            <section style={{ marginTop: 20 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, color: "#9DB8C5", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>Key Ownership Summary</div>
+              <div className="ownershipDashboard">{ownershipSummary.map((role) => (<div className="ownershipCard" key={role.name}><div className="ownershipHeader"><div className="ownershipRole">{role.name}</div><div className="ownershipTotal">{role.total}</div></div><div className="ownershipMetrics"><div className="metric metric-r"><div className="metricValue">{role.responsible}</div><div className="metricLabel">R</div></div><div className="metric metric-a"><div className="metricValue">{role.accountable}</div><div className="metricLabel">A</div></div><div className="metric metric-c"><div className="metricValue">{role.consulted}</div><div className="metricLabel">C</div></div><div className="metric metric-i"><div className="metricValue">{role.informed}</div><div className="metricLabel">I</div></div></div></div>))}</div>
+            </section>
+          </div>
+
+          {toast && <div className="raciToast">{toast}</div>}
 
           {currentNoteTask && (
-            <div
-              className="modal-overlay"
-              onClick={(e) => {
-                if (e.target === e.currentTarget) setNoteTaskId(null);
-              }}
-            >
-              <div
-                className="modal-box"
-                style={{
-                  maxWidth: "none",
-                  border: "1px solid rgba(123,150,163,0.35)",
-                  background: "linear-gradient(160deg,#162422,#0E1A18)",
-                  padding: 20,
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    gap: 12,
-                    marginBottom: 10,
-                  }}
-                >
-                  <div>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 800,
-                        color: "#67D8FF",
-                        letterSpacing: "0.1em",
-                        textTransform: "uppercase",
-                        marginBottom: 6,
-                      }}
-                    >
-                      Notes
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 16,
-                        fontWeight: 800,
-                        color: "#fff",
-                        fontFamily: "'Syne',sans-serif",
-                      }}
-                    >
-                      {currentNoteTask.activity}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setNoteTaskId(null)}
-                    style={{
-                      border: "none",
-                      background: "rgba(255,255,255,0.08)",
-                      color: "#C0DDD6",
-                      width: 30,
-                      height: 30,
-                      borderRadius: "50%",
-                      cursor: "pointer",
-                    }}
-                  >
-                    ×
-                  </button>
+            <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setNoteTaskId(null); }}>
+              <div className="modal-box" style={{ maxWidth: "none", border: "1px solid rgba(123,150,163,0.35)", background: "linear-gradient(160deg,#162422,#0E1A18)", padding: 20 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 10 }}>
+                  <div><div style={{ fontSize: 11, fontWeight: 800, color: "#67D8FF", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 6 }}>Notes</div><div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'Syne',sans-serif" }}>{currentNoteTask.activity}</div></div>
+                  <button onClick={() => setNoteTaskId(null)} style={{ border: "none", background: "rgba(255,255,255,0.08)", color: "#C0DDD6", width: 30, height: 30, borderRadius: "50%", cursor: "pointer" }}>×</button>
                 </div>
-                <textarea
-                  value={currentNoteTask.notes}
-                  onChange={(e) =>
-                    updateTask(currentNoteTask.id, { notes: e.target.value })
-                  }
-                  placeholder="Capture dependencies, blockers, decisions and next actions."
-                  style={{
-                    width: "100%",
-                    minHeight: 150,
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px solid rgba(123,150,163,0.35)",
-                    borderRadius: 8,
-                    color: "#D9ECE6",
-                    padding: 10,
-                    fontSize: 12,
-                    lineHeight: 1.6,
-                  }}
-                />
+                <textarea value={currentNoteTask.notes} onChange={(e) => updateTask(currentNoteTask.id, { notes: e.target.value })} placeholder="Capture dependencies, blockers, decisions and next actions." style={{ width: "100%", minHeight: 150, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(123,150,163,0.35)", borderRadius: 8, color: "#D9ECE6", padding: 10, fontSize: 12, lineHeight: 1.6 }} />
               </div>
             </div>
           )}
         </div>
-
-        <div style={{ padding: "40px 44px 44px", marginTop: "auto" }}>
-          <div className="brand-line" style={{ marginBottom: 20 }} />
-          <p
-            style={{
-              textAlign: "center",
-              fontSize: 10,
-              color: "rgba(54,198,255,0.3)",
-              letterSpacing: "0.07em",
-              textTransform: "uppercase",
-            }}
-          >
-            © 2026 IP Integration Ltd · IPI Partner Advantage · Partner
-            Confidential
-          </p>
-        </div>
       </div>
-      <style>{`@keyframes fadeIn{from{opacity:0}to{opacity:1}}`}</style>
     </React.Fragment>
   );
 }
+
 
 const CHANNEL_MANAGER_DATA = {
   lastUpdated: "Updated 11 Mar 2026",

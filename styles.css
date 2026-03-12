@@ -983,3 +983,26 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
   .plan-section-card,.plan-stat-card,.partner-plan-head{border:1px solid #ddd;background:#fff;box-shadow:none;}
   .plan-field input,.plan-field select,.plan-field textarea{border:1px solid #ddd;background:#fff;color:#111;}
 }
+.raciToolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:8px 0 14px;padding:10px 12px;border:1px solid rgba(123,150,163,.3);background:rgba(255,255,255,.03);border-radius:14px;}
+.raciToolbarLeft,.raciToolbarRight{display:flex;align-items:center;gap:8px;}
+.raciToolbarIconBtn{width:40px;height:40px;border-radius:12px;border:1px solid rgba(123,150,163,.3);background:rgba(255,255,255,.04);color:#EAF5FF;cursor:pointer;font-size:16px;display:inline-flex;align-items:center;justify-content:center;transition:all .15s ease;}
+.raciToolbarIconBtn:hover{transform:translateY(-1px);background:rgba(103,216,255,.15);}
+.raciToolbarIconBtn:focus-visible{outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 40%,transparent);}
+.raciToolbarIconBtn.is-danger:hover{background:rgba(239,68,68,.18);}
+.raciVersionStatus{display:flex;gap:10px;align-items:center;color:#BFD8D2;font-size:12px;}
+.raciDirtyChip{padding:3px 8px;border-radius:999px;border:1px solid rgba(126,188,158,.4);color:#a8d8bf;background:rgba(57,117,87,.2);font-size:11px;font-weight:700;}
+.raciDirtyChip.is-dirty{border-color:rgba(245,158,11,.5);color:#ffd08a;background:rgba(126,95,49,.25);}
+.raciVersionForm{display:grid;grid-template-columns:minmax(220px,1fr) minmax(220px,1fr) auto auto;gap:8px;padding:10px 12px;border:1px solid rgba(123,150,163,.3);border-radius:12px;background:rgba(255,255,255,.02);margin-bottom:12px;}
+.raciVersionForm input{background:rgba(255,255,255,.03);border:1px solid rgba(123,150,163,.3);border-radius:8px;color:#D9ECE6;padding:8px 10px;}
+.raciVersionsPanel{margin-top:16px;border:1px solid rgba(123,150,163,.25);border-radius:14px;background:rgba(255,255,255,.02);padding:14px;}
+.raciVersionsPanel h3{margin:0 0 12px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#9DB8C5;}
+.raciVersionCards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;}
+.raciVersionCard{border:1px solid rgba(123,150,163,.24);border-radius:12px;padding:10px;background:rgba(9,22,24,.45);display:flex;flex-direction:column;gap:8px;}
+.raciVersionCardHeader{display:flex;justify-content:space-between;align-items:center;gap:8px;color:#EAF5FF;}
+.raciVersionCard p{margin:0;color:#BFD8D2;font-size:12px;min-height:32px;}
+.raciVersionCard small{color:#8EB1A8;font-size:11px;}
+.raciVersionActions{display:flex;gap:6px;}
+.raciChip{padding:3px 8px;border-radius:999px;font-size:10px;font-weight:700;border:1px solid rgba(103,216,255,.45);background:rgba(54,198,255,.14);color:#9edfff;}
+.raciEmpty{padding:16px;color:#8EB1A8;border:1px dashed rgba(123,150,163,.3);border-radius:10px;}
+.raciToast{position:fixed;right:16px;bottom:16px;z-index:120;padding:10px 14px;border-radius:10px;border:1px solid rgba(103,216,255,.4);background:rgba(12,21,24,.92);color:#EAF5FF;font-size:12px;font-weight:700;box-shadow:var(--shadow-soft);}
+@media (max-width:900px){.raciVersionForm{grid-template-columns:1fr;}.raciToolbarIconBtn{width:44px;height:44px;}}
