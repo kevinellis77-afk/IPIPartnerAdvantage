@@ -9946,18 +9946,22 @@ function ChannelManagerDashboardPage() {
 
 const CHANNEL_MARKETING_MISSION_PILLARS = [
   {
+    icon: "🎯",
     title: "Attract the right partners",
     desc: "Target resellers, consultancies and service providers with a strong enterprise CX customer base and growth ambition.",
   },
   {
+    icon: "💷",
     title: "Explain the revenue opportunity",
     desc: "Demonstrate how partners create recurring income by landing with one solution and expanding into a full CX stack.",
   },
   {
+    icon: "🤝",
     title: "Prove ease of doing business",
     desc: "Show clear onboarding, pre-sales support, delivery services and commercial frameworks that remove partner friction.",
   },
   {
+    icon: "🚀",
     title: "Accelerate partner conversion",
     desc: "Use confident proof-led messaging and focused calls to action to move prospects from interest to application quickly.",
   },
@@ -9974,6 +9978,24 @@ const PARTNER_SITE_STRUCTURE = [
   ["Become a Partner", "Convert interest into action with a clear application path.", "Convert"],
 ].map(([title, summary, badge]) => ({ title, summary, badge }));
 
+const CHANNEL_RESELLER_QUESTIONS = [
+  {
+    icon: "🧭",
+    title: "Why should I partner with you?",
+    body: "Resellers need to quickly understand what makes IP Integration commercially and strategically different from other vendors. This includes portfolio breadth, partner support, managed services capability, and the ability to help partners grow beyond a single product sale.",
+  },
+  {
+    icon: "📈",
+    title: "How do I make money?",
+    body: "The website should show the revenue journey clearly — how a partner can start with any entry point such as SIP, UC, CCaaS, AI or payments and then expand into broader customer opportunities with recurring revenue, services and managed support.",
+  },
+  {
+    icon: "⚙️",
+    title: "How easy are you to work with?",
+    body: "Partners want confidence that they will receive enablement, pre-sales help, delivery support, governance clarity, commercial simplicity and access to the latest documentation without friction.",
+  },
+];
+
 function ChannelMarketingPage() {
   return (
     <React.Fragment>
@@ -9987,11 +10009,32 @@ function ChannelMarketingPage() {
 
         <SectionWrapper>
           <SectionHeader title="Channel Marketing Mission" description="The website must do more than describe technology. It must sell the business opportunity to a reseller." />
-          <HighlightCard>
-            <p className="cm-highlight-copy">Build a partner-first digital experience that positions IP Integration as the easiest and most commercially attractive vendor for resellers to grow recurring CX revenue with.</p>
+          <HighlightCard className="cm-hero-card">
+            <div className="cm-hero-layout">
+              <div>
+                <p className="cm-highlight-title">Build the partner growth storefront</p>
+                <p className="cm-highlight-copy">Build a partner-first digital experience that positions IP Integration as the easiest and most commercially attractive vendor for resellers to grow recurring CX revenue with.</p>
+                <div className="cm-proof-bar">
+                  <span>🧩 Portfolio breadth</span>
+                  <span>📊 Revenue clarity</span>
+                  <span>🛠️ Frictionless enablement</span>
+                </div>
+              </div>
+              <div className="cm-hero-visual" aria-hidden="true">
+                <div>📣</div>
+                <p>Channel Marketing Engine</p>
+                <div className="cm-hero-visual-row">
+                  <span>🎯</span>
+                  <span>💷</span>
+                  <span>🤝</span>
+                  <span>🚀</span>
+                </div>
+              </div>
+            </div>
             <div className="cm-grid-4">
               {CHANNEL_MARKETING_MISSION_PILLARS.map((pillar) => (
                 <StandardCard key={pillar.title} className="cm-mini-card">
+                  <span className="cm-icon-badge" aria-hidden="true">{pillar.icon}</span>
                   <h4>{pillar.title}</h4>
                   <p>{pillar.desc}</p>
                 </StandardCard>
@@ -10003,14 +10046,14 @@ function ChannelMarketingPage() {
         <SectionWrapper>
           <SectionHeader title="What Resellers Need to See" description="The three questions every reseller asks are: why should I partner with you, how do I make money, and how easy is it to work with you?" />
           <div className="cm-grid-3">
-            {[
-              ["Why should I partner with you?", "Resellers need to quickly understand what makes IP Integration commercially and strategically different from other vendors. This includes portfolio breadth, partner support, managed services capability, and the ability to help partners grow beyond a single product sale."],
-              ["How do I make money?", "The website should show the revenue journey clearly — how a partner can start with any entry point such as SIP, UC, CCaaS, AI or payments and then expand into broader customer opportunities with recurring revenue, services and managed support."],
-              ["How easy are you to work with?", "Partners want confidence that they will receive enablement, pre-sales help, delivery support, governance clarity, commercial simplicity and access to the latest documentation without friction."],
-            ].map(([title, body]) => (
-              <StandardCard key={title} className="cm-big-card">
-                <h3>{title}</h3>
-                <p>{body}</p>
+            {CHANNEL_RESELLER_QUESTIONS.map((item) => (
+              <StandardCard key={item.title} className="cm-big-card">
+                <div className="cm-big-card-head">
+                  <span className="cm-icon-badge" aria-hidden="true">{item.icon}</span>
+                  <h3>{item.title}</h3>
+                </div>
+                <p>{item.body}</p>
+                <div className="cm-question-footer">Partner decision checkpoint</div>
               </StandardCard>
             ))}
           </div>
@@ -10026,9 +10069,43 @@ function ChannelMarketingPage() {
                   <h3>{item.title}</h3>
                   <p>Purpose: {item.summary}</p>
                 </div>
-                <span className="channel-chip">{item.badge}</span>
+                <span className="channel-chip cm-badge-tone">{item.badge}</span>
               </div>
             ))}
+          </div>
+        </SectionWrapper>
+
+        <SectionWrapper>
+          <SectionHeader title="Example Page Experience" description="A visual-first layout that mirrors the look and feel of the Why Work with IPI page." />
+          <div className="cm-mock-wrap">
+            <div className="cm-mock-topbar">
+              <div className="cm-dots"><span /><span /><span /></div>
+              <div className="cm-url">partner.ipintegration.com/channel</div>
+            </div>
+            <div className="cm-mock-content">
+              <div className="cm-mock-hero">
+                <h3>Grow recurring CX revenue with IPI</h3>
+                <p>A partner-ready message that pairs commercial outcomes with clear enablement, proof points and simple next steps.</p>
+                <div className="cm-mock-cta">
+                  <span className="channel-chip">🤝 Become a Partner</span>
+                  <span className="channel-chip">📅 Book a Partner Intro</span>
+                </div>
+              </div>
+              <div className="cm-revenue-row">
+                <span>📡 SIP & Connectivity</span>
+                <span>☎️ UC & CCaaS</span>
+                <span>🤖 AI Services</span>
+                <span>💳 Secure Payments</span>
+                <span>🛡️ Managed Support</span>
+              </div>
+              <div className="cm-final-cta">
+                <h4>Make the next action obvious.</h4>
+                <div>
+                  <span className="channel-chip">✅ Download Program Guide</span>
+                  <span className="channel-chip">🚀 Start Application</span>
+                </div>
+              </div>
+            </div>
           </div>
         </SectionWrapper>
 
