@@ -6012,71 +6012,12 @@ function PartnerProgramPage() {
           animation: "fadeIn 0.35s ease both",
         }}
       >
-        {/* HERO */}
-        <div style={{ textAlign: "center", padding: "52px 40px 12px" }}>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              background: "rgba(54,198,255,0.08)",
-              border: "1px solid rgba(54,198,255,0.22)",
-              borderRadius: 100,
-              padding: "5px 16px",
-              marginBottom: 16,
-              fontSize: 11,
-              fontWeight: 800,
-              color: "#67D8FF",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-            }}
-          >
-            IPI Partner Advantage 2026
-          </div>
-          <h1
-            style={{
-              fontSize: "clamp(26px,4.2vw,52px)",
-              fontWeight: 800,
-              letterSpacing: "-0.04em",
-              color: "#fff",
-              lineHeight: 1.03,
-              marginBottom: 14,
-              fontFamily: "'Syne',sans-serif",
-            }}
-          >
-            IPI Partner{" "}
-            <span
-              style={{
-                color: "#36C6FF",
-                textShadow: "0 0 36px rgba(54,198,255,0.6)",
-              }}
-            >
-              Program
-            </span>
-          </h1>
-          <p
-            style={{
-              fontSize: "clamp(14px,1.4vw,16px)",
-              color: "#8EB8AF",
-              maxWidth: 640,
-              margin: "0 auto",
-              lineHeight: 1.78,
-            }}
-          >
-            Defining our recruitment priorities, ideal partner profile, and the
-            strategic framework that ensures we build the right ecosystem —
-            focused on partners who can drive the fastest path to revenue.
-          </p>
-          </div>
-
-        <div className="brand-line" style={{ margin: "40px 44px 0" }} />
-
         {/* TARGET PARTNER PRIORITIES */}
         <div
           style={{
             maxWidth: "none",
             margin: "0",
-            padding: "36px 44px 0",
+            padding: "52px 44px 0",
             width: "100%",
           }}
         >
