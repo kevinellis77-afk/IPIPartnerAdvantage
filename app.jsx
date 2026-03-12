@@ -4859,6 +4859,34 @@ function EnablementHub({ onBack, onNavigate }) {
 }
 
 function ProspectToolPage() {
+  const STORAGE_VIEWS_KEY = 'partnerProspectSavedViews';
+  const STORAGE_DEFAULT_KEY = 'partnerProspectDefaultViewId';
+  const DEFAULT_FILTERS = {
+    name: '', industry: '', category: '', channel_role: '', channel_segment: '', country: '', city: '',
+    trading_status: '', adopter_profile: '', partnerTierName: '', minEmployees: '', maxEmployees: '', minRevenue: '',
+    maxRevenue: '', hasWebsite: false, hasLinkedIn: false, hasEmail: false, minScore: 0
+  };
+  const ALL_COLUMNS = [
+    { key: 'rank', label: 'Rank', essential: true },
+    { key: 'displayName', label: 'Company Name' },
+    { key: 'idealPartnerScore', label: 'Ideal Partner Score' },
+    { key: 'partnerTierName', label: 'Partner Tier' },
+    { key: 'industry', label: 'Industry' },
+    { key: 'category', label: 'Category', hiddenByDefault: true },
+    { key: 'channel_role', label: 'Channel Role' },
+    { key: 'channel_segment', label: 'Channel Segment' },
+    { key: 'displayEmployees', label: 'Employees', hiddenByDefault: true },
+    { key: 'displayRevenue', label: 'Revenue' },
+    { key: 'city', label: 'City', hiddenByDefault: true },
+    { key: 'country', label: 'Country', hiddenByDefault: true },
+    { key: 'website', label: 'Website' },
+    { key: 'linkedin', label: 'LinkedIn' },
+    { key: 'contactCount', label: 'Contacts' },
+    { key: 'trading_status', label: 'Trading Status', hiddenByDefault: true }
+  ];
+  const DEFAULT_VISIBLE_COLUMNS = ALL_COLUMNS.filter((c) => !c.hiddenByDefault).map((c) => c.key);
+  const DEFAULT_COLUMN_ORDER = ALL_COLUMNS.map((c) => c.key);
+
   const [rows, setRows] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
@@ -4869,12 +4897,26 @@ function ProspectToolPage() {
   const [page, setPage] = React.useState(1);
   const [sort, setSort] = React.useState('score_desc');
   const [searchInput, setSearchInput] = React.useState('');
-  const [filters, setFilters] = React.useState({
-    name: '', industry: '', category: '', channel_role: '', channel_segment: '', country: '', city: '',
-    trading_status: '', adopter_profile: '', partnerTierName: '', minEmployees: '', maxEmployees: '', minRevenue: '',
-    maxRevenue: '', hasWebsite: false, hasLinkedIn: false, hasEmail: false, minScore: 0
-  });
+  const [filters, setFilters] = React.useState(DEFAULT_FILTERS);
+  const [savedViews, setSavedViews] = React.useState([]);
+  const [defaultViewId, setDefaultViewId] = React.useState('');
+  const [visibleColumns, setVisibleColumns] = React.useState(DEFAULT_VISIBLE_COLUMNS);
+  const [columnOrder] = React.useState(DEFAULT_COLUMN_ORDER);
+  const [showColumnMenu, setShowColumnMenu] = React.useState(false);
+  const [saveViewOpen, setSaveViewOpen] = React.useState(false);
+  const [saveViewForm, setSaveViewForm] = React.useState({ name: '', description: '', setDefault: false, overwrite: false, error: '' });
+
   const keyword = useDebouncedValue(searchInput, 180);
+
+  const iconMap = {
+    view: '👁', edit: '✏️', delete: '🗑', save: '💾', load: '📥', reset: '↺', filter: '⏷', export: '⬇', clear: '✖',
+    defaultOn: '★', defaultOff: '☆', close: '✕', table: '▦', cards: '☷', prev: '←', next: '→', columns: '☰', copy: '⧉'
+  };
+  const IconButton = ({ icon, label, onClick, className = '', disabled = false, type = 'button' }) => (
+    <button type={type} className={`ui-btn ui-btn--secondary prospect-icon-btn ${className}`.trim()} aria-label={label} title={label} onClick={onClick} disabled={disabled}>
+      <span aria-hidden="true">{iconMap[icon] || icon}</span>
+    </button>
+  );
 
   const loadData = React.useCallback(async () => {
     setLoading(true); setError('');
@@ -4883,8 +4925,54 @@ function ProspectToolPage() {
     finally { setLoading(false); }
   }, []);
 
+  const getCurrentTableState = React.useCallback(() => ({
+    searchTerm: searchInput,
+    filters,
+    sort,
+    pagination: { page, pageSize },
+    view,
+    top50,
+    visibleColumns,
+    columnOrder
+  }), [searchInput, filters, sort, page, pageSize, view, top50, visibleColumns, columnOrder]);
+
+  const applyTableState = React.useCallback((tableState = {}) => {
+    setSearchInput(tableState.searchTerm || '');
+    setFilters({ ...DEFAULT_FILTERS, ...(tableState.filters || {}) });
+    setSort(tableState.sort || 'score_desc');
+    setPageSize(Number(tableState.pagination?.pageSize || 25));
+    setPage(Number(tableState.pagination?.page || 1));
+    setView(tableState.view || 'table');
+    setTop50(Boolean(tableState.top50));
+    setVisibleColumns((tableState.visibleColumns || DEFAULT_VISIBLE_COLUMNS).filter((key) => DEFAULT_COLUMN_ORDER.includes(key)));
+  }, []);
+
   React.useEffect(() => { loadData(); }, [loadData]);
   React.useEffect(() => { setPage(1); }, [keyword, filters, sort, top50]);
+
+  React.useEffect(() => {
+    try {
+      const storedViews = JSON.parse(localStorage.getItem(STORAGE_VIEWS_KEY) || '[]');
+      const storedDefault = localStorage.getItem(STORAGE_DEFAULT_KEY) || '';
+      if (Array.isArray(storedViews)) setSavedViews(storedViews);
+      if (storedDefault) setDefaultViewId(storedDefault);
+    } catch (_e) { /* no-op */ }
+  }, []);
+
+  React.useEffect(() => {
+    localStorage.setItem(STORAGE_VIEWS_KEY, JSON.stringify(savedViews));
+  }, [savedViews]);
+
+  React.useEffect(() => {
+    if (defaultViewId) localStorage.setItem(STORAGE_DEFAULT_KEY, defaultViewId);
+    else localStorage.removeItem(STORAGE_DEFAULT_KEY);
+  }, [defaultViewId]);
+
+  React.useEffect(() => {
+    if (!rows.length || !savedViews.length || !defaultViewId) return;
+    const defaultView = savedViews.find((v) => v.id === defaultViewId);
+    if (defaultView?.tableState) applyTableState(defaultView.tableState);
+  }, [rows.length, savedViews, defaultViewId, applyTableState]);
 
   const options = React.useMemo(() => {
     const make = (k) => [...new Set(rows.map((r) => r[k]).filter(Boolean))].sort();
@@ -4928,8 +5016,6 @@ function ProspectToolPage() {
   const avgScore = sorted.length ? (sorted.reduce((a, b) => a + b.idealPartnerScore, 0) / sorted.length).toFixed(1) : '0.0';
   const kpis = {
     total: rows.length,
-    web: rows.filter((r) => r.hasWebsite).length,
-    li: rows.filter((r) => r.hasLinkedIn).length,
     email: rows.filter((r) => r.hasEmail).length,
     avgAll: rows.length ? (rows.reduce((a, b) => a + b.idealPartnerScore, 0) / rows.length).toFixed(1) : '0.0',
     filtered: sorted.length
@@ -4943,82 +5029,213 @@ function ProspectToolPage() {
   const getTierClass = (record) => `tier-badge tier-${record.partnerTier?.color || 'gray'}`;
   const activeChips = [keyword && `Search: ${keyword}`, ...Object.entries(filters).filter(([k, v]) => v && v !== 0).map(([k, v]) => `${k}: ${v}`)].filter(Boolean);
   const resetFilters = () => {
-    setFilters({
-      name: '', industry: '', category: '', channel_role: '', channel_segment: '', country: '', city: '', trading_status: '',
-      adopter_profile: '', partnerTierName: '', minEmployees: '', maxEmployees: '', minRevenue: '', maxRevenue: '',
-      hasWebsite: false, hasLinkedIn: false, hasEmail: false, minScore: 0
-    });
+    setFilters(DEFAULT_FILTERS);
     setSearchInput('');
     setTop50(false);
+    setSort('score_desc');
+    setVisibleColumns(DEFAULT_VISIBLE_COLUMNS);
+  };
+
+  const toSummary = (tableState) => {
+    const activeFilters = Object.entries(tableState.filters || {}).filter(([_, v]) => v && v !== 0).map(([k, v]) => `${k}:${String(v)}`);
+    return {
+      filters: activeFilters.length ? activeFilters.join(', ') : 'No filters',
+      columns: (tableState.visibleColumns || []).map((k) => ALL_COLUMNS.find((c) => c.key === k)?.label).filter(Boolean).join(', ') || 'Default columns'
+    };
+  };
+
+  const handleSaveView = () => {
+    const trimmedName = saveViewForm.name.trim();
+    if (!trimmedName) {
+      setSaveViewForm((f) => ({ ...f, error: 'View name is required.' }));
+      return;
+    }
+    const existing = savedViews.find((v) => v.name.toLowerCase() === trimmedName.toLowerCase());
+    if (existing && !saveViewForm.overwrite) {
+      setSaveViewForm((f) => ({ ...f, error: 'A view with this name already exists. Enable overwrite to replace it.' }));
+      return;
+    }
+
+    const now = new Date().toISOString();
+    const isDefault = saveViewForm.setDefault;
+    const newView = {
+      id: existing ? existing.id : `view-${Date.now()}`,
+      name: trimmedName,
+      description: saveViewForm.description.trim(),
+      createdAt: existing?.createdAt || now,
+      updatedAt: now,
+      isDefault,
+      tableState: getCurrentTableState()
+    };
+
+    let nextViews = existing
+      ? savedViews.map((v) => (v.id === existing.id ? newView : v))
+      : [...savedViews, newView];
+
+    if (isDefault) {
+      nextViews = nextViews.map((v) => ({ ...v, isDefault: v.id === newView.id }));
+      setDefaultViewId(newView.id);
+    }
+
+    setSavedViews(nextViews);
+    setSaveViewOpen(false);
+    setSaveViewForm({ name: '', description: '', setDefault: false, overwrite: false, error: '' });
+  };
+
+  const loadSavedView = (savedView) => {
+    applyTableState(savedView.tableState || {});
+    setSelected(null);
+  };
+
+  const deleteSavedView = (savedView) => {
+    if (!window.confirm(`Delete saved view "${savedView.name}"?`)) return;
+    const next = savedViews.filter((v) => v.id !== savedView.id);
+    setSavedViews(next);
+    if (defaultViewId === savedView.id) {
+      setDefaultViewId('');
+      applyTableState({ searchTerm: '', filters: DEFAULT_FILTERS, sort: 'score_desc', pagination: { page: 1, pageSize: 25 }, visibleColumns: DEFAULT_VISIBLE_COLUMNS, columnOrder: DEFAULT_COLUMN_ORDER });
+    }
+  };
+
+  const setAsDefaultView = (savedView) => {
+    setSavedViews((current) => current.map((v) => ({ ...v, isDefault: v.id === savedView.id })));
+    setDefaultViewId(savedView.id);
+  };
+
+  const clearDefaultView = (savedView) => {
+    if (defaultViewId !== savedView.id) return;
+    setSavedViews((current) => current.map((v) => ({ ...v, isDefault: false })));
+    setDefaultViewId('');
+  };
+
+  const visibleColumnDefs = columnOrder.map((key) => ALL_COLUMNS.find((c) => c.key === key)).filter(Boolean).filter((c) => visibleColumns.includes(c.key));
+
+  const renderCell = (record, key, rowIndex) => {
+    if (key === 'rank') return <td>{(page - 1) * pageSize + rowIndex + 1}</td>;
+    if (key === 'displayName') return <td><strong>{record.displayName}</strong>{record.ch_link && <div><a href={window.ProspectToolUtils.normalizeUrl(record.ch_link)} target="_blank" rel="noreferrer">Companies House</a></div>}</td>;
+    if (key === 'idealPartnerScore') return <td><span className="score-badge">{record.idealPartnerScore}</span></td>;
+    if (key === 'partnerTierName') return <td><span className={getTierClass(record)}>{record.partnerTierName || 'Low Priority'}</span></td>;
+    if (key === 'website') return <td>{record.website ? <a href={window.ProspectToolUtils.normalizeUrl(record.website)} target="_blank" rel="noreferrer">Website</a> : '—'}</td>;
+    if (key === 'linkedin') return <td>{record.linkedin ? <a href={window.ProspectToolUtils.normalizeUrl(record.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a> : '—'}</td>;
+    return <td>{record[key] || '—'}</td>;
   };
 
   if (loading) return <div className="prospect-shell"><PageHeader title="Partner Prospect Tool" subtitle="Loading CSV dataset…" /><div className="ds-card">Loading data…</div></div>;
-  if (error) return <div className="prospect-shell"><PageHeader title="Partner Prospect Tool" subtitle="Unable to load dataset" /><div className="ds-card">{error}<div style={{ marginTop: 10 }}><button className="ui-btn" onClick={loadData}>Retry</button></div></div></div>;
+  if (error) return <div className="prospect-shell"><PageHeader title="Partner Prospect Tool" subtitle="Unable to load dataset" /><div className="ds-card">{error}<div style={{ marginTop: 10 }}><IconButton icon="load" label="Retry load" onClick={loadData} /></div></div></div>;
 
   return <div className="prospect-shell">
     <PageHeader title="Partner Prospect Tool" eyebrow="Partner Prospect Tool" subtitle="Explore, filter and rank reseller prospects from the channel dataset" right={<span className="pill">{rows.length} records</span>} />
 
-    <div className="kpi-grid">{[
-      ['Total Prospects', kpis.total], ['Prospects with Website', kpis.web], ['Prospects with LinkedIn', kpis.li],
-      ['Prospects with Contact Email', kpis.email], ['Average Ideal Partner Score', kpis.avgAll], ['Filtered Results', kpis.filtered]
-    ].map(([l, v]) => <div className="kpi-card" key={l}><div className="kpi-label">{l}</div><div className="kpi-value">{v}</div></div>)}</div>
+    <div className="kpi-grid">
+      {[
+        ['Total Prospects', kpis.total], ['Prospects with Email', kpis.email], ['Average Score (All)', kpis.avgAll], ['Current Result Set', kpis.filtered]
+      ].map(([label, value]) => <div className="kpi-card" key={label}><div className="kpi-label">{label}</div><div className="kpi-value">{value}</div></div>)}
+    </div>
 
     <div className="ds-card" style={{ display: 'grid', gap: 10 }}>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <input className="ui-search" placeholder="Search company, industry, role, keywords, contacts…" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
-        <select className="ui-search" value={sort} onChange={(e) => setSort(e.target.value)}>
-          <option value="score_desc">Score ↓</option><option value="score_asc">Score ↑</option>
-          <option value="revenue_desc">Revenue ↓</option><option value="employees_desc">Employees ↓</option>
-          <option value="name_asc">Name A→Z</option>
-        </select>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+        <input className="ui-search" placeholder="Search company, role, market, technology…" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
+        <IconButton icon="clear" label="Clear search" onClick={() => setSearchInput('')} disabled={!searchInput} />
+        <IconButton icon="reset" label="Reset filters" onClick={resetFilters} />
+        <IconButton icon="columns" label="Manage columns" onClick={() => setShowColumnMenu((v) => !v)} className={showColumnMenu ? 'is-active' : ''} />
+        <IconButton icon="save" label="Save view" onClick={() => setSaveViewOpen(true)} />
+        <IconButton icon="export" label="Export filtered CSV" onClick={() => exportRows(sorted, 'prospects-filtered.csv')} />
+        <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#b8d5cf' }}><input type="checkbox" checked={top50} onChange={(e) => setTop50(e.target.checked)} /> Top 50 only</label>
+        <div style={{ marginLeft: 'auto', display: 'inline-flex', gap: 6 }}>
+          <IconButton icon="table" label="Table view" onClick={() => setView('table')} className={view === 'table' ? 'is-active' : ''} />
+          <IconButton icon="cards" label="Card view" onClick={() => setView('cards')} className={view === 'cards' ? 'is-active' : ''} />
+        </div>
       </div>
+
+      {showColumnMenu && <div className="column-menu">
+        {ALL_COLUMNS.map((column) => <label key={column.key}><input type="checkbox" disabled={column.essential} checked={visibleColumns.includes(column.key)} onChange={(e) => {
+          if (column.essential) return;
+          setVisibleColumns((current) => e.target.checked ? [...current, column.key] : current.filter((k) => k !== column.key));
+        }} /> {column.label}{column.essential ? ' (always visible)' : ''}</label>)}
+      </div>}
 
       <div className="filter-grid">
-        {['industry', 'category', 'channel_role', 'channel_segment', 'country', 'city', 'trading_status', 'adopter_profile'].map((k) =>
-          <select key={k} className="ui-search" value={filters[k]} onChange={(e) => setFilters((f) => ({ ...f, [k]: e.target.value }))}>
-            <option value="">All {k.replace('_', ' ')}</option>{options[k].map((v) => <option key={v} value={v}>{v}</option>)}
+        {['industry', 'category', 'channel_role', 'channel_segment', 'country', 'city', 'trading_status', 'adopter_profile'].map((k) => (
+          <select className="ui-search" key={k} value={filters[k]} onChange={(e) => setFilters((f) => ({ ...f, [k]: e.target.value }))}>
+            <option value="">{k.replace(/_/g, ' ')}</option>
+            {options[k].map((v) => <option key={v} value={v}>{v}</option>)}
           </select>
-        )}
-        <select className="ui-search" value={filters.partnerTierName} onChange={(e) => setFilters((f) => ({ ...f, partnerTierName: e.target.value }))}>
-          <option value="">All Partner Tier</option>
-          <option value="Strategic Target">Strategic Target</option>
-          <option value="Strong Prospect">Strong Prospect</option>
-          <option value="Opportunistic">Opportunistic</option>
-          <option value="Low Priority">Low Priority</option>
+        ))}
+        <select className="ui-search" value={filters.partnerTierName} onChange={(e) => setFilters((f) => ({ ...f, partnerTierName: e.target.value }))}><option value="">Partner tier</option>{['Strategic - Tier 1', 'Growth - Tier 2', 'Select - Tier 3', 'Low Priority'].map((v) => <option key={v}>{v}</option>)}</select>
+        <input className="ui-search" placeholder="Min employees" type="number" value={filters.minEmployees} onChange={(e) => setFilters((f) => ({ ...f, minEmployees: e.target.value }))} />
+        <input className="ui-search" placeholder="Max employees" type="number" value={filters.maxEmployees} onChange={(e) => setFilters((f) => ({ ...f, maxEmployees: e.target.value }))} />
+        <input className="ui-search" placeholder="Min revenue" type="number" value={filters.minRevenue} onChange={(e) => setFilters((f) => ({ ...f, minRevenue: e.target.value }))} />
+        <input className="ui-search" placeholder="Max revenue" type="number" value={filters.maxRevenue} onChange={(e) => setFilters((f) => ({ ...f, maxRevenue: e.target.value }))} />
+        <input className="ui-search" placeholder="Min score" type="number" min="0" max="100" value={filters.minScore} onChange={(e) => setFilters((f) => ({ ...f, minScore: e.target.value }))} />
+        <select className="ui-search" value={sort} onChange={(e) => setSort(e.target.value)}>
+          <option value="score_desc">Score ↓</option><option value="score_asc">Score ↑</option><option value="revenue_desc">Revenue ↓</option><option value="revenue_asc">Revenue ↑</option><option value="employees_desc">Employees ↓</option><option value="employees_asc">Employees ↑</option><option value="name_asc">Name A→Z</option><option value="name_desc">Name Z→A</option>
         </select>
-        <input className="ui-search" placeholder="Min employees" value={filters.minEmployees} onChange={(e) => setFilters((f) => ({ ...f, minEmployees: e.target.value }))} />
-        <input className="ui-search" placeholder="Max employees" value={filters.maxEmployees} onChange={(e) => setFilters((f) => ({ ...f, maxEmployees: e.target.value }))} />
-        <input className="ui-search" placeholder="Min revenue" value={filters.minRevenue} onChange={(e) => setFilters((f) => ({ ...f, minRevenue: e.target.value }))} />
-        <input className="ui-search" placeholder="Max revenue" value={filters.maxRevenue} onChange={(e) => setFilters((f) => ({ ...f, maxRevenue: e.target.value }))} />
-        <input className="ui-search" type="number" min="0" max="100" placeholder="Minimum score" value={filters.minScore} onChange={(e) => setFilters((f) => ({ ...f, minScore: Number(e.target.value || 0) }))} />
-      </div>
-
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <label><input type="checkbox" checked={filters.hasWebsite} onChange={(e) => setFilters((f) => ({ ...f, hasWebsite: e.target.checked }))} /> Has website</label>
         <label><input type="checkbox" checked={filters.hasLinkedIn} onChange={(e) => setFilters((f) => ({ ...f, hasLinkedIn: e.target.checked }))} /> Has LinkedIn</label>
         <label><input type="checkbox" checked={filters.hasEmail} onChange={(e) => setFilters((f) => ({ ...f, hasEmail: e.target.checked }))} /> Has email</label>
       </div>
-
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <button className="ui-btn" onClick={() => setTop50(true)}>Show Top 50 Ideal Partners</button>
-        <button className="ui-btn secondary" onClick={() => exportRows(sorted, 'filtered-prospects.csv')}>Export Filtered CSV</button>
-        <button className="ui-btn secondary" onClick={() => exportRows([...filtered].sort((a, b) => b.idealPartnerScore - a.idealPartnerScore).slice(0, 50), 'top-50-prospects.csv')}>Export Top 50 CSV</button>
-        <button className="ui-btn secondary" onClick={resetFilters}>Reset</button>
-        <button className={`ui-btn ${view === 'table' ? '' : 'secondary'}`} onClick={() => setView('table')}>Table</button>
-        <button className={`ui-btn ${view === 'card' ? '' : 'secondary'}`} onClick={() => setView('card')}>Card</button>
-        {top50 && <span className="top50-badge">Top 50 mode</span>}
-      </div>
-
-      {activeChips.length > 0 && <div className="chip-row">{activeChips.map((c) => <span className="chip" key={c}>{c}</span>)}</div>}
+      <div className="chip-row">{activeChips.map((c) => <span className="chip" key={c}>{c}</span>)}{activeChips.length === 0 && <span className="chip">No active filters</span>}</div>
     </div>
 
     {top50 && <div className="ds-card" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: 12 }}><strong>Top 50 summary</strong><span>Avg score: {avgScore}</span><span>Websites: {sorted.filter((r) => r.hasWebsite).length}</span><span>LinkedIn: {sorted.filter((r) => r.hasLinkedIn).length}</span><span>Emails: {sorted.filter((r) => r.hasEmail).length}</span></div>}
 
-    {sorted.length === 0 ? <div className="ds-card">No results found.</div> : view === 'table' ? <div className="prospect-table-wrap"><table className="prospect-table"><thead><tr>{['Rank', 'Company Name', 'Ideal Partner Score', 'Partner Tier', 'Industry', 'Category', 'Channel Role', 'Channel Segment', 'Employees', 'Revenue', 'City', 'Country', 'Website', 'LinkedIn', 'Contacts', 'Trading Status'].map((h) => <th key={h}>{h}</th>)}</tr></thead><tbody>{pageRows.map((r, i) => <tr key={r.id} onClick={() => setSelected(r)} style={{ cursor: 'pointer' }}><td>{(page - 1) * pageSize + i + 1}</td><td><strong>{r.displayName}</strong>{r.ch_link && <div><a href={window.ProspectToolUtils.normalizeUrl(r.ch_link)} target="_blank" rel="noreferrer">Companies House</a></div>}</td><td><span className="score-badge">{r.idealPartnerScore}</span></td><td><span className={getTierClass(r)}>{r.partnerTierName || 'Low Priority'}</span></td><td>{r.industry || '—'}</td><td>{r.category || '—'}</td><td>{r.channel_role || '—'}</td><td>{r.channel_segment || '—'}</td><td>{r.displayEmployees}</td><td>{r.displayRevenue}</td><td>{r.city || '—'}</td><td>{r.country || '—'}</td><td>{r.website ? <a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a> : '—'}</td><td>{r.linkedin ? <a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a> : '—'}</td><td>{r.contactCount}</td><td>{r.trading_status || '—'}</td></tr>)}</tbody></table></div> : <div className="prospect-cards">{pageRows.map((r) => <div className="prospect-card" key={r.id} onClick={() => setSelected(r)}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}><strong>{r.displayName}</strong><div style={{ display: 'flex', gap: 6, alignItems: 'center' }}><span className="score-badge">{r.idealPartnerScore}</span><span className={getTierClass(r)}>{r.partnerTierName || 'Low Priority'}</span></div></div><div>{r.industry || '—'}</div><div>{r.channel_role || '—'} / {r.channel_segment || '—'}</div><div>{r.city || '—'}, {r.country || '—'}</div><div>{r.displayRevenue} · {r.displayEmployees}</div><div>{r.keywords || '—'}</div><div style={{ display: 'flex', gap: 8 }}>{r.website && <a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>}{r.linkedin && <a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}</div></div>)}</div>}
+    {sorted.length === 0 ? <div className="ds-card">No results found.</div> : view === 'table' ? <div className="prospect-table-wrap"><table className="prospect-table"><thead><tr>{visibleColumnDefs.map((h) => <th key={h.key}>{h.label}</th>)}</tr></thead><tbody>{pageRows.map((r, i) => <tr key={r.id} onClick={() => setSelected(r)} style={{ cursor: 'pointer' }}>{visibleColumnDefs.map((col) => <React.Fragment key={`${r.id}-${col.key}`}>{renderCell(r, col.key, i)}</React.Fragment>)}</tr>)}</tbody></table></div> : <div className="prospect-cards">{pageRows.map((r) => <div className="prospect-card" key={r.id} onClick={() => setSelected(r)}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}><strong>{r.displayName}</strong><div style={{ display: 'flex', gap: 6, alignItems: 'center' }}><span className="score-badge">{r.idealPartnerScore}</span><span className={getTierClass(r)}>{r.partnerTierName || 'Low Priority'}</span></div></div><div>{r.industry || '—'}</div><div>{r.channel_role || '—'} / {r.channel_segment || '—'}</div><div>{r.city || '—'}, {r.country || '—'}</div><div>{r.displayRevenue} · {r.displayEmployees}</div><div>{r.keywords || '—'}</div><div style={{ display: 'flex', gap: 8 }}>{r.website && <a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>}{r.linkedin && <a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}</div></div>)}</div>}
 
-    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}><button className="ui-btn secondary" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Prev</button><span style={{ fontSize: 12, color: '#9bb6b0' }}>Page {page} / {pageCount}</span><button className="ui-btn secondary" disabled={page >= pageCount} onClick={() => setPage((p) => p + 1)}>Next</button><select className="ui-search" value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))} style={{ maxWidth: 90 }}><option>25</option><option>50</option><option>100</option></select></div>
+    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <IconButton icon="prev" label="Previous page" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} />
+      <span style={{ fontSize: 12, color: '#9bb6b0' }}>Page {page} / {pageCount}</span>
+      <IconButton icon="next" label="Next page" disabled={page >= pageCount} onClick={() => setPage((p) => p + 1)} />
+      <select className="ui-search" value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))} style={{ maxWidth: 90 }}><option>25</option><option>50</option><option>100</option></select>
+    </div>
 
-    {selected && <div className="drawer"><button className="ui-btn secondary" onClick={() => setSelected(null)}>Close</button>
+    <div className="saved-views-section ds-card">
+      <h3>Saved Views</h3>
+      {!savedViews.length && <p style={{ margin: 0, fontSize: 12, color: '#9bb6b0' }}>No saved views yet.</p>}
+      <div className="saved-views-grid">
+        {savedViews.map((savedView) => {
+          const summary = toSummary(savedView.tableState || {});
+          return <div key={savedView.id} className="saved-view-card">
+            <div className="saved-view-head">
+              <strong>{savedView.name}</strong>
+              {savedView.id === defaultViewId && <span className="top50-badge">Default</span>}
+            </div>
+            {savedView.description && <p>{savedView.description}</p>}
+            <div className="saved-view-meta">
+              <span><b>Filters:</b> {summary.filters}</span>
+              <span><b>Columns:</b> {summary.columns}</span>
+              <span><b>Created:</b> {new Date(savedView.createdAt).toLocaleString()}</span>
+              <span><b>Updated:</b> {new Date(savedView.updatedAt).toLocaleString()}</span>
+            </div>
+            <div className="saved-view-actions">
+              <IconButton icon="load" label="Load view" onClick={() => loadSavedView(savedView)} />
+              <IconButton icon={savedView.id === defaultViewId ? 'defaultOn' : 'defaultOff'} label={savedView.id === defaultViewId ? 'Remove default view' : 'Set default view'} onClick={() => savedView.id === defaultViewId ? clearDefaultView(savedView) : setAsDefaultView(savedView)} />
+              <IconButton icon="delete" label="Delete view" onClick={() => deleteSavedView(savedView)} />
+            </div>
+          </div>;
+        })}
+      </div>
+    </div>
+
+    {saveViewOpen && <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setSaveViewOpen(false); }}>
+      <div className="modal-box ds-card" style={{ maxWidth: 560 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ margin: 0 }}>Save current view</h3>
+          <IconButton icon="close" label="Close save view dialog" onClick={() => setSaveViewOpen(false)} />
+        </div>
+        <div style={{ display: 'grid', gap: 10, marginTop: 12 }}>
+          <input className="ui-search" placeholder="View name" value={saveViewForm.name} onChange={(e) => setSaveViewForm((f) => ({ ...f, name: e.target.value, error: '' }))} />
+          <textarea className="ui-search" placeholder="Description (optional)" value={saveViewForm.description} onChange={(e) => setSaveViewForm((f) => ({ ...f, description: e.target.value }))} rows={3} />
+          <label><input type="checkbox" checked={saveViewForm.setDefault} onChange={(e) => setSaveViewForm((f) => ({ ...f, setDefault: e.target.checked }))} /> Set as default view</label>
+          <label><input type="checkbox" checked={saveViewForm.overwrite} onChange={(e) => setSaveViewForm((f) => ({ ...f, overwrite: e.target.checked, error: '' }))} /> Overwrite if name already exists</label>
+          {saveViewForm.error && <div style={{ color: '#ffb4b4', fontSize: 12 }}>{saveViewForm.error}</div>}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <IconButton icon="save" label="Save view now" onClick={handleSaveView} />
+          </div>
+        </div>
+      </div>
+    </div>}
+
+    {selected && <div className="drawer"><IconButton icon="close" label="Close details panel" onClick={() => setSelected(null)} />
       <div className="panel-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' }}>
           <h3 style={{ margin: 0 }}>{selected.displayName}</h3>
@@ -5033,51 +5250,26 @@ function ProspectToolPage() {
         </div>
       </div>
 
-      <div className="panel-card">
-        <h4>Overview</h4>
-        <p>Industry: {selected.industry || '—'}</p>
-        <p>Company Type: {selected.category || '—'}</p>
-        <p>Employees: {selected.displayEmployees}</p>
-        <p>Revenue: {selected.displayRevenue}</p>
-        <p>Location: {selected.displayLocation} {selected.postcode}</p>
-      </div>
+      <div className="panel-card"><h4>Overview</h4><p>Industry: {selected.industry || '—'}</p><p>Company Type: {selected.category || '—'}</p><p>Employees: {selected.displayEmployees}</p><p>Revenue: {selected.displayRevenue}</p><p>Location: {selected.displayLocation} {selected.postcode}</p></div>
+      <div className="panel-card"><h4>Channel Fit</h4><p>Channel Role: {selected.channel_role || '—'}</p><p>Channel Segment: {selected.channel_segment || '—'}</p><p>Adopter Profile: {selected.adopter_profile || '—'}</p></div>
 
-      <div className="panel-card">
-        <h4>Channel Fit</h4>
-        <p>Channel Role: {selected.channel_role || '—'}</p>
-        <p>Channel Segment: {selected.channel_segment || '—'}</p>
-        <p>Adopter Profile: {selected.adopter_profile || '—'}</p>
-      </div>
+      <div className="panel-card"><h4>Technology Signals</h4><div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{(selected.tech_stack || '').split(/[,;|]/).map((t) => t.trim()).filter(Boolean).map((tech) => <span key={tech} className="tech-tag">{tech}</span>)}{!selected.tech_stack && <span className="tech-tag">No data</span>}</div></div>
 
-      <div className="panel-card">
-        <h4>Technology Signals</h4>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {(selected.tech_stack || '').split(/[,;|]/).map((t) => t.trim()).filter(Boolean).map((tech) => <span key={tech} className="tech-tag">{tech}</span>)}
-          {!selected.tech_stack && <span className="tech-tag">No data</span>}
-        </div>
-      </div>
+      <div className="panel-card"><h4>Contacts</h4>{selected.contacts.length ? selected.contacts.map((c, idx) => <div key={`${c.name}-${idx}`} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}><span>{c.name || c.email || '—'}</span><span className="tech-tag">{c.role || 'Role not set'}</span></div>) : <p>—</p>}</div>
 
-      <div className="panel-card">
-        <h4>Contacts</h4>
-        {selected.contacts.length ? selected.contacts.map((c, idx) => <div key={`${c.name}-${idx}`} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}><span>{c.name || c.email || '—'}</span><span className="tech-tag">{c.role || 'Role not set'}</span></div>) : <p>—</p>}
-      </div>
-
-      <div className="panel-card">
-        <h4>Score Breakdown</h4>
-        {selected.scoreBreakdown.map((f, idx) => {
-          const m = f.match(/([+-]?\d+(?:\.\d+)?)/);
-          const raw = m ? Number(m[1]) : 0;
-          const fill = Math.min(100, Math.max(8, Math.abs(raw) * 5));
-          const label = f.replace(/\s*[+-]?\d+(?:\.\d+)?$/, '');
-          return <div className="score-bar" key={`${f}-${idx}`}><span>{label}</span><div className="bar"><div className="fill" style={{ width: `${fill}%`, opacity: raw < 0 ? 0.45 : 1 }} /></div></div>;
-        })}
-      </div>
+      <div className="panel-card"><h4>Score Breakdown</h4>{selected.scoreBreakdown.map((f, idx) => {
+        const m = f.match(/([+-]?\d+(?:\.\d+)?)/);
+        const raw = m ? Number(m[1]) : 0;
+        const fill = Math.min(100, Math.max(8, Math.abs(raw) * 5));
+        const label = f.replace(/\s*[+-]?\d+(?:\.\d+)?$/, '');
+        return <div className="score-bar" key={`${f}-${idx}`}><span>{label}</span><div className="bar"><div className="fill" style={{ width: `${fill}%`, opacity: raw < 0 ? 0.45 : 1 }} /></div></div>;
+      })}</div>
 
       <div style={{ display: 'grid', gap: 8, marginTop: 10 }}>
-        <button className="ui-btn secondary" onClick={() => navigator.clipboard?.writeText(selected.website || '')}>Copy website</button>
-        <button className="ui-btn secondary" onClick={() => navigator.clipboard?.writeText(selected.linkedin || '')}>Copy LinkedIn</button>
-        <button className="ui-btn secondary" onClick={() => navigator.clipboard?.writeText(selected.email || selected.contacts[0]?.email || '')}>Copy email</button>
-        <button className="ui-btn" onClick={() => exportRows([selected], `${selected.id}-prospect.csv`)}>Export this record as CSV row</button>
+        <IconButton icon="copy" label="Copy website" onClick={() => navigator.clipboard?.writeText(selected.website || '')} />
+        <IconButton icon="copy" label="Copy LinkedIn" onClick={() => navigator.clipboard?.writeText(selected.linkedin || '')} />
+        <IconButton icon="copy" label="Copy email" onClick={() => navigator.clipboard?.writeText(selected.email || selected.contacts[0]?.email || '')} />
+        <IconButton icon="export" label="Export this record as CSV row" onClick={() => exportRows([selected], `${selected.id}-prospect.csv`)} />
       </div>
     </div>}
   </div>;
