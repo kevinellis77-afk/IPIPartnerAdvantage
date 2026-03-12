@@ -9891,14 +9891,6 @@ function ChannelMarketingPage() {
         />
 
         <SectionWrapper>
-          <StandardCard>
-            <p className="cm-intro-copy">
-              The purpose of this section is to define how IP Integration should present itself online to appeal to channel partners. The website must not just describe products — it must sell the commercial opportunity, explain why partners should work with IPI, show how they make money, and prove how easy it is to do business with us.
-            </p>
-          </StandardCard>
-        </SectionWrapper>
-
-        <SectionWrapper>
           <SectionHeader title="Channel Marketing Mission" description="The website must do more than describe technology. It must sell the business opportunity to a reseller." />
           <HighlightCard>
             <p className="cm-highlight-copy">Build a partner-first digital experience that positions IP Integration as the easiest and most commercially attractive vendor for resellers to grow recurring CX revenue with.</p>
