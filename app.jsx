@@ -10196,6 +10196,14 @@ const PLAN_SECTIONS = [
   ["summary", "Summary"],
 ];
 
+const RAG_OPTIONS = ["Red", "Amber", "Green"];
+const RAG_META = {
+  Red: { className: "rag-badge rag-red", rank: 0 },
+  Amber: { className: "rag-badge rag-amber", rank: 1 },
+  Green: { className: "rag-badge rag-green", rank: 2 },
+};
+const DEFAULT_RAG = "Amber";
+
 function planId() {
   return `plan_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -10206,7 +10214,23 @@ function safeNumber(v) {
 }
 
 function formatCurrency(v) {
-  return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", maximumFractionDigits: 0 }).format(safeNumber(v));
+  return new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency: "GBP",
+    maximumFractionDigits: 0,
+  }).format(safeNumber(v));
+}
+
+function ratio(current, target) {
+  const t = safeNumber(target);
+  if (t <= 0) return 0;
+  return safeNumber(current) / t;
+}
+
+function formatDate(v) {
+  if (!v) return "";
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
 }
 
 function daysSince(dateValue) {
@@ -10215,11 +10239,206 @@ function daysSince(dateValue) {
   return Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24)));
 }
 
+function computeOverdueActions(plan) {
+  return (plan?.actionPlan90Day || []).filter(
+    (x) => x.dueDate && new Date(x.dueDate).getTime() < Date.now() && x.status !== "Completed",
+  ).length;
+}
+
+function computeOpenRisks(plan) {
+  return (plan?.risksMitigation || []).filter((x) => x.status !== "Closed").length;
+}
+
+function computeOpenHighImpactRisks(plan) {
+  return (plan?.risksMitigation || []).filter(
+    (x) => x.status !== "Closed" && String(x.impact || "").toLowerCase() === "high",
+  ).length;
+}
+
+function scoreWeightedRatio(current, target, maxWeight) {
+  const t = safeNumber(target);
+  if (t <= 0) return Math.round(maxWeight * 0.6);
+  const pct = Math.max(0, Math.min(1, safeNumber(current) / t));
+  return Math.round(pct * maxWeight);
+}
+
+function scoreLabel(score) {
+  if (score >= 85) return "Strategic Growth";
+  if (score >= 70) return "Strong";
+  if (score >= 50) return "Moderate";
+  return "Needs Attention";
+}
+
+function metricRagFromRatio(r) {
+  if (r >= 0.8) return "Green";
+  if (r >= 0.4) return "Amber";
+  return "Red";
+}
+
+function computeKpiRag(plan) {
+  const sc = plan?.scorecard || {};
+  const pipelineHealth = metricRagFromRatio(ratio(sc.pipelineCurrent, sc.pipelineTarget));
+  const revRatio = ratio(sc.closedWonCurrent, sc.closedWonTarget);
+  const revenueProgress = revRatio >= 0.7 ? "Green" : revRatio >= 0.35 ? "Amber" : "Red";
+
+  const certAttainment = ratio(sc.certificationsCurrent, sc.certificationsTarget || plan?.objectives?.certificationsTarget);
+  const demoReady = String(plan?.enablement?.demoEnvironmentStatus || "").toLowerCase() === "ready";
+  const enablementReadiness = certAttainment >= 0.8 && demoReady ? "Green" : certAttainment >= 0.5 ? "Amber" : "Red";
+
+  const hasQbr = !!plan?.metadata?.nextQbrDate;
+  const cadenceCount = (plan?.governanceCadence || []).length;
+  const engagementCadence = hasQbr && cadenceCount >= 1 ? "Green" : (hasQbr || cadenceCount >= 1) ? "Amber" : "Red";
+
+  const highRisks = computeOpenHighImpactRisks(plan);
+  const riskLevel = highRisks >= 3 ? "Red" : highRisks >= 1 ? "Amber" : "Green";
+
+  const overdue = computeOverdueActions(plan);
+  const actionPlanDelivery = overdue >= 3 ? "Red" : overdue >= 1 ? "Amber" : "Green";
+
+  return {
+    pipelineHealth,
+    revenueProgress,
+    enablementReadiness,
+    engagementCadence,
+    riskLevel,
+    actionPlanDelivery,
+  };
+}
+
+function computeHealthScore(plan) {
+  const sc = plan?.scorecard || {};
+  const strategic = Math.max(1, Math.min(5, safeNumber(plan?.partnerOverview?.strategicImportanceRating || 3)));
+  const strategicScore = Math.round((strategic / 5) * 10);
+
+  const pipelineScore = scoreWeightedRatio(sc.pipelineCurrent, sc.pipelineTarget || plan?.objectives?.pipelineTargetValue, 20);
+  const closedWonScore = scoreWeightedRatio(sc.closedWonCurrent, sc.closedWonTarget || plan?.objectives?.closedWonRevenueTarget, 20);
+  const certScore = scoreWeightedRatio(sc.certificationsCurrent, sc.certificationsTarget || plan?.objectives?.certificationsTarget, 10);
+  const activeOppScore = scoreWeightedRatio(sc.activeOpportunitiesCurrent, sc.activeOpportunitiesTarget, 10);
+  const marketingScore = scoreWeightedRatio(sc.jointMarketingActivitiesCurrent, sc.jointMarketingActivitiesTarget || plan?.objectives?.jointCampaignsTarget, 5);
+
+  const cadenceItems = (plan?.governanceCadence || []).length;
+  const hasQbr = !!plan?.metadata?.nextQbrDate;
+  const governanceScore = Math.min(10, (hasQbr ? 5 : 0) + Math.min(5, cadenceItems * 2));
+
+  const openHigh = computeOpenHighImpactRisks(plan);
+  const riskScore = openHigh >= 3 ? 0 : openHigh >= 1 ? 5 : 10;
+
+  const overdue = computeOverdueActions(plan);
+  const actionScore = overdue >= 3 ? 0 : overdue >= 1 ? 3 : 5;
+
+  const score = [
+    strategicScore,
+    pipelineScore,
+    closedWonScore,
+    certScore,
+    activeOppScore,
+    marketingScore,
+    governanceScore,
+    riskScore,
+    actionScore,
+  ].reduce((a, b) => a + b, 0);
+
+  return {
+    score,
+    label: scoreLabel(score),
+    breakdown: {
+      strategicScore,
+      pipelineScore,
+      closedWonScore,
+      certScore,
+      activeOppScore,
+      marketingScore,
+      governanceScore,
+      riskScore,
+      actionScore,
+    },
+  };
+}
+
+function inferOverallRag(plan) {
+  const kpi = computeKpiRag(plan);
+  const severity = [kpi.pipelineHealth, kpi.revenueProgress, kpi.enablementReadiness, kpi.engagementCadence, kpi.riskLevel, kpi.actionPlanDelivery]
+    .map((r) => RAG_META[r]?.rank ?? 1);
+  const min = Math.min(...severity);
+  if (min === 0) return "Red";
+  if (severity.every((x) => x === 2)) return "Green";
+  return "Amber";
+}
+
+function withPlanDefaults(rawPlan) {
+  const base = createEmptyPlan();
+  const merged = {
+    ...base,
+    ...rawPlan,
+    partnerOverview: { ...base.partnerOverview, ...(rawPlan?.partnerOverview || {}) },
+    contacts: { ...base.contacts, ...(rawPlan?.contacts || {}) },
+    strategicAlignment: { ...base.strategicAlignment, ...(rawPlan?.strategicAlignment || {}) },
+    objectives: { ...base.objectives, ...(rawPlan?.objectives || {}) },
+    enablement: { ...base.enablement, ...(rawPlan?.enablement || {}) },
+    scorecard: { ...base.scorecard, ...(rawPlan?.scorecard || {}) },
+    metadata: { ...base.metadata, ...(rawPlan?.metadata || {}) },
+    targetAccounts: Array.isArray(rawPlan?.targetAccounts) ? rawPlan.targetAccounts : [],
+    pipelineInitiatives: Array.isArray(rawPlan?.pipelineInitiatives) ? rawPlan.pipelineInitiatives : [],
+    gtmActivities: Array.isArray(rawPlan?.gtmActivities) ? rawPlan.gtmActivities : [],
+    governanceCadence: Array.isArray(rawPlan?.governanceCadence) ? rawPlan.governanceCadence : [],
+    growthOpportunities: Array.isArray(rawPlan?.growthOpportunities) ? rawPlan.growthOpportunities : [],
+    risksMitigation: Array.isArray(rawPlan?.risksMitigation) ? rawPlan.risksMitigation : [],
+    actionPlan90Day: Array.isArray(rawPlan?.actionPlan90Day) ? rawPlan.actionPlan90Day : [],
+  };
+
+  const sectionDefaults = {
+    overallRagStatus: DEFAULT_RAG,
+    alignmentRag: DEFAULT_RAG,
+    objectivesRag: DEFAULT_RAG,
+    pipelineRag: DEFAULT_RAG,
+    enablementRag: DEFAULT_RAG,
+    governanceRag: DEFAULT_RAG,
+    growthRag: DEFAULT_RAG,
+    riskRag: DEFAULT_RAG,
+    actionPlanRag: DEFAULT_RAG,
+  };
+  const withRag = { ...sectionDefaults, ...merged };
+  if (!rawPlan?.overallRagStatus) withRag.overallRagStatus = inferOverallRag(withRag);
+  return withRag;
+}
+
+function enrichPlan(plan) {
+  const p = withPlanDefaults(plan);
+  const kpiRag = computeKpiRag(p);
+  const health = computeHealthScore(p);
+  const overdueActionItems = computeOverdueActions(p);
+  const openRisks = computeOpenRisks(p);
+  return {
+    ...p,
+    computed: {
+      kpiRag,
+      healthScore: health.score,
+      healthLabel: health.label,
+      healthBreakdown: health.breakdown,
+      overdueActionItems,
+      openRisks,
+      totalTargetAccountValue: (p.targetAccounts || []).reduce((a, b) => a + safeNumber(b.estimatedValue), 0),
+      totalPipelineInitiativeExpectedValue: (p.pipelineInitiatives || []).reduce((a, b) => a + safeNumber(b.expectedPipelineValue), 0),
+      totalGrowthOpportunityValue: (p.growthOpportunities || []).reduce((a, b) => a + safeNumber(b.revenuePotential), 0),
+      daysSinceLastUpdate: daysSince(p.updatedAt),
+    },
+  };
+}
+
 function createEmptyPlan() {
   return {
     id: planId(),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    overallRagStatus: DEFAULT_RAG,
+    alignmentRag: DEFAULT_RAG,
+    objectivesRag: DEFAULT_RAG,
+    pipelineRag: DEFAULT_RAG,
+    enablementRag: DEFAULT_RAG,
+    governanceRag: DEFAULT_RAG,
+    growthRag: DEFAULT_RAG,
+    riskRag: DEFAULT_RAG,
+    actionPlanRag: DEFAULT_RAG,
     partnerOverview: {
       partnerName: "",
       partnerTier: "",
@@ -10258,32 +10477,52 @@ function createEmptyPlan() {
 }
 
 function createSeedPlans() {
-  const a = createEmptyPlan();
+  const a = withPlanDefaults(createEmptyPlan());
   a.partnerOverview = { ...a.partnerOverview, partnerName: "Strategic CX Partner UK", partnerTier: "Strategic", partnerType: "UC Reseller", primaryGeography: "United Kingdom", verticalStrengths: "Financial Services, Retail", coreCapabilities: "Genesys Cloud, SIP migration, AI chat", strategicImportanceRating: "5" };
   a.contacts.channelManager = "Emma Hughes";
   a.contacts.partnerSalesLead = "Marcus Lee";
-  a.objectives = { ...a.objectives, planningPeriod: "FY26", pipelineTargetValue: 1200000, closedWonRevenueTarget: 620000, newCustomerLogoTarget: 9, certificationsTarget: 14 };
+  a.objectives = { ...a.objectives, planningPeriod: "FY26", pipelineTargetValue: 1200000, closedWonRevenueTarget: 620000, newCustomerLogoTarget: 9, certificationsTarget: 14, jointCampaignsTarget: 8 };
   a.targetAccounts = [{ id: planId(), accountName: "NorthBridge Insurance", segment: "Enterprise", opportunityType: "CCaaS Migration", estimatedValue: 180000, owner: "Marcus Lee", stage: "Discovery", nextStep: "Solution workshop", closeDate: "2026-06-15", strategicNotes: "Board-level digital transformation." }];
   a.pipelineInitiatives = [{ id: planId(), sourceType: "Installed Base", initiativeName: "SIP to UCaaS Conversion", description: "Convert top 20 SIP customers to full UC+CC solution.", owner: "Emma Hughes", startDate: "2026-04-01", targetOutcome: "10 qualified opportunities", expectedPipelineValue: 420000, status: "In Progress" }];
   a.growthOpportunities = [{ id: planId(), solutionArea: "AI Automation", opportunityDescription: "AI virtual agent expansion into retail estate", revenuePotential: 240000, priority: "High", owner: "Emma Hughes", timeline: "Q3" }];
   a.risksMitigation = [{ id: planId(), risk: "Slow technical pre-sales capacity", impact: "High", likelihood: "Medium", mitigationPlan: "Add shared solution architect resource", owner: "Emma Hughes", reviewDate: "2026-05-10", status: "Open" }];
   a.actionPlan90Day = [{ id: planId(), action: "Deliver joint executive alignment session", owner: "Emma Hughes", dueDate: "2026-04-20", priority: "High", status: "In Progress", notes: "Include finance and services leaders" }];
-  a.scorecard = { ...a.scorecard, pipelineCurrent: 640000, pipelineTarget: 1200000, closedWonCurrent: 280000, closedWonTarget: 620000, activeOpportunitiesCurrent: 11, activeOpportunitiesTarget: 18, certificationsCurrent: 8, certificationsTarget: 14, jointMarketingActivitiesCurrent: 3, jointMarketingActivitiesTarget: 8 };
+  a.scorecard = { ...a.scorecard, pipelineCurrent: 980000, pipelineTarget: 1200000, closedWonCurrent: 510000, closedWonTarget: 620000, activeOpportunitiesCurrent: 12, activeOpportunitiesTarget: 14, certificationsCurrent: 12, certificationsTarget: 14, jointMarketingActivitiesCurrent: 7, jointMarketingActivitiesTarget: 8 };
   a.metadata.planStatus = "Active";
+  a.metadata.nextQbrDate = "2026-05-15";
+  a.enablement.demoEnvironmentStatus = "Ready";
+  a.overallRagStatus = "Green";
 
-  const b = createEmptyPlan();
-  b.partnerOverview = { ...b.partnerOverview, partnerName: "Enterprise UC & Contact Centre Reseller", partnerTier: "Gold", partnerType: "CC Specialist", primaryGeography: "UK & Ireland", verticalStrengths: "Public Sector, Healthcare", coreCapabilities: "Consultative selling, managed services", strategicImportanceRating: "4" };
+  const b = withPlanDefaults(createEmptyPlan());
+  b.partnerOverview = { ...b.partnerOverview, partnerName: "Northern Public Sector Systems", partnerTier: "Gold", partnerType: "CC Specialist", primaryGeography: "UK North", strategicImportanceRating: "4" };
   b.contacts.channelManager = "Daniel Brooks";
   b.objectives = { ...b.objectives, planningPeriod: "FY26-H1", pipelineTargetValue: 850000, closedWonRevenueTarget: 380000, newCustomerLogoTarget: 6, jointCampaignsTarget: 4 };
-  b.targetAccounts = [{ id: planId(), accountName: "Midlands NHS Trust", segment: "Public", opportunityType: "PCI + Contact Centre", estimatedValue: 260000, owner: "Daniel Brooks", stage: "Proposal", nextStep: "Security review", closeDate: "2026-07-01", strategicNotes: "Needs rapid compliance delivery" }];
-  b.pipelineInitiatives = [{ id: planId(), sourceType: "Marketing", initiativeName: "NHS roundtable", description: "Regional event and webinar follow-up", owner: "Partner marketing", startDate: "2026-04-14", targetOutcome: "6 SQLs", expectedPipelineValue: 190000, status: "Planned" }];
-  b.growthOpportunities = [{ id: planId(), solutionArea: "Managed Services", opportunityDescription: "Add managed SD-WAN as attach", revenuePotential: 150000, priority: "Medium", owner: "Daniel Brooks", timeline: "Q2-Q3" }];
-  b.risksMitigation = [{ id: planId(), risk: "Competing vendor discounting", impact: "Medium", likelihood: "High", mitigationPlan: "Value-selling enablement + executive sponsor meetings", owner: "Daniel Brooks", reviewDate: "2026-05-01", status: "Open" }];
+  b.risksMitigation = [{ id: planId(), risk: "Competing vendor discounting", impact: "High", likelihood: "High", mitigationPlan: "Value-selling enablement + sponsor meetings", owner: "Daniel Brooks", reviewDate: "2026-05-01", status: "Open" }];
   b.actionPlan90Day = [{ id: planId(), action: "Run 2 joint campaigns", owner: "Partner marketing", dueDate: "2026-06-01", priority: "Medium", status: "Not Started", notes: "Focus on healthcare." }];
-  b.scorecard = { ...b.scorecard, pipelineCurrent: 310000, pipelineTarget: 850000, closedWonCurrent: 140000, closedWonTarget: 380000, activeOpportunitiesCurrent: 7, activeOpportunitiesTarget: 13, certificationsCurrent: 6, certificationsTarget: 10, jointMarketingActivitiesCurrent: 2, jointMarketingActivitiesTarget: 6 };
+  b.governanceCadence = [{ id: planId(), meetingType: "Monthly Review", frequency: "Monthly", owner: "Daniel Brooks", attendees: "Sales + Marketing", purpose: "Pipeline review", nextScheduledDate: "2026-05-20" }];
+  b.scorecard = { ...b.scorecard, pipelineCurrent: 420000, pipelineTarget: 850000, closedWonCurrent: 130000, closedWonTarget: 380000, activeOpportunitiesCurrent: 5, activeOpportunitiesTarget: 9, certificationsCurrent: 4, certificationsTarget: 10, jointMarketingActivitiesCurrent: 2, jointMarketingActivitiesTarget: 4 };
   b.metadata.planStatus = "At Risk";
+  b.overallRagStatus = "Amber";
 
-  return [a, b];
+  const c = withPlanDefaults(createEmptyPlan());
+  c.partnerOverview = { ...c.partnerOverview, partnerName: "Emerging Regional MSP", partnerTier: "Emerging", partnerType: "MSP", primaryGeography: "Ireland", strategicImportanceRating: "2" };
+  c.contacts.channelManager = "Sarah Patel";
+  c.objectives = { ...c.objectives, planningPeriod: "FY26", pipelineTargetValue: 350000, closedWonRevenueTarget: 180000, certificationsTarget: 6, jointCampaignsTarget: 3 };
+  c.scorecard = { ...c.scorecard, pipelineCurrent: 80000, pipelineTarget: 350000, closedWonCurrent: 25000, closedWonTarget: 180000, activeOpportunitiesCurrent: 1, activeOpportunitiesTarget: 5, certificationsCurrent: 1, certificationsTarget: 6, jointMarketingActivitiesCurrent: 0, jointMarketingActivitiesTarget: 3 };
+  c.risksMitigation = [
+    { id: planId(), risk: "Low enablement bandwidth", impact: "High", likelihood: "High", mitigationPlan: "Partner bootcamp", owner: "Sarah Patel", reviewDate: "2026-05-04", status: "Open" },
+    { id: planId(), risk: "No demo access", impact: "High", likelihood: "Medium", mitigationPlan: "Provision shared tenant", owner: "Sarah Patel", reviewDate: "2026-05-08", status: "Open" },
+    { id: planId(), risk: "Delayed campaign launch", impact: "High", likelihood: "High", mitigationPlan: "Weekly PMO", owner: "Sarah Patel", reviewDate: "2026-05-10", status: "Open" },
+  ];
+  c.actionPlan90Day = [
+    { id: planId(), action: "Complete certification path", owner: "Partner lead", dueDate: "2024-01-01", priority: "High", status: "Not Started", notes: "" },
+    { id: planId(), action: "Run first webinar", owner: "Marketing", dueDate: "2024-02-01", priority: "Medium", status: "Not Started", notes: "" },
+    { id: planId(), action: "Submit joint account list", owner: "Sales", dueDate: "2024-03-01", priority: "High", status: "In Progress", notes: "" },
+  ];
+  c.metadata.planStatus = "At Risk";
+  c.overallRagStatus = "Red";
+
+  return [a, b, c].map(withPlanDefaults);
 }
 
 function readPlansFromStorage() {
@@ -10291,8 +10530,10 @@ function readPlansFromStorage() {
   if (!raw) return createSeedPlans();
   try {
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map(withPlanDefaults);
   } catch (_error) {
+    console.warn("Partner plan storage was invalid. Falling back to empty list.");
     return [];
   }
 }
@@ -10301,15 +10542,70 @@ function writePlansToStorage(plans) {
   window.localStorage.setItem(PARTNER_ACCOUNT_PLAN_STORAGE_KEY, JSON.stringify(plans));
 }
 
-function AccountPlanFormSection({ title, helper, children, defaultOpen = true }) {
+function downloadBlob(filename, content, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function csvEscape(value) {
+  const v = value == null ? "" : String(value);
+  return `"${v.replace(/"/g, '""').replace(/\r?\n/g, " ")}"`;
+}
+
+function toCsv(headers, rows) {
+  const headerRow = headers.map(csvEscape).join(",");
+  const body = rows.map((r) => headers.map((h) => csvEscape(r[h])).join(",")).join("\n");
+  return `${headerRow}\n${body}`;
+}
+
+function RagBadge({ value }) {
+  const rag = RAG_META[value] ? value : DEFAULT_RAG;
+  return <span className={RAG_META[rag].className}>{rag}</span>;
+}
+
+function AccountPlanFormSection({ title, helper, ragField, ragValue, onRagChange, readOnly = false, children, defaultOpen = true }) {
   const [open, setOpen] = React.useState(defaultOpen);
-  return <section className="plan-section-card"><button type="button" className="plan-section-header" onClick={() => setOpen((v) => !v)}><div><h3>{title}</h3>{helper && <p>{helper}</p>}</div><span>{open ? "−" : "+"}</span></button>{open && <div className="plan-section-body">{children}</div>}</section>;
+  return (
+    <section className="plan-section-card">
+      <button type="button" className="plan-section-header" onClick={() => setOpen((v) => !v)}>
+        <div>
+          <h3>{title}</h3>
+          {helper && <p>{helper}</p>}
+        </div>
+        <div className="plan-section-head-right">
+          {ragField ? (
+            <select
+              className="ui-search plan-rag-select"
+              value={ragValue || DEFAULT_RAG}
+              disabled={readOnly}
+              onChange={(e) => onRagChange?.(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {RAG_OPTIONS.map((r) => <option key={r} value={r}>{r}</option>)}
+            </select>
+          ) : null}
+          <span>{open ? "−" : "+"}</span>
+        </div>
+      </button>
+      {open && <div className="plan-section-body">{children}</div>}
+    </section>
+  );
 }
 
 function DynamicTableField({ title, columns, rows, onChange, createRow, readOnly = false }) {
   return (
     <div className="plan-dynamic">
-      <div className="plan-dynamic-header"><h4>{title}</h4>{!readOnly && <button className="ui-btn ui-btn--secondary" type="button" onClick={() => onChange([...(rows || []), createRow()])}>Add</button>}</div>
+      <div className="plan-dynamic-header">
+        <h4>{title}</h4>
+        {!readOnly && <button className="ui-btn ui-btn--secondary" type="button" onClick={() => onChange([...(rows || []), createRow()])}>Add</button>}
+      </div>
       {!rows?.length ? <div className="plan-empty-inline">No items added yet.</div> : null}
       {(rows || []).map((row, idx) => (
         <div key={row.id || idx} className="plan-dynamic-row">
@@ -10317,7 +10613,11 @@ function DynamicTableField({ title, columns, rows, onChange, createRow, readOnly
             {columns.map((col) => (
               <label key={col.key} className={col.full ? "plan-field plan-field--full" : "plan-field"}>
                 <span>{col.label}</span>
-                {col.type === "textarea" ? <textarea value={row[col.key] || ""} readOnly={readOnly} onChange={(e) => { const next = [...rows]; next[idx] = { ...row, [col.key]: e.target.value }; onChange(next); }} /> : <input type={col.type || "text"} value={row[col.key] || ""} readOnly={readOnly} onChange={(e) => { const next = [...rows]; next[idx] = { ...row, [col.key]: e.target.value }; onChange(next); }} />}
+                {col.type === "textarea" ? (
+                  <textarea value={row[col.key] || ""} readOnly={readOnly} onChange={(e) => { const next = [...rows]; next[idx] = { ...row, [col.key]: e.target.value }; onChange(next); }} />
+                ) : (
+                  <input type={col.type || "text"} value={row[col.key] || ""} readOnly={readOnly} onChange={(e) => { const next = [...rows]; next[idx] = { ...row, [col.key]: e.target.value }; onChange(next); }} />
+                )}
               </label>
             ))}
           </div>
@@ -10328,29 +10628,60 @@ function DynamicTableField({ title, columns, rows, onChange, createRow, readOnly
   );
 }
 
-function ScorecardCards({ scorecard }) {
-  const metrics = [
-    ["Pipeline", scorecard.pipelineCurrent, scorecard.pipelineTarget],
-    ["Closed Won", scorecard.closedWonCurrent, scorecard.closedWonTarget],
-    ["Active Opportunities", scorecard.activeOpportunitiesCurrent, scorecard.activeOpportunitiesTarget],
-    ["Certifications", scorecard.certificationsCurrent, scorecard.certificationsTarget],
-    ["Marketing Activities", scorecard.jointMarketingActivitiesCurrent, scorecard.jointMarketingActivitiesTarget],
+function HealthBreakdown({ breakdown }) {
+  const rows = [
+    ["Strategic Importance", breakdown.strategicScore, 10],
+    ["Pipeline", breakdown.pipelineScore, 20],
+    ["Closed Won", breakdown.closedWonScore, 20],
+    ["Certifications", breakdown.certScore, 10],
+    ["Active Opportunities", breakdown.activeOppScore, 10],
+    ["Joint Marketing", breakdown.marketingScore, 5],
+    ["Governance", breakdown.governanceScore, 10],
+    ["Risk Profile", breakdown.riskScore, 10],
+    ["90-Day Action Plan", breakdown.actionScore, 5],
   ];
-  return <div className="plan-scorecards">{metrics.map(([label, current, target]) => { const pct = safeNumber(target) > 0 ? Math.min(100, Math.round((safeNumber(current) / safeNumber(target)) * 100)) : 0; return <div className="plan-stat-card" key={label}><div className="plan-stat-label">{label}</div><div className="plan-stat-value">{current || 0} / {target || 0}</div><div className="plan-progress"><span style={{ width: `${pct}%` }} /></div><small>{pct}% complete</small></div>; })}</div>;
+  return <div className="health-breakdown">{rows.map(([label,val,max]) => <div key={label} className="health-breakdown-row"><span>{label}</span><strong>{val}/{max}</strong></div>)}</div>;
 }
 
 function SummaryMetrics({ plans }) {
-  const now = Date.now();
-  const totalPipeline = plans.reduce((acc, p) => acc + safeNumber(p?.objectives?.pipelineTargetValue), 0);
-  const totalWon = plans.reduce((acc, p) => acc + safeNumber(p?.objectives?.closedWonRevenueTarget), 0);
-  const recent = plans.filter((p) => now - new Date(p.updatedAt).getTime() <= 30 * 24 * 60 * 60 * 1000).length;
-  const strategic = plans.filter((p) => p?.partnerOverview?.partnerTier === "Strategic").length;
-  const cards = [["Total Plans", plans.length], ["Strategic Partners", strategic], ["Total Pipeline Value", formatCurrency(totalPipeline)], ["Total Closed Won Value", formatCurrency(totalWon)], ["Updated in Last 30 Days", recent]];
-  return <div className="plan-scorecards">{cards.map(([label, val]) => <div key={label} className="plan-stat-card"><div className="plan-stat-label">{label}</div><div className="plan-stat-value">{val}</div></div>)}</div>;
+  const enriched = plans.map(enrichPlan);
+  const totals = {
+    totalPlans: plans.length,
+    strategic: plans.filter((p) => p?.partnerOverview?.partnerTier === "Strategic").length,
+    pipeline: enriched.reduce((a, p) => a + safeNumber(p.scorecard.pipelineCurrent), 0),
+    won: enriched.reduce((a, p) => a + safeNumber(p.scorecard.closedWonCurrent), 0),
+    avgHealth: enriched.length ? Math.round(enriched.reduce((a, p) => a + p.computed.healthScore, 0) / enriched.length) : 0,
+    green: enriched.filter((p) => p.overallRagStatus === "Green").length,
+    amber: enriched.filter((p) => p.overallRagStatus === "Amber").length,
+    red: enriched.filter((p) => p.overallRagStatus === "Red").length,
+    risks: enriched.reduce((a, p) => a + p.computed.openRisks, 0),
+    overdue: enriched.reduce((a, p) => a + p.computed.overdueActionItems, 0),
+  };
+  const cards = [["Total Plans", totals.totalPlans], ["Strategic Partners", totals.strategic], ["Total Pipeline Value", formatCurrency(totals.pipeline)], ["Total Closed Won Value", formatCurrency(totals.won)], ["Average Health Score", `${totals.avgHealth}/100`], ["Green Plans", totals.green], ["Amber Plans", totals.amber], ["Red Plans", totals.red], ["Open Risks", totals.risks], ["Overdue Actions", totals.overdue]];
+  return (
+    <>
+      <div className="plan-scorecards">{cards.map(([label, val]) => <div key={label} className="plan-stat-card"><div className="plan-stat-label">{label}</div><div className="plan-stat-value">{val}</div></div>)}</div>
+      <div className="plan-overview-widget">
+        <div><h3>Partner Health Overview</h3><p>Distribution by RAG and ranking band.</p></div>
+        <div className="plan-overview-bars">
+          <div className="overview-pill">Green: {totals.green}</div><div className="overview-pill">Amber: {totals.amber}</div><div className="overview-pill">Red: {totals.red}</div>
+          <div className="overview-pill">Strategic Growth: {enriched.filter((p) => p.computed.healthLabel === "Strategic Growth").length}</div>
+          <div className="overview-pill">Strong: {enriched.filter((p) => p.computed.healthLabel === "Strong").length}</div>
+          <div className="overview-pill">Moderate: {enriched.filter((p) => p.computed.healthLabel === "Moderate").length}</div>
+          <div className="overview-pill">Needs Attention: {enriched.filter((p) => p.computed.healthLabel === "Needs Attention").length}</div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function PartnerRankingList({ plans }) {
+  const top = plans.map(enrichPlan).sort((a,b) => b.computed.healthScore - a.computed.healthScore).slice(0,5);
+  return <section className="plan-section-card"><div className="plan-section-body"><h3>Partner Health Ranking</h3><div className="ranking-list">{top.map((plan,idx) => <div key={plan.id} className="ranking-row"><strong>#{idx+1}</strong><span>{plan.partnerOverview.partnerName || "—"}</span><span>{plan.computed.healthScore}</span><span>{plan.computed.healthLabel}</span><RagBadge value={plan.overallRagStatus} /><span>{formatCurrency(plan.scorecard.pipelineCurrent)}</span><span>{plan.contacts.channelManager || "—"}</span></div>)}</div></div></section>;
 }
 
 function SavedPlansTable({ plans, onView, onEdit, onDuplicate, onDelete }) {
-  return <div className="plan-table-wrap"><table className="plan-table"><thead><tr><th>Partner Name</th><th>Tier</th><th>Type</th><th>Geography</th><th>Owner</th><th>Status</th><th>Pipeline</th><th>Closed Won</th><th>Last Updated</th><th>Actions</th></tr></thead><tbody>{plans.map((plan) => <tr key={plan.id}><td>{plan.partnerOverview.partnerName || "—"}</td><td>{plan.partnerOverview.partnerTier || "—"}</td><td>{plan.partnerOverview.partnerType || "—"}</td><td>{plan.partnerOverview.primaryGeography || "—"}</td><td>{plan.contacts.channelManager || "—"}</td><td>{plan.metadata.planStatus || "—"}</td><td>{formatCurrency(plan.objectives.pipelineTargetValue)}</td><td>{formatCurrency(plan.objectives.closedWonRevenueTarget)}</td><td>{new Date(plan.updatedAt).toLocaleDateString()}</td><td><div className="plan-actions-inline"><button className="ui-btn ui-btn--ghost" onClick={() => onView(plan)}>View</button><button className="ui-btn ui-btn--secondary" onClick={() => onEdit(plan)}>Edit</button><button className="ui-btn ui-btn--ghost" onClick={() => onDuplicate(plan)}>Duplicate</button><button className="ui-btn ui-btn--ghost" onClick={() => onDelete(plan)}>Delete</button></div></td></tr>)}</tbody></table></div>;
+  return <div className="plan-table-wrap"><table className="plan-table"><thead><tr><th>Partner</th><th>RAG</th><th>Health</th><th>Ranking</th><th>Owner</th><th>Status</th><th>Pipeline</th><th>Closed Won</th><th>Open Risks</th><th>Overdue</th><th>Last Updated</th><th>Actions</th></tr></thead><tbody>{plans.map((p) => { const plan = enrichPlan(p); return <tr key={plan.id} className={plan.overallRagStatus === "Red" ? "row-red" : ""}><td>{plan.partnerOverview.partnerName || "—"}</td><td><RagBadge value={plan.overallRagStatus} /></td><td>{plan.computed.healthScore}</td><td>{plan.computed.healthLabel}</td><td>{plan.contacts.channelManager || "—"}</td><td>{plan.metadata.planStatus || "—"}</td><td>{formatCurrency(plan.scorecard.pipelineCurrent)}</td><td>{formatCurrency(plan.scorecard.closedWonCurrent)}</td><td>{plan.computed.openRisks}</td><td>{plan.computed.overdueActionItems}</td><td>{new Date(plan.updatedAt).toLocaleDateString()}</td><td><div className="plan-actions-inline"><button className="ui-btn ui-btn--ghost" onClick={() => onView(plan)}>View</button><button className="ui-btn ui-btn--secondary" onClick={() => onEdit(plan)}>Edit</button><button className="ui-btn ui-btn--ghost" onClick={() => onDuplicate(plan)}>Duplicate</button><button className="ui-btn ui-btn--ghost" onClick={() => onDelete(plan)}>Delete</button></div></td></tr>; })}</tbody></table></div>;
 }
 
 function PartnerAccountPlanToolPage() {
@@ -10362,32 +10693,46 @@ function PartnerAccountPlanToolPage() {
   const [tierFilter, setTierFilter] = React.useState("all");
   const [typeFilter, setTypeFilter] = React.useState("all");
   const [statusFilter, setStatusFilter] = React.useState("all");
+  const [ragFilter, setRagFilter] = React.useState("all");
+  const [rankingFilter, setRankingFilter] = React.useState("all");
+  const [riskFilter, setRiskFilter] = React.useState("all");
+  const [overdueFilter, setOverdueFilter] = React.useState("all");
   const [sortBy, setSortBy] = React.useState("updated");
   const [printView, setPrintView] = React.useState(false);
 
-  React.useEffect(() => { writePlansToStorage(plans); }, [plans]);
+  React.useEffect(() => { writePlansToStorage(plans.map(withPlanDefaults)); }, [plans]);
 
   const filteredPlans = React.useMemo(() => {
-    const next = plans.filter((p) => (p.partnerOverview.partnerName || "").toLowerCase().includes(search.toLowerCase()) && (tierFilter === "all" || p.partnerOverview.partnerTier === tierFilter) && (typeFilter === "all" || p.partnerOverview.partnerType === typeFilter) && (statusFilter === "all" || p.metadata.planStatus === statusFilter));
+    const next = plans.map(enrichPlan).filter((p) => {
+      const hit = (p.partnerOverview.partnerName || "").toLowerCase().includes(search.toLowerCase());
+      if (!hit) return false;
+      if (tierFilter !== "all" && p.partnerOverview.partnerTier !== tierFilter) return false;
+      if (typeFilter !== "all" && p.partnerOverview.partnerType !== typeFilter) return false;
+      if (statusFilter !== "all" && p.metadata.planStatus !== statusFilter) return false;
+      if (ragFilter !== "all" && p.overallRagStatus !== ragFilter) return false;
+      if (rankingFilter !== "all" && p.computed.healthLabel !== rankingFilter) return false;
+      if (riskFilter === "high" && p.computed.openRisks < 3) return false;
+      if (riskFilter === "some" && (p.computed.openRisks < 1 || p.computed.openRisks > 2)) return false;
+      if (riskFilter === "none" && p.computed.openRisks !== 0) return false;
+      if (overdueFilter === "high" && p.computed.overdueActionItems < 3) return false;
+      if (overdueFilter === "some" && (p.computed.overdueActionItems < 1 || p.computed.overdueActionItems > 2)) return false;
+      if (overdueFilter === "none" && p.computed.overdueActionItems !== 0) return false;
+      return true;
+    });
     next.sort((a, b) => {
       if (sortBy === "name") return (a.partnerOverview.partnerName || "").localeCompare(b.partnerOverview.partnerName || "");
-      if (sortBy === "pipeline") return safeNumber(b.objectives.pipelineTargetValue) - safeNumber(a.objectives.pipelineTargetValue);
+      if (sortBy === "pipeline") return safeNumber(b.scorecard.pipelineCurrent) - safeNumber(a.scorecard.pipelineCurrent);
+      if (sortBy === "healthHigh") return b.computed.healthScore - a.computed.healthScore;
+      if (sortBy === "healthLow") return a.computed.healthScore - b.computed.healthScore;
+      if (sortBy === "rag") return (RAG_META[a.overallRagStatus]?.rank ?? 1) - (RAG_META[b.overallRagStatus]?.rank ?? 1);
+      if (sortBy === "risk") return b.computed.openRisks - a.computed.openRisks;
+      if (sortBy === "overdue") return b.computed.overdueActionItems - a.computed.overdueActionItems;
       return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
     });
     return next;
-  }, [plans, search, tierFilter, typeFilter, statusFilter, sortBy]);
+  }, [plans, search, tierFilter, typeFilter, statusFilter, ragFilter, rankingFilter, riskFilter, overdueFilter, sortBy]);
 
-  const calc = React.useMemo(() => {
-    if (!editingPlan) return {};
-    const totalTargetAccountValue = (editingPlan.targetAccounts || []).reduce((a, b) => a + safeNumber(b.estimatedValue), 0);
-    const totalPipelineInitiativeExpectedValue = (editingPlan.pipelineInitiatives || []).reduce((a, b) => a + safeNumber(b.expectedPipelineValue), 0);
-    const totalGrowthOpportunityValue = (editingPlan.growthOpportunities || []).reduce((a, b) => a + safeNumber(b.revenuePotential), 0);
-    const overdueActionItems = (editingPlan.actionPlan90Day || []).filter((x) => x.dueDate && new Date(x.dueDate).getTime() < Date.now() && x.status !== "Completed").length;
-    const openRisks = (editingPlan.risksMitigation || []).filter((x) => x.status !== "Closed").length;
-    return { totalTargetAccountValue, totalPipelineInitiativeExpectedValue, totalGrowthOpportunityValue, overdueActionItems, openRisks, daysSinceLastUpdate: daysSince(editingPlan.updatedAt) };
-  }, [editingPlan]);
-
-  const beginNewPlan = () => { setErrors({}); setEditingPlan(createEmptyPlan()); setMode("edit"); };
+  const beginNewPlan = () => { setErrors({}); setEditingPlan(withPlanDefaults(createEmptyPlan())); setMode("edit"); };
 
   const validate = (plan) => {
     const nextErrors = {};
@@ -10406,7 +10751,7 @@ function PartnerAccountPlanToolPage() {
     setErrors(foundErrors);
     if (Object.keys(foundErrors).length) return;
     const stamp = new Date().toISOString();
-    const payload = { ...editingPlan, id: saveAsNew ? planId() : editingPlan.id, createdAt: saveAsNew ? stamp : editingPlan.createdAt, updatedAt: stamp };
+    const payload = withPlanDefaults({ ...editingPlan, id: saveAsNew ? planId() : editingPlan.id, createdAt: saveAsNew ? stamp : editingPlan.createdAt, updatedAt: stamp });
     setPlans((prev) => {
       const exists = prev.some((p) => p.id === payload.id);
       return exists ? prev.map((p) => (p.id === payload.id ? payload : p)) : [payload, ...prev];
@@ -10418,15 +10763,12 @@ function PartnerAccountPlanToolPage() {
   const handleDelete = (plan) => {
     if (!window.confirm(`Delete plan for ${plan.partnerOverview.partnerName || "this partner"}?`)) return;
     setPlans((prev) => prev.filter((p) => p.id !== plan.id));
-    if (editingPlan?.id === plan.id) {
-      setEditingPlan(null);
-      setMode("dashboard");
-    }
+    if (editingPlan?.id === plan.id) { setEditingPlan(null); setMode("dashboard"); }
   };
 
   const duplicatePlan = (plan) => {
     const stamp = new Date().toISOString();
-    const dup = { ...plan, id: planId(), createdAt: stamp, updatedAt: stamp, partnerOverview: { ...plan.partnerOverview, partnerName: `${plan.partnerOverview.partnerName || "Plan"} Copy` } };
+    const dup = withPlanDefaults({ ...plan, id: planId(), createdAt: stamp, updatedAt: stamp, partnerOverview: { ...plan.partnerOverview, partnerName: `${plan.partnerOverview.partnerName || "Plan"} Copy` } });
     setPlans((prev) => [dup, ...prev]);
   };
 
@@ -10436,20 +10778,86 @@ function PartnerAccountPlanToolPage() {
       let ref = next;
       for (let i = 0; i < path.length - 1; i += 1) ref = ref[path[i]];
       ref[path[path.length - 1]] = value;
-      return next;
+      return withPlanDefaults(next);
     });
   };
 
-  const triggerPrint = () => {
-    setPrintView(true);
-    setTimeout(() => window.print(), 150);
+  const triggerPrint = () => { setPrintView(true); setTimeout(() => window.print(), 150); };
+
+  const exportCurrentJson = () => {
+    if (!editingPlan) return;
+    const safeName = (editingPlan.partnerOverview.partnerName || "partner").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    downloadBlob(`partner-account-plan-${safeName}.json`, JSON.stringify(editingPlan, null, 2), "application/json");
+  };
+
+  const exportAllJson = () => {
+    if (!plans.length) return window.alert("No plans available to export.");
+    downloadBlob("partner-account-plans-export.json", JSON.stringify(plans, null, 2), "application/json");
+  };
+
+  const exportAllCsv = () => {
+    if (!plans.length) return window.alert("No plans available to export.");
+    const enriched = plans.map(enrichPlan);
+    const headers = ["Partner Name","Partner Tier","Partner Type","Geography","Owner / Channel Manager","Plan Status","Overall RAG","Health Score","Health Ranking","Strategic Importance Rating","Pipeline Current","Pipeline Target","Closed Won Current","Closed Won Target","Active Opportunities Current","Active Opportunities Target","Certifications Current","Certifications Target","Joint Marketing Activities Current","Joint Marketing Activities Target","Open Risk Count","Overdue Action Count","Last Updated","Next QBR Date"];
+    const rows = enriched.map((p) => ({
+      "Partner Name": p.partnerOverview.partnerName,
+      "Partner Tier": p.partnerOverview.partnerTier,
+      "Partner Type": p.partnerOverview.partnerType,
+      Geography: p.partnerOverview.primaryGeography,
+      "Owner / Channel Manager": p.contacts.channelManager,
+      "Plan Status": p.metadata.planStatus,
+      "Overall RAG": p.overallRagStatus,
+      "Health Score": p.computed.healthScore,
+      "Health Ranking": p.computed.healthLabel,
+      "Strategic Importance Rating": p.partnerOverview.strategicImportanceRating,
+      "Pipeline Current": p.scorecard.pipelineCurrent,
+      "Pipeline Target": p.scorecard.pipelineTarget,
+      "Closed Won Current": p.scorecard.closedWonCurrent,
+      "Closed Won Target": p.scorecard.closedWonTarget,
+      "Active Opportunities Current": p.scorecard.activeOpportunitiesCurrent,
+      "Active Opportunities Target": p.scorecard.activeOpportunitiesTarget,
+      "Certifications Current": p.scorecard.certificationsCurrent,
+      "Certifications Target": p.scorecard.certificationsTarget,
+      "Joint Marketing Activities Current": p.scorecard.jointMarketingActivitiesCurrent,
+      "Joint Marketing Activities Target": p.scorecard.jointMarketingActivitiesTarget,
+      "Open Risk Count": p.computed.openRisks,
+      "Overdue Action Count": p.computed.overdueActionItems,
+      "Last Updated": formatDate(p.updatedAt),
+      "Next QBR Date": formatDate(p.metadata.nextQbrDate),
+    }));
+    downloadBlob("partner-account-plans-export.csv", toCsv(headers, rows), "text/csv;charset=utf-8;");
+  };
+
+  const exportExecutiveCsv = () => {
+    if (!plans.length) return window.alert("No plans available to export.");
+    const enriched = plans.map(enrichPlan);
+    const headers = ["Partner Name","Tier","Type","Owner","Overall RAG","Health Score","Ranking Label","Pipeline Current","Pipeline Target","Closed Won Current","Closed Won Target","Open Risks","Overdue Actions","Next QBR Date","Last Executive Review Date","Key Summary / Partner-Facing Summary"];
+    const rows = enriched.map((p) => ({
+      "Partner Name": p.partnerOverview.partnerName,
+      Tier: p.partnerOverview.partnerTier,
+      Type: p.partnerOverview.partnerType,
+      Owner: p.contacts.channelManager,
+      "Overall RAG": p.overallRagStatus,
+      "Health Score": p.computed.healthScore,
+      "Ranking Label": p.computed.healthLabel,
+      "Pipeline Current": p.scorecard.pipelineCurrent,
+      "Pipeline Target": p.scorecard.pipelineTarget,
+      "Closed Won Current": p.scorecard.closedWonCurrent,
+      "Closed Won Target": p.scorecard.closedWonTarget,
+      "Open Risks": p.computed.openRisks,
+      "Overdue Actions": p.computed.overdueActionItems,
+      "Next QBR Date": formatDate(p.metadata.nextQbrDate),
+      "Last Executive Review Date": formatDate(p.metadata.lastExecutiveReviewDate),
+      "Key Summary / Partner-Facing Summary": p.metadata.partnerFacingSummary,
+    }));
+    downloadBlob("partner-executive-summary.csv", toCsv(headers, rows), "text/csv;charset=utf-8;");
   };
 
   if (!plans.length && mode === "dashboard") {
     return <div className="partner-plan-page"><AppTopBar title="Partner Account Plan Tool" /><div className="plan-empty"><h2>No plans saved yet</h2><p>Create, manage and track strategic account plans for key partners across recruitment, enablement, pipeline development and growth.</p><button className="ui-btn ui-btn--primary" onClick={beginNewPlan}>New Plan</button></div></div>;
   }
 
-  const current = editingPlan;
+  const current = editingPlan ? enrichPlan(editingPlan) : null;
 
   return (
     <div className={`partner-plan-page ${printView ? "print-mode" : ""}`}>
@@ -10461,7 +10869,10 @@ function PartnerAccountPlanToolPage() {
         </div>
         <div className="plan-actions-inline">
           <button className="ui-btn ui-btn--primary" onClick={beginNewPlan}>New Plan</button>
-          {current && <button className="ui-btn ui-btn--secondary" onClick={triggerPrint}>Export Current Plan</button>}
+          <button className="ui-btn ui-btn--secondary" onClick={exportAllJson} disabled={!plans.length}>Export All JSON</button>
+          <button className="ui-btn ui-btn--secondary" onClick={exportAllCsv} disabled={!plans.length}>Export All CSV</button>
+          <button className="ui-btn ui-btn--secondary" onClick={exportExecutiveCsv} disabled={!plans.length}>Export Executive Summary</button>
+          {current && <button className="ui-btn ui-btn--secondary" onClick={exportCurrentJson}>Export Plan JSON</button>}
           {current && <button className="ui-btn ui-btn--ghost" onClick={triggerPrint}>Print View</button>}
           {printView && <button className="ui-btn ui-btn--ghost" onClick={() => setPrintView(false)}>Exit Print View</button>}
         </div>
@@ -10470,12 +10881,17 @@ function PartnerAccountPlanToolPage() {
       {mode === "dashboard" ? (
         <>
           <SummaryMetrics plans={plans} />
+          <PartnerRankingList plans={plans} />
           <div className="plan-filter-grid">
             <input className="ui-search" placeholder="Search by Partner Name" value={search} onChange={(e) => setSearch(e.target.value)} />
             <select className="ui-search" value={tierFilter} onChange={(e) => setTierFilter(e.target.value)}><option value="all">All Tiers</option><option>Strategic</option><option>Gold</option><option>Silver</option><option>Emerging</option><option>Other</option></select>
             <select className="ui-search" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}><option value="all">All Types</option><option>UC Reseller</option><option>CC Specialist</option><option>MSP</option><option>SI</option><option>Agent</option><option>Distributor</option><option>Other</option></select>
             <select className="ui-search" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}><option value="all">All Statuses</option><option>Draft</option><option>Active</option><option>At Risk</option><option>On Track</option><option>Closed</option><option>Archived</option></select>
-            <select className="ui-search" value={sortBy} onChange={(e) => setSortBy(e.target.value)}><option value="updated">Sort: Last Updated</option><option value="name">Sort: Partner Name</option><option value="pipeline">Sort: Pipeline Value</option></select>
+            <select className="ui-search" value={ragFilter} onChange={(e) => setRagFilter(e.target.value)}><option value="all">All RAG</option>{RAG_OPTIONS.map((o) => <option key={o}>{o}</option>)}</select>
+            <select className="ui-search" value={rankingFilter} onChange={(e) => setRankingFilter(e.target.value)}><option value="all">All Health Bands</option><option>Strategic Growth</option><option>Strong</option><option>Moderate</option><option>Needs Attention</option></select>
+            <select className="ui-search" value={riskFilter} onChange={(e) => setRiskFilter(e.target.value)}><option value="all">Open Risks: Any</option><option value="none">Open Risks: 0</option><option value="some">Open Risks: 1-2</option><option value="high">Open Risks: 3+</option></select>
+            <select className="ui-search" value={overdueFilter} onChange={(e) => setOverdueFilter(e.target.value)}><option value="all">Overdue Actions: Any</option><option value="none">Overdue: 0</option><option value="some">Overdue: 1-2</option><option value="high">Overdue: 3+</option></select>
+            <select className="ui-search" value={sortBy} onChange={(e) => setSortBy(e.target.value)}><option value="updated">Sort: Last Updated</option><option value="name">Sort: Partner Name</option><option value="pipeline">Sort: Pipeline Value</option><option value="healthHigh">Sort: Health High-Low</option><option value="healthLow">Sort: Health Low-High</option><option value="rag">Sort: RAG Priority</option><option value="risk">Sort: Open Risks</option><option value="overdue">Sort: Overdue Actions</option></select>
           </div>
           {filteredPlans.length ? <SavedPlansTable plans={filteredPlans} onView={(plan) => { setEditingPlan(plan); setMode("view"); }} onEdit={(plan) => { setEditingPlan(JSON.parse(JSON.stringify(plan))); setMode("edit"); setErrors({}); }} onDuplicate={duplicatePlan} onDelete={handleDelete} /> : <div className="plan-empty"><h2>No plans match filters</h2><p>Try widening your filters or create a new plan.</p></div>}
         </>
@@ -10487,61 +10903,41 @@ function PartnerAccountPlanToolPage() {
             {mode === "edit" && <button className="ui-btn ui-btn--secondary" onClick={() => savePlan(true)}>Save As New</button>}
             <button className="ui-btn ui-btn--ghost" onClick={() => handleDelete(current)}>Delete</button>
             <button className="ui-btn ui-btn--ghost" onClick={triggerPrint}>Print View</button>
+            <button className="ui-btn ui-btn--secondary" onClick={exportCurrentJson}>Export Plan JSON</button>
           </div>
 
           {!!Object.keys(errors).length && <div className="plan-error-banner">Please complete required fields before saving.</div>}
 
-          <div className="plan-scorecards">
-            <div className="plan-stat-card"><div className="plan-stat-label">Total Target Account Value</div><div className="plan-stat-value">{formatCurrency(calc.totalTargetAccountValue)}</div></div>
-            <div className="plan-stat-card"><div className="plan-stat-label">Pipeline Initiatives Value</div><div className="plan-stat-value">{formatCurrency(calc.totalPipelineInitiativeExpectedValue)}</div></div>
-            <div className="plan-stat-card"><div className="plan-stat-label">Growth Opportunity Value</div><div className="plan-stat-value">{formatCurrency(calc.totalGrowthOpportunityValue)}</div></div>
-            <div className="plan-stat-card"><div className="plan-stat-label">Overdue Action Items</div><div className="plan-stat-value">{calc.overdueActionItems || 0}</div></div>
-            <div className="plan-stat-card"><div className="plan-stat-label">Open Risks</div><div className="plan-stat-value">{calc.openRisks || 0}</div></div>
-            <div className="plan-stat-card"><div className="plan-stat-label">Days Since Last Update</div><div className="plan-stat-value">{calc.daysSinceLastUpdate ?? 0}</div></div>
+          <div className="plan-header-strip">
+            <div><div className="plan-stat-label">Partner</div><div className="plan-stat-value">{current.partnerOverview.partnerName || "—"}</div></div>
+            <div><div className="plan-stat-label">Plan Status</div><div className="plan-stat-value">{current.metadata.planStatus}</div></div>
+            <div><div className="plan-stat-label">Overall RAG</div><RagBadge value={current.overallRagStatus} /></div>
+            <div><div className="plan-stat-label">Health Score</div><div className="plan-stat-value">{current.computed.healthScore}</div></div>
+            <div><div className="plan-stat-label">Ranking</div><div className="plan-stat-value">{current.computed.healthLabel}</div></div>
+            <div><div className="plan-stat-label">Pipeline</div><div className="plan-stat-value">{safeNumber(current.scorecard.pipelineCurrent)} / {safeNumber(current.scorecard.pipelineTarget)}</div></div>
+            <div><div className="plan-stat-label">Closed Won</div><div className="plan-stat-value">{safeNumber(current.scorecard.closedWonCurrent)} / {safeNumber(current.scorecard.closedWonTarget)}</div></div>
+            <div><div className="plan-stat-label">Open Risks</div><div className="plan-stat-value">{current.computed.openRisks}</div></div>
+            <div><div className="plan-stat-label">Overdue Actions</div><div className="plan-stat-value">{current.computed.overdueActionItems}</div></div>
+            <div><div className="plan-stat-label">Last Updated</div><div className="plan-stat-value">{new Date(current.updatedAt).toLocaleDateString()}</div></div>
           </div>
+
+          <div className="plan-section-card"><div className="plan-section-body"><h3>Health & Performance</h3><div className="plan-scorecards"><div className="plan-stat-card"><div className="plan-stat-label">Pipeline Health</div><RagBadge value={current.computed.kpiRag.pipelineHealth} /></div><div className="plan-stat-card"><div className="plan-stat-label">Revenue Progress</div><RagBadge value={current.computed.kpiRag.revenueProgress} /></div><div className="plan-stat-card"><div className="plan-stat-label">Enablement Readiness</div><RagBadge value={current.computed.kpiRag.enablementReadiness} /></div><div className="plan-stat-card"><div className="plan-stat-label">Engagement Cadence</div><RagBadge value={current.computed.kpiRag.engagementCadence} /></div><div className="plan-stat-card"><div className="plan-stat-label">Risk Level</div><RagBadge value={current.computed.kpiRag.riskLevel} /></div><div className="plan-stat-card"><div className="plan-stat-label">Action Plan Delivery</div><RagBadge value={current.computed.kpiRag.actionPlanDelivery} /></div></div><HealthBreakdown breakdown={current.computed.healthBreakdown} /><p className="plan-empty-inline">Health score is calculated from attainment, engagement, risk and execution indicators to support partner prioritisation.</p></div></div>
 
           <div className="plan-section-tabs">{PLAN_SECTIONS.map(([id, label]) => <a href={`#plan-section-${id}`} key={id}>{label}</a>)}</div>
 
           <div className="plan-form-stack">
-            <AccountPlanFormSection title="Partner Overview" helper="Core profile and strategic positioning." defaultOpen={true}>
-              <div id="plan-section-overview" className="plan-grid-3">
-                <label className="plan-field"><span>Partner Name *</span><input value={current.partnerOverview.partnerName} readOnly={mode === "view"} onChange={(e) => updateField(["partnerOverview", "partnerName"], e.target.value)} />{errors.partnerName && <small>{errors.partnerName}</small>}</label>
-                <label className="plan-field"><span>Partner Tier *</span><select value={current.partnerOverview.partnerTier} disabled={mode === "view"} onChange={(e) => updateField(["partnerOverview", "partnerTier"], e.target.value)}><option value="">Select</option><option>Strategic</option><option>Gold</option><option>Silver</option><option>Emerging</option><option>Other</option></select>{errors.partnerTier && <small>{errors.partnerTier}</small>}</label>
-                <label className="plan-field"><span>Partner Type *</span><select value={current.partnerOverview.partnerType} disabled={mode === "view"} onChange={(e) => updateField(["partnerOverview", "partnerType"], e.target.value)}><option value="">Select</option><option>UC Reseller</option><option>CC Specialist</option><option>MSP</option><option>SI</option><option>Agent</option><option>Distributor</option><option>Other</option></select>{errors.partnerType && <small>{errors.partnerType}</small>}</label>
-                <label className="plan-field"><span>Primary Geography</span><input value={current.partnerOverview.primaryGeography} readOnly={mode === "view"} onChange={(e) => updateField(["partnerOverview", "primaryGeography"], e.target.value)} /></label>
-                <label className="plan-field plan-field--full"><span>Vertical Strengths</span><textarea value={current.partnerOverview.verticalStrengths} readOnly={mode === "view"} onChange={(e) => updateField(["partnerOverview", "verticalStrengths"], e.target.value)} /></label>
-                <label className="plan-field plan-field--full"><span>Core Capabilities</span><textarea value={current.partnerOverview.coreCapabilities} readOnly={mode === "view"} onChange={(e) => updateField(["partnerOverview", "coreCapabilities"], e.target.value)} /></label>
-              </div>
-            </AccountPlanFormSection>
+            <AccountPlanFormSection title="Partner Overview" helper="Core profile and strategic positioning." ragField="overallRagStatus" ragValue={current.overallRagStatus} onRagChange={(v)=>updateField(["overallRagStatus"],v)} readOnly={mode==="view"} defaultOpen={true}><div id="plan-section-overview" className="plan-grid-3"><label className="plan-field"><span>Partner Name *</span><input value={current.partnerOverview.partnerName} readOnly={mode === "view"} onChange={(e) => updateField(["partnerOverview", "partnerName"], e.target.value)} />{errors.partnerName && <small>{errors.partnerName}</small>}</label><label className="plan-field"><span>Partner Tier *</span><select value={current.partnerOverview.partnerTier} disabled={mode === "view"} onChange={(e) => updateField(["partnerOverview", "partnerTier"], e.target.value)}><option value="">Select</option><option>Strategic</option><option>Gold</option><option>Silver</option><option>Emerging</option><option>Other</option></select>{errors.partnerTier && <small>{errors.partnerTier}</small>}</label><label className="plan-field"><span>Partner Type *</span><select value={current.partnerOverview.partnerType} disabled={mode === "view"} onChange={(e) => updateField(["partnerOverview", "partnerType"], e.target.value)}><option value="">Select</option><option>UC Reseller</option><option>CC Specialist</option><option>MSP</option><option>SI</option><option>Agent</option><option>Distributor</option><option>Other</option></select>{errors.partnerType && <small>{errors.partnerType}</small>}</label><label className="plan-field"><span>Primary Geography</span><input value={current.partnerOverview.primaryGeography} readOnly={mode === "view"} onChange={(e) => updateField(["partnerOverview", "primaryGeography"], e.target.value)} /></label><label className="plan-field"><span>Strategic Importance (1-5)</span><input type="number" min="1" max="5" value={current.partnerOverview.strategicImportanceRating} readOnly={mode==="view"} onChange={(e) => updateField(["partnerOverview", "strategicImportanceRating"], e.target.value)} /></label><label className="plan-field"><span>Channel Manager *</span><input value={current.contacts.channelManager} readOnly={mode === "view"} onChange={(e) => updateField(["contacts", "channelManager"], e.target.value)} />{errors.channelManager && <small>{errors.channelManager}</small>}</label></div></AccountPlanFormSection>
 
-            <AccountPlanFormSection title="Partner Contacts / Leadership" helper="Primary ownership and key stakeholder roles." defaultOpen={mode !== "view"}>
-              <div id="plan-section-contacts" className="plan-grid-3">
-                {[["executiveSponsorVendor","Executive Sponsor (Vendor)"],["executiveSponsorPartner","Executive Sponsor (Partner)"],["channelManager","Channel Manager *"],["partnerSalesLead","Partner Sales Lead"],["partnerTechnicalLead","Partner Technical Lead"],["marketingContact","Marketing Contact"],["customerSuccessContact","Customer Success / Services Contact"]].map(([key,label]) => <label className="plan-field" key={key}><span>{label}</span><input value={current.contacts[key]} readOnly={mode === "view"} onChange={(e)=>updateField(["contacts",key],e.target.value)} />{key === "channelManager" && errors.channelManager && <small>{errors.channelManager}</small>}</label>)}
-              </div>
-            </AccountPlanFormSection>
-
-            <AccountPlanFormSection title="Strategic Alignment" defaultOpen={false}><div id="plan-section-alignment" className="plan-grid-2">{[["whyThisPartnerMatters","Why This Partner Matters"],["marketAccess","Market Access"],["customerBaseValue","Customer Base Value"],["technicalCapability","Technical Capability"],["growthPotential","Growth Potential"],["competitivePositioningNotes","Competitive Positioning Notes"]].map(([key,label]) => <label className="plan-field plan-field--full" key={key}><span>{label}</span><textarea value={current.strategicAlignment[key]} readOnly={mode === "view"} onChange={(e)=>updateField(["strategicAlignment",key],e.target.value)} /></label>)}</div></AccountPlanFormSection>
-
-            <AccountPlanFormSection title="Joint Business Objectives" defaultOpen={false}><div id="plan-section-objectives" className="plan-grid-3">{[["planningPeriod","Planning Period *","text"],["newCustomerLogoTarget","New Customer Logo Target","number"],["pipelineTargetValue","Pipeline Target Value","number"],["closedWonRevenueTarget","Closed Won Revenue Target","number"],["certificationsTarget","Certifications Target","number"],["jointCampaignsTarget","Joint Campaigns Target","number"],["partnerLedDemosTarget","Partner-Led Demos Target","number"],["expansionRevenueTarget","Expansion Revenue Target","number"]].map(([key,label,type]) => <label className="plan-field" key={key}><span>{label}</span><input type={type} value={current.objectives[key]} readOnly={mode === "view"} onChange={(e)=>updateField(["objectives",key],e.target.value)} />{key === "planningPeriod" && errors.planningPeriod && <small>{errors.planningPeriod}</small>}</label>)}</div></AccountPlanFormSection>
-
-            <AccountPlanFormSection title="Target Account Strategy" defaultOpen={false}><div id="plan-section-targetAccounts"><DynamicTableField readOnly={mode === "view"} title="Target Accounts" rows={current.targetAccounts} onChange={(rows) => updateField(["targetAccounts"], rows)} createRow={() => ({ id: planId(), accountName: "", segment: "", opportunityType: "", estimatedValue: "", owner: "", stage: "", nextStep: "", closeDate: "", strategicNotes: "" })} columns={[{ key: "accountName", label: "Account Name" }, { key: "segment", label: "Segment" }, { key: "opportunityType", label: "Opportunity Type" }, { key: "estimatedValue", label: "Estimated Value", type: "number" }, { key: "owner", label: "Owner" }, { key: "stage", label: "Stage" }, { key: "nextStep", label: "Next Step", full: true }, { key: "closeDate", label: "Close Date", type: "date" }, { key: "strategicNotes", label: "Strategic Notes", type: "textarea", full: true }]} /></div></AccountPlanFormSection>
-
-            <AccountPlanFormSection title="Pipeline Development Plan" defaultOpen={false}><div id="plan-section-pipeline"><DynamicTableField readOnly={mode === "view"} title="Pipeline Initiatives" rows={current.pipelineInitiatives} onChange={(rows) => updateField(["pipelineInitiatives"], rows)} createRow={() => ({ id: planId(), sourceType: "Installed Base", initiativeName: "", description: "", owner: "", startDate: "", targetOutcome: "", expectedPipelineValue: "", status: "Planned" })} columns={[{ key: "sourceType", label: "Source Type" }, { key: "initiativeName", label: "Initiative Name" }, { key: "description", label: "Description", type: "textarea", full: true }, { key: "owner", label: "Owner" }, { key: "startDate", label: "Start Date", type: "date" }, { key: "targetOutcome", label: "Target Outcome" }, { key: "expectedPipelineValue", label: "Expected Pipeline Value", type: "number" }, { key: "status", label: "Status" }]} /></div></AccountPlanFormSection>
-
-            <AccountPlanFormSection title="Joint Go-To-Market Plan" defaultOpen={false}><div id="plan-section-gtm"><DynamicTableField readOnly={mode === "view"} title="GTM Activities" rows={current.gtmActivities} onChange={(rows) => updateField(["gtmActivities"], rows)} createRow={() => ({ id: planId(), activityType: "Webinar", description: "", quarter: "", owner: "", plannedDate: "", status: "Planned", expectedOutcome: "" })} columns={[{ key: "activityType", label: "Activity Type" }, { key: "description", label: "Description", type: "textarea", full: true }, { key: "quarter", label: "Quarter" }, { key: "owner", label: "Owner" }, { key: "plannedDate", label: "Planned Date", type: "date" }, { key: "status", label: "Status" }, { key: "expectedOutcome", label: "Expected Outcome", full: true }]} /></div></AccountPlanFormSection>
-
-            <AccountPlanFormSection title="Enablement & Capability Development" defaultOpen={false}><div id="plan-section-enablement" className="plan-grid-3">{[["salesCertifiedCount","Sales Certified Count","number"],["preSalesCertifiedCount","Pre-Sales Certified Count","number"],["servicesCertifiedCount","Services Certified Count","number"],["demoEnvironmentStatus","Demo Environment Status","text"],["firstJointDemoDate","First Joint Demo Date","date"],["firstOpportunityDate","First Opportunity Date","date"],["firstDealDate","First Deal Date","date"],["enablementGaps","Enablement Gaps","text"],["supportNeededFromVendor","Support Needed from Vendor","text"]].map(([key,label,type]) => <label key={key} className={"plan-field" + (["enablementGaps","supportNeededFromVendor"].includes(key) ? " plan-field--full" : "")}><span>{label}</span>{["enablementGaps","supportNeededFromVendor"].includes(key) ? <textarea value={current.enablement[key]} readOnly={mode === "view"} onChange={(e)=>updateField(["enablement",key],e.target.value)} /> : <input type={type} value={current.enablement[key]} readOnly={mode === "view"} onChange={(e)=>updateField(["enablement",key],e.target.value)} />}</label>)}<div className="plan-field plan-field--full"><DynamicTableField readOnly={mode === "view"} title="Capability Milestones" rows={current.enablement.milestones} onChange={(rows)=>updateField(["enablement","milestones"],rows)} createRow={() => ({ id: planId(), milestoneName: "", owner: "", targetDate: "", status: "", notes: "" })} columns={[{ key: "milestoneName", label: "Milestone Name" }, { key: "owner", label: "Owner" }, { key: "targetDate", label: "Target Date", type: "date" }, { key: "status", label: "Status" }, { key: "notes", label: "Notes", type: "textarea", full: true }]} /></div></div></AccountPlanFormSection>
-
-            <AccountPlanFormSection title="Governance & Cadence" defaultOpen={false}><div id="plan-section-governance"><DynamicTableField readOnly={mode === "view"} title="Cadence Entries" rows={current.governanceCadence} onChange={(rows)=>updateField(["governanceCadence"],rows)} createRow={() => ({ id: planId(), meetingType: "Weekly", frequency: "", owner: "", attendees: "", purpose: "", nextScheduledDate: "" })} columns={[{ key: "meetingType", label: "Meeting Type" }, { key: "frequency", label: "Frequency" }, { key: "owner", label: "Owner" }, { key: "attendees", label: "Attendees" }, { key: "purpose", label: "Purpose", full: true }, { key: "nextScheduledDate", label: "Next Scheduled Date", type: "date" }]} /></div></AccountPlanFormSection>
-
-            <AccountPlanFormSection title="Growth Opportunities" defaultOpen={false}><div id="plan-section-growth"><DynamicTableField readOnly={mode === "view"} title="Growth Opportunities" rows={current.growthOpportunities} onChange={(rows)=>updateField(["growthOpportunities"],rows)} createRow={() => ({ id: planId(), solutionArea: "", opportunityDescription: "", revenuePotential: "", priority: "", owner: "", timeline: "" })} columns={[{ key: "solutionArea", label: "Product / Solution Area" }, { key: "opportunityDescription", label: "Opportunity Description", full: true }, { key: "revenuePotential", label: "Revenue Potential", type: "number" }, { key: "priority", label: "Priority" }, { key: "owner", label: "Owner" }, { key: "timeline", label: "Timeline" }]} /></div></AccountPlanFormSection>
-
-            <AccountPlanFormSection title="Risks & Mitigation" defaultOpen={false}><div id="plan-section-risks"><DynamicTableField readOnly={mode === "view"} title="Risk Register" rows={current.risksMitigation} onChange={(rows)=>updateField(["risksMitigation"],rows)} createRow={() => ({ id: planId(), risk: "", impact: "", likelihood: "", mitigationPlan: "", owner: "", reviewDate: "", status: "Open" })} columns={[{ key: "risk", label: "Risk", full: true }, { key: "impact", label: "Impact" }, { key: "likelihood", label: "Likelihood" }, { key: "mitigationPlan", label: "Mitigation Plan", full: true }, { key: "owner", label: "Owner" }, { key: "reviewDate", label: "Review Date", type: "date" }, { key: "status", label: "Status" }]} /></div></AccountPlanFormSection>
-
-            <AccountPlanFormSection title="Scorecard" defaultOpen={false}><div id="plan-section-scorecard" className="plan-grid-2">{Object.entries({ pipelineCurrent: "Pipeline Current", pipelineTarget: "Pipeline Target", closedWonCurrent: "Closed Won Current", closedWonTarget: "Closed Won Target", activeOpportunitiesCurrent: "Active Opportunities Current", activeOpportunitiesTarget: "Active Opportunities Target", certificationsCurrent: "Certifications Current", certificationsTarget: "Certifications Target", jointMarketingActivitiesCurrent: "Joint Marketing Activities Current", jointMarketingActivitiesTarget: "Joint Marketing Activities Target" }).map(([key,label]) => <label className="plan-field" key={key}><span>{label}</span><input type="number" value={current.scorecard[key]} readOnly={mode === "view"} onChange={(e)=>updateField(["scorecard",key],e.target.value)} /></label>)}<div className="plan-field plan-field--full"><ScorecardCards scorecard={current.scorecard} /></div></div></AccountPlanFormSection>
-
-            <AccountPlanFormSection title="90 Day Action Plan" defaultOpen={false}><div id="plan-section-actionPlan"><DynamicTableField readOnly={mode === "view"} title="Action Items" rows={current.actionPlan90Day} onChange={(rows)=>updateField(["actionPlan90Day"],rows)} createRow={() => ({ id: planId(), action: "", owner: "", dueDate: "", priority: "", status: "", notes: "" })} columns={[{ key: "action", label: "Action", full: true }, { key: "owner", label: "Owner" }, { key: "dueDate", label: "Due Date", type: "date" }, { key: "priority", label: "Priority" }, { key: "status", label: "Status" }, { key: "notes", label: "Notes", type: "textarea", full: true }]} /></div></AccountPlanFormSection>
-
+            <AccountPlanFormSection title="Strategic Alignment" ragField="alignmentRag" ragValue={current.alignmentRag} onRagChange={(v)=>updateField(["alignmentRag"],v)} readOnly={mode==="view"} defaultOpen={false}><div id="plan-section-alignment" className="plan-grid-2"><label className="plan-field plan-field--full"><span>Why this partner matters</span><textarea value={current.strategicAlignment.whyThisPartnerMatters} readOnly={mode === "view"} onChange={(e)=>updateField(["strategicAlignment","whyThisPartnerMatters"],e.target.value)} /></label></div></AccountPlanFormSection>
+            <AccountPlanFormSection title="Objectives" ragField="objectivesRag" ragValue={current.objectivesRag} onRagChange={(v)=>updateField(["objectivesRag"],v)} readOnly={mode==="view"} defaultOpen={false}><div id="plan-section-objectives" className="plan-grid-3"><label className="plan-field"><span>Planning Period *</span><input value={current.objectives.planningPeriod} readOnly={mode==="view"} onChange={(e)=>updateField(["objectives","planningPeriod"],e.target.value)} />{errors.planningPeriod && <small>{errors.planningPeriod}</small>}</label><label className="plan-field"><span>Pipeline Target</span><input type="number" value={current.objectives.pipelineTargetValue} readOnly={mode==="view"} onChange={(e)=>updateField(["objectives","pipelineTargetValue"],e.target.value)} /></label><label className="plan-field"><span>Closed Won Target</span><input type="number" value={current.objectives.closedWonRevenueTarget} readOnly={mode==="view"} onChange={(e)=>updateField(["objectives","closedWonRevenueTarget"],e.target.value)} /></label></div></AccountPlanFormSection>
+            <AccountPlanFormSection title="Target Accounts" defaultOpen={false}><div id="plan-section-targetAccounts"><DynamicTableField readOnly={mode === "view"} title="Target Accounts" rows={current.targetAccounts} onChange={(rows)=>updateField(["targetAccounts"],rows)} createRow={() => ({ id: planId(), accountName: "", segment: "", opportunityType: "", estimatedValue: "", owner: "", stage: "", nextStep: "", closeDate: "", strategicNotes: "" })} columns={[{ key: "accountName", label: "Account Name" }, { key: "segment", label: "Segment" }, { key: "opportunityType", label: "Opportunity Type" }, { key: "estimatedValue", label: "Estimated Value", type: "number" }, { key: "owner", label: "Owner" }, { key: "stage", label: "Stage" }, { key: "nextStep", label: "Next Step" }, { key: "closeDate", label: "Close Date", type: "date" }, { key: "strategicNotes", label: "Strategic Notes", type: "textarea", full: true }]} /></div></AccountPlanFormSection>
+            <AccountPlanFormSection title="Pipeline" ragField="pipelineRag" ragValue={current.pipelineRag} onRagChange={(v)=>updateField(["pipelineRag"],v)} readOnly={mode==="view"} defaultOpen={false}><div id="plan-section-pipeline"><DynamicTableField readOnly={mode === "view"} title="Pipeline Initiatives" rows={current.pipelineInitiatives} onChange={(rows)=>updateField(["pipelineInitiatives"],rows)} createRow={() => ({ id: planId(), sourceType: "", initiativeName: "", description: "", owner: "", startDate: "", targetOutcome: "", expectedPipelineValue: "", status: "" })} columns={[{ key: "sourceType", label: "Source Type" }, { key: "initiativeName", label: "Initiative Name" }, { key: "description", label: "Description", full: true }, { key: "owner", label: "Owner" }, { key: "startDate", label: "Start Date", type: "date" }, { key: "targetOutcome", label: "Target Outcome" }, { key: "expectedPipelineValue", label: "Expected Value", type: "number" }, { key: "status", label: "Status" }]} /></div></AccountPlanFormSection>
+            <AccountPlanFormSection title="Enablement" ragField="enablementRag" ragValue={current.enablementRag} onRagChange={(v)=>updateField(["enablementRag"],v)} readOnly={mode==="view"} defaultOpen={false}><div id="plan-section-enablement" className="plan-grid-3"><label className="plan-field"><span>Demo Environment Status</span><input value={current.enablement.demoEnvironmentStatus} readOnly={mode==="view"} onChange={(e)=>updateField(["enablement","demoEnvironmentStatus"],e.target.value)} /></label></div></AccountPlanFormSection>
+            <AccountPlanFormSection title="Governance" ragField="governanceRag" ragValue={current.governanceRag} onRagChange={(v)=>updateField(["governanceRag"],v)} readOnly={mode==="view"} defaultOpen={false}><div id="plan-section-governance"><DynamicTableField readOnly={mode === "view"} title="Cadence" rows={current.governanceCadence} onChange={(rows)=>updateField(["governanceCadence"],rows)} createRow={() => ({ id: planId(), meetingType: "Weekly", frequency: "", owner: "", attendees: "", purpose: "", nextScheduledDate: "" })} columns={[{ key: "meetingType", label: "Meeting Type" }, { key: "frequency", label: "Frequency" }, { key: "owner", label: "Owner" }, { key: "attendees", label: "Attendees" }, { key: "purpose", label: "Purpose", full: true }, { key: "nextScheduledDate", label: "Next Scheduled Date", type: "date" }]} /></div></AccountPlanFormSection>
+            <AccountPlanFormSection title="Growth Opportunities" ragField="growthRag" ragValue={current.growthRag} onRagChange={(v)=>updateField(["growthRag"],v)} readOnly={mode==="view"} defaultOpen={false}><div id="plan-section-growth"><DynamicTableField readOnly={mode === "view"} title="Growth Opportunities" rows={current.growthOpportunities} onChange={(rows)=>updateField(["growthOpportunities"],rows)} createRow={() => ({ id: planId(), solutionArea: "", opportunityDescription: "", revenuePotential: "", priority: "", owner: "", timeline: "" })} columns={[{ key: "solutionArea", label: "Product / Solution Area" }, { key: "opportunityDescription", label: "Opportunity Description", full: true }, { key: "revenuePotential", label: "Revenue Potential", type: "number" }, { key: "priority", label: "Priority" }, { key: "owner", label: "Owner" }, { key: "timeline", label: "Timeline" }]} /></div></AccountPlanFormSection>
+            <AccountPlanFormSection title="Risks & Mitigation" ragField="riskRag" ragValue={current.riskRag} onRagChange={(v)=>updateField(["riskRag"],v)} readOnly={mode==="view"} defaultOpen={false}><div id="plan-section-risks"><DynamicTableField readOnly={mode === "view"} title="Risk Register" rows={current.risksMitigation} onChange={(rows)=>updateField(["risksMitigation"],rows)} createRow={() => ({ id: planId(), risk: "", impact: "", likelihood: "", mitigationPlan: "", owner: "", reviewDate: "", status: "Open" })} columns={[{ key: "risk", label: "Risk", full: true }, { key: "impact", label: "Impact" }, { key: "likelihood", label: "Likelihood" }, { key: "mitigationPlan", label: "Mitigation Plan", full: true }, { key: "owner", label: "Owner" }, { key: "reviewDate", label: "Review Date", type: "date" }, { key: "status", label: "Status" }]} /></div></AccountPlanFormSection>
+            <AccountPlanFormSection title="Scorecard" defaultOpen={false}><div id="plan-section-scorecard" className="plan-grid-2">{Object.entries({ pipelineCurrent: "Pipeline Current", pipelineTarget: "Pipeline Target", closedWonCurrent: "Closed Won Current", closedWonTarget: "Closed Won Target", activeOpportunitiesCurrent: "Active Opportunities Current", activeOpportunitiesTarget: "Active Opportunities Target", certificationsCurrent: "Certifications Current", certificationsTarget: "Certifications Target", jointMarketingActivitiesCurrent: "Joint Marketing Activities Current", jointMarketingActivitiesTarget: "Joint Marketing Activities Target" }).map(([key,label]) => <label className="plan-field" key={key}><span>{label}</span><input type="number" value={current.scorecard[key]} readOnly={mode === "view"} onChange={(e)=>updateField(["scorecard",key],e.target.value)} /></label>)}</div></AccountPlanFormSection>
+            <AccountPlanFormSection title="90 Day Action Plan" ragField="actionPlanRag" ragValue={current.actionPlanRag} onRagChange={(v)=>updateField(["actionPlanRag"],v)} readOnly={mode==="view"} defaultOpen={false}><div id="plan-section-actionPlan"><DynamicTableField readOnly={mode === "view"} title="Action Items" rows={current.actionPlan90Day} onChange={(rows)=>updateField(["actionPlan90Day"],rows)} createRow={() => ({ id: planId(), action: "", owner: "", dueDate: "", priority: "", status: "", notes: "" })} columns={[{ key: "action", label: "Action", full: true }, { key: "owner", label: "Owner" }, { key: "dueDate", label: "Due Date", type: "date" }, { key: "priority", label: "Priority" }, { key: "status", label: "Status" }, { key: "notes", label: "Notes", type: "textarea", full: true }]} /></div></AccountPlanFormSection>
             <AccountPlanFormSection title="Plan Status / Metadata" defaultOpen={false}><div id="plan-section-summary" className="plan-grid-2"><label className="plan-field"><span>Plan Status *</span><select value={current.metadata.planStatus} disabled={mode === "view"} onChange={(e)=>updateField(["metadata","planStatus"],e.target.value)}><option>Draft</option><option>Active</option><option>At Risk</option><option>On Track</option><option>Closed</option><option>Archived</option></select>{errors.planStatus && <small>{errors.planStatus}</small>}</label><label className="plan-field"><span>Last Executive Review Date</span><input type="date" value={current.metadata.lastExecutiveReviewDate} readOnly={mode === "view"} onChange={(e)=>updateField(["metadata","lastExecutiveReviewDate"],e.target.value)} /></label><label className="plan-field"><span>Next QBR Date</span><input type="date" value={current.metadata.nextQbrDate} readOnly={mode === "view"} onChange={(e)=>updateField(["metadata","nextQbrDate"],e.target.value)} /></label><label className="plan-field plan-field--full"><span>Internal Notes</span><textarea value={current.metadata.internalNotes} readOnly={mode === "view"} onChange={(e)=>updateField(["metadata","internalNotes"],e.target.value)} /></label><label className="plan-field plan-field--full"><span>Partner-Facing Summary</span><textarea value={current.metadata.partnerFacingSummary} readOnly={mode === "view"} onChange={(e)=>updateField(["metadata","partnerFacingSummary"],e.target.value)} /></label></div></AccountPlanFormSection>
           </div>
         </>
@@ -10549,6 +10945,7 @@ function PartnerAccountPlanToolPage() {
     </div>
   );
 }
+
 
 // ═══════════════════════════════════════════════════════
 // SIDEBAR NAV WRAPPER
