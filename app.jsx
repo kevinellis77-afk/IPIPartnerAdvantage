@@ -3371,22 +3371,6 @@ function PlatformStack() {
             </React.Fragment>
           ))}
 
-          <div
-            style={{
-              textAlign: "center",
-              marginTop: 26,
-              fontSize: 13,
-              color: "#8CB5AC",
-              lineHeight: 1.8,
-              maxWidth: 940,
-              marginInline: "auto",
-            }}
-          >
-            IPI delivers a complete Customer Contact ecosystem. Managed services
-            provide the foundation, telephony and ECX power communications, AI
-            and Compliance enhance customer engagement, while Professional
-            Services ensure successful design, deployment and optimisation.
-          </div>
         </div>
       </section>
 
@@ -11017,74 +11001,12 @@ function App() {
             flexDirection: "column",
           }}
         >
-          {/* ── HEADER ── */}
-          <header
-            className="fade-up"
-            style={{
-              padding: "22px 44px 0",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              flexWrap: "wrap",
-              gap: 12,
-              animationDelay: "0.05s",
-              paddingLeft: 68,
-            }}
-          >
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  background:
-                    "linear-gradient(135deg,rgba(54,198,255,0.12),rgba(177,143,255,0.08))",
-                  border: "1px solid rgba(54,198,255,0.3)",
-                  borderRadius: 100,
-                  padding: "7px 18px",
-                }}
-              >
-                <div
-                  style={{
-                    width: 7,
-                    height: 7,
-                    borderRadius: "50%",
-                    background: "#36C6FF",
-                    boxShadow: "0 0 8px #36C6FF",
-                    animation: "liveDot 2.2s ease-in-out infinite",
-                  }}
-                />
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 800,
-                    color: "#67D8FF",
-                    letterSpacing: "0.07em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  IPI Partner Advantage
-                </span>
-                <span
-                  style={{
-                    fontSize: 9,
-                    color: "rgba(54,198,255,0.5)",
-                    letterSpacing: "0.07em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  2026
-                </span>
-              </div>
-            </div>
-          </header>
-
           {/* ── PAGE TITLE / HERO HEADING ── */}
           <div
             className="fade-up"
             style={{
               textAlign: "center",
-              padding: "36px 40px 0",
+              padding: "22px 40px 0",
               animationDelay: "0.1s",
               paddingLeft: "calc(40px + 0px)",
             }}
@@ -11173,20 +11095,6 @@ function App() {
                 />
               </div>
               <div style={{ textAlign: "center", marginBottom: 28 }}>
-                <h2
-                  style={{
-                    fontSize: "clamp(18px,2.6vw,30px)",
-                    fontWeight: 800,
-                    color: "#fff",
-                    letterSpacing: "-0.03em",
-                    lineHeight: 1.1,
-                    marginBottom: 10,
-                    fontFamily: "'Syne',sans-serif",
-                  }}
-                >
-                  How we go to market{" "}
-                  <span style={{ color: "#36C6FF" }}>with partners</span>
-                </h2>
                 <p
                   style={{
                     fontSize: 13.5,
