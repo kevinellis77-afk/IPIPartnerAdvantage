@@ -10681,7 +10681,64 @@ function PartnerRankingList({ plans }) {
 }
 
 function SavedPlansTable({ plans, onView, onEdit, onDuplicate, onDelete }) {
-  return <div className="plan-table-wrap"><table className="plan-table"><thead><tr><th>Partner</th><th>RAG</th><th>Health</th><th>Ranking</th><th>Owner</th><th>Status</th><th>Pipeline</th><th>Closed Won</th><th>Open Risks</th><th>Overdue</th><th>Last Updated</th><th>Actions</th></tr></thead><tbody>{plans.map((p) => { const plan = enrichPlan(p); return <tr key={plan.id} className={plan.overallRagStatus === "Red" ? "row-red" : ""}><td>{plan.partnerOverview.partnerName || "—"}</td><td><RagBadge value={plan.overallRagStatus} /></td><td>{plan.computed.healthScore}</td><td>{plan.computed.healthLabel}</td><td>{plan.contacts.channelManager || "—"}</td><td>{plan.metadata.planStatus || "—"}</td><td>{formatCurrency(plan.scorecard.pipelineCurrent)}</td><td>{formatCurrency(plan.scorecard.closedWonCurrent)}</td><td>{plan.computed.openRisks}</td><td>{plan.computed.overdueActionItems}</td><td>{new Date(plan.updatedAt).toLocaleDateString()}</td><td><div className="plan-actions-inline"><button className="ui-btn ui-btn--ghost" onClick={() => onView(plan)}>View</button><button className="ui-btn ui-btn--secondary" onClick={() => onEdit(plan)}>Edit</button><button className="ui-btn ui-btn--ghost" onClick={() => onDuplicate(plan)}>Duplicate</button><button className="ui-btn ui-btn--ghost" onClick={() => onDelete(plan)}>Delete</button></div></td></tr>; })}</tbody></table></div>;
+  return (
+    <div className="plan-table-wrap">
+      <table className="plan-table">
+        <thead>
+          <tr>
+            <th>Partner</th>
+            <th>RAG</th>
+            <th>Health</th>
+            <th>Ranking</th>
+            <th>Owner</th>
+            <th>Status</th>
+            <th>Pipeline</th>
+            <th>Closed Won</th>
+            <th>Open Risks</th>
+            <th>Overdue</th>
+            <th>Last Updated</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {plans.map((p) => {
+            const plan = enrichPlan(p);
+            return (
+              <tr key={plan.id} className={plan.overallRagStatus === "Red" ? "row-red" : ""}>
+                <td>{plan.partnerOverview.partnerName || "—"}</td>
+                <td><RagBadge value={plan.overallRagStatus} /></td>
+                <td>{plan.computed.healthScore}</td>
+                <td>{plan.computed.healthLabel}</td>
+                <td>{plan.contacts.channelManager || "—"}</td>
+                <td>{plan.metadata.planStatus || "—"}</td>
+                <td>{formatCurrency(plan.scorecard.pipelineCurrent)}</td>
+                <td>{formatCurrency(plan.scorecard.closedWonCurrent)}</td>
+                <td>{plan.computed.openRisks}</td>
+                <td>{plan.computed.overdueActionItems}</td>
+                <td>{new Date(plan.updatedAt).toLocaleDateString()}</td>
+                <td>
+                  <div className="plan-actions-inline">
+                    <button className="ui-btn ui-btn--ghost plan-action-icon-btn" onClick={() => onView(plan)} aria-label="View plan" title="View">
+                      👁
+                    </button>
+                    <button className="ui-btn ui-btn--secondary plan-action-icon-btn" onClick={() => onEdit(plan)} aria-label="Edit plan" title="Edit">
+                      ✏️
+                    </button>
+                    <button className="ui-btn ui-btn--ghost plan-action-icon-btn" onClick={() => onDuplicate(plan)} aria-label="Duplicate plan" title="Duplicate">
+                      ⧉
+                    </button>
+                    <button className="ui-btn ui-btn--ghost plan-action-icon-btn" onClick={() => onDelete(plan)} aria-label="Delete plan" title="Delete">
+                      🗑
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 function PartnerAccountPlanToolPage() {
@@ -11008,7 +11065,7 @@ const NAV_ITEMS = [
   {
     id: "partner-account-plan",
     icon: <NavIcon name="checklist" />,
-    label: "Partner Account Plan Tool",
+    label: "Partner Planning",
     sublabel: "Account Planning",
   },
   {

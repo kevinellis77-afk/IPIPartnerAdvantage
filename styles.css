@@ -911,6 +911,7 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
 .partner-plan-head h1{font-size:30px;line-height:1.1;color:var(--ds-text);}
 .partner-plan-head p{font-size:14px;color:var(--ds-text-muted);max-width:860px;line-height:1.7;margin-top:8px;}
 .plan-actions-inline{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.plan-action-icon-btn{min-width:32px;padding:6px 8px;font-size:14px;line-height:1;display:inline-flex;align-items:center;justify-content:center;}
 .plan-filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;}
 .plan-scorecards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;}
 .plan-stat-card{background:var(--ds-surface-muted);border:1px solid var(--ds-border);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px;min-width:0;}
