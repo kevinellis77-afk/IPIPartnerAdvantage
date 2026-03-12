@@ -7763,7 +7763,6 @@ function PartnerTrustPage() {
     { icon: "🛡️", label: "Governance-First", tone: "blue" },
     { icon: "📘", label: "Single Source of Truth", tone: "purple" },
     { icon: "⚖️", label: "Compliance Ready", tone: "teal" },
-    { icon: "🤝", label: "Partner Transparency", tone: "amber" },
   ];
 
   const purposePoints = [
