@@ -545,35 +545,35 @@ function FilterBar({ children, className = "" }) {
 
 
 function ThemeToggle() {
-  const [mode, setMode] = React.useState(() => window.appTheme?.getMode?.() || "system");
+  const [mode, setMode] = React.useState(() => window.appTheme?.getMode?.() || "dark");
 
   React.useEffect(() => {
     const sync = (event) => {
       if (event?.detail?.mode) setMode(event.detail.mode);
-      else setMode(window.appTheme?.getMode?.() || "system");
+      else setMode(window.appTheme?.getMode?.() || "dark");
     };
     window.addEventListener("ipi-theme-change", sync);
     return () => window.removeEventListener("ipi-theme-change", sync);
   }, []);
 
-  const changeTheme = (next) => {
+  const isDark = mode === "dark";
+
+  const toggleTheme = () => {
+    const next = isDark ? "light" : "dark";
     setMode(next);
     window.appTheme?.setMode?.(next);
   };
 
   return (
-    <div className="theme-toggle" role="group" aria-label="Theme selection">
-      {["light", "dark", "system"].map((option) => (
-        <button
-          key={option}
-          type="button"
-          className={`theme-toggle__btn ${mode === option ? "is-active" : ""}`}
-          onClick={() => changeTheme(option)}
-        >
-          {option}
-        </button>
-      ))}
-    </div>
+    <button
+      type="button"
+      className="theme-toggle"
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      onClick={toggleTheme}
+    >
+      <span className="theme-toggle__icon" aria-hidden="true">{isDark ? "☀️" : "🌙"}</span>
+    </button>
   );
 }
 
