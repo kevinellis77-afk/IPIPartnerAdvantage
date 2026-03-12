@@ -8954,6 +8954,7 @@ function GovernancePage() {
                   className="raciTableHeader"
                 >
                   {[
+                    "Name of Task",
                     "R",
                     "A",
                     "C",
@@ -8974,6 +8975,18 @@ function GovernancePage() {
                     const rowStyle = getTaskRowStyle(task);
                     return (
                       <div key={task.id} className="raciTableRow" style={{ borderTop: idx ? `1px solid ${rowStyle.borderColor}` : "none", background: rowStyle.background }}>
+                        <div
+                          style={{
+                            padding: "10px 14px",
+                            fontSize: 12.5,
+                            fontWeight: 700,
+                            color: "#EAF5FF",
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          {task.activity}
+                        </div>
                         {[
                           ["r", "Responsible"],
                           ["a", "Accountable"],

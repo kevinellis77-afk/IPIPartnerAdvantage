@@ -496,8 +496,8 @@ tbody tr:nth-child(even){background:rgba(255,255,255,0.015);}
 .exportButton{border:none;border-radius:12px;padding:10px 16px;font-weight:700;cursor:pointer;background:var(--brand-primary);color:#fff;box-shadow:0 8px 20px rgba(24,49,83,.18);transition:transform .15s ease,filter .15s ease;}
 .exportButton:hover{transform:translateY(-1px);filter:brightness(1.05);}
 .raciTableWrap{background:rgba(255,255,255,.03);border:1px solid rgba(123,150,163,.3);border-radius:14px;overflow-x:auto;}
-.raciTableGrid{min-width:900px;width:max-content;max-width:100%;}
-.raciTableHeader,.raciTableRow{display:grid;grid-template-columns:repeat(4,minmax(170px,1fr)) minmax(120px,.9fr) minmax(130px,1fr);column-gap:8px;align-items:start;}
+.raciTableGrid{min-width:1080px;width:max-content;max-width:100%;}
+.raciTableHeader,.raciTableRow{display:grid;grid-template-columns:minmax(240px,1.4fr) repeat(4,minmax(150px,1fr)) minmax(120px,.9fr) minmax(130px,1fr);column-gap:8px;align-items:start;}
 .raciTableHeader{background:rgba(123,150,163,.14);border-bottom:1px solid rgba(123,150,163,.25);position:sticky;top:0;z-index:3;}
 .raciHeaderCell{padding:12px 14px;font-size:10.5px;font-weight:800;color:var(--text-secondary);letter-spacing:.08em;text-transform:uppercase;white-space:normal;}
 .raciHeaderCell.col-r,.metric-r{background:rgba(239,68,68,.12);color:#991b1b;}
