@@ -7614,20 +7614,92 @@ function CommercialFrameworkPage() {
 }
 
 function PartnerTrustPage() {
+  const trustPillars = [
+    { icon: "🛡️", label: "Governance-First", tone: "blue" },
+    { icon: "📘", label: "Single Source of Truth", tone: "purple" },
+    { icon: "⚖️", label: "Compliance Ready", tone: "teal" },
+    { icon: "🤝", label: "Partner Transparency", tone: "amber" },
+  ];
+
+  const purposePoints = [
+    { icon: "✅", text: "Ensures partners always reference the latest versions of agreements and policies" },
+    { icon: "🚀", text: "Simplifies partner onboarding" },
+    { icon: "⏱️", text: "Reduces delays during customer procurement processes" },
+    { icon: "🔐", text: "Supports enterprise security and compliance reviews" },
+  ];
+
+  const documentGroups = [
+    {
+      icon: "📄",
+      tone: "blue",
+      title: "Commercial Agreements",
+      description: "Core legal and commercial agreements that define how partners engage and sell with IPI.",
+      items: [
+        "IPI Reseller Master Agreement",
+        "Partner Terms & Conditions",
+        "Partner Tier Structure",
+        "Partner Commercial Policies",
+      ],
+    },
+    {
+      icon: "🧭",
+      tone: "purple",
+      title: "Product Schedules",
+      description: "Each product area has a dedicated schedule defining service terms and operational details.",
+      items: [
+        "Telephony Services Schedule",
+        "UCaaS & CCaaS Platform Schedule",
+        "AI & Automation Services Schedule",
+        "Secure Payments Schedule",
+        "Managed Services Schedule",
+        "Professional Services Schedule",
+      ],
+    },
+    {
+      icon: "👥",
+      tone: "teal",
+      title: "End User Legal Documentation",
+      description: "Documentation partners can use directly in customer deployments and procurement journeys.",
+      items: [
+        "End User Licence Agreements (EULAs)",
+        "Acceptable Use Policies",
+        "Service Descriptions",
+        "Service Level Agreements (SLAs)",
+        "Data Processing Agreements (DPAs)",
+      ],
+    },
+    {
+      icon: "🧪",
+      tone: "amber",
+      title: "Security & Compliance Documentation",
+      description: "Technical and governance collateral to support enterprise security and risk assessments.",
+      items: [
+        "Data protection policies",
+        "Security frameworks",
+        "Compliance certifications",
+        "PCI related documentation for secure payments services",
+      ],
+    },
+  ];
+
   const strategicBenefits = [
     {
+      icon: "⚡",
       title: "Faster Partner Onboarding",
       text: "Partners can quickly access all documentation required to start selling IPI solutions.",
     },
     {
+      icon: "🧾",
       title: "Simplified Procurement",
       text: "Enterprise customers and procurement teams can easily review legal and compliance materials.",
     },
     {
+      icon: "🛠️",
       title: "Reduced Operational Overhead",
       text: "IPI teams spend less time responding to document requests.",
     },
     {
+      icon: "🌟",
       title: "Improved Partner Confidence",
       text: "Transparency strengthens trust within the partner ecosystem.",
     },
@@ -7642,18 +7714,42 @@ function PartnerTrustPage() {
       />
 
       <SectionWrapper>
+        <HighlightCard className="trust-hero-card">
+          <div className="trust-hero-layout">
+            <div>
+              <p className="trust-hero-kicker">Trust at a glance</p>
+              <h3 className="trust-hero-title">A visual trust layer for every partner engagement.</h3>
+              <p className="trust-copy" style={{ marginBottom: 0 }}>
+                The Trust Portal combines legal clarity, compliance confidence and operational governance in one branded experience.
+              </p>
+            </div>
+            <div className="trust-pillars-grid">
+              {trustPillars.map((pillar) => (
+                <div key={pillar.label} className={`trust-pillar trust-pillar--${pillar.tone}`}>
+                  <span>{pillar.icon}</span>
+                  <strong>{pillar.label}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+        </HighlightCard>
+      </SectionWrapper>
+
+      <SectionWrapper>
         <SectionHeader
           eyebrow="Intro"
           title="Purpose of the Trust Page"
           description="The Trust Page will provide partners with easy access to the latest documentation governing the use, resale and delivery of IPI services."
         />
         <StandardCard>
-          <ul className="trust-list">
-            <li>Ensures partners always reference the latest versions of agreements and policies</li>
-            <li>Simplifies partner onboarding</li>
-            <li>Reduces delays during customer procurement processes</li>
-            <li>Supports enterprise security and compliance reviews</li>
-          </ul>
+          <div className="trust-purpose-grid">
+            {purposePoints.map((item) => (
+              <div key={item.text} className="trust-purpose-item">
+                <span>{item.icon}</span>
+                <p>{item.text}</p>
+              </div>
+            ))}
+          </div>
           <p className="trust-note">The Trust Page becomes the central compliance and governance hub for the IPI Partner Advantage program.</p>
         </StandardCard>
       </SectionWrapper>
@@ -7665,51 +7761,20 @@ function PartnerTrustPage() {
           description="The Trust Page will contain the most current versions of all contractual and product governance documentation."
         />
         <div className="trust-grid">
-          <StandardCard>
-            <h3 className="trust-card-title">Commercial Agreements</h3>
-            <ul className="trust-list">
-              <li>IPI Reseller Master Agreement</li>
-              <li>Partner Terms & Conditions</li>
-              <li>Partner Tier Structure</li>
-              <li>Partner Commercial Policies</li>
-            </ul>
-          </StandardCard>
-
-          <StandardCard>
-            <h3 className="trust-card-title">Product Schedules</h3>
-            <p className="trust-copy">Each product area will have a dedicated schedule defining service terms and operational details.</p>
-            <ul className="trust-list">
-              <li>Telephony Services Schedule</li>
-              <li>UCaaS & CCaaS Platform Schedule</li>
-              <li>AI & Automation Services Schedule</li>
-              <li>Secure Payments Schedule</li>
-              <li>Managed Services Schedule</li>
-              <li>Professional Services Schedule</li>
-            </ul>
-          </StandardCard>
-
-          <StandardCard>
-            <h3 className="trust-card-title">End User Legal Documentation</h3>
-            <p className="trust-copy">Partners will also be able to access documentation required for customer deployments.</p>
-            <ul className="trust-list">
-              <li>End User Licence Agreements (EULAs)</li>
-              <li>Acceptable Use Policies</li>
-              <li>Service Descriptions</li>
-              <li>Service Level Agreements (SLAs)</li>
-              <li>Data Processing Agreements (DPAs)</li>
-            </ul>
-          </StandardCard>
-
-          <StandardCard>
-            <h3 className="trust-card-title">Security & Compliance Documentation</h3>
-            <p className="trust-copy">To support enterprise procurement and security reviews, the Trust Page may also include:</p>
-            <ul className="trust-list">
-              <li>Data protection policies</li>
-              <li>Security frameworks</li>
-              <li>Compliance certifications</li>
-              <li>PCI related documentation for secure payments services</li>
-            </ul>
-          </StandardCard>
+          {documentGroups.map((group) => (
+            <StandardCard key={group.title} className={`trust-doc-card trust-doc-card--${group.tone}`}>
+              <div className="trust-doc-heading">
+                <span className="trust-doc-icon">{group.icon}</span>
+                <h3 className="trust-card-title">{group.title}</h3>
+              </div>
+              <p className="trust-copy">{group.description}</p>
+              <ul className="trust-list">
+                {group.items.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </StandardCard>
+          ))}
         </div>
       </SectionWrapper>
 
@@ -7739,7 +7804,8 @@ function PartnerTrustPage() {
         />
         <div className="trust-grid trust-grid--benefits">
           {strategicBenefits.map((benefit) => (
-            <StandardCard key={benefit.title}>
+            <StandardCard key={benefit.title} className="trust-benefit-card">
+              <div className="trust-benefit-icon">{benefit.icon}</div>
               <h3 className="trust-card-title">{benefit.title}</h3>
               <p className="trust-copy">{benefit.text}</p>
             </StandardCard>
@@ -7754,13 +7820,13 @@ function PartnerTrustPage() {
           description="Over time, the Trust Page should evolve into a comprehensive partner governance hub."
         />
         <StandardCard>
-          <ul className="trust-list">
-            <li>legal documentation</li>
-            <li>security and compliance resources</li>
-            <li>product documentation</li>
-            <li>service descriptions</li>
-            <li>implementation guidelines</li>
-          </ul>
+          <div className="trust-vision-grid">
+            <div className="trust-vision-item"><span>📚</span>legal documentation</div>
+            <div className="trust-vision-item"><span>🛡️</span>security and compliance resources</div>
+            <div className="trust-vision-item"><span>🧩</span>product documentation</div>
+            <div className="trust-vision-item"><span>🧾</span>service descriptions</div>
+            <div className="trust-vision-item"><span>🗺️</span>implementation guidelines</div>
+          </div>
           <p className="trust-note">This reinforces IP Integration’s positioning as a trusted technology and services partner in the CX market.</p>
         </StandardCard>
       </SectionWrapper>
