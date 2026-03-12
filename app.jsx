@@ -9774,6 +9774,36 @@ const CHANNEL_MANAGER_DATA = {
   ],
 };
 
+const CHANNEL_CADENCE_KPI_ICONS = {
+  "Signed Partners": "🤝",
+  "Active Leads": "📈",
+  "Activated Partners": "🚀",
+  "Partner Pipeline Value": "💷",
+  "Closed Won Revenue": "🏁",
+  "Partner Activation Rate": "⚡",
+};
+
+const CHANNEL_CADENCE_WORKSTREAM_ICONS = {
+  A: "🧭",
+  B: "🧱",
+  C: "🔁",
+  D: "🎯",
+  E: "🧩",
+};
+
+const CHANNEL_CADENCE_TEAM_ICONS = {
+  "Sales Leadership": "🧠",
+  "Pre-Sales": "🛠️",
+  Marketing: "📣",
+  Operations: "⚙️",
+  "Product / Strategy": "🗺️",
+  "Finance / Commercial": "💹",
+};
+
+const CHANNEL_LIFECYCLE_VISUALS = ["🧲", "📚", "🌱", "📊"];
+const CHANNEL_WORKING_MODEL_ICONS = ["💬", "📝", "🤝", "🔍"];
+const CHANNEL_TIMELINE_ICONS = ["🏗️", "🔄", "📡", "🌍"];
+
 function ChannelManagerDashboardPage() {
   return (
     <React.Fragment>
@@ -9786,10 +9816,29 @@ function ChannelManagerDashboardPage() {
         </header>
 
         <section className="channel-hero">
-          <div className="channel-hero-label">Channel Cadence Operating Framework</div>
-          <h1>Channel Manager Dashboard</h1>
-          <p className="channel-mission">{CHANNEL_MANAGER_DATA.mission}</p>
-          <p className="channel-support">{CHANNEL_MANAGER_DATA.missionSupport}</p>
+          <div className="channel-hero-layout">
+            <div>
+              <div className="channel-hero-label">Channel Cadence Operating Framework</div>
+              <h1>Channel Manager Dashboard</h1>
+              <p className="channel-mission">{CHANNEL_MANAGER_DATA.mission}</p>
+              <p className="channel-support">{CHANNEL_MANAGER_DATA.missionSupport}</p>
+              <div className="channel-hero-tags">
+                <span className="channel-chip">🧲 Recruit the right partners</span>
+                <span className="channel-chip">🚀 Activate pipeline faster</span>
+                <span className="channel-chip">📊 Run a predictable rhythm</span>
+              </div>
+            </div>
+            <div className="channel-hero-visual" aria-hidden="true">
+              <div className="channel-hero-visual-main">🗓️</div>
+              <p>Quarterly Cadence Engine</p>
+              <div className="channel-hero-visual-row">
+                <span>📣</span>
+                <span>🤝</span>
+                <span>💷</span>
+                <span>📈</span>
+              </div>
+            </div>
+          </div>
         </section>
 
         <section className="channel-section">
@@ -9797,6 +9846,7 @@ function ChannelManagerDashboardPage() {
           <div className="channel-grid-kpi">
             {CHANNEL_MANAGER_DATA.kpis.map((kpi) => (
               <div key={kpi.label} className="channel-card channel-kpi-card">
+                <div className="channel-kpi-icon" aria-hidden="true">{CHANNEL_CADENCE_KPI_ICONS[kpi.label] || "📌"}</div>
                 <div className="channel-kpi-label">{kpi.label}</div>
                 <div className="channel-kpi-value">{kpi.current}</div>
                 <div className="channel-kpi-meta">Target: {kpi.target}</div>
@@ -9813,6 +9863,7 @@ function ChannelManagerDashboardPage() {
             {CHANNEL_MANAGER_DATA.lifecycle.map((stage, idx) => (
               <React.Fragment key={stage.stage}>
                 <article className="channel-card channel-life-stage">
+                  <div className="channel-inline-icon" aria-hidden="true">{CHANNEL_LIFECYCLE_VISUALS[idx] || "🔹"}</div>
                   <div className="channel-step">{idx + 1}. {stage.stage}</div>
                   <p className="channel-life-what">{stage.what}</p>
                   <ul className="channel-list">
@@ -9838,7 +9889,7 @@ function ChannelManagerDashboardPage() {
           <div className="channel-grid-4">
             {CHANNEL_MANAGER_DATA.first90Days.map((stream) => (
               <article key={stream.key} className="channel-card channel-workstream-card">
-                <div className="channel-day">Workstream {stream.key}</div>
+                <div className="channel-day">{CHANNEL_CADENCE_WORKSTREAM_ICONS[stream.key]} Workstream {stream.key}</div>
                 <h3>{stream.title}</h3>
                 <ul className="channel-list">
                   {stream.items.map((item) => (
@@ -9861,6 +9912,11 @@ function ChannelManagerDashboardPage() {
 
         <section className="channel-section">
           <h2 className="channel-title">Partner Communication & Engagement Cadence</h2>
+          <div className="channel-cadence-pill-row">
+            <span className="channel-chip">📅 Weekly to quarterly rhythm by tier</span>
+            <span className="channel-chip">📣 Blended communication + events + co-marketing</span>
+            <span className="channel-chip">🎯 Focus support where joint opportunities are active</span>
+          </div>
           <StandardTable className="channel-table-wrap">
             <table className="channel-table">
               <thead>
@@ -9896,8 +9952,9 @@ function ChannelManagerDashboardPage() {
         <section className="channel-section">
           <h2 className="channel-title">How We Work Alongside Partners</h2>
           <div className="channel-grid-4">
-            {CHANNEL_MANAGER_DATA.workingModel.map((item) => (
+            {CHANNEL_MANAGER_DATA.workingModel.map((item, idx) => (
               <div key={item.title} className="channel-card">
+                <div className="channel-inline-icon" aria-hidden="true">{CHANNEL_WORKING_MODEL_ICONS[idx] || "🔹"}</div>
                 <h3>{item.title}</h3>
                 <ul className="channel-list">
                   {item.points.map((point) => (
@@ -9914,6 +9971,7 @@ function ChannelManagerDashboardPage() {
           <div className="channel-timeline-grid">
             {CHANNEL_MANAGER_DATA.maturityTimeline.map((phase, idx) => (
               <article key={phase.phase} className="channel-card channel-timeline-card">
+                <div className="channel-inline-icon" aria-hidden="true">{CHANNEL_TIMELINE_ICONS[idx] || "🔹"}</div>
                 <div className="channel-step">{phase.phase}</div>
                 <ul className="channel-list">
                   {phase.items.map((item) => (
@@ -9933,6 +9991,7 @@ function ChannelManagerDashboardPage() {
           <div className="channel-grid-3">
             {CHANNEL_MANAGER_DATA.internalAlignment.map((item) => (
               <article key={item.team} className="channel-card">
+                <div className="channel-inline-icon" aria-hidden="true">{CHANNEL_CADENCE_TEAM_ICONS[item.team] || "🔹"}</div>
                 <h3>{item.team}</h3>
                 <p>{item.desc}</p>
               </article>
