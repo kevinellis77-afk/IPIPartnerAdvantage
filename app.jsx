@@ -8517,20 +8517,61 @@ function GovernancePage() {
     updateTask(id, { [field]: normaliseRoleValue(values) });
   };
 
-  const exportRaciPDF = () => {
-    const element = document.getElementById("raciExportArea");
-    if (!element || !window.html2pdf) return;
+  const exportRaciPDF = async () => {
+    const source = document.getElementById("raciExportArea");
+    if (!source) return;
 
-    const options = {
-      margin: 0.4,
-      filename: "IPI_RACI_Matrix.pdf",
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
-      jsPDF: { unit: "in", format: "a3", orientation: "landscape" },
-      pagebreak: { mode: ["avoid-all", "css", "legacy"] },
-    };
+    if (!window.html2pdf) {
+      window.alert("PDF export is unavailable right now. Please refresh and try again.");
+      return;
+    }
 
-    window.html2pdf().set(options).from(element).save();
+    const clone = source.cloneNode(true);
+    const exportHost = document.createElement("div");
+    exportHost.style.position = "fixed";
+    exportHost.style.left = "-99999px";
+    exportHost.style.top = "0";
+    exportHost.style.width = "1600px";
+    exportHost.style.padding = "16px";
+    exportHost.style.background = "#0C1518";
+    exportHost.style.zIndex = "-1";
+
+    clone.querySelectorAll(".raciTableWrap, .raciTableGrid").forEach((node) => {
+      node.style.overflow = "visible";
+      node.style.maxWidth = "none";
+      node.style.width = "100%";
+      node.style.minWidth = "0";
+    });
+
+    clone.querySelectorAll(".raciTableHeader").forEach((node) => {
+      node.style.position = "static";
+    });
+
+    exportHost.appendChild(clone);
+    document.body.appendChild(exportHost);
+
+    try {
+      const options = {
+        margin: 0.3,
+        filename: "IPI_RACI_Matrix.pdf",
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: exportHost.scrollWidth,
+        },
+        jsPDF: { unit: "in", format: "a3", orientation: "landscape" },
+        pagebreak: { mode: ["css", "legacy"] },
+      };
+
+      await window.html2pdf().set(options).from(clone).save();
+    } finally {
+      if (document.body.contains(exportHost)) {
+        document.body.removeChild(exportHost);
+      }
+    }
   };
 
   const filteredTasks = tasks.filter((task) => {
