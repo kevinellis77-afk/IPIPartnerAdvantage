@@ -10567,7 +10567,7 @@ function toCsv(headers, rows) {
 
 function RagBadge({ value }) {
   const rag = RAG_META[value] ? value : DEFAULT_RAG;
-  return <span className={RAG_META[rag].className}>{rag}</span>;
+  return <span className={RAG_META[rag].className} aria-label={`${rag} status`} title={rag} />;
 }
 
 function AccountPlanFormSection({ title, helper, ragField, ragValue, onRagChange, readOnly = false, children, defaultOpen = true }) {
@@ -10582,13 +10582,13 @@ function AccountPlanFormSection({ title, helper, ragField, ragValue, onRagChange
         <div className="plan-section-head-right">
           {ragField ? (
             <select
-              className="ui-search plan-rag-select"
+              className={`ui-search plan-rag-select rag-select-${String(ragValue || DEFAULT_RAG).toLowerCase()}`}
               value={ragValue || DEFAULT_RAG}
               disabled={readOnly}
               onChange={(e) => onRagChange?.(e.target.value)}
               onClick={(e) => e.stopPropagation()}
             >
-              {RAG_OPTIONS.map((r) => <option key={r} value={r}>{r}</option>)}
+              {RAG_OPTIONS.map((r) => <option key={r} value={r}>●</option>)}
             </select>
           ) : null}
           <span>{open ? "−" : "+"}</span>
