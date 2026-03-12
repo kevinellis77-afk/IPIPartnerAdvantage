@@ -4185,6 +4185,7 @@ function EnablementHub({ onBack, onNavigate }) {
               {
                 name: "Gold",
                 subtitle: "Strategic growth partners",
+                discount: "40% Discount",
                 color: "#D4A843",
                 glow: "212,168,67",
                 featured: true,
@@ -4206,6 +4207,7 @@ function EnablementHub({ onBack, onNavigate }) {
               {
                 name: "Silver",
                 subtitle: "Scaling partners",
+                discount: "30% Discount",
                 color: "#67D8FF",
                 glow: "103,216,255",
                 benefits: [
@@ -4226,6 +4228,7 @@ function EnablementHub({ onBack, onNavigate }) {
               {
                 name: "Registered",
                 subtitle: "Entry partner tier",
+                discount: "20% Discount",
                 color: "#7B96A3",
                 glow: "123,150,163",
                 benefits: [
@@ -4255,6 +4258,7 @@ function EnablementHub({ onBack, onNavigate }) {
                   borderRadius: 20,
                   padding: 22,
                   display: "flex",
+                  position: "relative",
                   flexDirection: "column",
                   gap: 16,
                   boxShadow: tier.featured
@@ -4262,6 +4266,25 @@ function EnablementHub({ onBack, onNavigate }) {
                     : `0 10px 28px rgba(${tier.glow},0.1)`,
                 }}
               >
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 14,
+                    right: 14,
+                    borderRadius: 999,
+                    padding: "7px 12px",
+                    fontSize: 11,
+                    fontWeight: 800,
+                    letterSpacing: "0.04em",
+                    textTransform: "uppercase",
+                    color: "#071315",
+                    background: `linear-gradient(135deg, ${tier.color}, rgba(255,255,255,0.92))`,
+                    boxShadow: `0 8px 20px rgba(${tier.glow},0.28)`,
+                    border: "1px solid rgba(255,255,255,0.45)",
+                  }}
+                >
+                  {tier.discount}
+                </div>
                 <div>
                   <h3
                     style={{
