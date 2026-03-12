@@ -11051,6 +11051,14 @@ function App() {
   }, [page]);
 
   React.useEffect(() => {
+    const mainContent = document.querySelector(".app-main");
+    if (mainContent) {
+      mainContent.scrollTo({ top: 0, behavior: "auto" });
+    }
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [page]);
+
+  React.useEffect(() => {
     const onPopState = () => {
       const relativePath = toBaseRelativePath(window.location.pathname);
       setPage(PATH_TO_PAGE[relativePath] || "main");
