@@ -491,12 +491,12 @@ function SidebarNavItem({ item, active, onClick, collapsed }) {
       onClick={onClick}
       type="button"
       title={collapsed ? item.label : ""}
+      aria-current={active ? "page" : undefined}
     >
       <span className="sidebar-nav-icon">{item.icon}</span>
       {!collapsed && (
         <span className="sidebar-nav-text">
           <span className="sidebar-nav-label">{item.label}</span>
-          <span className="sidebar-nav-sublabel">{item.sublabel}</span>
         </span>
       )}
     </button>
@@ -516,6 +516,12 @@ function NavIcon({ name }) {
     support: "M12 4a8 8 0 00-8 8v3a2 2 0 002 2h2v-5H6v-1a6 6 0 1112 0v1h-2v5h2a2 2 0 002-2v-3a8 8 0 00-8-8z",
     search: "M11 4a7 7 0 105.1 11.8l4 4 1.4-1.4-4-4A7 7 0 0011 4z",
     checklist: "M4 6h2l1 2 3-4M11 7h9M4 12h2l1 2 3-4M11 13h9M4 18h2l1 2 3-4M11 19h9",
+    trending: "M4 16l5-5 4 4 7-7M14 8h6v6",
+    layers: "M12 3l9 5-9 5-9-5 9-5zm9 9-9 5-9-5m18 4-9 5-9-5",
+    badge: "M12 3l3 3h4v4l3 3-3 3v4h-4l-3 3-3-3H5v-4l-3-3 3-3V6h4l3-3zm-2.5 9.5l2 2 4-4",
+    scale: "M12 5v14M5 7h14M7 7l-3 5h6l-3-5zm10 0-3 5h6l-3-5",
+    cap: "M3 10l9-4 9 4-9 4-9-4zm4 2v4c0 1.6 2.2 3 5 3s5-1.4 5-3v-4",
+    chevronDown: "M6 9l6 6 6-6",
   };
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -10728,78 +10734,35 @@ function PartnerAccountPlanToolPage() {
 // ═══════════════════════════════════════════════════════
 // SIDEBAR NAV WRAPPER
 // ═══════════════════════════════════════════════════════
-const NAV_ITEMS = [
+const NAV_SECTIONS = [
   {
-    id: "main",
-    icon: <NavIcon name="home" />,
-    label: "Why Work with IPI",
-    sublabel: "Partner Proposition",
+    key: "proposition",
+    title: "Partner Proposition",
+    items: [
+      { id: "main", icon: <NavIcon name="sparkles" />, label: "Why IPI" },
+      { id: "bse", icon: <NavIcon name="trending" />, label: "Enable, Land, Expand" },
+      { id: "hub", icon: <NavIcon name="layers" />, label: "Partner Tiers" },
+    ],
   },
   {
-    id: "bse",
-    icon: <NavIcon name="sparkles" />,
-    label: "Partner Revenue Journey",
-    sublabel: "Enable, Land, Expand",
+    key: "governance",
+    title: "Governance",
+    items: [
+      { id: "program", icon: <NavIcon name="badge" />, label: "Ideal Partner Profile" },
+      { id: "commercial", icon: <NavIcon name="scale" />, label: "Legal" },
+      { id: "partner-trust", icon: <NavIcon name="shield" />, label: "Trust" },
+      { id: "partner-operational-support", icon: <NavIcon name="cap" />, label: "Enablement" },
+      { id: "channel-marketing", icon: <NavIcon name="megaphone" />, label: "Marketing" },
+      { id: "channel-dashboard", icon: <NavIcon name="chart" />, label: "KPI & Cadence" },
+    ],
   },
   {
-    id: "hub",
-    icon: <NavIcon name="academy" />,
-    label: "Partner Tiers",
-    sublabel: "Partner Levels",
-  },
-  {
-    id: "program",
-    icon: <NavIcon name="users" />,
-    label: "Ideal Partner Profile",
-    sublabel: "Prospect Scoring",
-  },
-  {
-    id: "governance",
-    icon: <NavIcon name="checklist" />,
-    label: "Partner Governance",
-    sublabel: "R A C I",
-  },
-  {
-    id: "commercial",
-    icon: <NavIcon name="money" />,
-    label: "Legal Framework",
-    sublabel: "Legal Documents",
-  },
-  {
-    id: "partner-trust",
-    icon: <NavIcon name="shield" />,
-    label: "Partner Trust",
-    sublabel: "Trust Portal",
-  },
-  {
-    id: "partner-operational-support",
-    icon: <NavIcon name="support" />,
-    label: "Partner Operations",
-    sublabel: "Partner Support",
-  },
-  {
-    id: "channel-marketing",
-    icon: <NavIcon name="megaphone" />,
-    label: "Channel Marketing",
-    sublabel: "Partner Website",
-  },
-  {
-    id: "channel-dashboard",
-    icon: <NavIcon name="chart" />,
-    label: "Channel Cadence",
-    sublabel: "Partner Management",
-  },
-  {
-    id: "partner-account-plan",
-    icon: <NavIcon name="checklist" />,
-    label: "Partner Planning",
-    sublabel: "Account Planning",
-  },
-  {
-    id: "prospect",
-    icon: <NavIcon name="search" />,
-    label: "Find Prospects",
-    sublabel: "Prospect Search",
+    key: "tools",
+    title: "Tools",
+    items: [
+      { id: "prospect", icon: <NavIcon name="search" />, label: "Prospect Search" },
+      { id: "partner-account-plan", icon: <NavIcon name="checklist" />, label: "Account Planning" },
+    ],
   },
 ];
 
@@ -10841,6 +10804,30 @@ function withBase(pathname) {
 
 function SideNav({ page, setPage, onLayoutChange }) {
   const SIDEBAR_WIDTH = 250;
+  const [openSections, setOpenSections] = React.useState(() => {
+    try {
+      const saved = window.localStorage.getItem("ipi-sidebar-open-sections");
+      if (saved) return JSON.parse(saved);
+    } catch (error) {
+      // no-op
+    }
+    return { proposition: true, governance: true, tools: true };
+  });
+
+  const toggleSection = (key) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  React.useEffect(() => {
+    try {
+      window.localStorage.setItem("ipi-sidebar-open-sections", JSON.stringify(openSections));
+    } catch (error) {
+      // no-op
+    }
+  }, [openSections]);
 
   React.useEffect(() => {
     onLayoutChange?.({
@@ -10867,22 +10854,46 @@ function SideNav({ page, setPage, onLayoutChange }) {
           </div>
 
           <div className="sidebar-nav-scroll">
-            <div className="sidebar-section-label">Program</div>
             <nav className="sidebar-nav">
-            {NAV_ITEMS.map((item) => {
-              const active = page === item.id;
-              return (
-                <SidebarNavItem
-                  key={item.id}
-                  item={item}
-                  active={active}
-                  collapsed={false}
-                  onClick={() => {
-                    setPage(item.id);
-                  }}
-                />
-                  );
-                })}
+              {NAV_SECTIONS.map((section, sectionIndex) => {
+                const isOpen = openSections[section.key] ?? true;
+                return (
+                  <React.Fragment key={section.key}>
+                    <div className="nav-group">
+                      <button
+                        type="button"
+                        className="nav-group-toggle"
+                        aria-expanded={isOpen}
+                        onClick={() => toggleSection(section.key)}
+                      >
+                        <span>{section.title}</span>
+                        <span className={`nav-group-chevron ${isOpen ? "open" : ""}`} aria-hidden="true">
+                          <NavIcon name="chevronDown" />
+                        </span>
+                      </button>
+                      {isOpen && (
+                        <div className="nav-group-items">
+                          {section.items.map((item) => {
+                            const active = page === item.id;
+                            return (
+                              <SidebarNavItem
+                                key={item.id}
+                                item={item}
+                                active={active}
+                                collapsed={false}
+                                onClick={() => {
+                                  setPage(item.id);
+                                }}
+                              />
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                    {sectionIndex < NAV_SECTIONS.length - 1 ? <div className="section-divider" aria-hidden="true" /> : null}
+                  </React.Fragment>
+                );
+              })}
             </nav>
           </div>
 
