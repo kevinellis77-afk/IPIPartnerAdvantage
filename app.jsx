@@ -7042,25 +7042,6 @@ function CommercialFrameworkPage() {
           }}
         >
           <section style={{ textAlign: "center", padding: "0 6px" }}>
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                background: "rgba(54,198,255,0.09)",
-                border: "1px solid rgba(54,198,255,0.28)",
-                borderRadius: 100,
-                padding: "6px 15px",
-                marginBottom: 16,
-                fontSize: 11,
-                fontWeight: 800,
-                color: "#67D8FF",
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-              }}
-            >
-              Commercial Architecture
-            </div>
             <h1
               style={{
                 fontSize: "clamp(26px,4vw,50px)",
