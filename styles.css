@@ -675,24 +675,22 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
 
 .theme-toggle {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
   background: var(--bg-subtle);
   border: 1px solid var(--border-soft);
   border-radius: 999px;
-  padding: 3px;
-  gap: 2px;
-}
-.theme-toggle__btn {
-  text-transform: capitalize;
-  border: 0;
-  border-radius: 999px;
-  padding: 6px 10px;
-  background: transparent;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   cursor: pointer;
 }
-.theme-toggle__btn.is-active {
-  background: var(--brand-secondary);
-  color: #1F2D27;
+.theme-toggle:hover {
+  background: color-mix(in srgb, var(--bg-subtle) 70%, var(--brand-secondary));
+}
+.theme-toggle__icon {
+  font-size: 18px;
+  line-height: 1;
 }
 
 .app-sidebar {
@@ -1113,7 +1111,7 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
   font-weight:700;
   letter-spacing:.01em;
 }
-.ui-btn:focus-visible,.theme-toggle__btn:focus-visible,.sidebar-nav-item:focus-visible,.nav-group-toggle:focus-visible{
+.ui-btn:focus-visible,.theme-toggle:focus-visible,.sidebar-nav-item:focus-visible,.nav-group-toggle:focus-visible{
   outline:none;
   box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 38%,transparent);
 }

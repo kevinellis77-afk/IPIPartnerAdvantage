@@ -82,15 +82,13 @@
     "--shadow-soft": "0 10px 28px rgba(0,0,0,0.08)",
   };
 
-  const media = window.matchMedia("(prefers-color-scheme: dark)");
-
   function resolveTheme(mode) {
-    if (mode === "system") return media.matches ? "dark" : "light";
-    return mode === "dark" ? "dark" : "light";
+    return mode === "light" ? "light" : "dark";
   }
 
   function getMode() {
-    return localStorage.getItem(STORAGE_KEY) || "system";
+    const savedMode = localStorage.getItem(STORAGE_KEY);
+    return savedMode === "light" ? "light" : "dark";
   }
 
   function applyMode(mode) {
@@ -103,15 +101,11 @@
   }
 
   function setMode(mode) {
-    const safeMode = ["light", "dark", "system"].includes(mode) ? mode : "system";
+    const safeMode = ["light", "dark"].includes(mode) ? mode : "dark";
     localStorage.setItem(STORAGE_KEY, safeMode);
     applyMode(safeMode);
     window.dispatchEvent(new CustomEvent("ipi-theme-change", { detail: { mode: safeMode } }));
   }
-
-  media.addEventListener("change", () => {
-    if (getMode() === "system") applyMode("system");
-  });
 
   applyMode(getMode());
 
