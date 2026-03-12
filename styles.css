@@ -1073,3 +1073,101 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
 .raciEmpty{padding:16px;color:#8EB1A8;border:1px dashed rgba(123,150,163,.3);border-radius:10px;}
 .raciToast{position:fixed;right:16px;bottom:16px;z-index:120;padding:10px 14px;border-radius:10px;border:1px solid rgba(103,216,255,.4);background:rgba(12,21,24,.92);color:#EAF5FF;font-size:12px;font-weight:700;box-shadow:var(--shadow-soft);}
 @media (max-width:900px){.raciVersionForm{grid-template-columns:1fr;}.raciToolbarIconBtn{width:44px;height:44px;}}
+
+/* === SaaS UI polish refresh === */
+.app-main-inner.with-sidebar{
+  width:100%;
+  max-width:min(1480px,100%);
+  margin:0 auto;
+  padding-inline:clamp(14px,2vw,28px);
+}
+.page-shell{
+  width:100%;
+  max-width:var(--content-max);
+  margin:0 auto;
+  padding-block:clamp(16px,1.6vw,28px);
+}
+.page-shell > *{min-width:0;}
+.home-page-shell{
+  max-width:var(--content-max);
+  margin:0 auto;
+  width:100%;
+}
+.app-topbar{
+  position:sticky;
+  top:0;
+  z-index:40;
+  backdrop-filter:blur(10px);
+  background:color-mix(in srgb,var(--bg-app) 84%,transparent);
+  border-bottom:1px solid color-mix(in srgb,var(--border-soft) 66%,transparent);
+}
+.ds-page-header,.ds-section,.channel-dashboard-page,.partner-plan-page,.prospect-shell{max-width:100%;}
+.ds-page-header__title{font-size:clamp(28px,3.8vw,48px);}
+.ds-section-header h2{font-size:clamp(21px,2.2vw,30px);}
+.ds-card,.plan-section-card,.plan-stat-card,.saved-view-card,.panel-card{
+  border-radius:16px;
+  box-shadow:0 10px 28px rgba(3,10,16,.14);
+}
+
+.ui-btn,.ui-btn--primary,.ui-btn--secondary,.ui-btn--ghost{
+  font-weight:700;
+  letter-spacing:.01em;
+}
+.ui-btn:focus-visible,.theme-toggle__btn:focus-visible,.sidebar-nav-item:focus-visible,.nav-group-toggle:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 38%,transparent);
+}
+
+.table-wrapper,.ds-table-wrap,.channel-table-wrap,.ranking-table-wrap,.plan-table-wrap,.prospect-table-wrap{
+  overflow-x:auto;
+  max-width:100%;
+}
+.table-wrapper table,.ds-table-wrap table,.channel-table,.ranking-table,.plan-table,.prospect-table{width:100%;}
+.table-wrapper th,.table-wrapper td,.ds-table-wrap th,.ds-table-wrap td,.channel-table th,.channel-table td,.ranking-table th,.ranking-table td,.plan-table th,.plan-table td{
+  padding:12px 12px !important;
+}
+.table-wrapper tbody tr:hover,.ds-table-wrap tbody tr:hover,.channel-table tbody tr:hover,.plan-table tbody tr:hover,.ranking-table tbody tr:hover,.prospect-table tbody tr:hover{
+  background:color-mix(in srgb,var(--bg-tint) 40%,transparent);
+}
+
+.filter-bar,.plan-filter-grid,.raciToolbar{
+  border-radius:14px;
+  background:color-mix(in srgb,var(--ds-surface-muted) 86%,transparent);
+}
+
+:root[data-theme="light"] .app-sidebar{
+  background:linear-gradient(180deg,#f7fbff,#edf4fb);
+  border-right:1px solid #dbe6f1;
+  box-shadow:8px 0 34px rgba(22,44,66,.12);
+}
+:root[data-theme="light"] .sidebar-nav-item{color:#324c62;}
+:root[data-theme="light"] .sidebar-nav-item:hover{background:rgba(93,132,170,.14);color:#21384c;}
+:root[data-theme="light"] .sidebar-nav-item.active{background:linear-gradient(180deg,rgba(83,132,177,.24),rgba(88,144,192,.16));color:#15344c;}
+:root[data-theme="light"] .sidebar-title{color:#102a3d;}
+:root[data-theme="light"] .sidebar-subtitle{color:#44637a;opacity:1;}
+
+:root[data-theme="light"] .ui-field,
+:root[data-theme="light"] .ui-dropdown,
+:root[data-theme="light"] select,
+:root[data-theme="light"] input,
+:root[data-theme="light"] textarea{
+  background:#fff !important;
+  color:#1f3648 !important;
+  border-color:#c9d8e4 !important;
+}
+:root[data-theme="dark"] .ui-field,
+:root[data-theme="dark"] .ui-dropdown,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] textarea{
+  background:#122028 !important;
+  color:#e8f2ef !important;
+  border-color:rgba(145,196,176,.3) !important;
+}
+:root[data-theme="dark"] select option{background:#122028;color:#e8f2ef;}
+:root[data-theme="light"] select option{background:#fff;color:#203544;}
+
+@media (max-width: 1100px){
+  .app-main,.page-container{width:100%;max-width:100%;margin-left:0;}
+  .app-sidebar{position:sticky;height:100vh;}
+}
