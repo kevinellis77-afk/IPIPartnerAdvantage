@@ -10402,36 +10402,85 @@ function SummaryMetrics({ plans }) {
   const enriched = plans.map(enrichPlan);
   const totals = {
     totalPlans: plans.length,
-    strategic: plans.filter((p) => p?.partnerOverview?.partnerTier === "Gold").length,
     pipeline: enriched.reduce((a, p) => a + safeNumber(p.scorecard.pipelineCurrent), 0),
     won: enriched.reduce((a, p) => a + safeNumber(p.scorecard.closedWonCurrent), 0),
     avgHealth: enriched.length ? Math.round(enriched.reduce((a, p) => a + p.computed.healthScore, 0) / enriched.length) : 0,
     green: enriched.filter((p) => p.overallRagStatus === "Green").length,
     amber: enriched.filter((p) => p.overallRagStatus === "Amber").length,
     red: enriched.filter((p) => p.overallRagStatus === "Red").length,
-    overdue: enriched.reduce((a, p) => a + p.computed.overdueActionItems, 0),
   };
-  const cards = [["Total Plans", totals.totalPlans], ["Gold Partners", totals.strategic], ["Total Pipeline Value", formatCurrency(totals.pipeline)], ["Total Closed Won Value", formatCurrency(totals.won)], ["Average Health Score", `${totals.avgHealth}/100`], ["Green Plans", totals.green], ["Amber Plans", totals.amber], ["Red Plans", totals.red], ["Overdue Actions", totals.overdue]];
+  const cards = [
+    { label: "Total Pipeline Value", value: formatCurrency(totals.pipeline), subtitle: "All partner plans", tone: "pipeline" },
+    { label: "Total Closed Won Value", value: formatCurrency(totals.won), subtitle: "All partner plans", tone: "won" },
+    { label: "Average Health Score", value: `${totals.avgHealth}/100`, subtitle: `${totals.totalPlans} active plans`, tone: "health" },
+    { label: "Green Plans", value: totals.green, subtitle: "Low risk", tone: "green" },
+    { label: "Amber Plans", value: totals.amber, subtitle: "Watch closely", tone: "amber" },
+    { label: "Red Plans", value: totals.red, subtitle: "Needs action", tone: "red" },
+  ];
   return (
-    <>
-      <div className="plan-scorecards">{cards.map(([label, val]) => <div key={label} className="plan-stat-card"><div className="plan-stat-label">{label}</div><div className="plan-stat-value">{val}</div></div>)}</div>
-      <div className="plan-overview-widget">
-        <div><h3>Partner Health Overview</h3><p>Distribution by RAG and ranking band.</p></div>
-        <div className="plan-overview-bars">
-          <div className="overview-pill">Green: {totals.green}</div><div className="overview-pill">Amber: {totals.amber}</div><div className="overview-pill">Red: {totals.red}</div>
-          <div className="overview-pill">Strategic Growth: {enriched.filter((p) => p.computed.healthLabel === "Strategic Growth").length}</div>
-          <div className="overview-pill">Strong: {enriched.filter((p) => p.computed.healthLabel === "Strong").length}</div>
-          <div className="overview-pill">Moderate: {enriched.filter((p) => p.computed.healthLabel === "Moderate").length}</div>
-          <div className="overview-pill">Needs Attention: {enriched.filter((p) => p.computed.healthLabel === "Needs Attention").length}</div>
-        </div>
-      </div>
-    </>
+    <div className="plan-scorecards">{cards.map((card) => <div key={card.label} className={`plan-stat-card plan-stat-card--${card.tone}`}><div className="plan-stat-label">{card.label}</div><div className="plan-stat-value">{card.value}</div><div className="plan-stat-subtitle">{card.subtitle}</div></div>)}</div>
   );
 }
 
-function PartnerRankingList({ plans }) {
-  const top = plans.map(enrichPlan).sort((a,b) => b.computed.healthScore - a.computed.healthScore).slice(0,5);
-  return <section className="plan-section-card"><div className="plan-section-body"><h3>Partner Health Ranking</h3><div className="ranking-list">{top.map((plan,idx) => <div key={plan.id} className="ranking-row"><strong>#{idx+1}</strong><span>{plan.partnerOverview.partnerName || "—"}</span><span>{plan.computed.healthScore}</span><span>{plan.computed.healthLabel}</span><RagBadge value={plan.overallRagStatus} /><span>{formatCurrency(plan.scorecard.pipelineCurrent)}</span><span>{plan.contacts.channelManager || "—"}</span></div>)}</div></div></section>;
+function RagStatusPill({ value }) {
+  return <span className={`rag-pill rag-pill-${(value || "").toLowerCase()}`}>{value || "—"}</span>;
+}
+
+function getSortedPartnerRows(plans) {
+  return plans
+    .map(enrichPlan)
+    .map((plan, index) => ({ plan, index }))
+    .sort((a, b) => {
+      const scoreDiff = b.plan.computed.healthScore - a.plan.computed.healthScore;
+      if (scoreDiff !== 0) return scoreDiff;
+      const pipelineDiff = safeNumber(b.plan.scorecard.pipelineCurrent) - safeNumber(a.plan.scorecard.pipelineCurrent);
+      if (pipelineDiff !== 0) return pipelineDiff;
+      const nameDiff = (a.plan.partnerOverview.partnerName || "").localeCompare(b.plan.partnerOverview.partnerName || "");
+      if (nameDiff !== 0) return nameDiff;
+      return a.index - b.index;
+    })
+    .map(({ plan }) => plan);
+}
+
+function TopBottomPartnerTables({ plans }) {
+  const ranked = getSortedPartnerRows(plans);
+  const rows = ranked.map((plan, idx) => ({ ...plan, rank: idx + 1 }));
+  const topFive = rows.slice(0, 5);
+  const bottomFive = [...rows].reverse().slice(0, 5);
+
+  const renderTable = (title, tableRows) => (
+    <section className="plan-section-card ranking-panel">
+      <div className="plan-section-body">
+        <h3>{title}</h3>
+        <div className="ranking-table-wrap">
+          <table className="ranking-table">
+            <thead>
+              <tr>
+                <th>Company Name</th>
+                <th>Score</th>
+                <th>Ranking</th>
+                <th>Pipeline Value</th>
+                <th>RAG Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tableRows.map((plan) => (
+                <tr key={`${title}-${plan.id}`}>
+                  <td>{plan.partnerOverview.partnerName || "—"}</td>
+                  <td className="num">{plan.computed.healthScore}</td>
+                  <td className="num">#{plan.rank}</td>
+                  <td className="num">{formatCurrency(plan.scorecard.pipelineCurrent)}</td>
+                  <td><RagStatusPill value={plan.overallRagStatus} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  );
+
+  return <div className="plan-ranking-grid">{renderTable("Top 5 Partners", topFive)}{renderTable("Bottom 5 Partners", bottomFive)}</div>;
 }
 
 function SavedPlansTable({ plans, onView, onEdit, onDuplicate, onDelete }) {
@@ -10667,7 +10716,7 @@ function PartnerAccountPlanToolPage() {
       {mode === "dashboard" ? (
         <>
           <SummaryMetrics plans={plans} />
-          <PartnerRankingList plans={plans} />
+          <TopBottomPartnerTables plans={plans} />
           <div className="plan-filter-grid">
             <input className="ui-search" placeholder="Search by Partner Name" value={search} onChange={(e) => setSearch(e.target.value)} />
             <select className="ui-search" value={tierFilter} onChange={(e) => setTierFilter(e.target.value)}><option value="all">All Tiers</option>{PARTNER_TIER_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}</select>
