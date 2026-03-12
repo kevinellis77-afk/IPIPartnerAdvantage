@@ -18,7 +18,7 @@
 }
 html,body,#root{width:100%;max-width:100%;min-height:100%;overflow-x:hidden;}
 html{scroll-behavior:smooth;}
-body{margin:0;background:radial-gradient(circle at top right,#14222a,var(--ds-bg) 45%);color:#DFF0EA;font-family:'Nunito Sans','Helvetica Neue',Arial,sans-serif;min-height:100vh;}
+body{margin:0;background:radial-gradient(circle at top right,color-mix(in srgb,var(--bg-tint) 42%,var(--bg-app)),var(--bg-app) 52%);color:var(--text-primary);font-family:'Nunito Sans','Helvetica Neue',Arial,sans-serif;min-height:100vh;}
 h1,h2,h3,h4,h5,h6,p,span,label,th,td,button{white-space:normal;overflow-wrap:anywhere;word-break:break-word;max-width:100%;}
 .page-shell,.page-content,.card,.panel,.table-wrapper,.section{max-width:100%;}
 .flex-row,.flex-item,.grid-item,.card-content{min-width:0;max-width:100%;}
@@ -913,6 +913,36 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
 :root[data-theme="light"] .raciTableRow,
 :root[data-theme="light"] .raciTableRow * {
   color: var(--text-primary);
+}
+
+
+:root[data-theme="light"] .raciToolbar,
+:root[data-theme="light"] .raciVersionForm,
+:root[data-theme="light"] .raciVersionsPanel,
+:root[data-theme="light"] .raciVersionCard,
+:root[data-theme="light"] .raciToast {
+  background: var(--bg-surface) !important;
+  border-color: var(--border-soft) !important;
+}
+:root[data-theme="light"] .raciToolbarIconBtn {
+  background: var(--bg-subtle) !important;
+  border-color: var(--border-soft) !important;
+  color: var(--text-primary) !important;
+}
+:root[data-theme="light"] .raciVersionStatus,
+:root[data-theme="light"] .raciVersionCard p,
+:root[data-theme="light"] .raciVersionCard small,
+:root[data-theme="light"] .raciVersionsPanel h3,
+:root[data-theme="light"] .raciEmpty {
+  color: var(--text-secondary) !important;
+}
+:root[data-theme="light"] .raciVersionCardHeader {
+  color: var(--text-primary) !important;
+}
+:root[data-theme="light"] .raciVersionForm input {
+  background: var(--bg-surface) !important;
+  border-color: var(--border-soft) !important;
+  color: var(--text-primary) !important;
 }
 
 .content-narrow,.ds-page-header__subtitle,.cm-intro-copy,.bse-section-heading p{max-width:1100px;}
