@@ -91,7 +91,8 @@
     if (getMode() === "system") applyMode("system");
   });
 
-  applyMode(getMode());
+  // Always launch in dark mode, regardless of previously persisted preference.
+  setMode("dark");
 
   window.appTheme = { setMode, getMode, resolveTheme };
 })();
