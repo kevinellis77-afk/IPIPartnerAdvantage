@@ -10298,18 +10298,20 @@ function SideNav({ page, setPage, onLayoutChange }) {
   return (
     <React.Fragment>
       <aside className="app-sidebar">
-        <div className="sidebar-top">
-          <div className="sidebar-brand">
-            <div className="sidebar-brand-mark">IPI</div>
-            <div className="sidebar-brand-copy">
-              <div className="sidebar-title">Partner Advantage</div>
-              <div className="sidebar-subtitle">Channel Workspace</div>
+        <div className="sidebar-inner">
+          <div className="sidebar-top">
+            <div className="sidebar-brand">
+              <div className="sidebar-brand-mark">IPI</div>
+              <div className="sidebar-brand-copy">
+                <div className="sidebar-title">Partner Advantage</div>
+                <div className="sidebar-subtitle">Channel Workspace</div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="sidebar-section-label">Program</div>
-        <nav className="sidebar-nav">
+          <div className="sidebar-nav-scroll">
+            <div className="sidebar-section-label">Program</div>
+            <nav className="sidebar-nav">
             {NAV_ITEMS.map((item) => {
               const active = page === item.id;
               return (
@@ -10322,18 +10324,20 @@ function SideNav({ page, setPage, onLayoutChange }) {
                     setPage(item.id);
                   }}
                 />
-              );
-            })}
-          </nav>
-
-        <div className="sidebar-footer">
-          <div className="sidebar-footer-card">
-            <div className="sidebar-footer-title">Channel Workspace</div>
-            <div className="sidebar-footer-copy">
-              Strategy, governance, enablement and partner planning in one place.
-            </div>
+                  );
+                })}
+            </nav>
           </div>
-          <div className="sidebar-footer-meta">© 2026 IP Integration Ltd · Partner Confidential</div>
+
+          <div className="sidebar-footer">
+            <div className="sidebar-footer-card">
+              <div className="sidebar-footer-title">Channel Workspace</div>
+              <div className="sidebar-footer-copy">
+                Strategy, governance, enablement and partner planning in one place.
+              </div>
+            </div>
+            <div className="sidebar-footer-meta">© 2026 IP Integration Ltd · Partner Confidential</div>
+          </div>
         </div>
       </aside>
     </React.Fragment>
