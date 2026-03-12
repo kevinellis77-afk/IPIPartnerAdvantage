@@ -3995,30 +3995,6 @@ function EnablementHub({ onBack, onNavigate }) {
           animation: "fadeIn 0.35s ease both",
         }}
       >
-        {/* HUB HERO */}
-        <div
-          style={{
-            textAlign: "center",
-            padding: "clamp(40px,5vw,64px) 44px 0",
-          }}
-        >
-          <div style={{ maxWidth: 880, margin: "0 auto" }}>
-          <h1
-            style={{
-              fontSize: "clamp(32px,4.8vw,56px)",
-              fontWeight: 800,
-              letterSpacing: "-0.045em",
-              color: "#fff",
-              lineHeight: 1.03,
-              marginBottom: 16,
-              fontFamily: "'Syne',sans-serif",
-            }}
-          >
-            Program Structure
-          </h1>
-          </div>
-        </div>
-
         <div className="brand-line" style={{ margin: "40px 44px 0" }} />
 
         {/* PARTNER TIERS */}
@@ -4033,9 +4009,6 @@ function EnablementHub({ onBack, onNavigate }) {
         />
         <div style={sectionShell}>
           <div style={sectionHeaderWrap}>
-            <p style={{ ...sectionEyebrow, color: "rgba(212,168,67,0.72)" }}>
-              Program Structure
-            </p>
             <h2 style={sectionTitle}>Partner Tiers</h2>
             <p style={sectionDescription}>
               Each partner tier combines commercial benefits, enablement support,
