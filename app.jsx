@@ -8954,17 +8954,12 @@ function GovernancePage() {
                   className="raciTableHeader"
                 >
                   {[
-                    "Activity",
                     "R",
                     "A",
                     "C",
                     "I",
                     "Status",
                     "Owner",
-                    "Priority",
-                    "Target Date",
-                    "Notes",
-                    "Done",
                   ].map((h) => (
                     <div
                       key={h}
@@ -8977,22 +8972,8 @@ function GovernancePage() {
                 {filteredTasks.length ? (
                   filteredTasks.map((task, idx) => {
                     const rowStyle = getTaskRowStyle(task);
-                    const taskCompleted = task.status === "Complete" || task.status === "Completed";
                     return (
                       <div key={task.id} className="raciTableRow" style={{ borderTop: idx ? `1px solid ${rowStyle.borderColor}` : "none", background: rowStyle.background }}>
-                        <div
-                          style={{
-                            padding: "10px",
-                            fontSize: 12,
-                            color: "#EAF5FF",
-                            fontWeight: 700,
-                            minWidth: 0,
-                            textDecoration: taskCompleted ? "line-through" : "none",
-                            textDecorationColor: taskCompleted ? "rgba(160,214,194,0.9)" : "transparent",
-                          }}
-                        >
-                          {task.activity}
-                        </div>
                         {[
                           ["r", "Responsible"],
                           ["a", "Accountable"],
@@ -9044,78 +9025,6 @@ function GovernancePage() {
                               padding: "6px",
                               fontSize: 12,
                             }}
-                          />
-                        </div>
-                        <div style={{ padding: "10px" }}>
-                          <select
-                            className="ui-dropdown"
-                            value={task.priority}
-                            onChange={(e) =>
-                              updateTask(task.id, { priority: e.target.value })
-                            }
-                            style={{
-                              width: "100%",
-                              boxShadow: "none",
-                            }}
-                          >
-                            {PRIORITY_OPTIONS.map((v) => (
-                              <option key={v} value={v}>
-                                {v}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div style={{ padding: "10px" }}>
-                          <input
-                            type="date"
-                            value={task.targetDate}
-                            onChange={(e) =>
-                              updateTask(task.id, { targetDate: e.target.value })
-                            }
-                            style={{
-                              width: "100%",
-                              background: "rgba(255,255,255,0.03)",
-                              border: "1px solid rgba(123,150,163,0.3)",
-                              borderRadius: 6,
-                              color: "#D9ECE6",
-                              padding: "6px",
-                              fontSize: 12,
-                            }}
-                          />
-                        </div>
-                        <div style={{ padding: "10px" }}>
-                          <button
-                            onClick={() => setNoteTaskId(task.id)}
-                            style={{
-                              width: "100%",
-                              border: "1px solid rgba(123,150,163,0.35)",
-                              background: task.notes
-                                ? "rgba(54,198,255,0.14)"
-                                : "rgba(255,255,255,0.03)",
-                              color: "#C0DDD6",
-                              borderRadius: 6,
-                              padding: "6px",
-                              fontSize: 11,
-                              fontWeight: 700,
-                              cursor: "pointer",
-                            }}
-                          >
-                            {task.notes ? "View / Edit" : "Add Notes"}
-                          </button>
-                        </div>
-                        <div
-                          style={{
-                            padding: "10px",
-                            display: "flex",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={task.completed}
-                            onChange={(e) =>
-                              updateTask(task.id, { completed: e.target.checked })
-                            }
                           />
                         </div>
                       </div>
