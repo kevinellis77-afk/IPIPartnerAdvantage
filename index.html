@@ -21,7 +21,14 @@
         const rewrittenPath = location.search
           .slice(1)
           .replace(/~and~/g, "&");
-        window.history.replaceState(null, "", rewrittenPath + location.hash);
+        const basePath = location.pathname.endsWith("/")
+          ? location.pathname.slice(0, -1)
+          : location.pathname;
+        window.history.replaceState(
+          null,
+          "",
+          basePath + rewrittenPath + location.hash,
+        );
       }
     })(window.location);
   </script>
