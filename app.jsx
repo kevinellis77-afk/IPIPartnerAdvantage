@@ -4890,7 +4890,8 @@ function ProspectToolPage() {
   const [rows, setRows] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
-  const [selected, setSelected] = React.useState(null);
+  const [selectedRowId, setSelectedRowId] = React.useState(null);
+  const drawerBodyRef = React.useRef(null);
   const [view, setView] = React.useState('table');
   const [top50, setTop50] = React.useState(false);
   const [pageSize, setPageSize] = React.useState(25);
@@ -5021,6 +5022,49 @@ function ProspectToolPage() {
     filtered: sorted.length
   };
 
+  const selectedIndex = React.useMemo(() => sorted.findIndex((r) => r.id === selectedRowId), [sorted, selectedRowId]);
+  const selected = selectedIndex >= 0 ? sorted[selectedIndex] : null;
+
+  React.useEffect(() => {
+    if (!selectedRowId) return;
+    if (selectedIndex === -1) setSelectedRowId(null);
+  }, [selectedRowId, selectedIndex]);
+
+  React.useEffect(() => {
+    if (!selected) return undefined;
+    document.body.classList.add('prospect-drawer-open');
+    const lastActive = document.activeElement;
+    drawerBodyRef.current?.focus();
+    return () => {
+      document.body.classList.remove('prospect-drawer-open');
+      if (lastActive && typeof lastActive.focus === 'function') lastActive.focus();
+    };
+  }, [selected]);
+
+  React.useEffect(() => {
+    if (!selected) return undefined;
+    const handleKeydown = (event) => {
+      if (event.key === 'Escape') setSelectedRowId(null);
+      if (event.key === 'ArrowLeft' && selectedIndex > 0) {
+        event.preventDefault();
+        setSelectedRowId(sorted[selectedIndex - 1].id);
+      }
+      if (event.key === 'ArrowRight' && selectedIndex < sorted.length - 1) {
+        event.preventDefault();
+        setSelectedRowId(sorted[selectedIndex + 1].id);
+      }
+    };
+    window.addEventListener('keydown', handleKeydown);
+    return () => window.removeEventListener('keydown', handleKeydown);
+  }, [selected, selectedIndex, sorted]);
+
+  React.useEffect(() => {
+    if (!selected || !drawerBodyRef.current) return;
+    drawerBodyRef.current.scrollTo({ top: 0, behavior: 'auto' });
+    const rowEl = document.querySelector(`[data-prospect-row-id="${selected.id}"]`);
+    rowEl?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [selected?.id]);
+
   const exportRows = (records, name) => {
     const blob = new Blob([window.ProspectToolUtils.toCsv(records)], { type: 'text/csv;charset=utf-8;' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); URL.revokeObjectURL(a.href);
@@ -5084,7 +5128,7 @@ function ProspectToolPage() {
 
   const loadSavedView = (savedView) => {
     applyTableState(savedView.tableState || {});
-    setSelected(null);
+    setSelectedRowId(null);
   };
 
   const deleteSavedView = (savedView) => {
@@ -5115,8 +5159,8 @@ function ProspectToolPage() {
     if (key === 'displayName') return <td><strong>{record.displayName}</strong>{record.ch_link && <div><a href={window.ProspectToolUtils.normalizeUrl(record.ch_link)} target="_blank" rel="noreferrer">Companies House</a></div>}</td>;
     if (key === 'idealPartnerScore') return <td><span className="score-badge">{record.idealPartnerScore}</span></td>;
     if (key === 'partnerTierName') return <td><span className={getTierClass(record)}>{record.partnerTierName || 'Low Priority'}</span></td>;
-    if (key === 'website') return <td>{record.website ? <a href={window.ProspectToolUtils.normalizeUrl(record.website)} target="_blank" rel="noreferrer">Website</a> : '—'}</td>;
-    if (key === 'linkedin') return <td>{record.linkedin ? <a href={window.ProspectToolUtils.normalizeUrl(record.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a> : '—'}</td>;
+    if (key === 'website') return <td>{record.website ? <a className="prospect-inline-icon" href={window.ProspectToolUtils.normalizeUrl(record.website)} target="_blank" rel="noreferrer" aria-label="Open Website" title="Open Website">🌐</a> : '—'}</td>;
+    if (key === 'linkedin') return <td>{record.linkedin ? <a className="prospect-inline-icon" href={window.ProspectToolUtils.normalizeUrl(record.linkedin)} target="_blank" rel="noreferrer" aria-label="Open LinkedIn" title="Open LinkedIn">in</a> : '—'}</td>;
     return <td>{record[key] || '—'}</td>;
   };
 
@@ -5179,7 +5223,7 @@ function ProspectToolPage() {
 
     {top50 && <div className="ds-card" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: 12 }}><strong>Top 50 summary</strong><span>Avg score: {avgScore}</span><span>Websites: {sorted.filter((r) => r.hasWebsite).length}</span><span>LinkedIn: {sorted.filter((r) => r.hasLinkedIn).length}</span><span>Emails: {sorted.filter((r) => r.hasEmail).length}</span></div>}
 
-    {sorted.length === 0 ? <div className="ds-card">No results found.</div> : view === 'table' ? <div className="prospect-table-wrap"><table className="prospect-table"><thead><tr>{visibleColumnDefs.map((h) => <th key={h.key}>{h.label}</th>)}</tr></thead><tbody>{pageRows.map((r, i) => <tr key={r.id} onClick={() => setSelected(r)} style={{ cursor: 'pointer' }}>{visibleColumnDefs.map((col) => <React.Fragment key={`${r.id}-${col.key}`}>{renderCell(r, col.key, i)}</React.Fragment>)}</tr>)}</tbody></table></div> : <div className="prospect-cards">{pageRows.map((r) => <div className="prospect-card" key={r.id} onClick={() => setSelected(r)}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}><strong>{r.displayName}</strong><div style={{ display: 'flex', gap: 6, alignItems: 'center' }}><span className="score-badge">{r.idealPartnerScore}</span><span className={getTierClass(r)}>{r.partnerTierName || 'Low Priority'}</span></div></div><div>{r.industry || '—'}</div><div>{r.channel_role || '—'} / {r.channel_segment || '—'}</div><div>{r.city || '—'}, {r.country || '—'}</div><div>{r.displayRevenue} · {r.displayEmployees}</div><div>{r.keywords || '—'}</div><div style={{ display: 'flex', gap: 8 }}>{r.website && <a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>}{r.linkedin && <a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}</div></div>)}</div>}
+    {sorted.length === 0 ? <div className="ds-card">No results found.</div> : view === 'table' ? <div className="prospect-table-wrap"><table className="prospect-table"><thead><tr>{visibleColumnDefs.map((h) => <th key={h.key}>{h.label}</th>)}</tr></thead><tbody>{pageRows.map((r, i) => <tr key={r.id} data-prospect-row-id={r.id} className={selectedRowId === r.id ? 'prospect-row-selected' : ''} onClick={() => setSelectedRowId(r.id)} style={{ cursor: 'pointer' }}>{visibleColumnDefs.map((col) => <React.Fragment key={`${r.id}-${col.key}`}>{renderCell(r, col.key, i)}</React.Fragment>)}</tr>)}</tbody></table></div> : <div className="prospect-cards">{pageRows.map((r) => <div className={`prospect-card ${selectedRowId === r.id ? 'prospect-card-selected' : ''}`.trim()} key={r.id} onClick={() => setSelectedRowId(r.id)}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}><strong>{r.displayName}</strong><div style={{ display: 'flex', gap: 6, alignItems: 'center' }}><span className="score-badge">{r.idealPartnerScore}</span><span className={getTierClass(r)}>{r.partnerTierName || 'Low Priority'}</span></div></div><div>{r.industry || '—'}</div><div>{r.channel_role || '—'} / {r.channel_segment || '—'}</div><div>{r.city || '—'}, {r.country || '—'}</div><div>{r.displayRevenue} · {r.displayEmployees}</div><div>{r.keywords || '—'}</div><div style={{ display: 'flex', gap: 8 }}>{r.website && <a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>}{r.linkedin && <a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}</div></div>)}</div>}
 
     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
       <IconButton icon="prev" label="Previous page" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} />
@@ -5235,42 +5279,59 @@ function ProspectToolPage() {
       </div>
     </div>}
 
-    {selected && <div className="drawer"><IconButton icon="close" label="Close details panel" onClick={() => setSelected(null)} />
-      <div className="panel-card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' }}>
-          <h3 style={{ margin: 0 }}>{selected.displayName}</h3>
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-            <span className="score-badge">Score: {selected.idealPartnerScore}</span>
-            <span className={getTierClass(selected)}>{selected.partnerTierName || 'Low Priority'}</span>
+    {selected && <div className="prospect-drawer-layer" role="presentation">
+      <button type="button" className="prospect-drawer-backdrop" aria-label="Close details drawer" onClick={() => setSelectedRowId(null)} />
+      <aside className="prospect-drawer" role="dialog" aria-modal="true" aria-label={`Partner details for ${selected.displayName}`}>
+        <div className="prospect-drawer-header">
+          <div className="prospect-drawer-title">
+            <h3>{selected.displayName}</h3>
+            <div className="prospect-drawer-subtitle">
+              <span className={getTierClass(selected)}>{selected.partnerTierName || 'Low Priority'}</span>
+              <span className="score-badge">Score {selected.idealPartnerScore}</span>
+              <span>{selectedIndex + 1} of {sorted.length}</span>
+            </div>
+          </div>
+          <div className="prospect-drawer-actions">
+            <button type="button" className="prospect-icon-link" aria-label={selected.website ? 'Open Website' : 'Website unavailable'} title={selected.website ? 'Open Website' : 'Website unavailable'} disabled={!selected.website} onClick={() => selected.website && window.open(window.ProspectToolUtils.normalizeUrl(selected.website), '_blank', 'noopener,noreferrer')}>🌐</button>
+            <button type="button" className="prospect-icon-link" aria-label={selected.linkedin ? 'Open LinkedIn' : 'LinkedIn unavailable'} title={selected.linkedin ? 'Open LinkedIn' : 'LinkedIn unavailable'} disabled={!selected.linkedin} onClick={() => selected.linkedin && window.open(window.ProspectToolUtils.normalizeUrl(selected.linkedin), '_blank', 'noopener,noreferrer')}>in</button>
+            <IconButton icon="prev" label="Previous record" disabled={selectedIndex <= 0} onClick={() => setSelectedRowId(sorted[selectedIndex - 1].id)} />
+            <IconButton icon="next" label="Next record" disabled={selectedIndex >= sorted.length - 1} onClick={() => setSelectedRowId(sorted[selectedIndex + 1].id)} />
+            <IconButton icon="close" label="Close details drawer" onClick={() => setSelectedRowId(null)} className="prospect-drawer-close" />
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-          {selected.website && <a className="ui-btn secondary" href={window.ProspectToolUtils.normalizeUrl(selected.website)} target="_blank" rel="noreferrer">Website</a>}
-          {selected.linkedin && <a className="ui-btn secondary" href={window.ProspectToolUtils.normalizeUrl(selected.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}
+
+        <div className="prospect-drawer-body" ref={drawerBodyRef} tabIndex={-1}>
+          <div className="prospect-summary-strip">
+            <div><span>Tier</span><strong>{selected.partnerTierName || 'Low Priority'}</strong></div>
+            <div><span>Status</span><strong>{selected.trading_status || '—'}</strong></div>
+            <div><span>Region</span><strong>{selected.country || '—'}</strong></div>
+            <div><span>Type</span><strong>{selected.channel_role || '—'}</strong></div>
+          </div>
+
+          <div className="panel-card"><h4>Company details</h4><p>Industry: {selected.industry || '—'}</p><p>Company Type: {selected.category || '—'}</p><p>Employees: {selected.displayEmployees}</p><p>Revenue: {selected.displayRevenue}</p><p>Location: {selected.displayLocation} {selected.postcode}</p></div>
+          <div className="panel-card"><h4>Commercial profile</h4><p>Channel Role: {selected.channel_role || '—'}</p><p>Channel Segment: {selected.channel_segment || '—'}</p><p>Adopter Profile: {selected.adopter_profile || '—'}</p><p>Keywords: {selected.keywords || '—'}</p></div>
+
+          <div className="panel-card"><h4>Technology signals</h4><div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{(selected.tech_stack || '').split(/[,;|]/).map((t) => t.trim()).filter(Boolean).map((tech) => <span key={tech} className="tech-tag">{tech}</span>)}{!selected.tech_stack && <span className="tech-tag">No data</span>}</div></div>
+
+          <div className="panel-card"><h4>Contacts</h4>{selected.contacts.length ? selected.contacts.map((c, idx) => <div key={`${c.name}-${idx}`} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}><span>{c.name || c.email || '—'}</span><span className="tech-tag">{c.role || 'Role not set'}</span></div>) : <p>—</p>}</div>
+
+          <div className="panel-card"><h4>Score breakdown</h4>{selected.scoreBreakdown.map((f, idx) => {
+            const m = f.match(/([+-]?\d+(?:\.\d+)?)/);
+            const raw = m ? Number(m[1]) : 0;
+            const fill = Math.min(100, Math.max(8, Math.abs(raw) * 5));
+            const label = f.replace(/\s*[+-]?\d+(?:\.\d+)?$/, '');
+            return <div className="score-bar" key={`${f}-${idx}`}><span>{label}</span><div className="bar"><div className="fill" style={{ width: `${fill}%`, opacity: raw < 0 ? 0.45 : 1 }} /></div></div>;
+          })}</div>
+
+          <div className="prospect-drawer-footer">
+            <IconButton icon="copy" label="Copy website" onClick={() => navigator.clipboard?.writeText(selected.website || '')} />
+            <IconButton icon="copy" label="Copy LinkedIn" onClick={() => navigator.clipboard?.writeText(selected.linkedin || '')} />
+            <IconButton icon="copy" label="Copy email" onClick={() => navigator.clipboard?.writeText(selected.email || selected.contacts[0]?.email || '')} />
+            <IconButton icon="export" label="Export this record as CSV row" onClick={() => exportRows([selected], `${selected.id}-prospect.csv`)} />
+            <button type="button" className="ui-btn ui-btn--secondary" onClick={() => setSelectedRowId(null)}>Close drawer</button>
+          </div>
         </div>
-      </div>
-
-      <div className="panel-card"><h4>Overview</h4><p>Industry: {selected.industry || '—'}</p><p>Company Type: {selected.category || '—'}</p><p>Employees: {selected.displayEmployees}</p><p>Revenue: {selected.displayRevenue}</p><p>Location: {selected.displayLocation} {selected.postcode}</p></div>
-      <div className="panel-card"><h4>Channel Fit</h4><p>Channel Role: {selected.channel_role || '—'}</p><p>Channel Segment: {selected.channel_segment || '—'}</p><p>Adopter Profile: {selected.adopter_profile || '—'}</p></div>
-
-      <div className="panel-card"><h4>Technology Signals</h4><div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{(selected.tech_stack || '').split(/[,;|]/).map((t) => t.trim()).filter(Boolean).map((tech) => <span key={tech} className="tech-tag">{tech}</span>)}{!selected.tech_stack && <span className="tech-tag">No data</span>}</div></div>
-
-      <div className="panel-card"><h4>Contacts</h4>{selected.contacts.length ? selected.contacts.map((c, idx) => <div key={`${c.name}-${idx}`} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}><span>{c.name || c.email || '—'}</span><span className="tech-tag">{c.role || 'Role not set'}</span></div>) : <p>—</p>}</div>
-
-      <div className="panel-card"><h4>Score Breakdown</h4>{selected.scoreBreakdown.map((f, idx) => {
-        const m = f.match(/([+-]?\d+(?:\.\d+)?)/);
-        const raw = m ? Number(m[1]) : 0;
-        const fill = Math.min(100, Math.max(8, Math.abs(raw) * 5));
-        const label = f.replace(/\s*[+-]?\d+(?:\.\d+)?$/, '');
-        return <div className="score-bar" key={`${f}-${idx}`}><span>{label}</span><div className="bar"><div className="fill" style={{ width: `${fill}%`, opacity: raw < 0 ? 0.45 : 1 }} /></div></div>;
-      })}</div>
-
-      <div style={{ display: 'grid', gap: 8, marginTop: 10 }}>
-        <IconButton icon="copy" label="Copy website" onClick={() => navigator.clipboard?.writeText(selected.website || '')} />
-        <IconButton icon="copy" label="Copy LinkedIn" onClick={() => navigator.clipboard?.writeText(selected.linkedin || '')} />
-        <IconButton icon="copy" label="Copy email" onClick={() => navigator.clipboard?.writeText(selected.email || selected.contacts[0]?.email || '')} />
-        <IconButton icon="export" label="Export this record as CSV row" onClick={() => exportRows([selected], `${selected.id}-prospect.csv`)} />
-      </div>
+      </aside>
     </div>}
   </div>;
 }
