@@ -3995,65 +3995,6 @@ function EnablementHub({ onBack, onNavigate }) {
           animation: "fadeIn 0.35s ease both",
         }}
       >
-        {/* HUB HEADER */}
-        <header
-          style={{
-            padding: "22px 44px 0",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 12,
-            paddingLeft: 68,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              background:
-                "linear-gradient(135deg,rgba(212,168,67,0.12),rgba(54,198,255,0.08))",
-              border: "1px solid rgba(212,168,67,0.3)",
-              borderRadius: 100,
-              padding: "7px 18px",
-            }}
-          >
-            <div
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: "50%",
-                background: "#D4A843",
-                boxShadow: "0 0 8px #D4A843",
-                animation: "liveDot 2.2s ease-in-out infinite",
-              }}
-            />
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 800,
-                color: "#E8C96A",
-                letterSpacing: "0.07em",
-                textTransform: "uppercase",
-              }}
-            >
-              Partner Enablement Hub
-            </span>
-            <span
-              style={{
-                fontSize: 9,
-                color: "rgba(212,168,67,0.5)",
-                letterSpacing: "0.07em",
-                textTransform: "uppercase",
-              }}
-            >
-              2026
-            </span>
-          </div>
-          <div style={{ width: 36 }} />
-        </header>
-
         {/* HUB HERO */}
         <div
           style={{
@@ -4061,49 +4002,7 @@ function EnablementHub({ onBack, onNavigate }) {
             padding: "clamp(40px,5vw,64px) 44px 0",
           }}
         >
-          <div
-            style={{
-              maxWidth: 880,
-              margin: "0 auto",
-              padding: "clamp(28px,3.8vw,42px) clamp(20px,3vw,40px)",
-              borderRadius: 24,
-              border: "1px solid rgba(103,216,255,0.16)",
-              background:
-                "linear-gradient(180deg,rgba(15,36,47,0.62) 0%,rgba(10,22,31,0.72) 100%)",
-              boxShadow: "0 20px 48px rgba(6,12,20,0.28)",
-            }}
-          >
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                background: "rgba(212,168,67,0.08)",
-                border: "1px solid rgba(212,168,67,0.22)",
-                borderRadius: 100,
-                padding: "6px 15px",
-                marginBottom: 12,
-                fontSize: 10,
-                fontWeight: 800,
-                color: "#E8C96A",
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-              }}
-            >
-              Partner Program
-            </div>
-            <div
-              style={{
-                marginBottom: 14,
-                fontSize: 11,
-                fontWeight: 700,
-                color: "rgba(232,201,106,0.8)",
-                letterSpacing: "0.09em",
-                textTransform: "uppercase",
-              }}
-            >
-              IPI Partner Advantage 2026
-            </div>
+          <div style={{ maxWidth: 880, margin: "0 auto" }}>
           <h1
             style={{
               fontSize: "clamp(32px,4.8vw,56px)",
@@ -4115,28 +4014,8 @@ function EnablementHub({ onBack, onNavigate }) {
               fontFamily: "'Syne',sans-serif",
             }}
           >
-            Everything your partners{" "}
-            <span
-              style={{
-                color: "#D4A843",
-                textShadow: "0 0 36px rgba(212,168,67,0.5)",
-              }}
-            >
-              need to sell.
-            </span>
+            Program Structure
           </h1>
-          <p
-            style={{
-              fontSize: "clamp(14px,1.4vw,16px)",
-              color: "#8EB8AF",
-              maxWidth: 640,
-              margin: "0 auto",
-              lineHeight: 1.78,
-            }}
-          >
-            Co-sell materials, technical briefs, deal registration guidance, and
-            tier information — all in one place for CCaaS and SI partners.
-          </p>
           </div>
         </div>
 
