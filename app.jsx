@@ -11063,16 +11063,16 @@ const NAV_ITEMS = [
     sublabel: "Partner Website",
   },
   {
-    id: "partner-account-plan",
-    icon: <NavIcon name="checklist" />,
-    label: "Partner Planning",
-    sublabel: "Account Planning",
-  },
-  {
     id: "channel-dashboard",
     icon: <NavIcon name="chart" />,
     label: "Channel Cadence",
     sublabel: "Partner Management",
+  },
+  {
+    id: "partner-account-plan",
+    icon: <NavIcon name="checklist" />,
+    label: "Partner Planning",
+    sublabel: "Account Planning",
   },
   {
     id: "prospect",
