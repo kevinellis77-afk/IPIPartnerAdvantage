@@ -5010,7 +5010,7 @@ function ProspectToolPage() {
   if (error) return <div className="prospect-shell"><PageHeader title="Partner Prospect Tool" subtitle="Unable to load dataset" /><div className="ds-card">{error}<div style={{ marginTop: 10 }}><IconButton icon="load" label="Retry load" onClick={loadData} /></div></div></div>;
 
   return <div className="prospect-shell">
-    <PageHeader title="Partner Prospect Tool" eyebrow="Partner Prospect Tool" subtitle="Explore, filter and rank reseller prospects from the channel dataset" right={<span className="pill">{rows.length} records</span>} />
+    <PageHeader title="Partner Prospect Tool" subtitle="Explore, filter and rank reseller prospects from the channel dataset" right={<span className="pill">{rows.length} records</span>} />
 
     <div className="kpi-grid">
       {[
@@ -7968,7 +7968,6 @@ function PartnerOperationalSupportPage() {
     <React.Fragment>
       <Bg />
       <AppPageHeader
-        eyebrow="Operational Excellence"
         title="Partner Operational Support Framework"
         subtitle="IP Integration provides structured operational support to enable partners to successfully sell, deploy and support solutions across the IPI ecosystem. This operational framework ensures partners have the tools, processes and support needed to consistently deliver strong customer outcomes."
       />
@@ -8936,7 +8935,6 @@ function GovernancePage() {
 
 
 const CHANNEL_MANAGER_DATA = {
-  lastUpdated: "Updated 11 Mar 2026",
   mission:
     "Create a repeatable channel operating model that recruits the right partners, enables them effectively and scales shared revenue over time.",
   missionSupport:
@@ -9284,12 +9282,6 @@ function ChannelManagerDashboardPage() {
     <React.Fragment>
       <Bg />
       <div className="channel-dashboard-page">
-        <header className="channel-dashboard-header">
-          <div className="channel-dashboard-pill">
-            {CHANNEL_MANAGER_DATA.lastUpdated}
-          </div>
-        </header>
-
         <section className="channel-hero">
           <div className="channel-hero-layout">
             <div>
@@ -9536,7 +9528,6 @@ function ChannelMarketingPage() {
       <Bg />
       <div style={{ position: "relative", zIndex: 1, minHeight: "100vh", paddingBottom: 40 }}>
         <AppPageHeader
-          eyebrow="Website Strategy"
           title="Channel Marketing"
           subtitle="Designing a partner-first website experience that helps IP Integration attract, convert and enable reseller partners."
         />
@@ -10448,17 +10439,15 @@ function PartnerAccountPlanToolPage() {
   };
 
   if (!plans.length && mode === "dashboard") {
-    return <div className="partner-plan-page"><AppTopBar title="Partner Account Plan Tool" /><div className="plan-empty"><h2>No plans saved yet</h2><p>Create, manage and track strategic account plans for key partners across recruitment, enablement, pipeline development and growth.</p><button className="ui-btn ui-btn--primary plan-action-icon-btn" onClick={beginNewPlan} aria-label="Create new plan" title="New plan">＋</button></div></div>;
+    return <div className="partner-plan-page"><div className="plan-empty"><h2>No plans saved yet</h2><p>Create, manage and track strategic account plans for key partners across recruitment, enablement, pipeline development and growth.</p><button className="ui-btn ui-btn--primary plan-action-icon-btn" onClick={beginNewPlan} aria-label="Create new plan" title="New plan">＋</button></div></div>;
   }
 
   const current = editingPlan ? enrichPlan(editingPlan) : null;
 
   return (
     <div className={`partner-plan-page ${printView ? "print-mode" : ""}`}>
-      <AppTopBar title="Partner Account Plan Tool" />
       <div className="partner-plan-head">
         <div>
-          <h1>Partner Account Plan Tool</h1>
           <p>Create, manage and track strategic account plans for key partners across recruitment, enablement, pipeline development and growth.</p>
         </div>
         <div className="plan-actions-inline">
