@@ -10766,6 +10766,8 @@ const NAV_SECTIONS = [
   },
 ];
 
+const NAV_ITEMS = NAV_SECTIONS.flatMap((section) => section.items);
+
 const GH_PAGES_BASENAME = "/IPIPartnerAdvantage";
 
 const PAGE_PATHS = {
