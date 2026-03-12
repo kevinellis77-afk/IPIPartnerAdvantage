@@ -9952,7 +9952,7 @@ const NAV_ITEMS = [
     id: "main",
     icon: <NavIcon name="home" />,
     label: "Why Work with IPI",
-    sublabel: "Solution Overview",
+    sublabel: "Partner Proposition",
   },
   {
     id: "bse",
@@ -9963,14 +9963,14 @@ const NAV_ITEMS = [
   {
     id: "hub",
     icon: <NavIcon name="academy" />,
-    label: "Partner Tiers & Enablement",
-    sublabel: "Partner Tiers & Enablement",
+    label: "Partner Tiers",
+    sublabel: "Partner Levels",
   },
   {
     id: "program",
     icon: <NavIcon name="users" />,
     label: "Ideal Partner Profile",
-    sublabel: "Tiers & Scoring",
+    sublabel: "Prospect Scoring",
   },
   {
     id: "governance",
@@ -9981,7 +9981,7 @@ const NAV_ITEMS = [
   {
     id: "commercial",
     icon: <NavIcon name="money" />,
-    label: "Commercial Framework",
+    label: "Legal Framework",
     sublabel: "Legal Documents",
   },
   {
@@ -10012,7 +10012,7 @@ const NAV_ITEMS = [
     id: "prospect",
     icon: <NavIcon name="search" />,
     label: "Find Prospects",
-    sublabel: "Partner Prospect Tool",
+    sublabel: "Prospect Search",
   },
 ];
 
