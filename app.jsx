@@ -10446,7 +10446,17 @@ function TopBottomPartnerTables({ plans }) {
   const ranked = getSortedPartnerRows(plans);
   const rows = ranked.map((plan, idx) => ({ ...plan, rank: idx + 1 }));
   const topFive = rows.slice(0, 5);
-  const bottomFive = [...rows].reverse().slice(0, 5);
+  const bottomFive = [...rows]
+    .sort((a, b) => {
+      const scoreDiff = a.computed.healthScore - b.computed.healthScore;
+      if (scoreDiff !== 0) return scoreDiff;
+      const pipelineDiff = safeNumber(a.scorecard.pipelineCurrent) - safeNumber(b.scorecard.pipelineCurrent);
+      if (pipelineDiff !== 0) return pipelineDiff;
+      const rankDiff = b.rank - a.rank;
+      if (rankDiff !== 0) return rankDiff;
+      return a.id.localeCompare(b.id);
+    })
+    .slice(0, 5);
 
   const renderTable = (title, tableRows) => (
     <section className="plan-section-card ranking-panel">

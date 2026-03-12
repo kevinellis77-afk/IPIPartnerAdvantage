@@ -925,11 +925,11 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
 .plan-actions-inline{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
 .plan-action-icon-btn{min-width:32px;padding:6px 8px;font-size:14px;line-height:1;display:inline-flex;align-items:center;justify-content:center;}
 .plan-filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;}
-.plan-scorecards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch;}
-.plan-stat-card{border:1px solid var(--ds-border);border-radius:16px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;gap:10px;min-width:0;min-height:160px;box-shadow:0 8px 20px rgba(7,13,18,.18);}
-.plan-stat-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ds-text-muted);}
-.plan-stat-value{font-size:34px;line-height:1.1;font-weight:800;color:var(--ds-text);}
-.plan-stat-subtitle{font-size:12px;color:var(--ds-text-muted);}
+.plan-scorecards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:stretch;}
+.plan-stat-card{border:1px solid color-mix(in srgb,var(--ds-border) 82%, transparent);border-radius:18px;padding:16px;display:flex;flex-direction:column;justify-content:space-between;gap:10px;min-width:0;min-height:180px;aspect-ratio:1.15/1;box-shadow:0 10px 24px rgba(7,13,18,.2);}
+.plan-stat-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--ds-text) 68%, var(--ds-text-muted));}
+.plan-stat-value{font-size:38px;line-height:1.05;font-weight:800;color:var(--ds-text);}
+.plan-stat-subtitle{font-size:12px;color:color-mix(in srgb,var(--ds-text-muted) 90%, var(--ds-text));}
 .plan-stat-card--pipeline{background:linear-gradient(150deg,color-mix(in srgb,#4E8DFF 26%, var(--ds-surface-muted)),var(--ds-surface-muted));}
 .plan-stat-card--won{background:linear-gradient(150deg,color-mix(in srgb,#23C483 26%, var(--ds-surface-muted)),var(--ds-surface-muted));}
 .plan-stat-card--health{background:linear-gradient(150deg,color-mix(in srgb,#7D73FF 26%, var(--ds-surface-muted)),var(--ds-surface-muted));}
@@ -982,13 +982,13 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
 .health-breakdown-row{display:flex;justify-content:space-between;gap:8px;padding:8px 10px;border:1px solid var(--ds-border);border-radius:10px;background:rgba(9,20,31,.45);color:var(--ds-text-muted);}
 .health-breakdown-row strong{color:var(--ds-text);}
 .plan-ranking-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
-.ranking-panel .plan-section-body{padding-top:12px;}
-.ranking-panel h3{margin:0 0 12px;color:var(--ds-text);}
+.ranking-panel .plan-section-body{padding:14px 16px 16px;}
+.ranking-panel h3{margin:0 0 12px;color:var(--ds-text);font-size:18px;letter-spacing:.01em;}
 .ranking-table-wrap{overflow:auto;border:1px solid var(--ds-border);border-radius:12px;background:color-mix(in srgb,var(--ds-surface-muted) 86%,transparent);}
 .ranking-table{width:100%;border-collapse:collapse;min-width:560px;}
-.ranking-table th,.ranking-table td{padding:11px 12px;border-bottom:1px solid var(--ds-border);font-size:12px;color:var(--ds-text);}
+.ranking-table th,.ranking-table td{padding:12px 13px;border-bottom:1px solid var(--ds-border);font-size:12px;color:var(--ds-text);}
 .ranking-table th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ds-text-muted);text-align:left;}
-.ranking-table td.num{text-align:right;font-variant-numeric:tabular-nums;}
+.ranking-table td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
 .rag-pill{display:inline-flex;align-items:center;justify-content:center;padding:4px 10px;border-radius:999px;border:1px solid var(--ds-border);font-size:11px;font-weight:700;min-width:66px;}
 .rag-pill-green{background:rgba(86,184,124,.2);border-color:rgba(86,184,124,.45);color:#d9ffe8;}
 .rag-pill-amber{background:rgba(219,168,77,.2);border-color:rgba(219,168,77,.45);color:#ffe9b8;}
@@ -996,6 +996,7 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
 
 @media (max-width: 900px){
   .plan-scorecards{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .plan-stat-card{aspect-ratio:auto;min-height:150px;}
   .plan-ranking-grid{grid-template-columns:1fr;}
   .plan-table{min-width:100%;}
   .plan-table thead{display:none;}
