@@ -577,14 +577,119 @@ function ThemeToggle() {
   );
 }
 
-function AppTopBar({ title }) {
+function CogIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3v2.2M12 18.8V21M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M3 12h2.2M18.8 12H21M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6" />
+      <circle cx="12" cy="12" r="6.1" />
+      <circle cx="12" cy="12" r="2.4" />
+    </svg>
+  );
+}
+
+function SettingsMenu({ navSections, hiddenPageIds, onTogglePageVisibility, versionInfo }) {
+  const [open, setOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!open) return undefined;
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open]);
+
+  return (
+    <React.Fragment>
+      <button
+        type="button"
+        className="settings-menu__trigger"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-label="Open settings"
+        title="Settings"
+        onClick={() => setOpen(true)}
+      >
+        <CogIcon />
+      </button>
+
+      <div className={`settings-drawer-backdrop ${open ? "open" : ""}`} onClick={() => setOpen(false)} aria-hidden={!open}>
+        <aside
+          className={`settings-drawer ${open ? "open" : ""}`}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Platform settings"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="settings-drawer__header">
+            <div className="settings-drawer__heading">
+              <span className="settings-drawer__heading-icon"><CogIcon /></span>
+              <div>
+                <div className="settings-drawer__title">Platform settings</div>
+                <div className="settings-drawer__subtitle">Toggle pages visible in navigation</div>
+              </div>
+            </div>
+            <button type="button" className="settings-drawer__close" onClick={() => setOpen(false)} aria-label="Close settings">×</button>
+          </div>
+
+          <div className="settings-drawer__content">
+            {navSections.map((section) => (
+              <div key={section.key} className="settings-drawer__section">
+                <div className="settings-drawer__section-title">{section.title}</div>
+                <div className="settings-drawer__section-items">
+                  {section.items.map((item) => {
+                    const isVisible = !hiddenPageIds.has(item.id);
+                    return (
+                      <label key={item.id} className="settings-drawer__item">
+                        <span className="settings-drawer__item-label">
+                          <span className="settings-drawer__item-icon" aria-hidden="true">{item.icon}</span>
+                          <span>{item.label}</span>
+                        </span>
+                        <input
+                          className="settings-drawer__switch-input"
+                          type="checkbox"
+                          role="switch"
+                          checked={isVisible}
+                          aria-label={`${item.label} visibility`}
+                          onChange={() => onTogglePageVisibility(item.id)}
+                        />
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="settings-drawer__build">
+            <div className="settings-drawer__build-title">Build info</div>
+            <div>Version {versionInfo.version}</div>
+            <div>Build {versionInfo.build}</div>
+          </div>
+        </aside>
+      </div>
+    </React.Fragment>
+  );
+}
+
+function AppTopBar({ title, navSections, hiddenPageIds, onTogglePageVisibility, versionInfo }) {
   return (
     <header className="app-topbar">
       <div>
         <div className="app-topbar__eyebrow">IPI Partner Advantage</div>
         <div className="app-topbar__title">{title}</div>
       </div>
-      <ThemeToggle />
+      <div className="app-topbar__actions">
+        <SettingsMenu
+          navSections={navSections}
+          hiddenPageIds={hiddenPageIds}
+          onTogglePageVisibility={onTogglePageVisibility}
+          versionInfo={versionInfo}
+        />
+        <ThemeToggle />
+      </div>
     </header>
   );
 }
@@ -10575,6 +10680,10 @@ const NAV_SECTIONS = [
 ];
 
 const NAV_ITEMS = NAV_SECTIONS.flatMap((section) => section.items);
+const APP_VERSION_INFO = {
+  version: "1.0.0",
+  build: "2026.03.13",
+};
 
 const GH_PAGES_BASENAME = "/IPIPartnerAdvantage";
 
@@ -10612,7 +10721,7 @@ function withBase(pathname) {
   return `${GH_PAGES_BASENAME}${normalized}`;
 }
 
-function SideNav({ page, setPage, onLayoutChange }) {
+function SideNav({ page, setPage, onLayoutChange, navSections = NAV_SECTIONS }) {
   const SIDEBAR_WIDTH = 250;
   const [openSections, setOpenSections] = React.useState(() => {
     try {
@@ -10665,7 +10774,7 @@ function SideNav({ page, setPage, onLayoutChange }) {
 
           <div className="sidebar-nav-scroll">
             <nav className="sidebar-nav">
-              {NAV_SECTIONS.map((section, sectionIndex) => {
+              {navSections.map((section, sectionIndex) => {
                 const isOpen = openSections[section.key] ?? true;
                 return (
                   <React.Fragment key={section.key}>
@@ -10700,7 +10809,7 @@ function SideNav({ page, setPage, onLayoutChange }) {
                         </div>
                       )}
                     </div>
-                    {sectionIndex < NAV_SECTIONS.length - 1 ? <div className="section-divider" aria-hidden="true" /> : null}
+                    {sectionIndex < navSections.length - 1 ? <div className="section-divider" aria-hidden="true" /> : null}
                   </React.Fragment>
                 );
               })}
@@ -10726,6 +10835,16 @@ function SideNav({ page, setPage, onLayoutChange }) {
 // APP
 // ═══════════════════════════════════════════════════════
 function App() {
+  const navSections = React.useMemo(() => NAV_SECTIONS, []);
+  const allPageIds = React.useMemo(() => navSections.flatMap((section) => section.items.map((item) => item.id)), [navSections]);
+  const [hiddenPageIds, setHiddenPageIds] = React.useState(() => {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem("ipi-hidden-pages") || "[]");
+      return new Set(Array.isArray(saved) ? saved : []);
+    } catch (error) {
+      return new Set();
+    }
+  });
   const [page, setPage] = React.useState(() => {
     const relativePath = toBaseRelativePath(window.location.pathname);
     return PATH_TO_PAGE[relativePath] || "main";
@@ -10745,6 +10864,44 @@ function App() {
       </div>
     );
   }
+
+  const togglePageVisibility = React.useCallback((pageId) => {
+    setHiddenPageIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(pageId)) {
+        next.delete(pageId);
+        return next;
+      }
+      const visibleCount = allPageIds.filter((id) => !next.has(id)).length;
+      if (visibleCount <= 1) return prev;
+      next.add(pageId);
+      return next;
+    });
+  }, [allPageIds]);
+
+  const visibleNavSections = React.useMemo(
+    () => navSections
+      .map((section) => ({
+        ...section,
+        items: section.items.filter((item) => !hiddenPageIds.has(item.id)),
+      }))
+      .filter((section) => section.items.length > 0),
+    [hiddenPageIds, navSections],
+  );
+
+  React.useEffect(() => {
+    try {
+      window.localStorage.setItem("ipi-hidden-pages", JSON.stringify(Array.from(hiddenPageIds)));
+    } catch (error) {
+      // no-op
+    }
+  }, [hiddenPageIds]);
+
+  React.useEffect(() => {
+    if (!hiddenPageIds.has(page)) return;
+    const firstVisiblePage = allPageIds.find((id) => !hiddenPageIds.has(id)) || "main";
+    setPage(firstVisiblePage);
+  }, [allPageIds, hiddenPageIds, page]);
 
   function renderPage() {
     if (page === "channel-dashboard") return <ChannelManagerDashboardPage />;
@@ -11084,8 +11241,8 @@ function App() {
 
   return (
     <AppShell
-      sidebar={<SharedSidebar page={page} setPage={setPage} onLayoutChange={setSidebarLayout} />}
-      topbar={<AppTopBar title={currentPageMeta?.label || "Dashboard"} />}
+      sidebar={<SharedSidebar page={page} setPage={setPage} onLayoutChange={setSidebarLayout} navSections={visibleNavSections} />}
+      topbar={<AppTopBar title={currentPageMeta?.label || "Dashboard"} navSections={navSections} hiddenPageIds={hiddenPageIds} onTogglePageVisibility={togglePageVisibility} versionInfo={APP_VERSION_INFO} />}
     >
       <div
         className="app-main-inner with-sidebar page-content"
