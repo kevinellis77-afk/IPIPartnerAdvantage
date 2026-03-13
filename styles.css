@@ -679,6 +679,10 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
   gap: 10px;
 }
 
+.settings-menu {
+  position: relative;
+}
+
 .settings-menu__trigger {
   display: inline-flex;
   align-items: center;
@@ -699,6 +703,172 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
 .settings-menu__trigger svg {
   width: 18px;
   height: 18px;
+}
+
+.settings-menu__panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(380px, 90vw);
+  background: color-mix(in srgb, var(--bg-surface) 95%, #fff 5%);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  box-shadow: 0 18px 30px rgba(3, 10, 20, .24);
+  padding: 0;
+  opacity: 0;
+  transform: translateY(-5px);
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+  z-index: 130;
+}
+
+.settings-menu__panel.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+
+.settings-menu__panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 12px 10px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.settings-menu__panel-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--heading-primary);
+  line-height: 1.1;
+}
+
+.settings-menu__panel-subtitle {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.settings-menu__panel-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.settings-menu__panel-content {
+  max-height: min(56vh, 520px);
+  overflow: auto;
+  padding: 10px 12px;
+}
+
+.settings-menu__section + .settings-menu__section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.settings-menu__section-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.settings-menu__section-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.settings-menu__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bg-subtle) 76%, transparent);
+}
+
+.settings-menu__item-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.settings-menu__item-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.settings-menu__panel-footer {
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--border-soft);
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--bg-subtle) 86%, transparent);
+}
+
+.settings-menu__entry {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+}
+
+.settings-menu__entry:hover {
+  background: color-mix(in srgb, var(--bg-subtle) 72%, transparent);
+}
+
+.settings-menu__entry-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--brand-secondary) 18%, transparent);
+}
+
+.settings-menu__entry-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.settings-menu__entry-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.settings-menu__entry-copy {
+  display: block;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
 }
 
 .settings-drawer-backdrop {
@@ -891,6 +1061,23 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
   font-size: 12px;
   color: var(--text-secondary);
   background: color-mix(in srgb, var(--bg-subtle) 86%, transparent);
+}
+
+.settings-drawer__reset {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--brand-secondary) 35%, var(--border-soft));
+  background: color-mix(in srgb, var(--bg-surface) 84%, var(--brand-secondary) 16%);
+  color: color-mix(in srgb, var(--brand-secondary) 82%, var(--heading-primary));
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.settings-drawer__reset:hover {
+  background: color-mix(in srgb, var(--bg-surface) 68%, var(--brand-secondary) 32%);
 }
 
 .settings-drawer__build-title {
