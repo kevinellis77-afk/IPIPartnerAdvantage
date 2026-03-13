@@ -10664,6 +10664,301 @@ function PartnerAccountPlanToolPage() {
   );
 }
 
+const SAMPLE_CUSTOMER_STORIES = [
+  {
+    id: "coop",
+    customerName: "Co-op",
+    industry: "Consumer / Membership",
+    headline: "Award-winning collaboration delivering a successful cloud contact centre migration",
+    shortSummary:
+      "IPI partnered with Genesys and a global SI partner to support Co-op's migration to Genesys Cloud while maintaining customer service continuity.",
+    challenge:
+      "Execute a major migration without interrupting customer support during a critical transformation period.",
+    solution:
+      "Co-designed and delivered a phased Genesys Cloud migration with close delivery collaboration and service continuity controls.",
+    outcomes: ["Successful migration to Genesys Cloud", "Operational continuity", "Award-winning partnership"],
+    metrics: ["Succeed Together award", "Zero service interruption in cutover phases"],
+    quote:
+      "The partnership model made a complex migration feel controlled, collaborative and outcomes-led.",
+    quoteAuthor: "Programme Sponsor, Co-op",
+    solutionTags: ["Genesys Cloud", "Cloud Migration", "CCaaS"],
+    businessOutcomeTags: ["Reliability", "Flexibility", "CX Improvement"],
+    partnerRelevance: "Demonstrates how partners can collaborate with IPI on large enterprise migrations.",
+    featured: false,
+    logoText: "Co-op",
+  },
+  {
+    id: "hillarys",
+    customerName: "Hillarys",
+    industry: "Retail",
+    headline: "Retail contact centre modernisation with ElasticCX CCaaS",
+    shortSummary:
+      "IPI supported Hillarys on a multi-year transformation journey enabling cloud telephony, hybrid working and improved reliability.",
+    challenge: "Modernise legacy contact infrastructure while improving resilience for a distributed workforce.",
+    solution:
+      "Implemented ElasticCX-enabled CCaaS capabilities in phases, introducing cloud voice and operational tooling.",
+    outcomes: ["Flexible cloud platform", "Hybrid workforce enablement", "Improved scalability"],
+    metrics: ["Up to 17,000 calls/week", "£500k savings in earlier phase", "99.99% reliability"],
+    quote: "The phased model delivered measurable gains at each stage and created a stronger service foundation.",
+    quoteAuthor: "Contact Centre Lead, Hillarys",
+    solutionTags: ["CCaaS", "Cloud Migration", "Workforce Engagement"],
+    businessOutcomeTags: ["Cost Savings", "Flexibility", "Reliability"],
+    partnerRelevance: "Retail organisations often need phased migrations to cloud CX platforms.",
+    featured: false,
+    logoText: "Hillarys",
+  },
+  {
+    id: "liberata",
+    customerName: "Liberata",
+    industry: "Public Sector",
+    headline: "Public sector CX transformation powered by Genesys Cloud",
+    shortSummary:
+      "IPI supported Liberata in migrating to Genesys Cloud and introducing automation including voice bots and workforce optimisation.",
+    challenge:
+      "Improve citizen service accessibility while reducing pressure on frontline teams and maintaining governance standards.",
+    solution:
+      "Migrated core operations to Genesys Cloud, introduced bot automation and workforce optimisation, and implemented queue retention options.",
+    outcomes: ["Automation at scale", "Improved citizen access", "Reduced contact centre load"],
+    metrics: ["23% interactions resolved by bots", "14% reduction in call volumes", "34% selected queue retention"],
+    quote:
+      "Automation and cloud migration gave us faster, more reliable service for citizens while reducing avoidable demand.",
+    quoteAuthor: "Service Delivery Director, Liberata",
+    solutionTags: ["Genesys Cloud", "AI / Automation", "Workforce Engagement"],
+    businessOutcomeTags: ["Automation", "CX Improvement", "Reliability"],
+    partnerRelevance: "Public sector customers represent a major growth opportunity for partners.",
+    featured: true,
+    logoText: "Liberata",
+  },
+  {
+    id: "ageas",
+    customerName: "Ageas",
+    industry: "Insurance",
+    headline: "AI voice automation improves verification and reduces call handling time",
+    shortSummary:
+      "IPI deployed AI-powered identity verification and automation capabilities into Ageas' existing environment.",
+    challenge:
+      "Reduce verification friction and average handling time while preserving customer trust and security.",
+    solution:
+      "Embedded AI voice verification into existing workflows with targeted automation for common intents and faster triage.",
+    outcomes: ["Improved call efficiency", "More self-service options", "Better agent conversations"],
+    metrics: ["Verification on 80% of calls", "40–45 second AHT reduction"],
+    quote: "AI verification shortened routine calls and gave agents more time for complex customer needs.",
+    quoteAuthor: "Operations Manager, Ageas",
+    solutionTags: ["AI / Automation", "CCaaS"],
+    businessOutcomeTags: ["Automation", "Cost Savings", "CX Improvement"],
+    partnerRelevance: "AI solutions represent a high-margin services opportunity for partners.",
+    featured: false,
+    logoText: "Ageas",
+  },
+  {
+    id: "boden",
+    customerName: "Boden",
+    industry: "Retail",
+    headline: "Seamless migration to Genesys Cloud with secure payment compliance",
+    shortSummary:
+      "IPI supported Boden's migration to Genesys Cloud and deployed Pauseable for PCI-compliant payment handling.",
+    challenge:
+      "Scale digital-first customer service while ensuring PCI-compliant payment journeys with no customer disruption.",
+    solution:
+      "Delivered Genesys Cloud migration and integrated Pauseable controls to secure card capture without harming UX.",
+    outcomes: ["Secure payments", "Cloud scalability", "No disruption to customer experience"],
+    metrics: ["PCI controls embedded", "No CX downtime during migration"],
+    quote: "Compliance became a strategic enabler rather than a blocker in our CX roadmap.",
+    quoteAuthor: "Head of CX, Boden",
+    solutionTags: ["Genesys Cloud", "PCI Compliance", "Cloud Migration"],
+    businessOutcomeTags: ["Compliance", "Reliability", "Flexibility"],
+    partnerRelevance: "Compliance-driven CX transformations are common in retail and ecommerce.",
+    featured: false,
+    logoText: "Boden",
+  },
+];
+
+const buildLogoDataUri = ({ label, bg = "#ffffff", fg = "#1f2937", accent = "", mark = "" }) => {
+  const markCircle = accent
+    ? `<circle cx="38" cy="30" r="14" fill="${accent}" opacity="0.95" />`
+    : "";
+  const markText = mark
+    ? `<text x="38" y="35" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="800" fill="#ffffff">${mark}</text>`
+    : "";
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 100" role="img" aria-label="${label} logo"><rect width="320" height="100" rx="14" fill="${bg}"/>${markCircle}${markText}<text x="${mark ? "66" : "24"}" y="60" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="700" fill="${fg}">${label}</text></svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+};
+
+const LOGO_COLLAGE_ITEMS = [
+  { id: "co-op", name: "Co-op", logoSrc: buildLogoDataUri({ label: "co-op", bg: "#e5e7eb", fg: "#06b6d4" }) },
+  { id: "dfs", name: "DFS", logoSrc: buildLogoDataUri({ label: "dfs", bg: "#e5e7eb", fg: "#5b2a8d", accent: "#d1008f", mark: "♥" }) },
+  { id: "direct-line", name: "Direct Line", logoSrc: buildLogoDataUri({ label: "direct line", bg: "#f3f4f6", fg: "#171717", accent: "#ef4444", mark: "☎" }) },
+  { id: "interactive-investor", name: "Interactive Investor", logoSrc: buildLogoDataUri({ label: "interactive investor", bg: "#1d4ed8", fg: "#ffffff", accent: "#f97316", mark: "ii" }) },
+  { id: "iris", name: "IRIS", logoSrc: buildLogoDataUri({ label: "IRIS", bg: "#ffffff", fg: "#334155", accent: "#38bdf8", mark: "I" }) },
+  { id: "irish-life", name: "Irish Life", logoSrc: buildLogoDataUri({ label: "Irish Life", bg: "#4f46e5", fg: "#ffffff" }) },
+  { id: "ni-water", name: "Northern Ireland Water", logoSrc: buildLogoDataUri({ label: "northern ireland water", bg: "#ffffff", fg: "#0369a1", accent: "#0ea5e9", mark: "~" }) },
+  { id: "ocado", name: "Ocado", logoSrc: buildLogoDataUri({ label: "Ocado", bg: "#ffffff", fg: "#4c1d95" }) },
+  { id: "pva", name: "PVA", logoSrc: buildLogoDataUri({ label: "pva", bg: "#f3f4f6", fg: "#16a34a" }) },
+  { id: "autoglass", name: "Autoglass", logoSrc: buildLogoDataUri({ label: "AUTOGLASS", bg: "#ffffff", fg: "#dc2626", accent: "#facc15", mark: "A" }) },
+  { id: "boden", name: "Boden", logoSrc: buildLogoDataUri({ label: "Boden", bg: "#ffffff", fg: "#111827" }) },
+  { id: "bristol", name: "Bristol City Council", logoSrc: buildLogoDataUri({ label: "Bristol City Council", bg: "#ffffff", fg: "#b91c1c", accent: "#ef4444", mark: "B" }) },
+  { id: "liberata", name: "Liberata", logoSrc: buildLogoDataUri({ label: "Liberata", bg: "#ffffff", fg: "#1f2937" }) },
+  { id: "ageas", name: "Ageas", logoSrc: buildLogoDataUri({ label: "Ageas", bg: "#ffffff", fg: "#2563eb" }) },
+  { id: "hillarys", name: "Hillarys", logoSrc: buildLogoDataUri({ label: "Hillarys", bg: "#ffffff", fg: "#7c3aed" }) },
+  { id: "retail-leader", name: "Retail Leader", logoText: "Retail Leader" },
+  { id: "public-service", name: "Public Service", logoText: "Public Service" },
+  { id: "insurance-group", name: "Insurance Group", logoText: "Insurance Group" },
+  { id: "membership-brand", name: "Membership Brand", logoText: "Membership Brand" },
+  { id: "cx-innovator", name: "CX Innovator", logoText: "CX Innovator" },
+];
+
+function SampleCustomersPage() {
+  const stories = SAMPLE_CUSTOMER_STORIES;
+  const featuredStory = stories.find((story) => story.featured) || stories[0];
+  const [search, setSearch] = React.useState("");
+  const [industry, setIndustry] = React.useState("all");
+  const [solutionType, setSolutionType] = React.useState("all");
+  const [businessOutcome, setBusinessOutcome] = React.useState("all");
+  const [selectedStory, setSelectedStory] = React.useState(null);
+
+  React.useEffect(() => {
+    if (!selectedStory) return undefined;
+    const onEsc = (event) => {
+      if (event.key === "Escape") setSelectedStory(null);
+    };
+    window.addEventListener("keydown", onEsc);
+    return () => window.removeEventListener("keydown", onEsc);
+  }, [selectedStory]);
+
+  const filteredStories = React.useMemo(() => stories.filter((story) => {
+    const query = search.trim().toLowerCase();
+    const matchesSearch = !query || [story.customerName, story.headline, story.shortSummary, ...(story.solutionTags || [])].join(" ").toLowerCase().includes(query);
+    const matchesIndustry = industry === "all" || story.industry === industry;
+    const matchesSolution = solutionType === "all" || (story.solutionTags || []).includes(solutionType);
+    const matchesOutcome = businessOutcome === "all" || (story.businessOutcomeTags || []).includes(businessOutcome);
+    return matchesSearch && matchesIndustry && matchesSolution && matchesOutcome;
+  }), [businessOutcome, industry, search, solutionType, stories]);
+
+  return (
+    <div className="sample-customers-page">
+      <section className="sample-customers-hero ds-card ds-card--highlight">
+        <div>
+          <h1>Sample Customers</h1>
+          <p>See how organisations are using IPI solutions to modernise customer experience, improve efficiency, strengthen compliance and enable growth.</p>
+          <div className="sample-stat-grid">
+            {["Cloud Transformation", "AI & Automation", "Compliance & Security", "Operational Efficiency"].map((label) => (
+              <div key={label} className="sample-stat-tile">
+                <div className="sample-stat-icon">✦</div>
+                <strong>{label}</strong>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="logo-collage" aria-label="Customer logo collage">
+          {LOGO_COLLAGE_ITEMS.map((logo) => (
+            <span key={logo.id} className={`logo-pill ${logo.logoSrc ? "" : "logo-pill--text"}`.trim()}>
+              {logo.logoSrc ? <img src={logo.logoSrc} alt={`${logo.name} logo`} loading="lazy" /> : (logo.logoText || logo.name)}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      <section className="ds-section">
+        <SectionHeader eyebrow="Featured Story" title="Customer Success Spotlight" description="A flagship transformation story partners can use in customer conversations." />
+        <div className="featured-story-card ds-card">
+          <div>
+            <div className="status-badge status-info">{featuredStory.industry}</div>
+            <h3>{featuredStory.customerName}</h3>
+            <h4>{featuredStory.headline}</h4>
+            <p>{featuredStory.shortSummary}</p>
+          </div>
+          <div className="featured-metrics">
+            {featuredStory.metrics.slice(0, 3).map((metric) => <span key={metric} className="sample-chip">{metric}</span>)}
+            <button className="ui-btn ui-btn--primary" onClick={() => setSelectedStory(featuredStory)}>View Story</button>
+          </div>
+        </div>
+      </section>
+
+      <section className="ds-section">
+        <SectionHeader title="Why These Stories Matter to Partners" />
+        <div className="sample-grid-3">
+          {[{
+            title: "Proven Transformation Experience",
+            description: "IPI has delivered successful CX transformations across multiple industries including retail, insurance and public sector.",
+          }, {
+            title: "Repeatable Solutions",
+            description: "Many of the technologies and architectures used in these projects can be replicated by reseller partners.",
+          }, {
+            title: "Revenue Opportunities",
+            description: "Partners can build services, integration and managed offerings around these proven deployments.",
+          }].map((item) => (
+            <div className="ds-card" key={item.title}><h4>{item.title}</h4><p>{item.description}</p></div>
+          ))}
+        </div>
+      </section>
+
+      <section className="ds-section">
+        <SectionHeader title="Customer Story Library" description="Filter by industry, solution and business outcomes." />
+        <FilterBar>
+          <input className="ui-field" placeholder="Search customer name or keyword" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <select className="ui-field" value={industry} onChange={(e) => setIndustry(e.target.value)}>
+            <option value="all">Industry</option>
+            {['Retail', 'Insurance', 'Public Sector', 'Consumer / Membership', 'Other'].map((item) => <option key={item} value={item}>{item}</option>)}
+          </select>
+          <select className="ui-field" value={solutionType} onChange={(e) => setSolutionType(e.target.value)}>
+            <option value="all">Solution Type</option>
+            {['CCaaS', 'Genesys Cloud', 'AI / Automation', 'PCI Compliance', 'Workforce Engagement', 'Cloud Migration'].map((item) => <option key={item} value={item}>{item}</option>)}
+          </select>
+          <select className="ui-field" value={businessOutcome} onChange={(e) => setBusinessOutcome(e.target.value)}>
+            <option value="all">Business Outcome</option>
+            {['Cost Savings', 'CX Improvement', 'Automation', 'Compliance', 'Flexibility', 'Reliability'].map((item) => <option key={item} value={item}>{item}</option>)}
+          </select>
+        </FilterBar>
+
+        <div className="sample-story-grid">
+          {filteredStories.map((story) => (
+            <article key={story.id} className="sample-story-card ds-card">
+              <div className="sample-story-card__header">
+                <strong>{story.customerName}</strong>
+                <span className="status-badge status-neutral">{story.industry}</span>
+              </div>
+              <h4>{story.headline}</h4>
+              <div className="sample-tags">{story.solutionTags.slice(0, 3).map((tag) => <span key={tag} className="sample-chip">{tag}</span>)}</div>
+              <div className="sample-tags">{story.businessOutcomeTags.slice(0, 3).map((tag) => <span key={tag} className="sample-chip sample-chip--outcome">{tag}</span>)}</div>
+              {story.metrics[0] ? <div className="sample-metric-highlight">{story.metrics[0]}</div> : null}
+              <button className="ui-btn ui-btn--secondary" onClick={() => setSelectedStory(story)}>View Story</button>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="sample-cta ds-card ds-card--highlight">
+        <h3>Want to position IPI with similar customers?</h3>
+        <div className="sample-cta-actions">
+          <button className="ui-btn ui-btn--primary">Explore Industry Solutions</button>
+          <button className="ui-btn ui-btn--secondary">Open Sales Toolkit</button>
+        </div>
+      </section>
+
+      <div className={`sample-drawer-backdrop ${selectedStory ? "open" : ""}`} onClick={() => setSelectedStory(null)}>
+        <aside className={`sample-story-drawer ${selectedStory ? "open" : ""}`} onClick={(e) => e.stopPropagation()}>
+          {selectedStory ? (
+            <div className="sample-story-drawer__content">
+              <button className="ui-btn ui-btn--ghost" onClick={() => setSelectedStory(null)}>Close</button>
+              <h2>{selectedStory.customerName}</h2>
+              <p>{selectedStory.headline}</p>
+              <div className="sample-detail-block"><h4>Customer Overview</h4><p>{selectedStory.shortSummary}</p></div>
+              <div className="sample-detail-block"><h4>Challenge / Opportunity</h4><p>{selectedStory.challenge}</p></div>
+              <div className="sample-detail-block"><h4>How IPI Enabled It</h4><p>{selectedStory.solution}</p></div>
+              <div className="sample-detail-block"><h4>Key Outcomes</h4><ul>{selectedStory.outcomes.map((item) => <li key={item}>{item}</li>)}</ul></div>
+              <div className="sample-tags">{selectedStory.metrics.map((metric) => <span key={metric} className="sample-chip">{metric}</span>)}</div>
+              <blockquote>“{selectedStory.quote}”<cite>{selectedStory.quoteAuthor}</cite></blockquote>
+              <div className="sample-detail-block"><h4>Solutions Used</h4><div className="sample-tags">{selectedStory.solutionTags.map((tag) => <span key={tag} className="sample-chip">{tag}</span>)}</div></div>
+              <div className="sample-detail-block"><h4>Partner Relevance</h4><p>{selectedStory.partnerRelevance}</p></div>
+            </div>
+          ) : null}
+        </aside>
+      </div>
+    </div>
+  );
+}
+
 
 // ═══════════════════════════════════════════════════════
 // SIDEBAR NAV WRAPPER
@@ -10671,11 +10966,12 @@ function PartnerAccountPlanToolPage() {
 const NAV_SECTIONS = [
   {
     key: "proposition",
-    title: "Partner Proposition",
+    title: "Selling",
     items: [
       { id: "main", icon: <NavIcon name="sparkles" />, label: "Why IPI" },
       { id: "bse", icon: <NavIcon name="trending" />, label: "Enable, Land, Expand" },
       { id: "hub", icon: <NavIcon name="layers" />, label: "Partner Tiers" },
+      { id: "sample-customers", icon: <NavIcon name="users" />, label: "Sample Customers" },
     ],
   },
   {
@@ -10722,6 +11018,7 @@ const PAGE_PATHS = {
   "channel-dashboard": "/channel-manager-dashboard",
   "partner-account-plan": "/partner-account-plan-tool",
   prospect: "/partner-prospect-tool",
+  "sample-customers": "/sample-customers",
 };
 
 const PATH_TO_PAGE = Object.fromEntries(
@@ -10937,6 +11234,7 @@ function App() {
     if (page === "program") return <PartnerProgramPage />;
     if (page === "commercial") return <CommercialFrameworkPage />;
     if (page === "channel-marketing") return <ChannelMarketingPage />;
+    if (page === "sample-customers") return <SampleCustomersPage />;
     if (page === "partner-trust") return <PartnerTrustPage />;
     if (page === "partner-operational-support")
       return <PartnerOperationalSupportPage />;
