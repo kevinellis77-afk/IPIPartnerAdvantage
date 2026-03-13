@@ -9279,7 +9279,6 @@ function ChannelManagerDashboardPage() {
           <div className="channel-hero-layout">
             <div>
               <div className="channel-hero-label">Channel Cadence Operating Framework</div>
-              <h1>Channel Manager Dashboard</h1>
               <p className="channel-mission">{CHANNEL_MANAGER_DATA.mission}</p>
               <p className="channel-support">{CHANNEL_MANAGER_DATA.missionSupport}</p>
               <div className="channel-hero-tags">
