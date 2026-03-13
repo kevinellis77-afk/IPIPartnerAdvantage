@@ -375,8 +375,8 @@ function SectionHeader({ eyebrow, title, description }) {
   );
 }
 
-function SectionWrapper({ children, className = "" }) {
-  return <section className={`ds-section ${className}`.trim()}>{children}</section>;
+function SectionWrapper({ children, className = "", ...props }) {
+  return <section className={`ds-section ${className}`.trim()} {...props}>{children}</section>;
 }
 
 function PageSection({ id, eyebrow, title, subtitle, children }) {
@@ -11251,6 +11251,13 @@ function CompetitiveMatrixPage() {
 // ═══════════════════════════════════════════════════════
 const NAV_SECTIONS = [
   {
+    key: "overview",
+    title: "Overview",
+    items: [
+      { id: "market-vision", icon: <NavIcon name="layers" />, label: "Market & Vision" },
+    ],
+  },
+  {
     key: "proposition",
     title: "Selling",
     items: [
@@ -11277,6 +11284,7 @@ const NAV_SECTIONS = [
     title: "Tools",
     items: [
       { id: "prospect", icon: <NavIcon name="search" />, label: "Prospect Search" },
+      { id: "competitive-matrix", icon: <NavIcon name="chart" />, label: "Competitive Matrix" },
       { id: "partner-account-plan", icon: <NavIcon name="checklist" />, label: "Account Planning" },
       { id: "governance", icon: <NavIcon name="badge" />, label: "Governance RACI" },
       { id: "competitive-matrix", icon: <NavIcon name="chart" />, label: "Competitive Matrix" },
@@ -11304,6 +11312,7 @@ const PAGE_PATHS = {
   "partner-operational-support": "/partner-operational-support",
   "channel-dashboard": "/channel-manager-dashboard",
   "partner-account-plan": "/partner-account-plan-tool",
+  "competitive-matrix": "/competitive-matrix",
   prospect: "/partner-prospect-tool",
   "sample-customers": "/sample-customers",
   "competitive-matrix": "/competitive-matrix",
@@ -11513,6 +11522,7 @@ function App() {
   function renderPage() {
     if (page === "channel-dashboard") return <ChannelManagerDashboardPage />;
     if (page === "partner-account-plan") return <PartnerAccountPlanToolPage />;
+    if (page === "competitive-matrix") return <CompetitiveMatrixPage />;
     if (page === "hub")
       return (
         <EnablementHub onBack={() => setPage("main")} onNavigate={setPage} />
