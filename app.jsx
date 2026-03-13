@@ -4709,21 +4709,21 @@ function ProspectToolPage() {
     maxRevenue: '', hasWebsite: false, hasLinkedIn: false, hasEmail: false, minScore: 0
   };
   const ALL_COLUMNS = [
-    { key: 'rank', label: 'Rank', essential: true },
-    { key: 'displayName', label: 'Company Name' },
-    { key: 'idealPartnerScore', label: 'Ideal Partner Score' },
-    { key: 'partnerTierName', label: 'Partner Tier' },
+    { key: 'rank', label: 'No.', essential: true },
+    { key: 'displayName', label: 'Company' },
+    { key: 'idealPartnerScore', label: 'Score' },
+    { key: 'partnerTierName', label: 'Tier' },
     { key: 'industry', label: 'Industry' },
     { key: 'category', label: 'Category', hiddenByDefault: true },
-    { key: 'channel_role', label: 'Channel Role' },
-    { key: 'channel_segment', label: 'Channel Segment' },
+    { key: 'channel_role', label: 'Role' },
+    { key: 'channel_segment', label: 'Segment' },
     { key: 'displayEmployees', label: 'Employees', hiddenByDefault: true },
-    { key: 'displayRevenue', label: 'Revenue' },
+    { key: 'displayRevenue', label: '£' },
     { key: 'city', label: 'City', hiddenByDefault: true },
     { key: 'country', label: 'Country', hiddenByDefault: true },
-    { key: 'website', label: 'Website' },
-    { key: 'linkedin', label: 'LinkedIn' },
-    { key: 'contactCount', label: 'Contacts' },
+    { key: 'website', label: '🌐' },
+    { key: 'linkedin', label: 'LinkedIn', hiddenByDefault: true },
+    { key: 'contactCount', label: 'Contacts', hiddenByDefault: true },
     { key: 'trading_status', label: 'Trading Status', hiddenByDefault: true }
   ];
   const DEFAULT_VISIBLE_COLUMNS = ALL_COLUMNS.filter((c) => !c.hiddenByDefault).map((c) => c.key);
@@ -5135,6 +5135,7 @@ function ProspectToolPage() {
           </div>
           <div className="prospect-drawer-actions">
             <button type="button" className="prospect-icon-link" aria-label={selected.website ? 'Open Website' : 'Website unavailable'} title={selected.website ? 'Open Website' : 'Website unavailable'} disabled={!selected.website} onClick={() => selected.website && window.open(window.ProspectToolUtils.normalizeUrl(selected.website), '_blank', 'noopener,noreferrer')}>🌐</button>
+            <button type="button" className="prospect-icon-link" aria-label="Download to CSV" title="Download to CSV" onClick={() => exportRows([selected], `${selected.id}-prospect.csv`)}>⬇</button>
             <button type="button" className="prospect-icon-link" aria-label={selected.linkedin ? 'Open LinkedIn' : 'LinkedIn unavailable'} title={selected.linkedin ? 'Open LinkedIn' : 'LinkedIn unavailable'} disabled={!selected.linkedin} onClick={() => selected.linkedin && window.open(window.ProspectToolUtils.normalizeUrl(selected.linkedin), '_blank', 'noopener,noreferrer')}>in</button>
             <IconButton icon="prev" label="Previous record" disabled={selectedIndex <= 0} onClick={() => setSelectedRowId(sorted[selectedIndex - 1].id)} />
             <IconButton icon="next" label="Next record" disabled={selectedIndex >= sorted.length - 1} onClick={() => setSelectedRowId(sorted[selectedIndex + 1].id)} />
@@ -5164,14 +5165,6 @@ function ProspectToolPage() {
             const label = f.replace(/\s*[+-]?\d+(?:\.\d+)?$/, '');
             return <div className="score-bar" key={`${f}-${idx}`}><span>{label}</span><div className="bar"><div className="fill" style={{ width: `${fill}%`, opacity: raw < 0 ? 0.45 : 1 }} /></div></div>;
           })}</div>
-
-          <div className="prospect-drawer-footer">
-            <IconButton icon="copy" label="Copy website" onClick={() => navigator.clipboard?.writeText(selected.website || '')} />
-            <IconButton icon="copy" label="Copy LinkedIn" onClick={() => navigator.clipboard?.writeText(selected.linkedin || '')} />
-            <IconButton icon="copy" label="Copy email" onClick={() => navigator.clipboard?.writeText(selected.email || selected.contacts[0]?.email || '')} />
-            <IconButton icon="export" label="Export this record as CSV row" onClick={() => exportRows([selected], `${selected.id}-prospect.csv`)} />
-            <button type="button" className="ui-btn ui-btn--secondary" onClick={() => setSelectedRowId(null)}>Close drawer</button>
-          </div>
         </div>
       </aside>
     </div>}
