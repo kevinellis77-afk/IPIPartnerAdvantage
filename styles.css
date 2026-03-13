@@ -1654,3 +1654,53 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
   .logo-collage{grid-template-columns:repeat(2,minmax(0,1fr));}
   .sample-story-drawer{width:min(96vw,980px);}
 }
+
+/* Competitive Matrix page */
+.competitive-page{display:flex;flex-direction:column;gap:20px;}
+.competitive-hero p{margin:0;color:var(--text-secondary);line-height:1.7;}
+.competitive-metrics-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px;}
+.competitive-mini-tile{padding:12px;border:1px solid var(--border-soft);border-radius:12px;background:color-mix(in srgb,var(--bg-surface) 86%,transparent);display:flex;flex-direction:column;gap:4px;}
+.competitive-mini-tile span{font-size:11px;color:var(--text-secondary);}
+.competitive-mini-tile strong{font-size:20px;}
+.competitive-positioning-callout{margin:14px 0 16px;padding:14px;border-radius:14px;border:1px solid color-mix(in srgb,var(--focus) 40%,var(--border-soft));background:linear-gradient(135deg,color-mix(in srgb,var(--bg-surface) 85%,transparent),color-mix(in srgb,var(--focus) 10%,transparent));}
+.competitive-positioning-callout p{margin-top:6px;}
+.competitive-strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;}
+.competitive-vendor{padding:14px;}
+.competitive-vendor h4{margin:10px 0 4px;}
+.competitive-vendor p{margin:0;font-size:12px;color:var(--text-secondary);line-height:1.55;}
+.competitive-vendor.is-home{border-color:color-mix(in srgb,var(--focus) 56%,var(--border-soft))!important;box-shadow:0 10px 26px color-mix(in srgb,var(--focus) 22%,transparent)!important;}
+.competitive-highlights-grid,.competitive-summary-grid,.competitive-sales-grid,.competitive-bars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
+.competitive-highlights-grid h4,.competitive-summary-grid h4,.competitive-sales-grid h4,.competitive-bar-card h4{margin:0 0 8px;}
+.competitive-highlights-grid p,.competitive-summary-grid p,.competitive-sales-grid p{margin:0;color:var(--text-secondary);line-height:1.65;}
+.competitive-controls{display:grid;grid-template-columns:2fr 1.2fr 1.3fr 1.4fr auto;gap:10px;}
+.competitive-table-wrap{overflow:auto;border:1px solid var(--border-soft);border-radius:14px;background:color-mix(in srgb,var(--bg-surface) 90%,transparent);}
+.competitive-table{width:100%;border-collapse:separate;border-spacing:0;min-width:980px;}
+.competitive-table th,.competitive-table td{padding:10px 12px;border-bottom:1px solid var(--border-soft);font-size:12px;text-align:left;vertical-align:middle;background:transparent;}
+.competitive-table th{position:sticky;top:0;z-index:3;background:var(--bg-elevated);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);}
+.competitive-table th:first-child,.competitive-table .sticky-factor{position:sticky;left:0;z-index:2;background:var(--bg-elevated);}
+.competitive-table th.is-home,.competitive-table td.is-home{background:color-mix(in srgb,var(--focus) 12%,var(--bg-elevated));}
+.competitive-category-row td{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);background:color-mix(in srgb,var(--bg-surface) 92%,transparent);position:sticky;left:0;z-index:1;}
+.competitive-data-row{cursor:pointer;transition:background .14s ease;}
+.competitive-data-row:hover td{background:color-mix(in srgb,var(--focus) 8%,var(--bg-surface));}
+.competitive-data-row .sticky-factor{display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:700;}
+.matrix-rating{display:inline-flex;align-items:center;gap:1px;font-size:12px;font-weight:700;color:#dcbf67;}
+.matrix-rating span{opacity:.25;}
+.matrix-rating.is-home{color:#73d8ff;}
+.matrix-rating--1{color:#c18080;}
+.matrix-rating--2{color:#d2aa67;}
+.matrix-rating--3{color:#8ccf8d;}
+.matrix-rating--4{color:#6de1d0;}
+.competitive-table.is-compact th,.competitive-table.is-compact td{padding:7px 9px;font-size:11px;}
+.competitive-drawer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+.competitive-bar{height:8px;border-radius:999px;background:color-mix(in srgb,var(--bg-surface) 70%,transparent);border:1px solid var(--border-soft);overflow:hidden;margin:8px 0 10px;}
+.competitive-bar span{display:block;height:100%;background:linear-gradient(90deg,var(--brand-secondary),color-mix(in srgb,var(--brand-secondary) 45%,#8ff0b6));}
+.competitive-bar-card small{color:var(--text-secondary);}
+.competitive-cta h3{margin:0;}
+@media (max-width:1200px){
+  .competitive-strip{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .competitive-highlights-grid,.competitive-summary-grid,.competitive-sales-grid,.competitive-bars{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .competitive-controls{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media (max-width:760px){
+  .competitive-metrics-grid,.competitive-strip,.competitive-highlights-grid,.competitive-summary-grid,.competitive-sales-grid,.competitive-bars,.competitive-drawer-grid,.competitive-controls{grid-template-columns:1fr;}
+}
