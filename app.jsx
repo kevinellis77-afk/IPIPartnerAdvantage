@@ -10569,6 +10569,7 @@ const NAV_SECTIONS = [
     items: [
       { id: "prospect", icon: <NavIcon name="search" />, label: "Prospect Search" },
       { id: "partner-account-plan", icon: <NavIcon name="checklist" />, label: "Account Planning" },
+      { id: "governance", icon: <NavIcon name="badge" />, label: "Governance RACI" },
     ],
   },
 ];
