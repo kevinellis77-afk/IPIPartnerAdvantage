@@ -5,7 +5,8 @@
 .kpi-value{font-size:20px;color:#fff;font-weight:700}
 .filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
 .prospect-table-wrap{overflow:auto;border:1px solid rgba(145,196,176,.25);border-radius:12px}
-.prospect-table{width:100%;border-collapse:collapse;min-width:1320px}
+.prospect-table{width:100%;border-collapse:collapse;min-width:0;table-layout:fixed}
+.prospect-table th,.prospect-table td{overflow-wrap:anywhere;word-break:break-word}
 .prospect-table th{position:sticky;top:0;background:#14242d;color:#9bb6b0;font-size:11px;text-align:left;padding:10px;border-bottom:1px solid rgba(145,196,176,.25)}
 .prospect-table td{padding:9px;border-bottom:1px solid rgba(145,196,176,.14);font-size:12px;color:#d5e6e1}
 .prospect-row-selected td{background:rgba(103,216,255,.12)!important;box-shadow:inset 3px 0 0 #36c6ff}

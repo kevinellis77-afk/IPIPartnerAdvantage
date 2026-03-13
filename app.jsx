@@ -375,8 +375,8 @@ function SectionHeader({ eyebrow, title, description }) {
   );
 }
 
-function SectionWrapper({ children, className = "" }) {
-  return <section className={`ds-section ${className}`.trim()}>{children}</section>;
+function SectionWrapper({ children, className = "", ...props }) {
+  return <section className={`ds-section ${className}`.trim()} {...props}>{children}</section>;
 }
 
 function PageSection({ id, eyebrow, title, subtitle, children }) {
@@ -11133,6 +11133,13 @@ function CompetitiveMatrixPage() {
 // ═══════════════════════════════════════════════════════
 const NAV_SECTIONS = [
   {
+    key: "overview",
+    title: "Overview",
+    items: [
+      { id: "market-vision", icon: <NavIcon name="layers" />, label: "Market & Vision" },
+    ],
+  },
+  {
     key: "proposition",
     title: "Selling",
     items: [
@@ -11189,6 +11196,7 @@ const PAGE_PATHS = {
   "competitive-matrix": "/competitive-matrix",
   prospect: "/partner-prospect-tool",
   "sample-customers": "/sample-customers",
+  "market-vision": "/market-vision",
 };
 
 const PATH_TO_PAGE = Object.fromEntries(
@@ -11410,6 +11418,7 @@ function App() {
     if (page === "partner-operational-support")
       return <PartnerOperationalSupportPage />;
     if (page === "governance") return <GovernancePage />;
+    if (page === "market-vision") return <MarketVisionPage onNavigate={setPage} />;
 
     // Page 1 — Home
     return (
