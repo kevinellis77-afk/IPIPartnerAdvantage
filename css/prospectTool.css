@@ -17,7 +17,7 @@
 .score-badge{font-size:11px;padding:4px 8px;border-radius:999px;background:rgba(103,216,255,.16);color:#9fdfff;font-weight:700}
 .top50-badge{background:rgba(111,211,143,.18);border:1px solid rgba(111,211,143,.35);padding:4px 8px;border-radius:8px;color:#aee3bd;font-size:11px}
 
-.tier-badge{font-size:11px;padding:4px 8px;border-radius:999px;font-weight:700;border:1px solid transparent;display:inline-flex;align-items:center;line-height:1.2}
+.tier-badge{font-size:11px;padding:4px 8px;border-radius:999px;font-weight:700;border:1px solid transparent;display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2}
 .tier-emerald{background:linear-gradient(135deg,rgba(16,185,129,.25),rgba(5,150,105,.16));border-color:rgba(52,211,153,.45);color:#96f6c7}
 .tier-blue{background:linear-gradient(135deg,rgba(59,130,246,.25),rgba(37,99,235,.16));border-color:rgba(96,165,250,.45);color:#bad5ff}
 .tier-amber{background:linear-gradient(135deg,rgba(245,158,11,.24),rgba(217,119,6,.14));border-color:rgba(251,191,36,.42);color:#f8d58c}
@@ -56,7 +56,7 @@
 .prospect-drawer-open{overflow:hidden}
 .prospect-drawer-layer{position:fixed;inset:0;z-index:1700;display:flex;justify-content:flex-end}
 .prospect-drawer-backdrop{position:absolute;inset:0;border:0;background:rgba(6,12,18,.48);opacity:0;animation:prospectFade .2s ease forwards;cursor:pointer}
-.prospect-drawer{position:relative;height:100dvh;width:min(46vw,780px);min-width:420px;max-width:100%;background:#14242d;border-left:1px solid rgba(145,196,176,.28);display:flex;flex-direction:column;box-shadow:-24px 0 48px rgba(2,8,14,.45);animation:prospectSlide .22s ease-out forwards}
+.prospect-drawer{position:relative;height:100dvh;width:min(52vw,920px);min-width:420px;max-width:100%;background:#14242d;border-left:1px solid rgba(145,196,176,.28);display:flex;flex-direction:column;box-shadow:-24px 0 48px rgba(2,8,14,.45);animation:prospectSlide .22s ease-out forwards}
 .prospect-drawer-header{position:sticky;top:0;z-index:4;padding:16px;border-bottom:1px solid rgba(145,196,176,.22);background:rgba(20,36,45,.9);backdrop-filter:blur(8px);display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
 .prospect-drawer-title h3{margin:0;font-size:22px;color:#e2f5f0}
 .prospect-drawer-subtitle{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:#b7d2cb;margin-top:8px}
@@ -68,8 +68,6 @@
 .prospect-summary-strip>div{display:grid;gap:4px;background:rgba(19,32,40,.88);border:1px solid rgba(145,196,176,.2);border-radius:12px;padding:10px}
 .prospect-summary-strip span{font-size:11px;color:#9bb6b0}
 .prospect-summary-strip strong{font-size:12px;color:#e2f5f0}
-.prospect-drawer-footer{display:flex;gap:8px;flex-wrap:wrap;padding-top:6px}
-
 @keyframes prospectFade{from{opacity:0}to{opacity:1}}
 @keyframes prospectSlide{from{transform:translateX(32px);opacity:.65}to{transform:translateX(0);opacity:1}}
 
