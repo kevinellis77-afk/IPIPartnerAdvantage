@@ -2186,6 +2186,7 @@ const PRODUCT_DATA = {
     badge: "Secure Payments · IPI-developed",
     tagline: "Automatic pause-and-resume for PCI-compliant call recording",
     url: "https://www.ipintegration.com/solutions/secure-contact-centre-payments/",
+    websiteUrl: "https://pooc.ipi-widgets.com/Matt/cloudpci_platform.html",
     summary:
       "Pauseable is IPI's own pause-and-resume solution — automatically managing call recordings at the payment stage so agents never hear or see customer card data. It works directly with the agent desktop and can be extended with Pay by Link, allowing customers to complete secure transactions on their own devices via SMS, webchat or bot.",
     highlights: [
@@ -2214,6 +2215,7 @@ const PRODUCT_DATA = {
     badge: "Secure Payments · Cloud PCI",
     tagline: "Enterprise-grade PCI DSS compliance for contact centres",
     url: "https://www.ipintegration.com/solutions/secure-contact-centre-payments/",
+    websiteUrl: "https://pooc.ipi-widgets.com/Matt/cloudpci_platform.html",
     summary:
       "Cloud PCI is IPI's enterprise-grade digital payments solution — allowing contact centres to process payments securely and in full PCI DSS compliance across voice, IVR, SMS, webchat and bot. It works with your existing Contact Centre infrastructure and PSPs, de-scoping your environment entirely from cardholder data without disrupting the customer experience.",
     sections: [
@@ -2287,6 +2289,7 @@ const PRODUCT_DATA = {
     badge: "Secure Payments · Pay by Link",
     tagline: "Secure payment links across every channel",
     url: "https://www.ipintegration.com/solutions/secure-contact-centre-payments/",
+    websiteUrl: "https://pooc.ipi-widgets.com/Matt/cloudpci_platform.html",
     summary:
       "Pay by Link enables agents to send a secure payment link to customers across SMS, email, bot or webchat — allowing the customer to complete the transaction on their own device. This removes the agent entirely from the card data flow, supports both agent-enabled and fully digital payment journeys, and provides real-time monitoring so agents can track payment progress without seeing any card data.",
     highlights: [
@@ -2892,9 +2895,9 @@ function ProductModal({ productName, onClose, onNavigate }) {
           >
             Source: ipintegration.com
           </span>
-          {p.url && (
+          {(p.websiteUrl || p.url) && (
             <a
-              href={p.url}
+              href={p.websiteUrl || p.url}
               target="_blank"
               rel="noopener noreferrer"
               style={{
