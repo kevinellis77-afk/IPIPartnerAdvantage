@@ -10959,170 +10959,288 @@ function SampleCustomersPage() {
   );
 }
 
-const COMPETITIVE_COMPETITORS = [
-  { id: "elasticcx", name: "ElasticCX", descriptor: "Cloud-native CX platform", short: "ECX", home: true },
-  { id: "avaya", name: "Avaya", descriptor: "Legacy enterprise CX", short: "AVA" },
-  { id: "cisco", name: "Cisco", descriptor: "Enterprise comms-led CX", short: "CIS" },
-  { id: "five9", name: "Five9", descriptor: "Outbound and cloud specialist", short: "F9" },
-  { id: "genesys", name: "Genesys", descriptor: "Experience orchestration leader", short: "GEN" },
-  { id: "nice", name: "NICE", descriptor: "Enterprise AI CX suite", short: "NICE" },
-];
+const COMPETITIVE_MATRIX_DATA = {
+  competitors: [
+    { id: "elasticcx", name: "ElasticCX", descriptor: "Cloud-native CX platform", logo: "ECX", home: true },
+    { id: "avaya", name: "Avaya", descriptor: "Legacy enterprise CX", logo: "AV" },
+    { id: "cisco", name: "Cisco", descriptor: "Enterprise comms-led CX", logo: "CS" },
+    { id: "five9", name: "Five9", descriptor: "Outbound and cloud specialist", logo: "F9" },
+    { id: "genesys", name: "Genesys", descriptor: "Experience orchestration leader", logo: "GY" },
+    { id: "nice", name: "NICE", descriptor: "Enterprise AI CX suite", logo: "NC" },
+  ],
+  matrixCategories: [
+    { id: "acd", label: "ACD / PBX / Agent Interface", takeaway: "Balanced voice and agent tooling that supports complex routing scenarios." },
+    { id: "self_service", label: "Self-service / Omnichannel", takeaway: "Strong digital orchestration story for unified customer journeys." },
+    { id: "reporting", label: "Reporting / Quality Management", takeaway: "Operational visibility and coaching controls that support consistent outcomes." },
+    { id: "admin", label: "Admin & Developer / Architecture", takeaway: "Cloud-native architecture and practical administration speed up partner delivery." },
+    { id: "dialer", label: "Dialer / Carrier / Integrations", takeaway: "Broad dialer, telephony and integration coverage supports mixed customer needs." },
+  ],
+  matrixRows: [
+    { id: "skill_based_routing", category: "acd", label: "Skill-based routing", ratings: { elasticcx: 4, avaya: 3, cisco: 3, five9: 4, genesys: 4, nice: 3 } },
+    { id: "multiple_acd_profiles", category: "acd", label: "Multiple ACD Profiles", ratings: { elasticcx: 4, avaya: 2, cisco: 2, five9: 3, genesys: 3, nice: 2 } },
+    { id: "intelligent_omnichannel_routing", category: "acd", label: "Intelligent omnichannel, omni media routing", ratings: { elasticcx: 4, avaya: 2, cisco: 2, five9: 3, genesys: 4, nice: 2 } },
+    { id: "queue_video_media_calls", category: "acd", label: "Queue video & media calls", ratings: { elasticcx: 3, avaya: 1, cisco: 2, five9: 2, genesys: 3, nice: 1 } },
+    { id: "integrated_pbx", category: "acd", label: "Integrated PBX", ratings: { elasticcx: 4, avaya: 3, cisco: 4, five9: 2, genesys: 3, nice: 2 } },
+    { id: "true_omnichannel_agent_experience", category: "acd", label: "True omnichannel agent experience", ratings: { elasticcx: 4, avaya: 2, cisco: 2, five9: 3, genesys: 4, nice: 3 } },
+    { id: "multi_tasking_policy", category: "acd", label: "Multi-tasking policy", ratings: { elasticcx: 4, avaya: 2, cisco: 2, five9: 3, genesys: 3, nice: 2 } },
+    { id: "integrated_contact_manager", category: "acd", label: "Integrated contact manager", ratings: { elasticcx: 4, avaya: 2, cisco: 2, five9: 3, genesys: 3, nice: 2 } },
+    { id: "custom_goal_setting_dashboard", category: "acd", label: "Custom goal setting dashboard", ratings: { elasticcx: 4, avaya: 1, cisco: 1, five9: 3, genesys: 3, nice: 2 } },
+    { id: "customisable_agent_ui", category: "acd", label: "Customisable agent UI", ratings: { elasticcx: 4, avaya: 2, cisco: 2, five9: 3, genesys: 3, nice: 2 } },
+    { id: "ivr", category: "self_service", label: "IVR", ratings: { elasticcx: 4, avaya: 3, cisco: 3, five9: 3, genesys: 4, nice: 3 } },
+    { id: "vir", category: "self_service", label: "Visual Interactive Response (VIR)", ratings: { elasticcx: 4, avaya: 1, cisco: 2, five9: 3, genesys: 3, nice: 2 } },
+    { id: "process_flow_api_generator", category: "self_service", label: "Process flow & custom API generator tool", ratings: { elasticcx: 4, avaya: 1, cisco: 1, five9: 2, genesys: 3, nice: 2 } },
+    { id: "asr_tts_native", category: "self_service", label: "ASR/TTS native language support", ratings: { elasticcx: 4, avaya: 2, cisco: 2, five9: 3, genesys: 4, nice: 3 } },
+    { id: "drag_drop_ivr", category: "self_service", label: "Drag-and-drop IVR code generator", ratings: { elasticcx: 4, avaya: 1, cisco: 1, five9: 2, genesys: 3, nice: 2 } },
+    { id: "channel_hopping", category: "self_service", label: "Channel Hopping – seamless channel conversion", ratings: { elasticcx: 4, avaya: 1, cisco: 1, five9: 2, genesys: 3, nice: 2 } },
+    { id: "digital_channels", category: "self_service", label: "Digital channels", ratings: { elasticcx: 4, avaya: 2, cisco: 2, five9: 4, genesys: 4, nice: 3 } },
+    { id: "add_custom_channels", category: "self_service", label: "Add custom channels", ratings: { elasticcx: 4, avaya: 1, cisco: 1, five9: 2, genesys: 3, nice: 2 } },
+    { id: "social_networks", category: "self_service", label: "Social networks", ratings: { elasticcx: 4, avaya: 2, cisco: 2, five9: 3, genesys: 4, nice: 3 } },
+    { id: "canned_reports", category: "reporting", label: "Canned reports", ratings: { elasticcx: 4, avaya: 3, cisco: 3, five9: 3, genesys: 3, nice: 3 } },
+    { id: "activity_capture", category: "reporting", label: "100% activity capture", ratings: { elasticcx: 4, avaya: 2, cisco: 2, five9: 3, genesys: 3, nice: 3 } },
+    { id: "performance_quadrant", category: "reporting", label: "Performance Quadrant – best practices index", ratings: { elasticcx: 4, avaya: 1, cisco: 1, five9: 2, genesys: 3, nice: 3 } },
+    { id: "silent_monitor_coach_barge", category: "reporting", label: "Silent monitor, coach and barge", ratings: { elasticcx: 4, avaya: 3, cisco: 3, five9: 3, genesys: 3, nice: 3 } },
+    { id: "two_channel_reporting", category: "reporting", label: "Two channel reporting", ratings: { elasticcx: 4, avaya: 1, cisco: 1, five9: 2, genesys: 3, nice: 2 } },
+    { id: "recording_retention", category: "reporting", label: "100% recording with customer retention times", ratings: { elasticcx: 4, avaya: 2, cisco: 2, five9: 3, genesys: 4, nice: 3 } },
+    { id: "omnichannel_scorecards", category: "reporting", label: "Built-in omnichannel scorecards", ratings: { elasticcx: 4, avaya: 1, cisco: 2, five9: 2, genesys: 3, nice: 3 } },
+    { id: "diy_implementation", category: "admin", label: "DIY Implementation", ratings: { elasticcx: 4, avaya: 1, cisco: 1, five9: 3, genesys: 3, nice: 2 } },
+    { id: "prebuilt_diy_templates", category: "admin", label: "Pre-built and DIY templates", ratings: { elasticcx: 4, avaya: 1, cisco: 1, five9: 3, genesys: 3, nice: 2 } },
+    { id: "auto_provision_trial", category: "admin", label: "Auto provision free trial and sandboxes", ratings: { elasticcx: 4, avaya: 1, cisco: 1, five9: 2, genesys: 3, nice: 2 } },
+    { id: "universal_login", category: "admin", label: "Universal log in to multiple accounts", ratings: { elasticcx: 4, avaya: 1, cisco: 1, five9: 2, genesys: 3, nice: 2 } },
+    { id: "admin_tabs", category: "admin", label: "Admin tabs for multi-tasking", ratings: { elasticcx: 4, avaya: 1, cisco: 1, five9: 2, genesys: 3, nice: 2 } },
+    { id: "create_your_own_apis", category: "admin", label: "Create your own APIs", ratings: { elasticcx: 4, avaya: 1, cisco: 2, five9: 3, genesys: 4, nice: 3 } },
+    { id: "public_cloud", category: "admin", label: "Public cloud deployment", ratings: { elasticcx: 4, avaya: 2, cisco: 2, five9: 4, genesys: 4, nice: 3 } },
+    { id: "multi_cloud", category: "admin", label: "Multi-cloud redundancy", ratings: { elasticcx: 4, avaya: 2, cisco: 2, five9: 3, genesys: 4, nice: 3 } },
+    { id: "micro_services", category: "admin", label: "Micro-services", ratings: { elasticcx: 4, avaya: 1, cisco: 2, five9: 3, genesys: 4, nice: 3 } },
+    { id: "full_featured_api", category: "admin", label: "Full featured API services", ratings: { elasticcx: 4, avaya: 1, cisco: 2, five9: 3, genesys: 4, nice: 3 } },
+    { id: "preview", category: "dialer", label: "Preview", ratings: { elasticcx: 4, avaya: 2, cisco: 1, five9: 4, genesys: 3, nice: 3 } },
+    { id: "agentless", category: "dialer", label: "Agentless", ratings: { elasticcx: 4, avaya: 1, cisco: 1, five9: 4, genesys: 3, nice: 3 } },
+    { id: "progressive", category: "dialer", label: "Progressive", ratings: { elasticcx: 4, avaya: 2, cisco: 1, five9: 4, genesys: 3, nice: 3 } },
+    { id: "predictive", category: "dialer", label: "Predictive", ratings: { elasticcx: 4, avaya: 2, cisco: 1, five9: 4, genesys: 3, nice: 3 } },
+    { id: "provision_numbers", category: "dialer", label: "Instantly provision phone numbers", ratings: { elasticcx: 4, avaya: 1, cisco: 1, five9: 3, genesys: 3, nice: 2 } },
+    { id: "self_service_porting", category: "dialer", label: "Self-service porting", ratings: { elasticcx: 4, avaya: 1, cisco: 1, five9: 3, genesys: 3, nice: 2 } },
+    { id: "main_integrations", category: "dialer", label: "Integration with main players", ratings: { elasticcx: 4, avaya: 2, cisco: 2, five9: 4, genesys: 4, nice: 3 } },
+    { id: "ai_integration", category: "dialer", label: "AI integration for CX", ratings: { elasticcx: 4, avaya: 1, cisco: 2, five9: 3, genesys: 4, nice: 4 } },
+    { id: "native_wfo", category: "dialer", label: "Native WFO integration", ratings: { elasticcx: 4, avaya: 2, cisco: 2, five9: 3, genesys: 3, nice: 4 } },
+    { id: "new_integrations_5_days", category: "dialer", label: "New integrations in < 5 days", ratings: { elasticcx: 4, avaya: 1, cisco: 1, five9: 2, genesys: 3, nice: 2 } },
+  ],
+};
 
-const COMPETITIVE_CATEGORIES = [
-  { id: "acd", label: "ACD / PBX / Agent Interface", keyTakeaway: "ElasticCX combines omnichannel routing with practical day-to-day agent and supervisor controls." },
-  { id: "omnichannel", label: "Self-service / Omnichannel", keyTakeaway: "ElasticCX offers broad digital and journey orchestration capabilities for modern service environments." },
-  { id: "reporting", label: "Reporting / Quality Management", keyTakeaway: "ElasticCX delivers balanced observability with built-in quality controls and omnichannel score visibility." },
-  { id: "architecture", label: "Admin & Developer / Architecture", keyTakeaway: "ElasticCX is positioned for rapid deployment with open API flexibility and resilient cloud architecture." },
-  { id: "integrations", label: "Dialer / Carrier / Integrations", keyTakeaway: "ElasticCX supports practical dialer coverage, integrations and agile delivery of new connectors." },
-];
+function CompetitiveMatrixHero({ onScrollToMatrix }) {
+  return (
+    <section className="ds-card matrix-hero">
+      <div>
+        <Badge tone="info">Competitive Intelligence Tool</Badge>
+        <h1>Competitive Matrix</h1>
+        <p className="matrix-hero-subtitle">Compare ElasticCX against major CCaaS vendors across routing, omnichannel, reporting, architecture, integrations and more.</p>
+        <p>This tool helps reseller partners and sales teams understand where ElasticCX stands out and which strengths matter most in live opportunities.</p>
+        <div className="matrix-hero-actions">
+          <button className="ui-btn ui-btn--primary" onClick={onScrollToMatrix}>Explore matrix</button>
+          <button className="ui-btn ui-btn--secondary">Open Sales Toolkit</button>
+        </div>
+      </div>
+      <div className="matrix-hero-side">
+        <div className="matrix-callout">
+          <h4>ElasticCX Positioning</h4>
+          <p>Business-user friendly, AI-powered, cloud-native CCaaS designed for rapid deployment and flexible orchestration.</p>
+        </div>
+        <div className="matrix-summary-tiles">
+          {["Omnichannel Strength", "AI & Integration Readiness", "Cloud Architecture", "Admin & Deployment Simplicity"].map((tile) => <div key={tile} className="matrix-summary-tile">{tile}</div>)}
+        </div>
+      </div>
+    </section>
+  );
+}
 
-const COMPETITIVE_MATRIX_ROWS = [
-  ["acd", "Skill-based routing", [4, 1, 1, 4, 4, 1]], ["acd", "Multiple ACD Profiles", [4, 1, 1, 3, 3, 1]], ["acd", "Intelligent omnichannel, omni media routing", [4, 1, 1, 4, 4, 2]], ["acd", "Queue video & media calls", [4, 1, 1, 2, 3, 1]], ["acd", "Integrated PBX", [4, 1, 1, 2, 2, 1]], ["acd", "True omnichannel agent experience", [4, 1, 1, 4, 4, 2]], ["acd", "Multi-tasking policy", [4, 1, 1, 3, 3, 2]], ["acd", "Integrated contact manager", [4, 1, 1, 3, 3, 1]], ["acd", "Custom goal setting dashboard", [4, 1, 1, 2, 3, 1]], ["acd", "Customisable agent UI", [4, 1, 1, 3, 4, 2]],
-  ["omnichannel", "IVR", [4, 1, 1, 4, 4, 1]], ["omnichannel", "Visual Interactive Response (VIR)", [4, 1, 1, 3, 4, 1]], ["omnichannel", "Process flow & custom API generator tool", [4, 1, 1, 3, 3, 1]], ["omnichannel", "ASR/TTS native language support", [4, 1, 1, 3, 4, 2]], ["omnichannel", "Drag-and-drop IVR code generator", [4, 1, 1, 3, 3, 1]], ["omnichannel", "Channel Hopping – seamless channel conversion", [4, 1, 1, 3, 4, 1]], ["omnichannel", "Digital channels", [4, 1, 1, 4, 4, 2]], ["omnichannel", "Add custom channels", [4, 1, 1, 3, 4, 2]], ["omnichannel", "Social networks", [4, 1, 1, 3, 4, 2]],
-  ["reporting", "Canned reports", [4, 1, 1, 4, 4, 3]], ["reporting", "100% activity capture", [4, 1, 1, 3, 4, 2]], ["reporting", "Performance Quadrant – best practices index", [4, 1, 1, 2, 3, 2]], ["reporting", "Silent monitor, coach and barge", [4, 1, 1, 4, 4, 3]], ["reporting", "Two channel reporting", [4, 1, 1, 3, 3, 2]], ["reporting", "100% recording with customer retention times", [4, 1, 1, 4, 4, 3]], ["reporting", "Built-in omnichannel scorecards", [4, 1, 1, 3, 4, 2]],
-  ["architecture", "DIY Implementation", [4, 1, 1, 3, 3, 1]], ["architecture", "Pre-built and DIY templates", [4, 1, 1, 3, 3, 1]], ["architecture", "Auto provision free trial and sandboxes", [4, 1, 1, 2, 3, 1]], ["architecture", "Universal log in to multiple accounts", [4, 1, 1, 3, 3, 2]], ["architecture", "Admin tabs for multi-tasking", [4, 1, 1, 3, 3, 2]], ["architecture", "Create your own APIs", [4, 1, 1, 4, 4, 2]], ["architecture", "Public cloud deployment", [4, 1, 1, 4, 4, 2]], ["architecture", "Multi-cloud redundancy", [4, 1, 1, 3, 4, 3]], ["architecture", "Micro-services", [4, 1, 1, 3, 4, 3]], ["architecture", "Full featured API services", [4, 1, 1, 4, 4, 2]],
-  ["integrations", "Preview", [4, 1, 1, 4, 4, 3]], ["integrations", "Agentless", [4, 1, 1, 4, 3, 3]], ["integrations", "Progressive", [4, 1, 1, 4, 4, 3]], ["integrations", "Predictive", [4, 1, 1, 4, 4, 3]], ["integrations", "Instantly provision phone numbers", [4, 1, 1, 3, 3, 1]], ["integrations", "Self-service porting", [4, 1, 1, 3, 3, 1]], ["integrations", "Integration with main players", [4, 1, 1, 4, 4, 3]], ["integrations", "AI integration for CX", [4, 1, 1, 4, 4, 3]], ["integrations", "Native WFO integration", [4, 1, 1, 3, 4, 3]], ["integrations", "New integrations in < 5 days", [4, 1, 1, 3, 3, 1]],
-].map((row, index) => {
-  const [category, label, ratingsList] = row;
-  const ratings = {};
-  COMPETITIVE_COMPETITORS.forEach((competitor, ratingIndex) => {
-    ratings[competitor.id] = ratingsList[ratingIndex];
-  });
-  return {
-    id: `${category}_${index + 1}`,
-    category,
-    label,
-    ratings,
-    conversation: `Use ${label.toLowerCase()} to validate how buyers want to run service, operations and growth on one platform.`,
-    partnerValue: "Helps partners translate technical depth into a credible business and operational value story.",
-    positioning: `Position ElasticCX around practical control, orchestration flexibility and lower delivery friction versus legacy-heavy alternatives.`,
-  };
-});
+function MatrixControls({ categories, controls, onChange }) {
+  return (
+    <FilterBar className="matrix-controls">
+      <input className="ui-field" placeholder="Search factors" value={controls.search} onChange={(e) => onChange({ search: e.target.value })} />
+      <select className="ui-field" value={controls.category} onChange={(e) => onChange({ category: e.target.value })}>
+        <option value="all">All categories</option>
+        {categories.map((category) => <option key={category.id} value={category.id}>{category.label}</option>)}
+      </select>
+      <select className="ui-field" value={controls.view} onChange={(e) => onChange({ view: e.target.value })}>
+        <option value="all">Show all rows</option>
+        <option value="leaders">ElasticCX-leading rows</option>
+        <option value="diff">Differentiators (advantage ≥ 2)</option>
+      </select>
+      <select className="ui-field" value={controls.sort} onChange={(e) => onChange({ sort: e.target.value })}>
+        <option value="category">Sort: category</option>
+        <option value="elastic_desc">Sort: ElasticCX score</option>
+        <option value="advantage_desc">Sort: biggest ElasticCX advantage</option>
+        <option value="alpha">Sort: alphabetical</option>
+      </select>
+      <label className="matrix-toggle"><input type="checkbox" checked={controls.compact} onChange={(e) => onChange({ compact: e.target.checked })} /> Compact mode</label>
+    </FilterBar>
+  );
+}
+
+function MatrixRowDetailDrawer({ row, categories, competitors, onClose }) {
+  if (!row) return null;
+  const category = categories.find((item) => item.id === row.category);
+  return (
+    <div className="matrix-drawer-overlay" onClick={onClose}>
+      <aside className="matrix-drawer" onClick={(e) => e.stopPropagation()}>
+        <button className="ui-btn ui-btn--ghost" onClick={onClose}>Close</button>
+        <h3>{row.label}</h3>
+        <p className="matrix-drawer-category">{category?.label}</p>
+        <div className="matrix-drawer-ratings">{competitors.map((vendor) => <div key={vendor.id}><strong>{vendor.name}</strong><span>{"★".repeat(row.ratings[vendor.id])}{"☆".repeat(4 - row.ratings[vendor.id])}</span></div>)}</div>
+        <div className="matrix-detail-copy">
+          <h4>Why it matters</h4>
+          <p>{row.label} supports service consistency and operational confidence when customers compare platform fit across channels, teams and growth plans.</p>
+          <h4>Why it matters to partners</h4>
+          <p>This factor helps partners qualify delivery complexity, define deployment scope and keep platform conversations grounded in commercial outcomes.</p>
+          <h4>Partner positioning guidance</h4>
+          <p>Position ElasticCX as a practical option for teams that need modern functionality without adding unnecessary admin overhead or fragmented tooling.</p>
+        </div>
+      </aside>
+    </div>
+  );
+}
 
 function CompetitiveMatrixPage() {
-  const matrixRef = React.useRef(null);
-  const [search, setSearch] = React.useState("");
-  const [category, setCategory] = React.useState("all");
-  const [viewMode, setViewMode] = React.useState("all");
-  const [sortBy, setSortBy] = React.useState("category");
-  const [compact, setCompact] = React.useState(false);
+  const { competitors, matrixCategories, matrixRows } = COMPETITIVE_MATRIX_DATA;
   const [selectedRowId, setSelectedRowId] = React.useState(null);
-  const selectedRow = COMPETITIVE_MATRIX_ROWS.find((row) => row.id === selectedRowId) || null;
+  const [controls, setControls] = React.useState({ search: "", category: "all", view: "all", sort: "category", compact: false });
+  const matrixRef = React.useRef(null);
+  const sectionRefs = React.useRef({});
 
-  const withScores = React.useMemo(() => COMPETITIVE_MATRIX_ROWS.map((row) => {
-    const allScores = COMPETITIVE_COMPETITORS.map((c) => row.ratings[c.id]);
-    const competitorAverage = allScores.slice(1).reduce((sum, score) => sum + score, 0) / (allScores.length - 1);
-    const bestScore = Math.max(...allScores);
-    const bestCompetitors = COMPETITIVE_COMPETITORS.filter((c) => row.ratings[c.id] === bestScore).map((c) => c.name);
-    return { ...row, elasticScore: row.ratings.elasticcx, competitorAverage, advantage: row.ratings.elasticcx - competitorAverage, isElasticLeading: row.ratings.elasticcx >= bestScore, isDifferentiator: row.ratings.elasticcx >= 4 && competitorAverage <= 2.2, bestCompetitors };
-  }), []);
+  const rowsWithMeta = React.useMemo(() => matrixRows.map((row) => {
+    const others = competitors.filter((c) => c.id !== "elasticcx").map((c) => row.ratings[c.id]);
+    const bestOther = Math.max(...others);
+    const advantage = row.ratings.elasticcx - bestOther;
+    const leads = row.ratings.elasticcx >= bestOther;
+    return { ...row, advantage, leads };
+  }), [competitors, matrixRows]);
 
   const filteredRows = React.useMemo(() => {
-    let list = withScores.filter((row) => row.label.toLowerCase().includes(search.toLowerCase()));
-    if (category !== "all") list = list.filter((row) => row.category === category);
-    if (viewMode === "leading") list = list.filter((row) => row.isElasticLeading);
-    if (viewMode === "differentiators") list = list.filter((row) => row.isDifferentiator);
-    if (sortBy === "elastic") list = [...list].sort((a, b) => b.elasticScore - a.elasticScore || a.label.localeCompare(b.label));
-    else if (sortBy === "advantage") list = [...list].sort((a, b) => b.advantage - a.advantage || a.label.localeCompare(b.label));
-    else if (sortBy === "alphabetical") list = [...list].sort((a, b) => a.label.localeCompare(b.label));
-    else list = [...list].sort((a, b) => a.category.localeCompare(b.category) || a.label.localeCompare(b.label));
-    return list;
-  }, [category, search, sortBy, viewMode, withScores]);
+    let next = rowsWithMeta.filter((row) => row.label.toLowerCase().includes(controls.search.toLowerCase()));
+    if (controls.category !== "all") next = next.filter((row) => row.category === controls.category);
+    if (controls.view === "leaders") next = next.filter((row) => row.leads);
+    if (controls.view === "diff") next = next.filter((row) => row.advantage >= 2);
+    if (controls.sort === "elastic_desc") next = [...next].sort((a, b) => b.ratings.elasticcx - a.ratings.elasticcx || a.label.localeCompare(b.label));
+    if (controls.sort === "advantage_desc") next = [...next].sort((a, b) => b.advantage - a.advantage || b.ratings.elasticcx - a.ratings.elasticcx);
+    if (controls.sort === "alpha") next = [...next].sort((a, b) => a.label.localeCompare(b.label));
+    if (controls.sort === "category") next = [...next].sort((a, b) => matrixCategories.findIndex((c) => c.id === a.category) - matrixCategories.findIndex((c) => c.id === b.category));
+    return next;
+  }, [controls, matrixCategories, rowsWithMeta]);
 
-  const categorySummary = React.useMemo(() => COMPETITIVE_CATEGORIES.map((cat) => {
-    const rows = withScores.filter((row) => row.category === cat.id);
+  const categorySummaries = React.useMemo(() => matrixCategories.map((category) => {
+    const rows = matrixRows.filter((row) => row.category === category.id);
     const elasticAverage = rows.reduce((sum, row) => sum + row.ratings.elasticcx, 0) / rows.length;
-    const competitorAverages = COMPETITIVE_COMPETITORS.slice(1).map((comp) => ({ id: comp.id, name: comp.name, score: rows.reduce((sum, row) => sum + row.ratings[comp.id], 0) / rows.length }));
-    const best = Math.max(...competitorAverages.map((item) => item.score));
-    return { ...cat, elasticAverage, bestCompetitors: competitorAverages.filter((item) => item.score === best).map((item) => item.name), competitorAverage: competitorAverages.reduce((sum, item) => sum + item.score, 0) / competitorAverages.length };
-  }), [withScores]);
+    const bestCompetitorScore = Math.max(...competitors.filter((c) => c.id !== "elasticcx").map((c) => rows.reduce((sum, row) => sum + row.ratings[c.id], 0) / rows.length));
+    const leaders = competitors.filter((c) => c.id !== "elasticcx").filter((c) => {
+      const avg = rows.reduce((sum, row) => sum + row.ratings[c.id], 0) / rows.length;
+      return Math.abs(avg - bestCompetitorScore) < 0.01;
+    }).map((c) => c.name);
+    const competitorAvg = competitors.filter((c) => c.id !== "elasticcx").reduce((sum, c) => sum + rows.reduce((acc, row) => acc + row.ratings[c.id], 0) / rows.length, 0) / (competitors.length - 1);
+    return { ...category, elasticAverage, leaders, competitorAvg };
+  }), [competitors, matrixCategories, matrixRows]);
 
-  const scrollToMatrix = () => matrixRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-
-  const renderRating = (score, isHome) => (
-    <div className={`matrix-rating matrix-rating--${score} ${isHome ? "is-home" : ""}`.trim()}>{"★".repeat(score)}<span>{"☆".repeat(4 - score)}</span></div>
-  );
+  const selectedRow = filteredRows.find((row) => row.id === selectedRowId) || rowsWithMeta.find((row) => row.id === selectedRowId);
 
   return (
-    <div className="competitive-page">
-      <PageHeader title="Competitive Matrix" subtitle="Compare ElasticCX against major CCaaS vendors across routing, omnichannel, reporting, architecture, integrations and more." />
+    <div className="competitive-matrix-page">
+      <CompetitiveMatrixHero onScrollToMatrix={() => matrixRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })} />
 
-      <section className="ds-card competitive-hero">
-        <p>This tool helps reseller partners and sales teams understand where ElasticCX stands out and which strengths matter most in live opportunities.</p>
-        <div className="competitive-metrics-grid">
-          {[["Omnichannel Strength", "4.0 / 4"], ["AI & Integration Readiness", "3.9 / 4"], ["Cloud Architecture", "4.0 / 4"], ["Admin & Deployment Simplicity", "4.0 / 4"]].map((item) => <div key={item[0]} className="competitive-mini-tile"><span>{item[0]}</span><strong>{item[1]}</strong></div>)}
+      <section className="ds-section">
+        <div className="matrix-vendor-strip">
+          {competitors.map((vendor) => (
+            <div key={vendor.id} className={`matrix-vendor-card ${vendor.home ? "home" : ""}`.trim()}>
+              <span className="matrix-vendor-logo">{vendor.logo}</span>
+              <strong>{vendor.name}</strong>
+              <small>{vendor.descriptor}</small>
+            </div>
+          ))}
         </div>
-        <div className="competitive-positioning-callout"><strong>ElasticCX Positioning</strong><p>Business-user friendly, AI-powered, cloud-native CCaaS designed for rapid deployment and flexible orchestration.</p></div>
-        <ActionButton onClick={scrollToMatrix}>Explore matrix</ActionButton>
       </section>
 
-      <section className="competitive-strip">
-        {COMPETITIVE_COMPETITORS.map((competitor) => <article key={competitor.id} className={`ds-card competitive-vendor ${competitor.home ? "is-home" : ""}`.trim()}><div className="status-badge status-neutral">{competitor.short}</div><h4>{competitor.name}</h4><p>{competitor.descriptor}</p></article>)}
+      <section className="ds-section">
+        <SectionHeader title="Why ElasticCX stands out" description="Built for partner conversations where credibility, speed and practical platform fit matter." />
+        <div className="sample-grid-3">
+          {["Strong omnichannel depth", "Business-user friendly administration", "Broad API and integration flexibility", "Strong AI/CX integration readiness", "Fast provisioning and deployment", "Balanced contact centre + PBX + admin experience"].map((item) => <div key={item} className="ds-card"><h4>{item}</h4><p>Use this as a concise value anchor when discussing platform fit, operational simplicity and growth readiness with prospects.</p></div>)}
+        </div>
       </section>
 
-      <SectionBlock>
-        <SectionHeader title="Why ElasticCX stands out" />
-        <div className="competitive-highlights-grid">
-          {["Strong omnichannel depth", "Business-user friendly administration", "Broad API and integration flexibility", "Strong AI/CX integration readiness", "Fast provisioning and deployment", "Balanced contact centre + PBX + admin experience"].map((item) => <div className="ds-card" key={item}><h4>{item}</h4><p>Commercially strong for partners that need balanced capability, deployment pace and a clear customer value story.</p></div>)}
-        </div>
-      </SectionBlock>
-
-      <SectionBlock>
-        <SectionHeader title="Category Performance Summary" />
-        <div className="competitive-summary-grid">
-          {categorySummary.map((cat) => <div className="ds-card" key={cat.id}><h4>{cat.label}</h4><p>ElasticCX avg: <strong>{cat.elasticAverage.toFixed(1)} / 4</strong></p><p>Best competitor: {cat.bestCompetitors.join(", ")}</p><p>{cat.keyTakeaway}</p><button className="ui-btn ui-btn--secondary" onClick={() => { setCategory(cat.id); scrollToMatrix(); }}>View factors</button></div>)}
-        </div>
-      </SectionBlock>
-
-      <SectionBlock id="competitive-matrix">
-        <div ref={matrixRef} />
-        <SectionHeader title="Interactive Matrix" description="Filter quickly during live opportunities and click any factor for partner-facing guidance." />
-        <FilterBar className="competitive-controls">
-          <input className="ui-field" placeholder="Search factors" value={search} onChange={(e) => setSearch(e.target.value)} />
-          <select className="ui-field" value={category} onChange={(e) => setCategory(e.target.value)}><option value="all">All categories</option>{COMPETITIVE_CATEGORIES.map((cat) => <option key={cat.id} value={cat.id}>{cat.label}</option>)}</select>
-          <select className="ui-field" value={viewMode} onChange={(e) => setViewMode(e.target.value)}><option value="all">Show all rows</option><option value="leading">ElasticCX-leading rows</option><option value="differentiators">Differentiators only</option></select>
-          <select className="ui-field" value={sortBy} onChange={(e) => setSortBy(e.target.value)}><option value="category">Sort: category</option><option value="elastic">Sort: ElasticCX score</option><option value="advantage">Sort: biggest ElasticCX advantage</option><option value="alphabetical">Sort: alphabetical</option></select>
-          <button className="ui-btn ui-btn--ghost" onClick={() => setCompact((prev) => !prev)}>{compact ? "Expanded mode" : "Compact mode"}</button>
-        </FilterBar>
-
-        <div className="competitive-table-wrap">
-          <table className={`competitive-table ${compact ? "is-compact" : ""}`.trim()}>
-            <thead><tr><th>Factor</th>{COMPETITIVE_COMPETITORS.map((competitor) => <th key={competitor.id} className={competitor.home ? "is-home" : ""}>{competitor.name}</th>)}</tr></thead>
+      <section className="ds-section" ref={matrixRef}>
+        <SectionHeader title="Competitive Matrix" description="Filter quickly and focus live conversations on the factors that matter most." />
+        <MatrixControls categories={matrixCategories} controls={controls} onChange={(next) => setControls((prev) => ({ ...prev, ...next }))} />
+        <div className="matrix-table-wrap">
+          <table className={`matrix-table ${controls.compact ? "compact" : ""}`.trim()}>
+            <thead>
+              <tr>
+                <th>Factor</th>
+                {competitors.map((vendor) => <th key={vendor.id} className={vendor.home ? "elastic-col" : ""}>{vendor.name}</th>)}
+              </tr>
+            </thead>
             <tbody>
-              {COMPETITIVE_CATEGORIES.map((cat) => {
-                const rows = filteredRows.filter((row) => row.category === cat.id);
+              {matrixCategories.map((category) => {
+                const rows = filteredRows.filter((row) => row.category === category.id);
                 if (!rows.length) return null;
-                return <React.Fragment key={cat.id}><tr className="competitive-category-row" id={`category-${cat.id}`}><td colSpan={7}>{cat.label}</td></tr>{rows.map((row) => <tr key={row.id} className="competitive-data-row" onClick={() => setSelectedRowId(row.id)}><td className="sticky-factor"><span>{row.label}</span>{row.isDifferentiator ? <em className="status-badge status-info">Differentiator</em> : null}</td>{COMPETITIVE_COMPETITORS.map((competitor) => <td key={competitor.id} className={competitor.home ? "is-home" : ""}>{renderRating(row.ratings[competitor.id], competitor.home)}</td>)}</tr>)}</React.Fragment>;
+                return (
+                  <React.Fragment key={category.id}>
+                    <tr className="matrix-category-row" ref={(el) => { sectionRefs.current[category.id] = el; }}><td colSpan={7}>{category.label}</td></tr>
+                    {rows.map((row) => (
+                      <tr key={row.id} onClick={() => setSelectedRowId(row.id)}>
+                        <td className="sticky-col"><div>{row.label}</div><span className={`matrix-advantage ${row.advantage > 0 ? "good" : ""}`}>Δ {row.advantage >= 0 ? `+${row.advantage}` : row.advantage}</span></td>
+                        {competitors.map((vendor) => <td key={vendor.id} className={vendor.home ? "elastic-col" : ""}><span className={`matrix-rating-chip score-${row.ratings[vendor.id]}`}>{"★".repeat(row.ratings[vendor.id])}</span></td>)}
+                      </tr>
+                    ))}
+                  </React.Fragment>
+                );
               })}
             </tbody>
           </table>
         </div>
-      </SectionBlock>
+      </section>
 
       <section className="ds-section">
-        <SectionHeader title="How to position ElasticCX in live opportunities" />
-        <div className="competitive-sales-grid">
-          {[{ t: "Best fit opportunities", p: "Customers looking for modern cloud CX, balanced voice+digital capability and faster deployment with manageable complexity." }, { t: "Competitive strengths", p: "Strong cross-category coverage, practical platform balance, cloud-native architecture and AI-ready positioning." }, { t: "Questions to ask prospects", p: "Are they unifying voice and digital? Do they need simpler administration and API flexibility with rapid integrations?" }, { t: "Watchouts / where to qualify carefully", p: "If buyers are focused on niche specialist capabilities, run deeper validation and keep claims aligned to proven matrix evidence." }].map((card) => <article className="ds-card" key={card.t}><h4>{card.t}</h4><p>{card.p}</p></article>)}
+        <SectionHeader title="Category Performance Summary" description="Use these summaries to quickly frame strengths by conversation theme." />
+        <div className="sample-grid-3">
+          {categorySummaries.map((summary) => (
+            <div className="ds-card" key={summary.id}>
+              <h4>{summary.label}</h4>
+              <p>ElasticCX avg score: <strong>{summary.elasticAverage.toFixed(1)}/4</strong></p>
+              <p>Best competitor: <strong>{summary.leaders.join(", ") || "—"}</strong></p>
+              <p>{summary.takeaway}</p>
+              <button className="ui-btn ui-btn--secondary" onClick={() => sectionRefs.current[summary.id]?.scrollIntoView({ behavior: "smooth", block: "center" })}>View factors</button>
+            </div>
+          ))}
         </div>
       </section>
 
       <section className="ds-section">
-        <SectionHeader title="ElasticCX vs competitor average by category" />
-        <div className="competitive-bars">
-          {categorySummary.map((cat) => <div className="ds-card competitive-bar-card" key={cat.id}><h4>{cat.label}</h4><div className="competitive-bar"><span style={{ width: `${(cat.elasticAverage / 4) * 100}%` }} /></div><small>ElasticCX {cat.elasticAverage.toFixed(1)} / 4 vs competitor avg {cat.competitorAverage.toFixed(1)} / 4</small></div>)}
+        <SectionHeader title="ElasticCX vs competitor average by category" description="Visual view for quick deal strategy discussions." />
+        <div className="matrix-bar-grid">
+          {categorySummaries.map((summary) => (
+            <div key={summary.id} className="ds-card">
+              <h4>{summary.label}</h4>
+              <div className="matrix-bars"><span>ElasticCX</span><div><i style={{ width: `${(summary.elasticAverage / 4) * 100}%` }} /></div><em>{summary.elasticAverage.toFixed(1)}</em></div>
+              <div className="matrix-bars"><span>Comp avg</span><div><i className="avg" style={{ width: `${(summary.competitorAvg / 4) * 100}%` }} /></div><em>{summary.competitorAvg.toFixed(1)}</em></div>
+            </div>
+          ))}
         </div>
       </section>
 
-      <section className="ds-card ds-card--highlight competitive-cta">
+      <section className="ds-section">
+        <SectionHeader title="How to position ElasticCX in live opportunities" description="Use this as practical talk-track guidance in joint prospect and customer meetings." />
+        <div className="sample-grid-3">
+          <div className="ds-card"><h4>Best fit opportunities</h4><ul><li>Customers looking for modern cloud CX</li><li>Organisations balancing voice, digital and admin usability</li><li>Teams seeking rapid deployment with manageable complexity</li></ul></div>
+          <div className="ds-card"><h4>Competitive strengths</h4><ul><li>Strong feature coverage across multiple categories</li><li>Broad practical platform balance</li><li>Cloud-native architecture and AI-ready positioning</li><li>Business-user control with flexibility</li></ul></div>
+          <div className="ds-card"><h4>Questions to ask prospects</h4><ul><li>Are they trying to unify voice and digital?</li><li>Do they need easier administration?</li><li>Do they need API flexibility and faster integrations?</li><li>Are they planning AI-led growth without excessive complexity?</li></ul></div>
+          <div className="ds-card"><h4>Watchouts / where to qualify carefully</h4><ul><li>Validate niche capabilities in detail where requirements are highly specialised.</li><li>Keep claims grounded in the matrix evidence.</li><li>Stay consultative and commercially credible.</li></ul></div>
+        </div>
+      </section>
+
+      <section className="sample-cta ds-card ds-card--highlight">
         <h3>Use the matrix to shape stronger partner conversations</h3>
-        <div className="sample-cta-actions"><button className="ui-btn ui-btn--primary">Open Sales Toolkit</button><button className="ui-btn ui-btn--secondary">View Sample Customers</button></div>
+        <div className="sample-cta-actions">
+          <button className="ui-btn ui-btn--primary">Open Sales Toolkit</button>
+          <button className="ui-btn ui-btn--secondary">View Sample Customers</button>
+        </div>
       </section>
 
-      <div className={`sample-drawer-backdrop ${selectedRow ? "open" : ""}`} onClick={() => setSelectedRowId(null)}>
-        <aside className={`sample-story-drawer ${selectedRow ? "open" : ""}`} onClick={(e) => e.stopPropagation()}>
-          {selectedRow ? <div className="sample-story-drawer__content"><button className="ui-btn ui-btn--ghost" onClick={() => setSelectedRowId(null)}>Close</button><h2>{selectedRow.label}</h2><p>{COMPETITIVE_CATEGORIES.find((cat) => cat.id === selectedRow.category)?.label}</p><div className="competitive-drawer-grid">{COMPETITIVE_COMPETITORS.map((competitor) => <div key={competitor.id} className="ds-card"><strong>{competitor.name}</strong>{renderRating(selectedRow.ratings[competitor.id], competitor.home)}</div>)}</div><div className="sample-detail-block"><h4>Why it matters</h4><p>{selectedRow.conversation}</p></div><div className="sample-detail-block"><h4>Partner relevance</h4><p>{selectedRow.partnerValue}</p></div><div className="sample-detail-block"><h4>ElasticCX positioning guidance</h4><p>{selectedRow.positioning}</p></div></div> : null}
-        </aside>
-      </div>
+      <MatrixRowDetailDrawer row={selectedRow} categories={matrixCategories} competitors={competitors} onClose={() => setSelectedRowId(null)} />
     </div>
   );
 }
@@ -11169,6 +11287,7 @@ const NAV_SECTIONS = [
       { id: "competitive-matrix", icon: <NavIcon name="chart" />, label: "Competitive Matrix" },
       { id: "partner-account-plan", icon: <NavIcon name="checklist" />, label: "Account Planning" },
       { id: "governance", icon: <NavIcon name="badge" />, label: "Governance RACI" },
+      { id: "competitive-matrix", icon: <NavIcon name="chart" />, label: "Competitive Matrix" },
     ],
   },
 ];
@@ -11196,7 +11315,7 @@ const PAGE_PATHS = {
   "competitive-matrix": "/competitive-matrix",
   prospect: "/partner-prospect-tool",
   "sample-customers": "/sample-customers",
-  "market-vision": "/market-vision",
+  "competitive-matrix": "/competitive-matrix",
 };
 
 const PATH_TO_PAGE = Object.fromEntries(
@@ -11418,7 +11537,7 @@ function App() {
     if (page === "partner-operational-support")
       return <PartnerOperationalSupportPage />;
     if (page === "governance") return <GovernancePage />;
-    if (page === "market-vision") return <MarketVisionPage onNavigate={setPage} />;
+    if (page === "competitive-matrix") return <CompetitiveMatrixPage />;
 
     // Page 1 — Home
     return (
