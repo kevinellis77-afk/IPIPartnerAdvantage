@@ -10959,251 +10959,170 @@ function SampleCustomersPage() {
   );
 }
 
-const MARKET_VISION_DATA = {
-  heroThemes: [
-    { icon: "🌐", label: "Omnichannel Orchestration", value: "Journey continuity across voice and digital." },
-    { icon: "🧠", label: "AI-Powered Insights", value: "Intelligence that improves every interaction." },
-    { icon: "🔐", label: "Secure CX & Payments", value: "Embedded compliance and trusted transactions." },
-    { icon: "☁️", label: "Cloud Communications & Connectivity", value: "Unified comms, UCaaS and resilient SD-WAN." },
-  ],
-  marketShiftCards: [
-    { icon: "🔄", title: "Customers expect seamless omnichannel journeys", text: "Journeys now span channels, teams and moments. Platform orchestration is the new baseline." },
-    { icon: "📈", title: "AI is turning every interaction into insight", text: "Conversations are a strategic data asset. Leading organisations operationalise insight at scale." },
-    { icon: "⚡", title: "Employee productivity is now part of CX performance", text: "Agent experience, guidance and automation directly impact customer outcomes and economics." },
-    { icon: "🛡️", title: "Security, compliance and connectivity are now core platform requirements", text: "Resilience and trust can no longer be bolted on. They must be designed into the platform." },
-  ],
-  platformPrinciples: [
-    { icon: "🧭", title: "Orchestrate every channel" },
-    { icon: "🔎", title: "Turn conversations into insight" },
-    { icon: "🤝", title: "Empower agents with AI" },
-    { icon: "💳", title: "Secure every payment interaction" },
-    { icon: "📞", title: "Unify communications" },
-    { icon: "🖥️", title: "Connect and support the modern workplace" },
-  ],
-  platformLayers: [
-    { id: "channels", title: "Customer Channels", items: ["Voice", "Chat", "Email", "SMS", "Social", "Bots"], moduleId: "elasticcx-ccaas" },
-    { id: "engagement", title: "CX & Engagement Platform", items: ["ElasticCX CCaaS", "Routing", "IVR", "Queue Management", "Callbacks", "Quality Management"], moduleId: "elasticcx-ccaas" },
-    { id: "ai", title: "AI & Automation", items: ["AI Insights", "AI Sidekick", "Transcription", "Summaries", "Topic Detection", "Sentiment", "Score Assist", "Smart Wrap-Up"], moduleId: "ai-insights" },
-    { id: "payments", title: "Secure Transactions", items: ["Cloud PCI", "Pauseable", "Pay by Link", "DTMF Suppression", "IVR Assist"], moduleId: "cloud-pci" },
-    { id: "collaboration", title: "Collaboration", items: ["ElasticCX UCaaS", "Voice", "Mobile", "Collaboration", "Presence", "Reporting"], moduleId: "elasticcx-ucaas" },
-    { id: "connectivity", title: "Connectivity & Infrastructure", items: ["SD-WAN", "Secure Cloud Connectivity", "Traffic Optimisation", "Remote Work Support"], moduleId: "sd-wan" },
-    { id: "workplace", title: "Digital Workplace", items: ["DesktopLive", "Managed End User Services", "Microsoft 365", "Endpoint Security", "Service Desk"], moduleId: "desktoplive" },
-  ],
-  architectureModules: [
-    {
-      id: "elasticcx-ccaas",
-      name: "ElasticCX CCaaS",
-      description: "Flexible omnichannel contact centre platform with voice, digital and social channels, configurable APIs, cloud releases, scalability and managed services.",
-      businessValue: "Accelerates CX modernisation while giving partners a scalable, services-led growth foundation.",
-      keyCapabilities: ["Omnichannel routing", "Journey orchestration", "APIs & integrations", "Cloud release cadence"],
-      useCases: ["Unify fragmented customer channels", "Scale seasonal demand without infrastructure friction"],
-      relatedProducts: ["ElasticCX CCaaS", "ElasticCX UCaaS"],
-    },
-    {
-      id: "ai-insights",
-      name: "AI Insights",
-      description: "Post-interaction intelligence including transcription, summarisation, topic detection, sentiment analysis and quality monitoring.",
-      businessValue: "Turns interaction data into decision-ready intelligence for continuous CX improvement.",
-      keyCapabilities: ["Transcription", "Summarisation", "Topic detection", "Sentiment analysis", "Score assist"],
-      useCases: ["Detect service issues early", "Scale QA and coaching across more interactions"],
-      relatedProducts: ["ECX AI Insights"],
-    },
-    {
-      id: "ai-sidekick",
-      name: "AI Sidekick",
-      description: "Real-time agent assist with transcription, voicemail transcription, historical conversation insight and smart wrap-up.",
-      businessValue: "Improves agent productivity in the moment while increasing consistency and quality.",
-      keyCapabilities: ["Real-time guidance", "Smart wrap-up", "Historical context", "Voicemail transcription"],
-      useCases: ["Reduce average handling time", "Support new agents during ramp-up"],
-      relatedProducts: ["ECX AI Sidekick", "ECX AI Insights"],
-    },
-    {
-      id: "cloud-pci",
-      name: "Cloud PCI",
-      description: "PCI DSS Level 1 payment security platform supporting pause/resume, pay by link, DTMF suppression and IVR payment journeys.",
-      businessValue: "Protects customer trust and reduces compliance risk without disrupting service flow.",
-      keyCapabilities: ["Pauseable", "Pay by link", "DTMF suppression", "IVR assist"],
-      useCases: ["Take compliant payments in contact centres", "Reduce PCI scope and audit burden"],
-      relatedProducts: ["Cloud PCI"],
-    },
-    {
-      id: "elasticcx-ucaas",
-      name: "ElasticCX UCaaS",
-      description: "Cloud unified communications platform for voice, collaboration, analytics and flexible communications across devices.",
-      businessValue: "Connects service, operations and leadership teams on one communication fabric.",
-      keyCapabilities: ["Voice and mobile", "Collaboration tools", "Presence", "Reporting and analytics"],
-      useCases: ["Enable hybrid teams", "Improve cross-functional response times"],
-      relatedProducts: ["ElasticCX UCaaS"],
-    },
-    {
-      id: "sd-wan",
-      name: "SD-WAN",
-      description: "Secure, resilient connectivity layer with centralised management, traffic optimisation, performance improvement and remote work support.",
-      businessValue: "Delivers stable, high-quality experiences across sites, branches and remote teams.",
-      keyCapabilities: ["Central policy control", "Traffic optimisation", "Performance visibility", "Remote user support"],
-      useCases: ["Prioritise CX traffic", "Support distributed workforces securely"],
-      relatedProducts: ["SD-WAN Services"],
-    },
-    {
-      id: "desktoplive",
-      name: "DesktopLive",
-      description: "Managed digital workplace platform delivering Microsoft 365 services, endpoint security, service desk, support and productivity tooling.",
-      businessValue: "Extends CX value into employee experience with secure, managed workplace operations.",
-      keyCapabilities: ["Microsoft 365 management", "Endpoint security", "Service desk", "Remote support"],
-      useCases: ["Standardise employee tooling", "Improve workplace uptime and user productivity"],
-      relatedProducts: ["DesktopLive"],
-    },
-  ],
-  aiCapabilities: [
-    { icon: "📝", title: "Transcription", description: "Capture every interaction accurately to improve compliance, searchability and service quality.", why: "Creates reliable interaction intelligence at scale." },
-    { icon: "📚", title: "Summarisation", description: "Reduce admin time and accelerate hand-offs with concise AI-generated summaries.", why: "Returns agent capacity to high-value conversations." },
-    { icon: "🧩", title: "Topic Detection", description: "Identify emerging themes, customer pain points and training opportunities.", why: "Helps teams act on trends before they escalate." },
-    { icon: "💡", title: "Sentiment Analysis", description: "Understand emotional tone over time and improve service strategy.", why: "Improves quality, retention and brand trust." },
-    { icon: "✅", title: "Score Assist", description: "Scale QA across more interactions with automated scoring support.", why: "Makes quality programs more consistent and efficient." },
-    { icon: "⚙️", title: "Smart Wrap-Up", description: "Reduce after-call work and improve consistency with AI-generated wrap-up recommendations.", why: "Lowers admin friction and improves record quality." },
-    { icon: "🎧", title: "Real-Time Agent Assist", description: "Help agents stay focused with live information during conversations.", why: "Improves first-contact outcomes and confidence." },
-    { icon: "🕰️", title: "Historical Conversation Insight", description: "Give agents context from previous interactions across channels.", why: "Supports faster and more personalised service." },
-  ],
-  valueCards: [
-    "Better customer journeys",
-    "Faster agent productivity",
-    "Lower cost to serve",
-    "Stronger security and compliance",
-    "More flexible cloud operations",
-    "Scalable modern workplace support",
-  ],
-};
+const COMPETITIVE_COMPETITORS = [
+  { id: "elasticcx", name: "ElasticCX", descriptor: "Cloud-native CX platform", short: "ECX", home: true },
+  { id: "avaya", name: "Avaya", descriptor: "Legacy enterprise CX", short: "AVA" },
+  { id: "cisco", name: "Cisco", descriptor: "Enterprise comms-led CX", short: "CIS" },
+  { id: "five9", name: "Five9", descriptor: "Outbound and cloud specialist", short: "F9" },
+  { id: "genesys", name: "Genesys", descriptor: "Experience orchestration leader", short: "GEN" },
+  { id: "nice", name: "NICE", descriptor: "Enterprise AI CX suite", short: "NICE" },
+];
 
-function MarketVisionPage({ onNavigate }) {
-  const [activeModuleId, setActiveModuleId] = React.useState("elasticcx-ccaas");
-  const activeModule = React.useMemo(
-    () => MARKET_VISION_DATA.architectureModules.find((module) => module.id === activeModuleId) || MARKET_VISION_DATA.architectureModules[0],
-    [activeModuleId],
+const COMPETITIVE_CATEGORIES = [
+  { id: "acd", label: "ACD / PBX / Agent Interface", keyTakeaway: "ElasticCX combines omnichannel routing with practical day-to-day agent and supervisor controls." },
+  { id: "omnichannel", label: "Self-service / Omnichannel", keyTakeaway: "ElasticCX offers broad digital and journey orchestration capabilities for modern service environments." },
+  { id: "reporting", label: "Reporting / Quality Management", keyTakeaway: "ElasticCX delivers balanced observability with built-in quality controls and omnichannel score visibility." },
+  { id: "architecture", label: "Admin & Developer / Architecture", keyTakeaway: "ElasticCX is positioned for rapid deployment with open API flexibility and resilient cloud architecture." },
+  { id: "integrations", label: "Dialer / Carrier / Integrations", keyTakeaway: "ElasticCX supports practical dialer coverage, integrations and agile delivery of new connectors." },
+];
+
+const COMPETITIVE_MATRIX_ROWS = [
+  ["acd", "Skill-based routing", [4, 1, 1, 4, 4, 1]], ["acd", "Multiple ACD Profiles", [4, 1, 1, 3, 3, 1]], ["acd", "Intelligent omnichannel, omni media routing", [4, 1, 1, 4, 4, 2]], ["acd", "Queue video & media calls", [4, 1, 1, 2, 3, 1]], ["acd", "Integrated PBX", [4, 1, 1, 2, 2, 1]], ["acd", "True omnichannel agent experience", [4, 1, 1, 4, 4, 2]], ["acd", "Multi-tasking policy", [4, 1, 1, 3, 3, 2]], ["acd", "Integrated contact manager", [4, 1, 1, 3, 3, 1]], ["acd", "Custom goal setting dashboard", [4, 1, 1, 2, 3, 1]], ["acd", "Customisable agent UI", [4, 1, 1, 3, 4, 2]],
+  ["omnichannel", "IVR", [4, 1, 1, 4, 4, 1]], ["omnichannel", "Visual Interactive Response (VIR)", [4, 1, 1, 3, 4, 1]], ["omnichannel", "Process flow & custom API generator tool", [4, 1, 1, 3, 3, 1]], ["omnichannel", "ASR/TTS native language support", [4, 1, 1, 3, 4, 2]], ["omnichannel", "Drag-and-drop IVR code generator", [4, 1, 1, 3, 3, 1]], ["omnichannel", "Channel Hopping – seamless channel conversion", [4, 1, 1, 3, 4, 1]], ["omnichannel", "Digital channels", [4, 1, 1, 4, 4, 2]], ["omnichannel", "Add custom channels", [4, 1, 1, 3, 4, 2]], ["omnichannel", "Social networks", [4, 1, 1, 3, 4, 2]],
+  ["reporting", "Canned reports", [4, 1, 1, 4, 4, 3]], ["reporting", "100% activity capture", [4, 1, 1, 3, 4, 2]], ["reporting", "Performance Quadrant – best practices index", [4, 1, 1, 2, 3, 2]], ["reporting", "Silent monitor, coach and barge", [4, 1, 1, 4, 4, 3]], ["reporting", "Two channel reporting", [4, 1, 1, 3, 3, 2]], ["reporting", "100% recording with customer retention times", [4, 1, 1, 4, 4, 3]], ["reporting", "Built-in omnichannel scorecards", [4, 1, 1, 3, 4, 2]],
+  ["architecture", "DIY Implementation", [4, 1, 1, 3, 3, 1]], ["architecture", "Pre-built and DIY templates", [4, 1, 1, 3, 3, 1]], ["architecture", "Auto provision free trial and sandboxes", [4, 1, 1, 2, 3, 1]], ["architecture", "Universal log in to multiple accounts", [4, 1, 1, 3, 3, 2]], ["architecture", "Admin tabs for multi-tasking", [4, 1, 1, 3, 3, 2]], ["architecture", "Create your own APIs", [4, 1, 1, 4, 4, 2]], ["architecture", "Public cloud deployment", [4, 1, 1, 4, 4, 2]], ["architecture", "Multi-cloud redundancy", [4, 1, 1, 3, 4, 3]], ["architecture", "Micro-services", [4, 1, 1, 3, 4, 3]], ["architecture", "Full featured API services", [4, 1, 1, 4, 4, 2]],
+  ["integrations", "Preview", [4, 1, 1, 4, 4, 3]], ["integrations", "Agentless", [4, 1, 1, 4, 3, 3]], ["integrations", "Progressive", [4, 1, 1, 4, 4, 3]], ["integrations", "Predictive", [4, 1, 1, 4, 4, 3]], ["integrations", "Instantly provision phone numbers", [4, 1, 1, 3, 3, 1]], ["integrations", "Self-service porting", [4, 1, 1, 3, 3, 1]], ["integrations", "Integration with main players", [4, 1, 1, 4, 4, 3]], ["integrations", "AI integration for CX", [4, 1, 1, 4, 4, 3]], ["integrations", "Native WFO integration", [4, 1, 1, 3, 4, 3]], ["integrations", "New integrations in < 5 days", [4, 1, 1, 3, 3, 1]],
+].map((row, index) => {
+  const [category, label, ratingsList] = row;
+  const ratings = {};
+  COMPETITIVE_COMPETITORS.forEach((competitor, ratingIndex) => {
+    ratings[competitor.id] = ratingsList[ratingIndex];
+  });
+  return {
+    id: `${category}_${index + 1}`,
+    category,
+    label,
+    ratings,
+    conversation: `Use ${label.toLowerCase()} to validate how buyers want to run service, operations and growth on one platform.`,
+    partnerValue: "Helps partners translate technical depth into a credible business and operational value story.",
+    positioning: `Position ElasticCX around practical control, orchestration flexibility and lower delivery friction versus legacy-heavy alternatives.`,
+  };
+});
+
+function CompetitiveMatrixPage() {
+  const matrixRef = React.useRef(null);
+  const [search, setSearch] = React.useState("");
+  const [category, setCategory] = React.useState("all");
+  const [viewMode, setViewMode] = React.useState("all");
+  const [sortBy, setSortBy] = React.useState("category");
+  const [compact, setCompact] = React.useState(false);
+  const [selectedRowId, setSelectedRowId] = React.useState(null);
+  const selectedRow = COMPETITIVE_MATRIX_ROWS.find((row) => row.id === selectedRowId) || null;
+
+  const withScores = React.useMemo(() => COMPETITIVE_MATRIX_ROWS.map((row) => {
+    const allScores = COMPETITIVE_COMPETITORS.map((c) => row.ratings[c.id]);
+    const competitorAverage = allScores.slice(1).reduce((sum, score) => sum + score, 0) / (allScores.length - 1);
+    const bestScore = Math.max(...allScores);
+    const bestCompetitors = COMPETITIVE_COMPETITORS.filter((c) => row.ratings[c.id] === bestScore).map((c) => c.name);
+    return { ...row, elasticScore: row.ratings.elasticcx, competitorAverage, advantage: row.ratings.elasticcx - competitorAverage, isElasticLeading: row.ratings.elasticcx >= bestScore, isDifferentiator: row.ratings.elasticcx >= 4 && competitorAverage <= 2.2, bestCompetitors };
+  }), []);
+
+  const filteredRows = React.useMemo(() => {
+    let list = withScores.filter((row) => row.label.toLowerCase().includes(search.toLowerCase()));
+    if (category !== "all") list = list.filter((row) => row.category === category);
+    if (viewMode === "leading") list = list.filter((row) => row.isElasticLeading);
+    if (viewMode === "differentiators") list = list.filter((row) => row.isDifferentiator);
+    if (sortBy === "elastic") list = [...list].sort((a, b) => b.elasticScore - a.elasticScore || a.label.localeCompare(b.label));
+    else if (sortBy === "advantage") list = [...list].sort((a, b) => b.advantage - a.advantage || a.label.localeCompare(b.label));
+    else if (sortBy === "alphabetical") list = [...list].sort((a, b) => a.label.localeCompare(b.label));
+    else list = [...list].sort((a, b) => a.category.localeCompare(b.category) || a.label.localeCompare(b.label));
+    return list;
+  }, [category, search, sortBy, viewMode, withScores]);
+
+  const categorySummary = React.useMemo(() => COMPETITIVE_CATEGORIES.map((cat) => {
+    const rows = withScores.filter((row) => row.category === cat.id);
+    const elasticAverage = rows.reduce((sum, row) => sum + row.ratings.elasticcx, 0) / rows.length;
+    const competitorAverages = COMPETITIVE_COMPETITORS.slice(1).map((comp) => ({ id: comp.id, name: comp.name, score: rows.reduce((sum, row) => sum + row.ratings[comp.id], 0) / rows.length }));
+    const best = Math.max(...competitorAverages.map((item) => item.score));
+    return { ...cat, elasticAverage, bestCompetitors: competitorAverages.filter((item) => item.score === best).map((item) => item.name), competitorAverage: competitorAverages.reduce((sum, item) => sum + item.score, 0) / competitorAverages.length };
+  }), [withScores]);
+
+  const scrollToMatrix = () => matrixRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  const renderRating = (score, isHome) => (
+    <div className={`matrix-rating matrix-rating--${score} ${isHome ? "is-home" : ""}`.trim()}>{"★".repeat(score)}<span>{"☆".repeat(4 - score)}</span></div>
   );
 
-  const scrollToId = (id) => {
-    const target = document.getElementById(id);
-    target?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
   return (
-    <div className="page-shell market-vision-page">
-      <SectionWrapper className="market-hero">
-        <div className="market-hero__panel ds-card ds-card--highlight">
-          <p className="market-chip">Overview</p>
-          <h1>Market &amp; Vision</h1>
-          <p className="market-hero__subtitle">The future of customer experience is platform-led, AI-enabled and built for seamless orchestration across every interaction.</p>
-          <p className="market-hero__copy">IPI delivers an integrated CX platform that combines communication, intelligence, security and connectivity to help organisations deliver exceptional customer and employee experiences. We are building a complete CX ecosystem combining contact centre, communications, AI, security, connectivity and workplace services.</p>
-          <div className="market-hero__actions">
-            <StandardButton onClick={() => scrollToId("market-architecture-explorer")}>Explore Architecture</StandardButton>
-            <SecondaryButton onClick={() => scrollToId("market-ai-capabilities")}>View AI Capabilities</SecondaryButton>
-          </div>
-        </div>
-        <div className="market-hero__tiles">
-          {MARKET_VISION_DATA.heroThemes.map((item) => (
-            <StandardCard className="market-theme-card" key={item.label}>
-              <span>{item.icon}</span>
-              <h3>{item.label}</h3>
-              <p>{item.value}</p>
-            </StandardCard>
-          ))}
-        </div>
-      </SectionWrapper>
+    <div className="competitive-page">
+      <PageHeader title="Competitive Matrix" subtitle="Compare ElasticCX against major CCaaS vendors across routing, omnichannel, reporting, architecture, integrations and more." />
 
-      <SectionWrapper>
-        <SectionHeader title="Why the market is moving from contact centres to CX platforms" />
-        <div className="market-shift-grid">
-          {MARKET_VISION_DATA.marketShiftCards.map((card) => (
-            <StandardCard className="market-shift-card" key={card.title}>
-              <div className="market-shift-card__title"><span>{card.icon}</span><h3>{card.title}</h3></div>
-              <p>{card.text}</p>
-            </StandardCard>
-          ))}
+      <section className="ds-card competitive-hero">
+        <p>This tool helps reseller partners and sales teams understand where ElasticCX stands out and which strengths matter most in live opportunities.</p>
+        <div className="competitive-metrics-grid">
+          {[["Omnichannel Strength", "4.0 / 4"], ["AI & Integration Readiness", "3.9 / 4"], ["Cloud Architecture", "4.0 / 4"], ["Admin & Deployment Simplicity", "4.0 / 4"]].map((item) => <div key={item[0]} className="competitive-mini-tile"><span>{item[0]}</span><strong>{item[1]}</strong></div>)}
         </div>
-      </SectionWrapper>
+        <div className="competitive-positioning-callout"><strong>ElasticCX Positioning</strong><p>Business-user friendly, AI-powered, cloud-native CCaaS designed for rapid deployment and flexible orchestration.</p></div>
+        <ActionButton onClick={scrollToMatrix}>Explore matrix</ActionButton>
+      </section>
 
-      <SectionWrapper>
-        <SectionHeader title="The IPI CX Platform Vision" description="IPI combines customer engagement, AI, security, communications, connectivity and managed workplace capabilities into a single integrated platform approach." />
-        <div className="market-principles-grid">
-          {MARKET_VISION_DATA.platformPrinciples.map((principle) => (
-            <StandardCard className="market-principle-card" key={principle.title}>
-              <span>{principle.icon}</span>
-              <p>{principle.title}</p>
-            </StandardCard>
-          ))}
-        </div>
-      </SectionWrapper>
+      <section className="competitive-strip">
+        {COMPETITIVE_COMPETITORS.map((competitor) => <article key={competitor.id} className={`ds-card competitive-vendor ${competitor.home ? "is-home" : ""}`.trim()}><div className="status-badge status-neutral">{competitor.short}</div><h4>{competitor.name}</h4><p>{competitor.descriptor}</p></article>)}
+      </section>
 
-      <SectionWrapper id="market-architecture-explorer">
-        <SectionHeader title="Integrated platform architecture" description="A layered architecture connecting channels, engagement, intelligence, security, communications, connectivity and workplace services." />
-        <div className="market-layer-stack">
-          {MARKET_VISION_DATA.platformLayers.map((layer, index) => (
-            <button
-              key={layer.id}
-              type="button"
-              className={`market-layer ${activeModuleId === layer.moduleId ? "active" : ""}`}
-              style={{ animationDelay: `${index * 0.08}s` }}
-              onClick={() => setActiveModuleId(layer.moduleId)}
-            >
-              <div className="market-layer__title">{layer.title}</div>
-              <div className="market-layer__items">{layer.items.map((item) => <span key={item}>{item}</span>)}</div>
-            </button>
-          ))}
+      <SectionBlock>
+        <SectionHeader title="Why ElasticCX stands out" />
+        <div className="competitive-highlights-grid">
+          {["Strong omnichannel depth", "Business-user friendly administration", "Broad API and integration flexibility", "Strong AI/CX integration readiness", "Fast provisioning and deployment", "Balanced contact centre + PBX + admin experience"].map((item) => <div className="ds-card" key={item}><h4>{item}</h4><p>Commercially strong for partners that need balanced capability, deployment pace and a clear customer value story.</p></div>)}
         </div>
+      </SectionBlock>
 
-        <div className="market-explorer" id="market-explorer-panel">
-          <div className="market-explorer__list ds-card ds-card--standard">
-            <h3>Architecture Explorer</h3>
-            {MARKET_VISION_DATA.architectureModules.map((module) => (
-              <button key={module.id} type="button" className={`market-explorer__item ${activeModuleId === module.id ? "active" : ""}`} onClick={() => setActiveModuleId(module.id)}>
-                {module.name}
-              </button>
-            ))}
-          </div>
-          <div className="market-explorer__detail ds-card ds-card--highlight">
-            <h3>{activeModule.name}</h3>
-            <p>{activeModule.description}</p>
-            <div><strong>Business value:</strong> {activeModule.businessValue}</div>
-            <div><strong>Key capabilities:</strong> {activeModule.keyCapabilities.join(" • ")}</div>
-            <div><strong>Example use cases:</strong> {activeModule.useCases.join(" • ")}</div>
-            <div><strong>Related products:</strong> {activeModule.relatedProducts.join(" • ")}</div>
-          </div>
+      <SectionBlock>
+        <SectionHeader title="Category Performance Summary" />
+        <div className="competitive-summary-grid">
+          {categorySummary.map((cat) => <div className="ds-card" key={cat.id}><h4>{cat.label}</h4><p>ElasticCX avg: <strong>{cat.elasticAverage.toFixed(1)} / 4</strong></p><p>Best competitor: {cat.bestCompetitors.join(", ")}</p><p>{cat.keyTakeaway}</p><button className="ui-btn ui-btn--secondary" onClick={() => { setCategory(cat.id); scrollToMatrix(); }}>View factors</button></div>)}
         </div>
-      </SectionWrapper>
+      </SectionBlock>
 
-      <SectionWrapper id="market-ai-capabilities">
-        <SectionHeader title="AI capabilities built into the platform" />
-        <div className="market-ai-grid">
-          {MARKET_VISION_DATA.aiCapabilities.map((ai) => (
-            <StandardCard className="market-ai-card" key={ai.title}>
-              <div className="market-ai-card__icon">{ai.icon}</div>
-              <h3>{ai.title}</h3>
-              <p>{ai.description}</p>
-              <small>Why it matters: {ai.why}</small>
-            </StandardCard>
-          ))}
-        </div>
-      </SectionWrapper>
+      <SectionBlock id="competitive-matrix">
+        <div ref={matrixRef} />
+        <SectionHeader title="Interactive Matrix" description="Filter quickly during live opportunities and click any factor for partner-facing guidance." />
+        <FilterBar className="competitive-controls">
+          <input className="ui-field" placeholder="Search factors" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <select className="ui-field" value={category} onChange={(e) => setCategory(e.target.value)}><option value="all">All categories</option>{COMPETITIVE_CATEGORIES.map((cat) => <option key={cat.id} value={cat.id}>{cat.label}</option>)}</select>
+          <select className="ui-field" value={viewMode} onChange={(e) => setViewMode(e.target.value)}><option value="all">Show all rows</option><option value="leading">ElasticCX-leading rows</option><option value="differentiators">Differentiators only</option></select>
+          <select className="ui-field" value={sortBy} onChange={(e) => setSortBy(e.target.value)}><option value="category">Sort: category</option><option value="elastic">Sort: ElasticCX score</option><option value="advantage">Sort: biggest ElasticCX advantage</option><option value="alphabetical">Sort: alphabetical</option></select>
+          <button className="ui-btn ui-btn--ghost" onClick={() => setCompact((prev) => !prev)}>{compact ? "Expanded mode" : "Compact mode"}</button>
+        </FilterBar>
 
-      <SectionWrapper>
-        <SectionHeader title="Why this platform model matters" />
-        <div className="market-value-grid">
-          {MARKET_VISION_DATA.valueCards.map((value) => <StandardCard className="market-value-card" key={value}>{value}</StandardCard>)}
+        <div className="competitive-table-wrap">
+          <table className={`competitive-table ${compact ? "is-compact" : ""}`.trim()}>
+            <thead><tr><th>Factor</th>{COMPETITIVE_COMPETITORS.map((competitor) => <th key={competitor.id} className={competitor.home ? "is-home" : ""}>{competitor.name}</th>)}</tr></thead>
+            <tbody>
+              {COMPETITIVE_CATEGORIES.map((cat) => {
+                const rows = filteredRows.filter((row) => row.category === cat.id);
+                if (!rows.length) return null;
+                return <React.Fragment key={cat.id}><tr className="competitive-category-row" id={`category-${cat.id}`}><td colSpan={7}>{cat.label}</td></tr>{rows.map((row) => <tr key={row.id} className="competitive-data-row" onClick={() => setSelectedRowId(row.id)}><td className="sticky-factor"><span>{row.label}</span>{row.isDifferentiator ? <em className="status-badge status-info">Differentiator</em> : null}</td>{COMPETITIVE_COMPETITORS.map((competitor) => <td key={competitor.id} className={competitor.home ? "is-home" : ""}>{renderRating(row.ratings[competitor.id], competitor.home)}</td>)}</tr>)}</React.Fragment>;
+              })}
+            </tbody>
+          </table>
         </div>
-      </SectionWrapper>
+      </SectionBlock>
 
-      <SectionWrapper>
-        <div className="market-cta ds-card ds-card--highlight">
-          <div>
-            <h3>Build a partner-led CX growth story with IPI</h3>
-            <p>Combine platform innovation, AI, security and communications to create differentiated customer solutions.</p>
-          </div>
-          <div className="market-cta__actions">
-            <StandardButton onClick={() => onNavigate?.("sample-customers")}>Explore Sample Customers</StandardButton>
-            <SecondaryButton onClick={() => onNavigate?.("channel-marketing")}>Open Sales Toolkit</SecondaryButton>
-          </div>
+      <section className="ds-section">
+        <SectionHeader title="How to position ElasticCX in live opportunities" />
+        <div className="competitive-sales-grid">
+          {[{ t: "Best fit opportunities", p: "Customers looking for modern cloud CX, balanced voice+digital capability and faster deployment with manageable complexity." }, { t: "Competitive strengths", p: "Strong cross-category coverage, practical platform balance, cloud-native architecture and AI-ready positioning." }, { t: "Questions to ask prospects", p: "Are they unifying voice and digital? Do they need simpler administration and API flexibility with rapid integrations?" }, { t: "Watchouts / where to qualify carefully", p: "If buyers are focused on niche specialist capabilities, run deeper validation and keep claims aligned to proven matrix evidence." }].map((card) => <article className="ds-card" key={card.t}><h4>{card.t}</h4><p>{card.p}</p></article>)}
         </div>
-      </SectionWrapper>
+      </section>
+
+      <section className="ds-section">
+        <SectionHeader title="ElasticCX vs competitor average by category" />
+        <div className="competitive-bars">
+          {categorySummary.map((cat) => <div className="ds-card competitive-bar-card" key={cat.id}><h4>{cat.label}</h4><div className="competitive-bar"><span style={{ width: `${(cat.elasticAverage / 4) * 100}%` }} /></div><small>ElasticCX {cat.elasticAverage.toFixed(1)} / 4 vs competitor avg {cat.competitorAverage.toFixed(1)} / 4</small></div>)}
+        </div>
+      </section>
+
+      <section className="ds-card ds-card--highlight competitive-cta">
+        <h3>Use the matrix to shape stronger partner conversations</h3>
+        <div className="sample-cta-actions"><button className="ui-btn ui-btn--primary">Open Sales Toolkit</button><button className="ui-btn ui-btn--secondary">View Sample Customers</button></div>
+      </section>
+
+      <div className={`sample-drawer-backdrop ${selectedRow ? "open" : ""}`} onClick={() => setSelectedRowId(null)}>
+        <aside className={`sample-story-drawer ${selectedRow ? "open" : ""}`} onClick={(e) => e.stopPropagation()}>
+          {selectedRow ? <div className="sample-story-drawer__content"><button className="ui-btn ui-btn--ghost" onClick={() => setSelectedRowId(null)}>Close</button><h2>{selectedRow.label}</h2><p>{COMPETITIVE_CATEGORIES.find((cat) => cat.id === selectedRow.category)?.label}</p><div className="competitive-drawer-grid">{COMPETITIVE_COMPETITORS.map((competitor) => <div key={competitor.id} className="ds-card"><strong>{competitor.name}</strong>{renderRating(selectedRow.ratings[competitor.id], competitor.home)}</div>)}</div><div className="sample-detail-block"><h4>Why it matters</h4><p>{selectedRow.conversation}</p></div><div className="sample-detail-block"><h4>Partner relevance</h4><p>{selectedRow.partnerValue}</p></div><div className="sample-detail-block"><h4>ElasticCX positioning guidance</h4><p>{selectedRow.positioning}</p></div></div> : null}
+        </aside>
+      </div>
     </div>
   );
 }
@@ -11247,6 +11166,7 @@ const NAV_SECTIONS = [
     title: "Tools",
     items: [
       { id: "prospect", icon: <NavIcon name="search" />, label: "Prospect Search" },
+      { id: "competitive-matrix", icon: <NavIcon name="chart" />, label: "Competitive Matrix" },
       { id: "partner-account-plan", icon: <NavIcon name="checklist" />, label: "Account Planning" },
       { id: "governance", icon: <NavIcon name="badge" />, label: "Governance RACI" },
     ],
@@ -11273,6 +11193,7 @@ const PAGE_PATHS = {
   "partner-operational-support": "/partner-operational-support",
   "channel-dashboard": "/channel-manager-dashboard",
   "partner-account-plan": "/partner-account-plan-tool",
+  "competitive-matrix": "/competitive-matrix",
   prospect: "/partner-prospect-tool",
   "sample-customers": "/sample-customers",
   "market-vision": "/market-vision",
@@ -11482,6 +11403,7 @@ function App() {
   function renderPage() {
     if (page === "channel-dashboard") return <ChannelManagerDashboardPage />;
     if (page === "partner-account-plan") return <PartnerAccountPlanToolPage />;
+    if (page === "competitive-matrix") return <CompetitiveMatrixPage />;
     if (page === "hub")
       return (
         <EnablementHub onBack={() => setPage("main")} onNavigate={setPage} />
