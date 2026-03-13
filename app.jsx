@@ -588,89 +588,98 @@ function CogIcon() {
 }
 
 function SettingsMenu({ navSections, hiddenPageIds, onTogglePageVisibility, versionInfo }) {
-  const [open, setOpen] = React.useState(false);
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const menuRef = React.useRef(null);
+
+  const resetVisibility = React.useCallback(() => {
+    navSections.forEach((section) => {
+      section.items.forEach((item) => {
+        if (hiddenPageIds.has(item.id)) {
+          onTogglePageVisibility(item.id);
+        }
+      });
+    });
+  }, [hiddenPageIds, navSections, onTogglePageVisibility]);
 
   React.useEffect(() => {
-    if (!open) return undefined;
-    const closeOnEscape = (event) => {
-      if (event.key === "Escape") setOpen(false);
+    if (!menuOpen) return undefined;
+    const closeOnEscape = (evt) => {
+      if (evt.key === "Escape") setMenuOpen(false);
     };
+    const closeOnOutsideClick = (evt) => {
+      if (!menuRef.current?.contains(evt.target)) {
+        setMenuOpen(false);
+      }
+    };
+
     window.addEventListener("keydown", closeOnEscape);
+    window.addEventListener("mousedown", closeOnOutsideClick);
     return () => {
       window.removeEventListener("keydown", closeOnEscape);
+      window.removeEventListener("mousedown", closeOnOutsideClick);
     };
-  }, [open]);
+  }, [menuOpen]);
 
   return (
-    <React.Fragment>
+    <div className="settings-menu" ref={menuRef}>
       <button
         type="button"
         className="settings-menu__trigger"
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        aria-label="Open settings"
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
+        aria-label="Open settings menu"
         title="Settings"
-        onClick={() => setOpen(true)}
+        onClick={() => setMenuOpen((prev) => !prev)}
       >
         <CogIcon />
       </button>
 
-      <div className={`settings-drawer-backdrop ${open ? "open" : ""}`} onClick={() => setOpen(false)} aria-hidden={!open}>
-        <aside
-          className={`settings-drawer ${open ? "open" : ""}`}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Platform settings"
-          onClick={(event) => event.stopPropagation()}
-        >
-          <div className="settings-drawer__header">
-            <div className="settings-drawer__heading">
-              <span className="settings-drawer__heading-icon"><CogIcon /></span>
-              <div>
-                <div className="settings-drawer__title">Platform settings</div>
-                <div className="settings-drawer__subtitle">Toggle pages visible in navigation</div>
+      <div className={`settings-menu__panel ${menuOpen ? "open" : ""}`} role="menu" aria-hidden={!menuOpen}>
+        <div className="settings-menu__panel-header">
+          <div>
+            <div className="settings-menu__panel-title">Platform settings</div>
+            <div className="settings-menu__panel-subtitle">Toggle sections visible in the nav</div>
+          </div>
+          <button type="button" className="settings-menu__panel-close" onClick={() => setMenuOpen(false)} aria-label="Close settings">×</button>
+        </div>
+
+        <div className="settings-menu__panel-content">
+          {navSections.map((section) => (
+            <div key={section.key} className="settings-menu__section">
+              <div className="settings-menu__section-title">{section.title}</div>
+              <div className="settings-menu__section-items">
+                {section.items.map((item) => {
+                  const isVisible = !hiddenPageIds.has(item.id);
+                  return (
+                    <label key={item.id} className="settings-menu__item">
+                      <span className="settings-menu__item-label">
+                        <span className="settings-menu__item-icon" aria-hidden="true">{item.icon}</span>
+                        <span>{item.label}</span>
+                      </span>
+                      <input
+                        className="settings-drawer__switch-input"
+                        type="checkbox"
+                        role="switch"
+                        checked={isVisible}
+                        aria-label={`${item.label} visibility`}
+                        onChange={() => onTogglePageVisibility(item.id)}
+                      />
+                    </label>
+                  );
+                })}
               </div>
             </div>
-            <button type="button" className="settings-drawer__close" onClick={() => setOpen(false)} aria-label="Close settings">×</button>
-          </div>
+          ))}
+        </div>
 
-          <div className="settings-drawer__content">
-            {navSections.map((section) => (
-              <div key={section.key} className="settings-drawer__section">
-                <div className="settings-drawer__section-title">{section.title}</div>
-                <div className="settings-drawer__section-items">
-                  {section.items.map((item) => {
-                    const isVisible = !hiddenPageIds.has(item.id);
-                    return (
-                      <label key={item.id} className="settings-drawer__item">
-                        <span className="settings-drawer__item-label">
-                          <span className="settings-drawer__item-icon" aria-hidden="true">{item.icon}</span>
-                          <span>{item.label}</span>
-                        </span>
-                        <input
-                          className="settings-drawer__switch-input"
-                          type="checkbox"
-                          role="switch"
-                          checked={isVisible}
-                          aria-label={`${item.label} visibility`}
-                          onChange={() => onTogglePageVisibility(item.id)}
-                        />
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="settings-drawer__build">
-            <div className="settings-drawer__build-title">Build info</div>
-            <div>Version {versionInfo.version}</div>
-            <div>Build {versionInfo.build}</div>
-          </div>
-        </aside>
+        <div className="settings-menu__panel-footer">
+          <button type="button" className="settings-drawer__reset" onClick={resetVisibility}>↺ Reset defaults</button>
+          <div className="settings-drawer__build-title">Build info</div>
+          <div>Version {versionInfo.version}</div>
+          <div>Build {versionInfo.build}</div>
+        </div>
       </div>
-    </React.Fragment>
+    </div>
   );
 }
 
