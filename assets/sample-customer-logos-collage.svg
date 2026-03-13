@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="1024" viewBox="0 0 1536 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Sample customer logos collage</title>
+  <desc id="desc">A single collage image of sample customer logos including Ageas, Autoglass, Co-op, Boden, Impact, Marie Stopes International, Northern Ireland Water, Direct Line, LW Theatres, Peabody, DFS, IRIS, Porsche and United Utilities.</desc>
+  <rect width="1536" height="1024" fill="#f7f7f7"/>
+
+  <g font-family="Inter, Arial, sans-serif" fill="#1f2937">
+    <circle cx="205" cy="180" r="145" fill="none" stroke="#14b8a6" stroke-width="4"/>
+    <text x="130" y="190" font-size="74">ageas</text>
+
+    <text x="505" y="176" font-size="88" font-weight="700" fill="#dc2626">AUTOGLASS</text>
+    <rect x="460" y="74" width="102" height="86" fill="#facc15"/>
+    <rect x="571" y="74" width="70" height="86" fill="#dc2626"/>
+    <polygon points="648,74 761,74 648,160" fill="#dc2626"/>
+
+    <text x="887" y="197" font-size="160" font-weight="700" fill="#06b6d4">co</text>
+    <text x="887" y="322" font-size="160" font-weight="700" fill="#06b6d4">op</text>
+
+    <text x="1213" y="200" font-size="125" fill="#111827" font-style="italic">Boden</text>
+
+    <text x="57" y="522" font-size="116" font-weight="700" fill="#374151">impact</text>
+    <text x="365" y="447" font-size="76" font-weight="700" fill="#0ea5e9">MARIE STOPES</text>
+    <text x="365" y="529" font-size="76" font-weight="700" fill="#0ea5e9">INTERNATIONAL</text>
+    <text x="365" y="596" font-size="62" fill="#4b5563">Children by choice, not chance</text>
+
+    <text x="1014" y="437" font-size="92" fill="#0369a1">northern ireland</text>
+    <text x="1217" y="602" font-size="90" fill="#0ea5e9" font-weight="700">water</text>
+    <path d="M980 590 C1080 710, 1255 560, 1450 650" stroke="#0ea5e9" stroke-width="18" fill="none"/>
+    <path d="M980 632 C1090 742, 1250 600, 1450 689" stroke="#0b4a90" stroke-width="18" fill="none"/>
+
+    <text x="95" y="735" font-size="118" fill="#dc2626">☎</text>
+    <text x="340" y="742" font-size="58" fill="#ef4444">TM</text>
+
+    <text x="867" y="742" font-size="205" font-weight="700" fill="#111827">LW</text>
+    <text x="927" y="830" font-size="95" fill="#111827">THEATRES</text>
+
+    <text x="1086" y="740" font-size="104" fill="#06b6d4">Peabody</text>
+
+    <text x="52" y="958" font-size="188" fill="#6b21a8">dfs</text>
+
+    <text x="555" y="958" font-size="118" font-weight="700" fill="#334155">IRIS</text>
+    <rect x="456" y="888" width="28" height="28" fill="#e11d48"/>
+    <rect x="495" y="860" width="28" height="56" fill="#7dd3fc"/>
+
+    <text x="1045" y="958" font-size="118" font-weight="700" fill="#334155">IRIS</text>
+    <rect x="948" y="888" width="28" height="28" fill="#e11d48"/>
+    <rect x="986" y="860" width="28" height="56" fill="#7dd3fc"/>
+
+    <text x="1318" y="898" font-size="84" fill="#4b5563">Porsche</text>
+    <text x="1233" y="965" font-size="86" fill="#5b6475">United Utilities</text>
+  </g>
+</svg>
