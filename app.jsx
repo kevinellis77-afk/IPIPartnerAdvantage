@@ -10773,40 +10773,7 @@ const SAMPLE_CUSTOMER_STORIES = [
   },
 ];
 
-const buildLogoDataUri = ({ label, bg = "#ffffff", fg = "#1f2937", accent = "", mark = "" }) => {
-  const markCircle = accent
-    ? `<circle cx="38" cy="30" r="14" fill="${accent}" opacity="0.95" />`
-    : "";
-  const markText = mark
-    ? `<text x="38" y="35" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="800" fill="#ffffff">${mark}</text>`
-    : "";
-
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 100" role="img" aria-label="${label} logo"><rect width="320" height="100" rx="14" fill="${bg}"/>${markCircle}${markText}<text x="${mark ? "66" : "24"}" y="60" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="700" fill="${fg}">${label}</text></svg>`;
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-};
-
-const LOGO_COLLAGE_ITEMS = [
-  { id: "co-op", name: "Co-op", logoSrc: buildLogoDataUri({ label: "co-op", bg: "#e5e7eb", fg: "#06b6d4" }) },
-  { id: "dfs", name: "DFS", logoSrc: buildLogoDataUri({ label: "dfs", bg: "#e5e7eb", fg: "#5b2a8d", accent: "#d1008f", mark: "♥" }) },
-  { id: "direct-line", name: "Direct Line", logoSrc: buildLogoDataUri({ label: "direct line", bg: "#f3f4f6", fg: "#171717", accent: "#ef4444", mark: "☎" }) },
-  { id: "interactive-investor", name: "Interactive Investor", logoSrc: buildLogoDataUri({ label: "interactive investor", bg: "#1d4ed8", fg: "#ffffff", accent: "#f97316", mark: "ii" }) },
-  { id: "iris", name: "IRIS", logoSrc: buildLogoDataUri({ label: "IRIS", bg: "#ffffff", fg: "#334155", accent: "#38bdf8", mark: "I" }) },
-  { id: "irish-life", name: "Irish Life", logoSrc: buildLogoDataUri({ label: "Irish Life", bg: "#4f46e5", fg: "#ffffff" }) },
-  { id: "ni-water", name: "Northern Ireland Water", logoSrc: buildLogoDataUri({ label: "northern ireland water", bg: "#ffffff", fg: "#0369a1", accent: "#0ea5e9", mark: "~" }) },
-  { id: "ocado", name: "Ocado", logoSrc: buildLogoDataUri({ label: "Ocado", bg: "#ffffff", fg: "#4c1d95" }) },
-  { id: "pva", name: "PVA", logoSrc: buildLogoDataUri({ label: "pva", bg: "#f3f4f6", fg: "#16a34a" }) },
-  { id: "autoglass", name: "Autoglass", logoSrc: buildLogoDataUri({ label: "AUTOGLASS", bg: "#ffffff", fg: "#dc2626", accent: "#facc15", mark: "A" }) },
-  { id: "boden", name: "Boden", logoSrc: buildLogoDataUri({ label: "Boden", bg: "#ffffff", fg: "#111827" }) },
-  { id: "bristol", name: "Bristol City Council", logoSrc: buildLogoDataUri({ label: "Bristol City Council", bg: "#ffffff", fg: "#b91c1c", accent: "#ef4444", mark: "B" }) },
-  { id: "liberata", name: "Liberata", logoSrc: buildLogoDataUri({ label: "Liberata", bg: "#ffffff", fg: "#1f2937" }) },
-  { id: "ageas", name: "Ageas", logoSrc: buildLogoDataUri({ label: "Ageas", bg: "#ffffff", fg: "#2563eb" }) },
-  { id: "hillarys", name: "Hillarys", logoSrc: buildLogoDataUri({ label: "Hillarys", bg: "#ffffff", fg: "#7c3aed" }) },
-  { id: "retail-leader", name: "Retail Leader", logoText: "Retail Leader" },
-  { id: "public-service", name: "Public Service", logoText: "Public Service" },
-  { id: "insurance-group", name: "Insurance Group", logoText: "Insurance Group" },
-  { id: "membership-brand", name: "Membership Brand", logoText: "Membership Brand" },
-  { id: "cx-innovator", name: "CX Innovator", logoText: "CX Innovator" },
-];
+const SAMPLE_CUSTOMER_LOGOS_IMAGE_SRC = "assets/sample-customer-logos-collage.svg";
 
 function SampleCustomersPage() {
   const stories = SAMPLE_CUSTOMER_STORIES;
@@ -10851,11 +10818,12 @@ function SampleCustomersPage() {
           </div>
         </div>
         <div className="logo-collage" aria-label="Customer logo collage">
-          {LOGO_COLLAGE_ITEMS.map((logo) => (
-            <span key={logo.id} className={`logo-pill ${logo.logoSrc ? "" : "logo-pill--text"}`.trim()}>
-              {logo.logoSrc ? <img src={logo.logoSrc} alt={`${logo.name} logo`} loading="lazy" /> : (logo.logoText || logo.name)}
-            </span>
-          ))}
+          <img
+            className="logo-collage-image"
+            src={SAMPLE_CUSTOMER_LOGOS_IMAGE_SRC}
+            alt="Collage of sample customer logos"
+            loading="lazy"
+          />
         </div>
       </section>
 
