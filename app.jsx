@@ -2930,6 +2930,15 @@ function ProductModal({ productName, onClose, onNavigate }) {
 
 // PLATFORM STACK SECTION
 // ═══════════════════════════════════════════════════════
+const PRODUCT_ALIASES = {
+  "PCI Cloud DTMF Suppression": "DTMF Suppression",
+  "PCI Cloud (DTMF Suppression)": "DTMF Suppression",
+};
+
+function resolveProductKey(productName) {
+  return PRODUCT_DATA[productName] ? productName : PRODUCT_ALIASES[productName] || null;
+}
+
 const STACK_LAYERS = [
   {
     id: "prof",
@@ -2951,14 +2960,14 @@ const STACK_LAYERS = [
   },
   {
     id: "payments",
-    label: "Compliance",
-    sublabel: "Compliance add-ons for UCaaS & CCaaS",
+    label: "PCI Cloud",
+    sublabel: "PCI Cloud add-ons for UCaaS & CCaaS",
     icon: "🔐",
     color: "#C0887B",
     glow: "255,154,108",
     bg: "linear-gradient(135deg,rgba(255,154,108,0.18),rgba(255,154,108,0.07))",
     border: "rgba(255,154,108,0.45)",
-    items: ["Pauseable", "PCI Cloud (DTMF Suppression)", "Digital Pay by Link"],
+    items: ["Pauseable", "PCI Cloud DTMF Suppression", "Digital Pay by Link"],
     desc: "Secure payment add-ons that protect cardholder data and support PCI-DSS compliance without disrupting the live customer conversation.",
     span: "half",
   },
@@ -3122,7 +3131,8 @@ function StackLayerFull({ layer, isActive, onToggle, onProduct }) {
           }}
         >
           {layer.items.map((item) => {
-            const hasDetail = !!PRODUCT_DATA[item];
+            const productKey = resolveProductKey(item);
+            const hasDetail = !!productKey;
             return (
               <span
                 key={item}
@@ -3131,7 +3141,7 @@ function StackLayerFull({ layer, isActive, onToggle, onProduct }) {
                   hasDetail
                     ? (e) => {
                         e.stopPropagation();
-                        onProduct && onProduct(item);
+                        onProduct && onProduct(productKey);
                       }
                     : undefined
                 }
