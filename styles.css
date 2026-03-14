@@ -1213,6 +1213,50 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
 .sidebar-nav-text{min-width:0;display:flex;align-items:center;}
 .sidebar-nav-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;font-size:13px;font-weight:600;color:inherit;}
 
+.app-topbar__context{
+  color:var(--text-secondary);
+  font-size:11px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-top:2px;
+}
+.sidebar-collapse-toggle{
+  width:100%;
+  border:1px solid var(--border-soft);
+  background:var(--bg-subtle);
+  color:var(--text-secondary);
+  border-radius:10px;
+  min-height:34px;
+  padding:0 10px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  font-size:11px;
+  letter-spacing:.04em;
+  font-weight:700;
+  cursor:pointer;
+}
+.sidebar-collapse-toggle:hover{color:var(--text-primary);border-color:color-mix(in srgb,var(--border-soft) 65%,var(--brand-secondary));}
+.app-sidebar.is-compact .sidebar-top{gap:10px;}
+.app-sidebar.is-compact .sidebar-brand{justify-content:center;}
+.app-sidebar.is-compact .sidebar-brand-copy,
+.app-sidebar.is-compact .sidebar-collapse-toggle span:first-child,
+.app-sidebar.is-compact .nav-group-toggle span:first-child,
+.app-sidebar.is-compact .sidebar-footer{display:none;}
+.app-sidebar.is-compact .sidebar-collapse-toggle{justify-content:center;padding:0;min-height:32px;}
+.app-sidebar.is-compact .sidebar-nav{gap:8px;}
+.app-sidebar.is-compact .nav-group{align-items:center;}
+.app-sidebar.is-compact .nav-group-toggle{width:42px;height:30px;padding:0;justify-content:center;}
+.app-sidebar.is-compact .nav-group-toggle .nav-group-chevron{transform:none;}
+.app-sidebar.is-compact .section-divider{margin:2px 0;width:52px;}
+.app-sidebar.is-compact .nav-group-items{align-items:center;gap:6px;}
+.app-sidebar.is-compact .sidebar-nav-item{width:46px;min-height:42px;padding:0;justify-content:center;border-radius:12px;}
+.app-sidebar.is-compact .sidebar-nav-item.active::before{left:-6px !important;}
+.app-sidebar.is-compact .sidebar-nav-icon{width:18px;height:18px;}
+.app-sidebar.is-compact .sidebar-nav-item .sidebar-nav-icon{margin:0;}
+.app-sidebar.is-compact .sidebar-nav-scroll{padding-right:0;}
+
+
 .ds-card,.channel-card,.prj-journey-card,.prj-contrast-card,.prj-use-case-card,.table-wrapper,.channel-table-wrap,.raciTableWrap,.ownershipCard{
   border-radius:18px !important;
   padding:20px;
@@ -1251,7 +1295,7 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
   .app-topbar{padding:16px;}
   .ds-page-header__content{flex-direction:column;}
 }
-@media (max-width:1100px){
+@media (max-width:900px){
   .app-shell,.app-layout{min-height:100dvh;height:auto;overflow:visible;}
   .app-sidebar,.sidebar{position:static !important;height:auto !important;min-height:auto;width:100% !important;min-width:0 !important;max-width:100% !important;flex:1 1 auto;overflow:visible;}
   .sidebar-inner,.sidebar-nav-scroll,.sidebar-nav{min-height:auto;overflow:visible;}
