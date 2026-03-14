@@ -364,11 +364,7 @@ function AppPageHeader({ eyebrow, title, subtitle, actions = null }) {
 function SectionHeader({ eyebrow, title, description }) {
   return (
     <div className="ds-section-header">
-      {eyebrow ? (
-        <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(103,216,255,0.78)" }}>
-          {eyebrow}
-        </div>
-      ) : null}
+      {eyebrow ? <div className="ds-section-header__eyebrow">{eyebrow}</div> : null}
       <h2>{title}</h2>
       {description ? <p>{description}</p> : null}
     </div>
@@ -482,7 +478,7 @@ function StatTile(props) {
 }
 
 function DataTable({ className = "", children }) {
-  return <StandardTable className={className}>{children}</StandardTable>;
+  return <StandardTable className={`ds-data-table ${className}`.trim()}>{children}</StandardTable>;
 }
 
 
@@ -551,7 +547,7 @@ function ActionButton({ children, variant = "primary", className = "", ...props 
 }
 
 function FilterBar({ children, className = "" }) {
-  return <div className={`filter-bar ${className}`.trim()}>{children}</div>;
+  return <div className={`filter-bar ds-filter-bar ${className}`.trim()}>{children}</div>;
 }
 
 
