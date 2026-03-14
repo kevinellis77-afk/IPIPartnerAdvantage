@@ -1304,6 +1304,45 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
 
 
 
+
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;}
+.kpi-card{padding:14px;display:flex;flex-direction:column;gap:8px;position:relative;overflow:hidden;}
+.kpi-card::after{content:"";position:absolute;inset:auto -30% -65% auto;width:180px;height:180px;border-radius:999px;background:radial-gradient(circle at center,rgba(103,216,255,0.18),transparent 68%);pointer-events:none;}
+.kpi-card__head{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.kpi-card__context{font-size:10px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:var(--text-secondary);}
+.kpi-card__icon{width:32px;height:32px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;border:1px solid var(--border-soft);background:color-mix(in srgb,var(--bg-subtle) 78%,transparent);}
+.kpi-label{font-size:12px;font-weight:700;color:var(--text-secondary);line-height:1.35;}
+.kpi-value{font-size:clamp(26px,2.6vw,34px);font-weight:900;line-height:1;font-family:var(--font-title);color:var(--heading-primary);}
+.kpi-card__meta{font-size:11px;color:var(--text-secondary);line-height:1.45;}
+.kpi-card--success .kpi-value{color:#84dfbd;}
+.kpi-card--accent .kpi-value{color:#8de3ff;}
+.kpi-card--neutral .kpi-value{color:#d7e8f5;}
+.kpi-card--info .kpi-value{color:#b9cde0;}
+
+.top50-summary-panel{display:flex;flex-direction:column;gap:12px;}
+.top50-summary-panel__header{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.top50-summary-panel__header strong{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--heading-primary);}
+.top50-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;}
+.top50-summary-tile{padding:12px;border-radius:12px;border:1px solid var(--border-soft);background:color-mix(in srgb,var(--bg-subtle) 72%,transparent);display:flex;flex-direction:column;gap:6px;}
+.top50-summary-tile__head{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);}
+.top50-summary-tile__head span{display:inline-flex;width:18px;height:18px;align-items:center;justify-content:center;font-size:11px;border-radius:6px;background:color-mix(in srgb,var(--brand-secondary) 14%,transparent);color:var(--heading-primary);}
+.top50-summary-tile__value{font-size:24px;font-weight:900;font-family:var(--font-title);line-height:1;color:var(--heading-primary);}
+.top50-summary-tile__meta{font-size:11px;color:var(--text-secondary);line-height:1.4;}
+
+.channel-grid-kpi{grid-template-columns:repeat(auto-fit,minmax(260px,1fr));}
+.channel-kpi-card{gap:10px;padding:18px;position:relative;overflow:hidden;}
+.channel-kpi-card::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,rgba(103,216,255,0.72),rgba(111,217,174,0.58));opacity:.9;}
+.channel-kpi-card::after{content:"";position:absolute;right:-24px;bottom:-24px;width:120px;height:120px;border-radius:999px;background:radial-gradient(circle,rgba(103,216,255,0.16),transparent 70%);pointer-events:none;}
+.channel-kpi-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.channel-kpi-title-wrap{display:flex;flex-direction:column;gap:4px;}
+.channel-kpi-eyebrow{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(145,196,176,0.78);}
+.channel-kpi-card .channel-kpi-label{font-size:12px;color:var(--text-primary);letter-spacing:.01em;text-transform:none;}
+.channel-kpi-main{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;}
+.channel-kpi-target{font-size:11px;font-weight:700;color:var(--text-secondary);}
+.channel-kpi-card .channel-chip{align-self:flex-start;}
+.channel-kpi-card .channel-kpi-hint{font-size:11px;color:var(--text-secondary);}
+
 :root[data-theme="light"] .app-sidebar,
 :root[data-theme="light"] .sidebar-footer-card {
   background: var(--bg-surface) !important;
