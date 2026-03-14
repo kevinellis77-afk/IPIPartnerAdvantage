@@ -684,11 +684,12 @@ function SettingsMenu({ navSections, hiddenPageIds, onTogglePageVisibility, vers
   );
 }
 
-function AppTopBar({ title, navSections, hiddenPageIds, onTogglePageVisibility, versionInfo }) {
+function AppTopBar({ title, sectionTitle, navSections, hiddenPageIds, onTogglePageVisibility, versionInfo }) {
   return (
     <header className="app-topbar">
       <div>
         <div className="app-topbar__eyebrow">IPI Partner Advantage</div>
+        {sectionTitle ? <div className="app-topbar__context">{sectionTitle}</div> : null}
         <div className="app-topbar__title">{title}</div>
       </div>
       <div className="app-topbar__actions">
@@ -12389,6 +12390,7 @@ function withBase(pathname) {
 
 function SideNav({ page, setPage, onLayoutChange, navSections = NAV_SECTIONS }) {
   const SIDEBAR_WIDTH = 250;
+  const COMPACT_SIDEBAR_WIDTH = 86;
   const [openSections, setOpenSections] = React.useState(() => {
     try {
       const saved = window.localStorage.getItem("ipi-sidebar-open-sections");
@@ -12396,8 +12398,24 @@ function SideNav({ page, setPage, onLayoutChange, navSections = NAV_SECTIONS }) 
     } catch (error) {
       // no-op
     }
-    return { proposition: true, governance: true, tools: true };
+    return { overview: true, proposition: true, governance: true, tools: true };
   });
+  const [isCompact, setIsCompact] = React.useState(() => {
+    try {
+      return window.localStorage.getItem("ipi-sidebar-compact") === "true";
+    } catch (error) {
+      return false;
+    }
+  });
+
+  React.useEffect(() => {
+    const activeSection = navSections.find((section) => section.items.some((item) => item.id === page));
+    if (!activeSection) return;
+    setOpenSections((prev) => {
+      if (prev[activeSection.key] !== false) return prev;
+      return { ...prev, [activeSection.key]: true };
+    });
+  }, [navSections, page]);
 
   const toggleSection = (key) => {
     setOpenSections((prev) => ({
@@ -12415,18 +12433,31 @@ function SideNav({ page, setPage, onLayoutChange, navSections = NAV_SECTIONS }) 
   }, [openSections]);
 
   React.useEffect(() => {
+    try {
+      window.localStorage.setItem("ipi-sidebar-compact", String(isCompact));
+    } catch (error) {
+      // no-op
+    }
+  }, [isCompact]);
+
+  React.useEffect(() => {
+    const width = isCompact ? COMPACT_SIDEBAR_WIDTH : SIDEBAR_WIDTH;
+    document.documentElement.style.setProperty("--sidebar-width", `${width}px`);
     onLayoutChange?.({
       isMobile: false,
       isSidebarPinned: true,
-      isCollapsed: false,
+      isCollapsed: isCompact,
       isSidebarVisible: true,
-      sidebarWidth: SIDEBAR_WIDTH,
+      sidebarWidth: width,
     });
-  }, [onLayoutChange]);
+    return () => {
+      document.documentElement.style.removeProperty("--sidebar-width");
+    };
+  }, [isCompact, onLayoutChange]);
 
   return (
     <React.Fragment>
-      <aside className="app-sidebar">
+      <aside className={`app-sidebar ${isCompact ? "is-compact" : ""}`}>
         <div className="sidebar-inner">
           <div className="sidebar-top">
             <div className="sidebar-brand">
@@ -12436,6 +12467,18 @@ function SideNav({ page, setPage, onLayoutChange, navSections = NAV_SECTIONS }) 
                 <div className="sidebar-subtitle">Channel Workspace</div>
               </div>
             </div>
+            <button
+              type="button"
+              className="sidebar-collapse-toggle"
+              onClick={() => setIsCompact((prev) => !prev)}
+              aria-label={isCompact ? "Expand sidebar" : "Collapse sidebar"}
+              title={isCompact ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              <span>{isCompact ? "Expand menu" : "Compact menu"}</span>
+              <span className={`nav-group-chevron ${isCompact ? "" : "open"}`} aria-hidden="true">
+                <NavIcon name="chevronDown" />
+              </span>
+            </button>
           </div>
 
           <div className="sidebar-nav-scroll">
@@ -12450,6 +12493,7 @@ function SideNav({ page, setPage, onLayoutChange, navSections = NAV_SECTIONS }) 
                         className="nav-group-toggle"
                         aria-expanded={isOpen}
                         onClick={() => toggleSection(section.key)}
+                        title={isCompact ? section.title : ""}
                       >
                         <span>{section.title}</span>
                         <span className={`nav-group-chevron ${isOpen ? "open" : ""}`} aria-hidden="true">
@@ -12465,7 +12509,7 @@ function SideNav({ page, setPage, onLayoutChange, navSections = NAV_SECTIONS }) 
                                 key={item.id}
                                 item={item}
                                 active={active}
-                                collapsed={false}
+                                collapsed={isCompact}
                                 onClick={() => {
                                   setPage(item.id);
                                 }}
@@ -12910,11 +12954,12 @@ function App() {
   }, []);
 
   const currentPageMeta = NAV_ITEMS.find((item) => item.id === page) || NAV_ITEMS[0];
+  const currentSectionMeta = navSections.find((section) => section.items.some((item) => item.id === page));
 
   return (
     <AppShell
       sidebar={<SharedSidebar page={page} setPage={setPage} onLayoutChange={setSidebarLayout} navSections={visibleNavSections} />}
-      topbar={<AppTopBar title={currentPageMeta?.label || "Dashboard"} navSections={navSections} hiddenPageIds={hiddenPageIds} onTogglePageVisibility={togglePageVisibility} versionInfo={APP_VERSION_INFO} />}
+      topbar={<AppTopBar title={currentPageMeta?.label || "Dashboard"} sectionTitle={currentSectionMeta?.title || "Overview"} navSections={navSections} hiddenPageIds={hiddenPageIds} onTogglePageVisibility={togglePageVisibility} versionInfo={APP_VERSION_INFO} />}
     >
       <div
         className="app-main-inner with-sidebar page-content"
