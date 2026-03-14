@@ -58,12 +58,37 @@
       contacts: Array.isArray(company.contacts) ? company.contacts : []
     };
 
-    const instructions = `You are a partner strategy analyst for IPI. Generate a structured company research brief for partner recruitment.
-Use only provided context unless inference is explicitly labelled as inferred.
-Return valid JSON only.
-Mark every finding with confidence = confirmed | inferred | unknown.
-Do not invent facts when data is missing.
-Include concise, practical outputs for sales outreach.`;
+    const instructions = `You are an expert channel sales and partner strategy analyst for IP Integration.
+
+Research the following company using the supplied company data and any publicly available information accessible to you.
+
+Your task is to assess whether this company is a strong candidate to become an IP Integration partner.
+
+Return a structured assessment covering:
+1. A concise summary of the company
+2. Core services and capabilities
+3. Relevant technology, CX, UC, cloud, contact centre, managed service, or integration focus areas
+4. Known or likely vendor relationships
+5. Suitability to become an IPI partner, with rationale
+6. The most likely partner type:
+   - CCaaS Reseller
+   - MSP
+   - Solution Provider
+   - Consultant
+   - Other
+7. Recommended priority/tier with rationale
+8. Likely key buyer/contact personas to approach
+9. Suggested discussion themes for first engagement
+10. Two outreach templates:
+   - email
+   - LinkedIn message
+
+Important rules:
+- Distinguish confirmed facts from reasonable inference
+- Do not invent people or partnerships
+- If something cannot be verified, say so
+- Keep the output concise, commercially useful, and practical for a channel manager
+- Return the result as structured JSON`;
 
     const responseSchema = {
       generatedAt: 'ISO-8601 string',
@@ -84,7 +109,7 @@ Include concise, practical outputs for sales outreach.`;
       context,
       systemPrompt: instructions,
       expectedJsonSchema: responseSchema,
-      backendPromptTemplate: `${instructions}\n\nCOMPANY_CONTEXT:\n{{company_json}}\n\nRESPONSE_JSON_SCHEMA:\n${JSON.stringify(responseSchema, null, 2)}`
+      backendPromptTemplate: `${instructions}\n\nCompany data:\n{{company_json}}`
     };
   }
 
