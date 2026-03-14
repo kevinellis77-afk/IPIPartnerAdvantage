@@ -5399,20 +5399,27 @@ function ProspectToolPage() {
     </div>
 
     {saveViewOpen && <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setSaveViewOpen(false); }}>
-      <div className="modal-box ds-card" style={{ maxWidth: 560 }} role="dialog" aria-modal="true" aria-label="Save current view">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3 style={{ margin: 0 }}>Save current view</h3>
+      <div className="modal-box ds-card saved-view-modal" role="dialog" aria-modal="true" aria-label="Save current view">
+        <div className="saved-view-modal__header">
+          <div>
+            <p className="saved-view-modal__eyebrow">Saved-view panel</p>
+            <h3>Save current view</h3>
+            <p>Capture the current filters, sort order and visible columns for quick return to this workflow.</p>
+          </div>
           <IconButton icon="close" label="Close save view dialog" onClick={() => setSaveViewOpen(false)} />
         </div>
-        <div style={{ display: 'grid', gap: 10, marginTop: 12 }}>
-          <input className="ui-search" placeholder="View name" value={saveViewForm.name} onChange={(e) => setSaveViewForm((f) => ({ ...f, name: e.target.value, error: '' }))} />
-          <textarea className="ui-search" placeholder="Description (optional)" value={saveViewForm.description} onChange={(e) => setSaveViewForm((f) => ({ ...f, description: e.target.value }))} rows={3} />
-          <label><input type="checkbox" checked={saveViewForm.setDefault} onChange={(e) => setSaveViewForm((f) => ({ ...f, setDefault: e.target.checked }))} /> Set as default view</label>
-          <label><input type="checkbox" checked={saveViewForm.overwrite} onChange={(e) => setSaveViewForm((f) => ({ ...f, overwrite: e.target.checked, error: '' }))} /> Overwrite if name already exists</label>
-          {saveViewForm.error && <div style={{ color: '#ffb4b4', fontSize: 12 }}>{saveViewForm.error}</div>}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-            <IconButton icon="save" label="Save view now" onClick={handleSaveView} />
+        <div className="saved-view-modal__body">
+          <label className="saved-view-modal__field"><span>View name</span><input className="ui-search" placeholder="Tier 1 UK partners" value={saveViewForm.name} onChange={(e) => setSaveViewForm((f) => ({ ...f, name: e.target.value, error: '' }))} /></label>
+          <label className="saved-view-modal__field"><span>Description (optional)</span><textarea className="ui-search" placeholder="Prioritise strategic partners with validated web + LinkedIn presence" value={saveViewForm.description} onChange={(e) => setSaveViewForm((f) => ({ ...f, description: e.target.value }))} rows={3} /></label>
+          <div className="saved-view-modal__toggles">
+            <label><input type="checkbox" checked={saveViewForm.setDefault} onChange={(e) => setSaveViewForm((f) => ({ ...f, setDefault: e.target.checked }))} /> Set as default view</label>
+            <label><input type="checkbox" checked={saveViewForm.overwrite} onChange={(e) => setSaveViewForm((f) => ({ ...f, overwrite: e.target.checked, error: '' }))} /> Overwrite if name already exists</label>
           </div>
+          {saveViewForm.error && <div className="saved-view-modal__error">{saveViewForm.error}</div>}
+        </div>
+        <div className="saved-view-modal__footer">
+          <button className="ui-btn ui-btn--ghost" type="button" onClick={() => setSaveViewOpen(false)}>Cancel</button>
+          <button className="ui-btn ui-btn--primary" type="button" onClick={handleSaveView}>Save view</button>
         </div>
       </div>
     </div>}
@@ -5422,18 +5429,18 @@ function ProspectToolPage() {
       <aside className="prospect-drawer" role="dialog" aria-modal="true" aria-label={`Partner details for ${selected.displayName}`}>
         <div className="prospect-drawer-header">
           <div className="prospect-drawer-title">
+            <span className="prospect-drawer-kicker">Partner detail</span>
             <h3>{selected.displayName}</h3>
             <div className="prospect-drawer-subtitle">
               <span className={getTierClass(selected)}>{selected.partnerTierName || 'Low Priority'}</span>
               <span className="score-badge">Score {selected.idealPartnerScore}</span>
-              <span>{selectedIndex + 1} of {sorted.length}</span>
+              <span className="prospect-drawer-position">{selectedIndex + 1} of {sorted.length}</span>
             </div>
           </div>
           <div className="prospect-drawer-actions">
             <button type="button" className="prospect-icon-link" aria-label={selected.website ? 'Open Website' : 'Website unavailable'} title={selected.website ? 'Open Website' : 'Website unavailable'} disabled={!selected.website} onClick={() => selected.website && window.open(window.ProspectToolUtils.normalizeUrl(selected.website), '_blank', 'noopener,noreferrer')}>🌐</button>
             <button type="button" className="prospect-icon-link" aria-label="Research Company" title="Research Company" onClick={() => runCompanyResearch(selected)}>✦</button>
             <button type="button" className="prospect-icon-link" aria-label="Download to CSV" title="Download to CSV" onClick={() => exportRows([selected], `${selected.id}-prospect.csv`)}>⬇</button>
-            <button type="button" className="prospect-icon-link" aria-label={selected.linkedin ? 'Open LinkedIn' : 'LinkedIn unavailable'} title={selected.linkedin ? 'Open LinkedIn' : 'LinkedIn unavailable'} disabled={!selected.linkedin} onClick={() => selected.linkedin && window.open(window.ProspectToolUtils.normalizeUrl(selected.linkedin), '_blank', 'noopener,noreferrer')}>in</button>
             <IconButton icon="prev" label="Previous record" disabled={selectedIndex <= 0} onClick={() => setSelectedRowId(sorted[selectedIndex - 1].id)} />
             <IconButton icon="next" label="Next record" disabled={selectedIndex >= sorted.length - 1} onClick={() => setSelectedRowId(sorted[selectedIndex + 1].id)} />
             <IconButton icon="close" label="Close details drawer" onClick={() => setSelectedRowId(null)} className="prospect-drawer-close" />
@@ -11747,9 +11754,14 @@ function MatrixRowDetailDrawer({ row, categories, competitors, onClose }) {
   return (
     <div className="matrix-drawer-overlay" onClick={onClose}>
       <aside className="matrix-drawer" onClick={(e) => e.stopPropagation()}>
-        <button className="ui-btn ui-btn--ghost" onClick={onClose}>Close</button>
-        <h3>{row.label}</h3>
-        <p className="matrix-drawer-category">{category?.label}</p>
+        <div className="matrix-drawer-header">
+          <div>
+            <p className="matrix-drawer-kicker">Row detail</p>
+            <h3>{row.label}</h3>
+            <p className="matrix-drawer-category">{category?.label}</p>
+          </div>
+          <button className="ui-btn ui-btn--ghost" onClick={onClose}>Close</button>
+        </div>
         <div className="matrix-drawer-ratings">{competitors.map((vendor) => <div key={vendor.id}><strong>{vendor.name}</strong><span>{"★".repeat(row.ratings[vendor.id])}{"☆".repeat(4 - row.ratings[vendor.id])}</span></div>)}</div>
         <div className="matrix-detail-copy">
           <h4>Why it matters</h4>
