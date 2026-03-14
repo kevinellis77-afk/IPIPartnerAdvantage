@@ -11213,6 +11213,357 @@ function CompetitiveMatrixPage() {
   );
 }
 
+const JOURNEY_TOOL_STORAGE_KEY = "ipi-customer-journey-mapping-state-v1";
+const JOURNEY_CHANNEL_OPTIONS = ["Voice", "Chat", "Email", "SMS", "Social", "Web", "App", "Video", "In-person", "Bot / Self-Service"];
+const JOURNEY_PAIN_POINT_OPTIONS = [
+  "Long wait times", "Repeated authentication", "Poor channel switching", "Lack of visibility", "Manual agent effort", "Low automation", "Inconsistent experience", "Weak reporting", "Payment friction", "Compliance risk", "Connectivity / performance issues", "Knowledge gaps", "Handover problems", "Low first-contact resolution",
+];
+const JOURNEY_SOLUTION_OPTIONS = ["ElasticCX CCaaS", "AI Insights", "AI Sidekick", "Cloud PCI", "ElasticCX UCaaS", "SD-WAN", "DesktopLive"];
+const DEFAULT_JOURNEY_STAGE_NAMES = ["Awareness", "Contact", "Authentication", "Support Interaction", "Resolution", "Follow-up"];
+
+function createJourneyStage(name = "New Stage") {
+  return {
+    id: `stage-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    name,
+    channel: "Web",
+    touchpoint: "",
+    customerGoal: "",
+    internalTeam: "",
+    experienceScore: 3,
+    painPoints: [],
+    frictionNotes: "",
+    metrics: {
+      averageWaitTime: "",
+      averageHandleTime: "",
+      resolutionRate: "",
+      csat: "",
+      dropRate: "",
+      transferRate: "",
+      containmentRate: "",
+      paymentSuccessRate: "",
+      otherKpi: "",
+    },
+    opportunities: [],
+    automationNotes: "",
+  };
+}
+
+function JourneyStageCard({ stage, index, total, onUpdate, onRemove, onMove, positive = false }) {
+  const [showMetrics, setShowMetrics] = React.useState(false);
+  const [showOpportunityForm, setShowOpportunityForm] = React.useState(false);
+  const [draftOpportunity, setDraftOpportunity] = React.useState({ title: "", description: "", priority: "Medium", impact: "CX", solution: "ElasticCX CCaaS", notes: "" });
+
+  const togglePainPoint = (painPoint) => {
+    const next = stage.painPoints.includes(painPoint)
+      ? stage.painPoints.filter((item) => item !== painPoint)
+      : [...stage.painPoints, painPoint];
+    onUpdate({ painPoints: next });
+  };
+
+  const addOpportunity = () => {
+    if (!draftOpportunity.title.trim()) return;
+    onUpdate({
+      opportunities: [
+        ...stage.opportunities,
+        { id: `opp-${Date.now()}`, ...draftOpportunity, title: draftOpportunity.title.trim() },
+      ],
+    });
+    setDraftOpportunity({ title: "", description: "", priority: "Medium", impact: "CX", solution: "ElasticCX CCaaS", notes: "" });
+    setShowOpportunityForm(false);
+  };
+
+  const removeOpportunity = (opportunityId) => {
+    onUpdate({ opportunities: stage.opportunities.filter((item) => item.id !== opportunityId) });
+  };
+
+  return (
+    <div className={`journey-stage-card ${positive ? "is-positive" : ""}`}>
+      <div className="journey-stage-card__header">
+        <strong>Stage {index + 1}</strong>
+        <div className="journey-stage-card__actions">
+          <GhostButton disabled={index === 0} onClick={() => onMove(index, -1)}>←</GhostButton>
+          <GhostButton disabled={index === total - 1} onClick={() => onMove(index, 1)}>→</GhostButton>
+          <GhostButton onClick={() => onRemove(stage.id)}>Remove</GhostButton>
+        </div>
+      </div>
+
+      <FormField value={stage.name} onChange={(e) => onUpdate({ name: e.target.value })} placeholder="Stage Name" />
+      <FormField as="select" value={stage.channel} onChange={(e) => onUpdate({ channel: e.target.value })}>
+        {JOURNEY_CHANNEL_OPTIONS.map((channel) => <option key={channel} value={channel}>{channel}</option>)}
+      </FormField>
+      <textarea className="ui-field" rows={2} value={stage.touchpoint} onChange={(e) => onUpdate({ touchpoint: e.target.value })} placeholder="Touchpoint description" />
+      <input className="ui-field" value={stage.customerGoal} onChange={(e) => onUpdate({ customerGoal: e.target.value })} placeholder="Customer goal" />
+      <input className="ui-field" value={stage.internalTeam} onChange={(e) => onUpdate({ internalTeam: e.target.value })} placeholder="Internal team involved" />
+      <label className="journey-score-row">Current experience rating (1–5)
+        <input type="range" min="1" max="5" value={stage.experienceScore} onChange={(e) => onUpdate({ experienceScore: Number(e.target.value) })} />
+        <span>{stage.experienceScore}</span>
+      </label>
+
+      <div className="journey-chip-list">
+        {JOURNEY_PAIN_POINT_OPTIONS.map((painPoint) => (
+          <button type="button" key={painPoint} onClick={() => togglePainPoint(painPoint)} className={`journey-chip ${stage.painPoints.includes(painPoint) ? "is-active" : ""}`}>{painPoint}</button>
+        ))}
+      </div>
+      <textarea className="ui-field" rows={2} value={stage.frictionNotes} onChange={(e) => onUpdate({ frictionNotes: e.target.value })} placeholder="Friction notes" />
+
+      <div className="journey-stage-card__toggles">
+        <SecondaryButton onClick={() => setShowMetrics((v) => !v)}>{showMetrics ? "Hide Metrics" : "Edit Metrics"}</SecondaryButton>
+        <SecondaryButton onClick={() => setShowOpportunityForm((v) => !v)}>{showOpportunityForm ? "Hide Opportunity Form" : "Add Opportunity"}</SecondaryButton>
+      </div>
+
+      {showMetrics ? (
+        <div className="journey-metrics-grid">
+          <input className="ui-field" value={stage.metrics.averageWaitTime} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, averageWaitTime: e.target.value } })} placeholder="Average Wait Time" />
+          <input className="ui-field" value={stage.metrics.averageHandleTime} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, averageHandleTime: e.target.value } })} placeholder="Average Handle Time" />
+          <input className="ui-field" value={stage.metrics.resolutionRate} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, resolutionRate: e.target.value } })} placeholder="Resolution Rate" />
+          <input className="ui-field" value={stage.metrics.csat} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, csat: e.target.value } })} placeholder="CSAT" />
+          <input className="ui-field" value={stage.metrics.dropRate} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, dropRate: e.target.value } })} placeholder="Drop Rate" />
+          <input className="ui-field" value={stage.metrics.transferRate} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, transferRate: e.target.value } })} placeholder="Transfer Rate" />
+          <input className="ui-field" value={stage.metrics.containmentRate} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, containmentRate: e.target.value } })} placeholder="Containment Rate" />
+          <input className="ui-field" value={stage.metrics.paymentSuccessRate} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, paymentSuccessRate: e.target.value } })} placeholder="Payment Success Rate" />
+          <input className="ui-field" value={stage.metrics.otherKpi} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, otherKpi: e.target.value } })} placeholder="Other KPI" />
+        </div>
+      ) : null}
+
+      {showOpportunityForm ? (
+        <div className="journey-opportunity-form">
+          <input className="ui-field" placeholder="Opportunity title" value={draftOpportunity.title} onChange={(e) => setDraftOpportunity((prev) => ({ ...prev, title: e.target.value }))} />
+          <textarea className="ui-field" rows={2} placeholder="Description" value={draftOpportunity.description} onChange={(e) => setDraftOpportunity((prev) => ({ ...prev, description: e.target.value }))} />
+          <FormField as="select" value={draftOpportunity.priority} onChange={(e) => setDraftOpportunity((prev) => ({ ...prev, priority: e.target.value }))}>
+            {[
+              "Low", "Medium", "High",
+            ].map((priority) => <option key={priority}>{priority}</option>)}
+          </FormField>
+          <FormField as="select" value={draftOpportunity.impact} onChange={(e) => setDraftOpportunity((prev) => ({ ...prev, impact: e.target.value }))}>
+            {["CX", "Cost", "Productivity", "Compliance", "Revenue"].map((impact) => <option key={impact}>{impact}</option>)}
+          </FormField>
+          <FormField as="select" value={draftOpportunity.solution} onChange={(e) => setDraftOpportunity((prev) => ({ ...prev, solution: e.target.value }))}>
+            {JOURNEY_SOLUTION_OPTIONS.map((solution) => <option key={solution}>{solution}</option>)}
+          </FormField>
+          <textarea className="ui-field" rows={2} placeholder="Notes" value={draftOpportunity.notes} onChange={(e) => setDraftOpportunity((prev) => ({ ...prev, notes: e.target.value }))} />
+          <StandardButton onClick={addOpportunity}>Add Opportunity</StandardButton>
+        </div>
+      ) : null}
+
+      {!!stage.opportunities.length && (
+        <div className="journey-opportunity-list">
+          {stage.opportunities.map((opportunity) => (
+            <div className="journey-opportunity-item" key={opportunity.id}>
+              <div>
+                <strong>{opportunity.title}</strong>
+                <p>{opportunity.description || "No description"}</p>
+                <small>{opportunity.priority} priority · {opportunity.impact} · {opportunity.solution}</small>
+              </div>
+              <GhostButton onClick={() => removeOpportunity(opportunity.id)}>Remove</GhostButton>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function JourneyCanvas({ title, stages, setStages, positive = false }) {
+  const updateStage = (stageId, updates) => {
+    setStages((prev) => prev.map((stage) => (stage.id === stageId ? { ...stage, ...updates } : stage)));
+  };
+
+  const removeStage = (stageId) => {
+    setStages((prev) => prev.filter((stage) => stage.id !== stageId));
+  };
+
+  const moveStage = (index, direction) => {
+    setStages((prev) => {
+      const next = [...prev];
+      const target = index + direction;
+      if (target < 0 || target >= next.length) return prev;
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  };
+
+  return (
+    <SectionWrapper>
+      <SectionHeader title={title} description="Connected stages map channels, goals, friction, metrics, and improvement opportunities." />
+      <div className="journey-canvas-scroll">
+        {stages.map((stage, index) => (
+          <React.Fragment key={stage.id}>
+            <JourneyStageCard
+              stage={stage}
+              index={index}
+              total={stages.length}
+              positive={positive}
+              onUpdate={(updates) => updateStage(stage.id, updates)}
+              onRemove={removeStage}
+              onMove={moveStage}
+            />
+            {index < stages.length - 1 ? <div className="journey-connector">→</div> : null}
+          </React.Fragment>
+        ))}
+      </div>
+      <div style={{ marginTop: 12 }}>
+        <SecondaryButton onClick={() => setStages((prev) => [...prev, createJourneyStage(`Stage ${prev.length + 1}`)])}>Add Stage</SecondaryButton>
+      </div>
+    </SectionWrapper>
+  );
+}
+
+function CustomerJourneyMappingPage() {
+  const builderRef = React.useRef(null);
+  const [customerContext, setCustomerContext] = React.useState({ companyName: "", industry: "", journeyName: "", persona: "", serviceScenario: "", currentPlatform: "", notes: "" });
+  const [currentJourneyStages, setCurrentJourneyStages] = React.useState(DEFAULT_JOURNEY_STAGE_NAMES.map((name) => createJourneyStage(name)));
+  const [futureJourneyStages, setFutureJourneyStages] = React.useState([]);
+  const [savedJourneys, setSavedJourneys] = React.useState([]);
+
+  React.useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(JOURNEY_TOOL_STORAGE_KEY) || "{}");
+      if (stored.customerContext) setCustomerContext(stored.customerContext);
+      if (stored.currentJourneyStages?.length) setCurrentJourneyStages(stored.currentJourneyStages);
+      if (stored.futureJourneyStages?.length) setFutureJourneyStages(stored.futureJourneyStages);
+      if (stored.savedJourneys?.length) setSavedJourneys(stored.savedJourneys);
+    } catch (error) {
+      // no-op
+    }
+  }, []);
+
+  React.useEffect(() => {
+    localStorage.setItem(JOURNEY_TOOL_STORAGE_KEY, JSON.stringify({ customerContext, currentJourneyStages, futureJourneyStages, savedJourneys }));
+  }, [customerContext, currentJourneyStages, futureJourneyStages, savedJourneys]);
+
+  const allPainPoints = currentJourneyStages.reduce((total, stage) => total + stage.painPoints.length, 0);
+  const allOpportunities = [...currentJourneyStages, ...futureJourneyStages].flatMap((stage) => stage.opportunities || []);
+  const highestFrictionStages = currentJourneyStages
+    .map((stage) => ({ name: stage.name, frictionScore: stage.painPoints.length + (5 - Number(stage.experienceScore || 3)) }))
+    .sort((a, b) => b.frictionScore - a.frictionScore)
+    .slice(0, 3)
+    .filter((item) => item.frictionScore > 0);
+  const highPriority = allOpportunities.filter((item) => item.priority === "High").map((item) => item.title).slice(0, 4);
+  const solutionCounts = allOpportunities.reduce((acc, item) => {
+    if (!item.solution) return acc;
+    acc[item.solution] = (acc[item.solution] || 0) + 1;
+    return acc;
+  }, {});
+  const suggestedSolutionStack = Object.entries(solutionCounts).sort((a, b) => b[1] - a[1]);
+
+  const summaryText = `Customer Journey Summary\nCompany: ${customerContext.companyName || "Not set"}\nJourney: ${customerContext.journeyName || "Not set"}\nCurrent stages: ${currentJourneyStages.map((stage) => stage.name).join(" → ")}\nTop pain points: ${currentJourneyStages.flatMap((stage) => stage.painPoints).slice(0, 6).join(", ") || "None captured"}\nFuture improvements: ${futureJourneyStages.flatMap((stage) => stage.opportunities?.map((opp) => opp.title) || []).slice(0, 6).join(", ") || "None captured"}\nSuggested platform: ${suggestedSolutionStack.map(([solution]) => solution).join(", ") || "No mapping yet"}\nNext steps: Discovery workshop, Architecture review, Pilot / proof of concept, CX transformation roadmap, Partner account plan follow-up`;
+
+  const saveJourneySnapshot = () => {
+    const snapshot = {
+      id: `journey-${Date.now()}`,
+      label: customerContext.journeyName || `Journey ${savedJourneys.length + 1}`,
+      savedAt: new Date().toISOString(),
+      customerContext,
+      currentJourneyStages,
+      futureJourneyStages,
+    };
+    setSavedJourneys((prev) => [snapshot, ...prev].slice(0, 10));
+  };
+
+  const loadSavedJourney = (journeyId) => {
+    const selected = savedJourneys.find((item) => item.id === journeyId);
+    if (!selected) return;
+    setCustomerContext(selected.customerContext);
+    setCurrentJourneyStages(selected.currentJourneyStages);
+    setFutureJourneyStages(selected.futureJourneyStages);
+  };
+
+  const exportJourney = () => {
+    const payload = { customerContext, currentJourneyStages, futureJourneyStages, exportedAt: new Date().toISOString() };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${(customerContext.journeyName || "customer-journey").replace(/\s+/g, "-").toLowerCase()}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="journey-mapping-page">
+      <PageHeader title="Customer Journey Mapping" subtitle="Map the current customer journey, identify friction points, and design a better future-state experience." actions={<div style={{ display: "flex", gap: 8 }}><StandardButton onClick={() => builderRef.current?.scrollIntoView({ behavior: "smooth" })}>Start Mapping</StandardButton><SecondaryButton onClick={() => {
+        setCustomerContext({ companyName: "Northbridge Retail", industry: "Retail", journeyName: "Returns and Support", persona: "Busy Omnichannel Shopper", serviceScenario: "Post-purchase support", currentPlatform: "Legacy PBX + Email Inbox", notes: "Priority focus on wait time and secure payment handling." });
+        setCurrentJourneyStages(DEFAULT_JOURNEY_STAGE_NAMES.map((name) => createJourneyStage(name)));
+      }}>View Example Journey</SecondaryButton></div>} />
+
+      <SectionWrapper>
+        <div className="journey-summary-cards">
+          {["Current Journey View", "Friction Analysis", "Future-State Design", "Solution Mapping"].map((item) => <MetricCard key={item} label={item} value="Workshop-ready" />)}
+        </div>
+        <p className="journey-intro-copy">Use this tool to visualise stages, channels, pain points, metrics, and transformation opportunities across the end-to-end customer experience.</p>
+      </SectionWrapper>
+
+      <SectionWrapper className="journey-workshop-layout" ref={builderRef}>
+        <div>
+          <SectionHeader title="Customer Context" description="Set the business context before mapping the journey." />
+          <div className="journey-context-grid ds-card ds-card--standard">
+            <input className="ui-field" placeholder="Company Name" value={customerContext.companyName} onChange={(e) => setCustomerContext((prev) => ({ ...prev, companyName: e.target.value }))} />
+            <input className="ui-field" placeholder="Industry" value={customerContext.industry} onChange={(e) => setCustomerContext((prev) => ({ ...prev, industry: e.target.value }))} />
+            <input className="ui-field" placeholder="Journey Name" value={customerContext.journeyName} onChange={(e) => setCustomerContext((prev) => ({ ...prev, journeyName: e.target.value }))} />
+            <input className="ui-field" placeholder="Primary Customer Type / Persona" value={customerContext.persona} onChange={(e) => setCustomerContext((prev) => ({ ...prev, persona: e.target.value }))} />
+            <input className="ui-field" placeholder="Main Service Scenario" value={customerContext.serviceScenario} onChange={(e) => setCustomerContext((prev) => ({ ...prev, serviceScenario: e.target.value }))} />
+            <input className="ui-field" placeholder="Current Platform / Environment" value={customerContext.currentPlatform} onChange={(e) => setCustomerContext((prev) => ({ ...prev, currentPlatform: e.target.value }))} />
+            <textarea className="ui-field" rows={3} placeholder="Notes" value={customerContext.notes} onChange={(e) => setCustomerContext((prev) => ({ ...prev, notes: e.target.value }))} style={{ gridColumn: "1 / -1" }} />
+          </div>
+        </div>
+        <aside className="journey-insights-panel ds-card ds-card--highlight">
+          <h3>Journey Insights</h3>
+          <ul>
+            <li><strong>{currentJourneyStages.length}</strong> journey stages</li>
+            <li><strong>{allPainPoints}</strong> pain points captured</li>
+            <li><strong>{allOpportunities.length}</strong> opportunities identified</li>
+            <li><strong>{highestFrictionStages.map((item) => item.name).join(", ") || "None yet"}</strong> highest-friction stages</li>
+            <li><strong>{highPriority.join(", ") || "None yet"}</strong> highest-priority improvements</li>
+            <li><strong>{suggestedSolutionStack.map(([solution]) => solution).join(", ") || "None yet"}</strong> suggested solution stack</li>
+          </ul>
+          {!!savedJourneys.length && (
+            <FormField as="select" onChange={(e) => loadSavedJourney(e.target.value)} value="">
+              <option value="">Load saved journey…</option>
+              {savedJourneys.map((journey) => <option key={journey.id} value={journey.id}>{journey.label} · {new Date(journey.savedAt).toLocaleDateString()}</option>)}
+            </FormField>
+          )}
+        </aside>
+      </SectionWrapper>
+
+      <JourneyCanvas title="Current-State Journey" stages={currentJourneyStages} setStages={setCurrentJourneyStages} />
+
+      <SectionWrapper>
+        <SectionHeader title="Future-State Journey" description="Redesign channel orchestration, automation, AI support, secure payments, and proactive follow-up." />
+        <div style={{ marginBottom: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <SecondaryButton onClick={() => setFutureJourneyStages(currentJourneyStages.map((stage) => ({ ...stage, id: `future-${stage.id}`, painPoints: [], frictionNotes: "", automationNotes: "Add automation and proactive CX actions" })))}>Copy Current Journey to Future-State</SecondaryButton>
+        </div>
+      </SectionWrapper>
+      <JourneyCanvas title="Future-State Journey Canvas" stages={futureJourneyStages} setStages={setFutureJourneyStages} positive />
+
+      <SectionWrapper>
+        <SectionHeader title="Recommended IPI Solution Mapping" description="Technology recommendations based on identified stage opportunities." />
+        <div className="journey-solution-grid">
+          {(suggestedSolutionStack.length ? suggestedSolutionStack : JOURNEY_SOLUTION_OPTIONS.map((solution) => [solution, 0])).map(([solution, count]) => (
+            <StandardCard key={solution} className="journey-solution-card">
+              <h4>{solution}</h4>
+              <p>{count ? `${count} mapped opportunities` : "Available for mapping"}</p>
+            </StandardCard>
+          ))}
+        </div>
+      </SectionWrapper>
+
+      <SectionWrapper>
+        <SectionHeader title="Summary & Export" description="Generate a polished workshop summary and share next actions." />
+        <StandardCard>
+          <pre className="journey-summary-text">{summaryText}</pre>
+          <div className="journey-export-actions">
+            <StandardButton onClick={saveJourneySnapshot}>Save Journey</StandardButton>
+            <SecondaryButton onClick={() => navigator.clipboard?.writeText(summaryText)}>Copy Summary</SecondaryButton>
+            <SecondaryButton onClick={exportJourney}>Export Journey</SecondaryButton>
+            <GhostButton onClick={() => window.alert("Added to account planning queue.")}>Send to Account Planning</GhostButton>
+            <GhostButton onClick={() => window.alert("Opening CX Discovery Questionnaire workflow.")}>Open CX Discovery Questionnaire</GhostButton>
+          </div>
+        </StandardCard>
+      </SectionWrapper>
+    </div>
+  );
+}
+
 
 const MARKET_VISION_DATA = {
   heroThemes: [
@@ -11500,6 +11851,7 @@ const NAV_SECTIONS = [
     key: "tools",
     title: "Tools",
     items: [
+      { id: "customer-journey-mapping", icon: <NavIcon name="layers" />, label: "Customer Journey Mapping" },
       { id: "prospect", icon: <NavIcon name="search" />, label: "Prospect Search" },
       { id: "competitive-matrix", icon: <NavIcon name="chart" />, label: "Competitive Matrix" },
       { id: "partner-account-plan", icon: <NavIcon name="checklist" />, label: "Account Planning" },
@@ -11528,6 +11880,7 @@ const PAGE_PATHS = {
   "partner-operational-support": "/partner-operational-support",
   "channel-dashboard": "/channel-manager-dashboard",
   "partner-account-plan": "/partner-account-plan-tool",
+  "customer-journey-mapping": "/customer-journey-mapping",
   "competitive-matrix": "/competitive-matrix",
   prospect: "/partner-prospect-tool",
   "sample-customers": "/sample-customers",
@@ -11738,6 +12091,7 @@ function App() {
 
   function renderPage() {
     if (page === "channel-dashboard") return <ChannelManagerDashboardPage />;
+    if (page === "customer-journey-mapping") return <CustomerJourneyMappingPage />;
     if (page === "partner-account-plan") return <PartnerAccountPlanToolPage />;
     if (page === "competitive-matrix") return <CompetitiveMatrixPage />;
     if (page === "hub")
