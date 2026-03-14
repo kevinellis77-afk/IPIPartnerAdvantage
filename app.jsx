@@ -829,7 +829,7 @@ function SegmentModal({ zone, onClose }) {
                   style={{
                     fontSize: 22,
                     fontWeight: 900,
-                    color: "#fff",
+                    color: "var(--text-primary)",
                     letterSpacing: "-0.02em",
                     lineHeight: 1.1,
                     fontFamily: "'Syne',sans-serif",
@@ -911,14 +911,14 @@ function SegmentModal({ zone, onClose }) {
             >
               ← {zone.shortLabel}
             </button>
-            <span style={{ color: "rgba(255,255,255,0.2)", fontSize: 12 }}>
+            <span style={{ color: "color-mix(in srgb, var(--text-secondary) 65%, transparent)", fontSize: 12 }}>
               ›
             </span>
             <span
               style={{
                 fontSize: 12,
                 fontWeight: 700,
-                color: "rgba(255,255,255,0.6)",
+                color: "var(--text-secondary)",
               }}
             >
               {selItem.name}
@@ -1028,7 +1028,7 @@ function SegmentModal({ zone, onClose }) {
                     style={{
                       fontSize: 22,
                       fontWeight: 900,
-                      color: "#fff",
+                      color: "var(--text-primary)",
                       letterSpacing: "-0.02em",
                       fontFamily: "'Syne',sans-serif",
                     }}
@@ -1072,7 +1072,7 @@ function SegmentModal({ zone, onClose }) {
               <p
                 style={{
                   fontSize: 14.5,
-                  color: "#8aaaa0",
+                  color: "var(--text-secondary)",
                   lineHeight: 1.85,
                   marginBottom: 22,
                 }}
@@ -1692,7 +1692,7 @@ function PartnerJourney() {
                     {step.title}
                   </div>
                 </div>
-                <p style={{ fontSize: 13, color: "#8aaaa0", lineHeight: 1.8 }}>
+                <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.8 }}>
                   {step.value}
                 </p>
               </div>
@@ -2721,7 +2721,7 @@ function ProductModal({ productName, onClose, onNavigate }) {
             }}
           >
             Product details coming soon for{" "}
-            <strong style={{ color: "#fff" }}>{productName}</strong>.
+            <strong style={{ color: "var(--text-primary)" }}>{productName}</strong>.
           </div>
           <button
             onClick={onClose}
@@ -2770,7 +2770,7 @@ function ProductModal({ productName, onClose, onNavigate }) {
             borderRadius: "50%",
             background: "rgba(255,255,255,0.07)",
             border: "1px solid rgba(255,255,255,0.14)",
-            color: "rgba(255,255,255,0.5)",
+            color: "var(--text-secondary)",
             fontSize: 16,
             cursor: "pointer",
             display: "flex",
@@ -2819,7 +2819,7 @@ function ProductModal({ productName, onClose, onNavigate }) {
             style={{
               fontSize: "clamp(20px,3vw,28px)",
               fontWeight: 800,
-              color: "#fff",
+              color: "var(--text-primary)",
               letterSpacing: "-0.03em",
               lineHeight: 1.1,
               marginBottom: 8,
@@ -3379,7 +3379,7 @@ function PlatformStack() {
             style={{
               fontSize: "clamp(20px,2.8vw,32px)",
               fontWeight: 800,
-              color: "#fff",
+              color: "var(--text-primary)",
               letterSpacing: "-0.03em",
               lineHeight: 1.1,
               marginBottom: 10,
@@ -4285,7 +4285,7 @@ function EnablementHub({ onBack, onNavigate }) {
                     style={{
                       fontSize: 11,
                       fontWeight: 800,
-                      color: "rgba(255,255,255,0.58)",
+                      color: "var(--text-secondary)",
                       letterSpacing: "0.08em",
                       textTransform: "uppercase",
                       marginBottom: 10,
@@ -4318,7 +4318,7 @@ function EnablementHub({ onBack, onNavigate }) {
                     style={{
                       fontSize: 11,
                       fontWeight: 800,
-                      color: "rgba(255,255,255,0.58)",
+                      color: "var(--text-secondary)",
                       letterSpacing: "0.08em",
                       textTransform: "uppercase",
                       marginBottom: 10,
@@ -5198,14 +5198,14 @@ function ProspectToolPage() {
 
     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
       <IconButton icon="prev" label="Previous page" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} />
-      <span style={{ fontSize: 12, color: '#9bb6b0' }}>Page {page} / {pageCount}</span>
+      <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Page {page} / {pageCount}</span>
       <IconButton icon="next" label="Next page" disabled={page >= pageCount} onClick={() => setPage((p) => p + 1)} />
       <select className="ui-search" value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))} style={{ maxWidth: 90 }}><option>25</option><option>50</option><option>100</option></select>
     </div>
 
     <div className="saved-views-section ds-card">
       <h3>Saved Views</h3>
-      {!savedViews.length && <p style={{ margin: 0, fontSize: 12, color: '#9bb6b0' }}>No saved views yet.</p>}
+      {!savedViews.length && <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>No saved views yet.</p>}
       <div className="saved-views-grid">
         {savedViews.map((savedView) => {
           const summary = toSummary(savedView.tableState || {});
@@ -6098,7 +6098,7 @@ function BuildSellExpand() {
                 style={{
                   fontSize: "clamp(20px,2.6vw,30px)",
                   fontWeight: 800,
-                  color: "#fff",
+                  color: "var(--text-primary)",
                   letterSpacing: "-0.03em",
                   marginBottom: 10,
                   lineHeight: 1.15,
@@ -6914,7 +6914,7 @@ function PartnerProgramPage() {
                         <span
                           style={{
                             fontSize: 12.5,
-                            color: "#C0DDD6",
+                            color: "var(--text-secondary)",
                             lineHeight: 1.6,
                             fontWeight: 600,
                           }}
@@ -7313,7 +7313,7 @@ function PartnerProgramPage() {
             <h3
               style={{
                 fontSize: 26,
-                color: "#fff",
+                color: "var(--text-primary)",
                 fontFamily: "'Syne',sans-serif",
                 marginBottom: 8,
               }}
@@ -7559,7 +7559,7 @@ function CommercialFrameworkPage() {
               style={{
                 fontSize: "clamp(26px,4vw,50px)",
                 fontWeight: 800,
-                color: "#fff",
+                color: "var(--text-primary)",
                 lineHeight: 1.08,
                 letterSpacing: "-0.03em",
                 marginBottom: 16,
@@ -8019,7 +8019,7 @@ function CommercialFrameworkPage() {
             <h3
               style={{
                 fontSize: 21,
-                color: "#fff",
+                color: "var(--text-primary)",
                 fontFamily: "'Syne',sans-serif",
                 marginBottom: 8,
               }}
@@ -8086,7 +8086,7 @@ function CommercialFrameworkPage() {
               <h3
                 style={{
                   fontSize: 18,
-                  color: "#fff",
+                  color: "var(--text-primary)",
                   fontFamily: "'Syne',sans-serif",
                   marginBottom: 8,
                 }}
@@ -8155,7 +8155,7 @@ function CommercialFrameworkPage() {
               <div
                 style={{
                   fontSize: 18,
-                  color: "#fff",
+                  color: "var(--text-primary)",
                   fontFamily: "'Syne',sans-serif",
                   marginBottom: 8,
                 }}
@@ -9476,7 +9476,7 @@ function GovernancePage() {
                         </div>
                       ))}
                       <div style={{ padding: "10px" }}><select className="ui-dropdown" value={task.status} onChange={(e) => updateTask(task.id, { status: e.target.value })} style={{ width: "100%", boxShadow: "none" }}>{GOVERNANCE_STATUS_OPTIONS.map((v) => <option key={v} value={v}>{v}</option>)}</select></div>
-                      <div style={{ padding: "10px" }}><input value={task.owner} onChange={(e) => updateTask(task.id, { owner: e.target.value })} placeholder="Owner" style={{ width: "100%", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(123,150,163,0.3)", borderRadius: 6, color: "#D9ECE6", padding: "6px", fontSize: 12 }} /></div>
+                      <div style={{ padding: "10px" }}><input value={task.owner} onChange={(e) => updateTask(task.id, { owner: e.target.value })} placeholder="Owner" style={{ width: "100%", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(123,150,163,0.3)", borderRadius: 6, color: "var(--text-primary)", padding: "6px", fontSize: 12 }} /></div>
                     </div>
                   );
                 })}
@@ -9519,10 +9519,10 @@ function GovernancePage() {
             <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setNoteTaskId(null); }}>
               <div className="modal-box" style={{ maxWidth: "none", border: "1px solid rgba(123,150,163,0.35)", background: "linear-gradient(160deg,#162422,#0E1A18)", padding: 20 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 10 }}>
-                  <div><div style={{ fontSize: 11, fontWeight: 800, color: "#67D8FF", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 6 }}>Notes</div><div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'Syne',sans-serif" }}>{currentNoteTask.activity}</div></div>
-                  <button onClick={() => setNoteTaskId(null)} style={{ border: "none", background: "rgba(255,255,255,0.08)", color: "#C0DDD6", width: 30, height: 30, borderRadius: "50%", cursor: "pointer" }}>×</button>
+                  <div><div style={{ fontSize: 11, fontWeight: 800, color: "#67D8FF", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 6 }}>Notes</div><div style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)", fontFamily: "'Syne',sans-serif" }}>{currentNoteTask.activity}</div></div>
+                  <button onClick={() => setNoteTaskId(null)} style={{ border: "none", background: "rgba(255,255,255,0.08)", color: "var(--text-secondary)", width: 30, height: 30, borderRadius: "50%", cursor: "pointer" }}>×</button>
                 </div>
-                <textarea value={currentNoteTask.notes} onChange={(e) => updateTask(currentNoteTask.id, { notes: e.target.value })} placeholder="Capture dependencies, blockers, decisions and next actions." style={{ width: "100%", minHeight: 150, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(123,150,163,0.35)", borderRadius: 8, color: "#D9ECE6", padding: 10, fontSize: 12, lineHeight: 1.6 }} />
+                <textarea value={currentNoteTask.notes} onChange={(e) => updateTask(currentNoteTask.id, { notes: e.target.value })} placeholder="Capture dependencies, blockers, decisions and next actions." style={{ width: "100%", minHeight: 150, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(123,150,163,0.35)", borderRadius: 8, color: "var(--text-primary)", padding: 10, fontSize: 12, lineHeight: 1.6 }} />
               </div>
             </div>
           )}
@@ -12665,7 +12665,7 @@ function App() {
                 fontSize: "clamp(32px,5.5vw,68px)",
                 fontWeight: 800,
                 letterSpacing: "-0.04em",
-                color: "#fff",
+                color: "var(--text-primary)",
                 lineHeight: 1.02,
                 marginBottom: 14,
                 fontFamily: "'Syne',sans-serif",
@@ -12859,7 +12859,7 @@ function App() {
                   style={{
                     fontSize: "clamp(20px,2.6vw,30px)",
                     fontWeight: 800,
-                    color: "#fff",
+                    color: "var(--text-primary)",
                     letterSpacing: "-0.03em",
                     marginBottom: 10,
                     lineHeight: 1.15,

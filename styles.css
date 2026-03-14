@@ -1898,3 +1898,93 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
   .cx-progress-head h3{font-size:22px;}
   .cx-radar-row{grid-template-columns:110px 1fr;}
 }
+
+/* === Unified design system foundation (2026-03) === */
+:root{
+  --type-display: clamp(2rem, 3vw, 3rem);
+  --type-h1: clamp(1.625rem, 2.4vw, 2.375rem);
+  --type-h2: clamp(1.25rem, 1.8vw, 1.75rem);
+  --type-body: var(--text-sm, 14px);
+  --type-caption: var(--text-xs, 12px);
+  --page-gutter: clamp(16px, 2.6vw, 32px);
+  --card-bg: color-mix(in srgb, var(--bg-surface) 90%, transparent);
+  --card-bg-strong: color-mix(in srgb, var(--bg-surface) 96%, transparent);
+  --table-head-bg: color-mix(in srgb, var(--bg-subtle) 92%, transparent);
+  --chip-bg: color-mix(in srgb, var(--brand-secondary) 16%, transparent);
+  --chip-border: color-mix(in srgb, var(--brand-secondary) 40%, var(--border-soft));
+  --chip-text: color-mix(in srgb, var(--brand-secondary) 76%, var(--text-primary));
+}
+
+body{
+  font-family: var(--font-primary);
+  color: var(--text-primary);
+}
+
+h1,h2,h3,h4,h5,h6{color:var(--heading-primary);}
+p,li,td,th,label,input,textarea,select,span{color:var(--text-primary);}
+small,.muted,.text-muted{color:var(--text-secondary) !important;}
+
+.page-shell,.home-page-shell,.ds-section,.prospect-shell,.channel-dashboard-page,.partner-plan-page{
+  width: min(var(--content-max), calc(100% - (var(--page-gutter) * 2)));
+  margin-inline: auto;
+}
+.app-main-inner.with-sidebar{max-width:var(--content-max-wide);}
+
+.ds-page-header{padding:var(--section-space-lg) var(--page-gutter) var(--space-2);} 
+.ds-section{padding:var(--section-space) var(--page-gutter) 0;}
+.ds-page-header__title{font-family:var(--font-title);font-size:var(--type-display);color:var(--heading-primary);} 
+.ds-page-header__subtitle,.ds-section-header p{font-size:var(--type-body);color:var(--text-secondary);} 
+.ds-section-header h2{font-family:var(--font-title);font-size:var(--type-h2);color:var(--heading-primary);} 
+
+.ds-card,.channel-card,.panel-card,.saved-view-card,.prospect-card,.kpi-card{
+  background:var(--card-bg) !important;
+  border:1px solid var(--border-soft) !important;
+  border-radius:var(--radius-lg) !important;
+  box-shadow:var(--shadow-xs);
+}
+
+.ui-btn,.ui-btn--primary,.ui-btn--secondary,.ui-btn--ghost,.btn-p,.btn-s{
+  min-height:42px;
+  border-radius:var(--radius-md) !important;
+  font-size:var(--type-caption);
+}
+.ui-btn--primary,.btn-p{background:var(--brand-primary) !important;border-color:var(--brand-primary) !important;color:var(--bg-surface) !important;}
+.ui-btn--secondary,.btn-s{background:var(--card-bg-strong) !important;border:1px solid var(--border-soft) !important;color:var(--text-primary) !important;}
+.ui-btn--ghost{background:transparent !important;border:1px solid transparent !important;color:var(--text-secondary) !important;}
+.ui-btn:focus-visible,.ui-btn--primary:focus-visible,.ui-btn--secondary:focus-visible,.ui-btn--ghost:focus-visible{box-shadow:var(--focus-ring) !important;outline:none;}
+
+.ui-field,.ui-dropdown,select,input,textarea{
+  min-height:42px;
+  border-radius:var(--radius-md) !important;
+  border:1px solid var(--border-soft) !important;
+  background:var(--bg-surface) !important;
+  color:var(--text-primary) !important;
+}
+.ui-field::placeholder,input::placeholder,textarea::placeholder{color:var(--text-secondary) !important;opacity:1;}
+
+.status-badge,.channel-chip,.chip,.score-badge,.top50-badge{
+  border-radius:var(--radius-pill);
+  background:var(--chip-bg) !important;
+  border:1px solid var(--chip-border) !important;
+  color:var(--chip-text) !important;
+}
+
+.table-wrapper,.ds-table-wrap,.prospect-table-wrap,.channel-table-wrap{
+  border:1px solid var(--border-soft) !important;
+  border-radius:var(--radius-lg) !important;
+  background:var(--card-bg-strong);
+}
+.table-wrapper table th,.ds-table-wrap th,.prospect-table th,.channel-table th{
+  background:var(--table-head-bg) !important;
+  color:var(--text-secondary) !important;
+}
+.table-wrapper table td,.ds-table-wrap td,.prospect-table td,.channel-table td{color:var(--text-primary) !important;}
+
+:root[data-theme="light"]{
+  --card-bg: color-mix(in srgb, var(--bg-surface) 98%, transparent);
+  --card-bg-strong: var(--bg-surface);
+  --chip-text: color-mix(in srgb, var(--brand-secondary) 58%, #22343f);
+}
+
+:root[data-theme="light"] .ui-btn--primary,.btn-p{color:#ffffff !important;}
+:root[data-theme="light"] .prospect-row-selected td{background:color-mix(in srgb,var(--bg-tint) 70%,#d8eef7) !important;}
