@@ -4885,6 +4885,7 @@ function ProspectToolPage() {
   const [showAdvancedFilters, setShowAdvancedFilters] = React.useState(false);
   const [saveViewOpen, setSaveViewOpen] = React.useState(false);
   const [saveViewForm, setSaveViewForm] = React.useState({ name: '', description: '', setDefault: false, overwrite: false, error: '' });
+  const [feedback, setFeedback] = React.useState(null);
 
   const keyword = useDebouncedValue(searchInput, 180);
 
@@ -4892,11 +4893,17 @@ function ProspectToolPage() {
     view: '👁', edit: '✏️', delete: '🗑', save: '💾', load: '📥', reset: '↺', filter: '⏷', export: '⬇', clear: '✖',
     defaultOn: '★', defaultOff: '☆', close: '✕', table: '▦', cards: '☷', prev: '←', next: '→', columns: '☰', copy: '⧉'
   };
-  const IconButton = ({ icon, label, onClick, className = '', disabled = false, type = 'button' }) => (
-    <button type={type} className={`ui-btn ui-btn--secondary prospect-icon-btn ${className}`.trim()} aria-label={label} title={label} onClick={onClick} disabled={disabled}>
+  const IconButton = ({ icon, label, onClick, className = '', disabled = false, type = 'button', tone = 'default' }) => (
+    <button type={type} className={`ui-btn ui-btn--secondary prospect-icon-btn prospect-icon-btn--${tone} ${className}`.trim()} aria-label={label} title={label} data-tooltip={label} onClick={onClick} disabled={disabled}>
       <span aria-hidden="true">{iconMap[icon] || icon}</span>
     </button>
   );
+
+  React.useEffect(() => {
+    if (!feedback) return undefined;
+    const timer = window.setTimeout(() => setFeedback(null), 3200);
+    return () => window.clearTimeout(timer);
+  }, [feedback]);
 
   const loadData = React.useCallback(async () => {
     setLoading(true); setError('');
@@ -5087,6 +5094,7 @@ function ProspectToolPage() {
   const exportRows = (records, name) => {
     const blob = new Blob([window.ProspectToolUtils.toCsv(records)], { type: 'text/csv;charset=utf-8;' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); URL.revokeObjectURL(a.href);
+    setFeedback({ tone: 'success', message: `Exported ${records.length} record${records.length === 1 ? '' : 's'} to ${name}.` });
   };
 
   const getTierClass = (record) => `tier-badge tier-${record.partnerTier?.color || 'gray'}`;
@@ -5104,6 +5112,7 @@ function ProspectToolPage() {
     setTop50(false);
     setSort('score_desc');
     setVisibleColumns(DEFAULT_VISIBLE_COLUMNS);
+    setFeedback({ tone: 'info', message: 'Filters, search, and columns reset to defaults.' });
   };
 
   const toSummary = (tableState) => {
@@ -5150,11 +5159,13 @@ function ProspectToolPage() {
     setSavedViews(nextViews);
     setSaveViewOpen(false);
     setSaveViewForm({ name: '', description: '', setDefault: false, overwrite: false, error: '' });
+    setFeedback({ tone: 'success', message: `Saved view "${trimmedName}".` });
   };
 
   const loadSavedView = (savedView) => {
     applyTableState(savedView.tableState || {});
     setSelectedRowId(null);
+    setFeedback({ tone: 'info', message: `Loaded view "${savedView.name}".` });
   };
 
   const deleteSavedView = (savedView) => {
@@ -5165,17 +5176,20 @@ function ProspectToolPage() {
       setDefaultViewId('');
       applyTableState({ searchTerm: '', filters: DEFAULT_FILTERS, sort: 'score_desc', pagination: { page: 1, pageSize: 25 }, visibleColumns: DEFAULT_VISIBLE_COLUMNS, columnOrder: DEFAULT_COLUMN_ORDER });
     }
+    setFeedback({ tone: 'warning', message: `Deleted view "${savedView.name}".` });
   };
 
   const setAsDefaultView = (savedView) => {
     setSavedViews((current) => current.map((v) => ({ ...v, isDefault: v.id === savedView.id })));
     setDefaultViewId(savedView.id);
+    setFeedback({ tone: 'success', message: `"${savedView.name}" is now your default view.` });
   };
 
   const clearDefaultView = (savedView) => {
     if (defaultViewId !== savedView.id) return;
     setSavedViews((current) => current.map((v) => ({ ...v, isDefault: false })));
     setDefaultViewId('');
+    setFeedback({ tone: 'info', message: 'Default view cleared.' });
   };
 
   const visibleColumnDefs = columnOrder.map((key) => ALL_COLUMNS.find((c) => c.key === key)).filter(Boolean).filter((c) => visibleColumns.includes(c.key));
@@ -5197,8 +5211,8 @@ function ProspectToolPage() {
     return <td>{record[key] || '—'}</td>;
   };
 
-  if (loading) return <div className="prospect-shell"><PageHeader title="Partner Prospect Tool" subtitle="Loading CSV dataset…" /><div className="ds-card">Loading data…</div></div>;
-  if (error) return <div className="prospect-shell"><PageHeader title="Partner Prospect Tool" subtitle="Unable to load dataset" /><div className="ds-card">{error}<div style={{ marginTop: 10 }}><IconButton icon="load" label="Retry load" onClick={loadData} /></div></div></div>;
+  if (loading) return <div className="prospect-shell"><PageHeader title="Partner Prospect Tool" subtitle="Loading CSV dataset…" /><div className="ds-card prospect-state prospect-state--loading" role="status" aria-live="polite"><span className="prospect-state__spinner" aria-hidden="true" />Loading data…</div></div>;
+  if (error) return <div className="prospect-shell"><PageHeader title="Partner Prospect Tool" subtitle="Unable to load dataset" /><div className="ds-card prospect-state prospect-state--error" role="alert">{error}<div style={{ marginTop: 10 }}><IconButton icon="load" label="Retry load" onClick={loadData} /></div></div></div>;
 
   return <div className="prospect-shell">
     <PageHeader title="Partner Prospect Tool" subtitle="Explore, filter and rank reseller prospects from the channel dataset" right={<span className="pill">{rows.length} records</span>} />
@@ -5218,6 +5232,7 @@ function ProspectToolPage() {
     </div>
 
     <div className="ds-card prospect-controls" style={{ display: 'grid', gap: 10 }}>
+      {feedback && <div className={`prospect-feedback prospect-feedback--${feedback.tone}`} role="status" aria-live="polite">{feedback.message}</div>}
       <div className="prospect-toolbar" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
         <input className="ui-search" placeholder="Search company, role, market, technology…" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
         <IconButton icon="clear" label="Clear search" onClick={() => setSearchInput('')} disabled={!searchInput} />
@@ -5291,7 +5306,7 @@ function ProspectToolPage() {
       </div>
     </div>}
 
-    {sorted.length === 0 ? <div className="ds-card">No results found.</div> : view === 'table' ? <div className="prospect-table-wrap"><table className="prospect-table"><thead><tr>{visibleColumnDefs.map((h) => <th key={h.key} className={h.key === 'actions' ? 'cell-actions-head' : ''}>{h.label}</th>)}</tr></thead><tbody>{pageRows.map((r, i) => <tr key={r.id} data-prospect-row-id={r.id} className={selectedRowId === r.id ? 'prospect-row-selected' : ''} onClick={() => setSelectedRowId(r.id)} style={{ cursor: 'pointer' }} aria-selected={selectedRowId === r.id}>{visibleColumnDefs.map((col) => <React.Fragment key={`${r.id}-${col.key}`}>{renderCell(r, col.key, i)}</React.Fragment>)}</tr>)}</tbody></table></div> : <div className="prospect-cards">{pageRows.map((r) => <div className={`prospect-card ${selectedRowId === r.id ? 'prospect-card-selected' : ''}`.trim()} key={r.id} onClick={() => setSelectedRowId(r.id)}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}><strong>{r.displayName}</strong><div style={{ display: 'flex', gap: 6, alignItems: 'center' }}><span className="score-badge">{r.idealPartnerScore}</span><span className={getTierClass(r)}>{r.partnerTierName || 'Low Priority'}</span></div></div><div>{r.industry || '—'}</div><div>{r.channel_role || '—'} / {r.channel_segment || '—'}</div><div>{r.city || '—'}, {r.country || '—'}</div><div>{r.displayRevenue} · {r.displayEmployees}</div><div className="prospect-card-secondary">{r.keywords || '—'}</div><div style={{ display: 'flex', gap: 8 }}>{r.website && <a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>}{r.linkedin && <a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}</div></div>)}</div>}
+    {sorted.length === 0 ? <div className="ds-card prospect-state prospect-state--empty" role="status" aria-live="polite"><strong>No results found</strong><p>Try broadening filters or clearing search terms to discover more partners.</p><IconButton icon="reset" label="Reset filters to show more results" onClick={resetFilters} /></div> : view === 'table' ? <div className="prospect-table-wrap"><table className="prospect-table"><thead><tr>{visibleColumnDefs.map((h) => <th key={h.key} className={h.key === 'actions' ? 'cell-actions-head' : ''}>{h.label}</th>)}</tr></thead><tbody>{pageRows.map((r, i) => <tr key={r.id} data-prospect-row-id={r.id} className={selectedRowId === r.id ? 'prospect-row-selected' : ''} onClick={() => setSelectedRowId(r.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedRowId(r.id); } }} tabIndex={0} style={{ cursor: 'pointer' }} aria-selected={selectedRowId === r.id}>{visibleColumnDefs.map((col) => <React.Fragment key={`${r.id}-${col.key}`}>{renderCell(r, col.key, i)}</React.Fragment>)}</tr>)}</tbody></table></div> : <div className="prospect-cards">{pageRows.map((r) => <div className={`prospect-card ${selectedRowId === r.id ? 'prospect-card-selected' : ''}`.trim()} key={r.id} onClick={() => setSelectedRowId(r.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedRowId(r.id); } }} tabIndex={0}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}><strong>{r.displayName}</strong><div style={{ display: 'flex', gap: 6, alignItems: 'center' }}><span className="score-badge">{r.idealPartnerScore}</span><span className={getTierClass(r)}>{r.partnerTierName || 'Low Priority'}</span></div></div><div>{r.industry || '—'}</div><div>{r.channel_role || '—'} / {r.channel_segment || '—'}</div><div>{r.city || '—'}, {r.country || '—'}</div><div>{r.displayRevenue} · {r.displayEmployees}</div><div className="prospect-card-secondary">{r.keywords || '—'}</div><div style={{ display: 'flex', gap: 8 }}>{r.website && <a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>}{r.linkedin && <a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}</div></div>)}</div>}
 
     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
       <IconButton icon="prev" label="Previous page" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} />
@@ -5320,7 +5335,7 @@ function ProspectToolPage() {
             <div className="saved-view-actions">
               <IconButton icon="load" label="Load view" onClick={() => loadSavedView(savedView)} />
               <IconButton icon={savedView.id === defaultViewId ? 'defaultOn' : 'defaultOff'} label={savedView.id === defaultViewId ? 'Remove default view' : 'Set default view'} onClick={() => savedView.id === defaultViewId ? clearDefaultView(savedView) : setAsDefaultView(savedView)} />
-              <IconButton icon="delete" label="Delete view" onClick={() => deleteSavedView(savedView)} />
+              <IconButton icon="delete" label="Delete view permanently" tone="warning" onClick={() => deleteSavedView(savedView)} />
             </div>
           </div>;
         })}
@@ -5328,7 +5343,7 @@ function ProspectToolPage() {
     </div>
 
     {saveViewOpen && <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setSaveViewOpen(false); }}>
-      <div className="modal-box ds-card" style={{ maxWidth: 560 }}>
+      <div className="modal-box ds-card" style={{ maxWidth: 560 }} role="dialog" aria-modal="true" aria-label="Save current view">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3 style={{ margin: 0 }}>Save current view</h3>
           <IconButton icon="close" label="Close save view dialog" onClick={() => setSaveViewOpen(false)} />
