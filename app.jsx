@@ -11287,7 +11287,6 @@ const NAV_SECTIONS = [
       { id: "competitive-matrix", icon: <NavIcon name="chart" />, label: "Competitive Matrix" },
       { id: "partner-account-plan", icon: <NavIcon name="checklist" />, label: "Account Planning" },
       { id: "governance", icon: <NavIcon name="badge" />, label: "Governance RACI" },
-      { id: "competitive-matrix", icon: <NavIcon name="chart" />, label: "Competitive Matrix" },
     ],
   },
 ];
