@@ -431,6 +431,16 @@ function FormField({ as = "input", className = "", ...props }) {
   return <input className={`ui-field ${className}`.trim()} {...props} />;
 }
 
+function FieldBlock({ label, hint, required = false, full = false, children }) {
+  return (
+    <label className={`form-field-block ${full ? "form-field-block--full" : ""}`.trim()}>
+      <span className="form-field-block__label">{label}{required ? <em aria-hidden="true">*</em> : null}</span>
+      {hint ? <small className="form-field-block__hint">{hint}</small> : null}
+      {children}
+    </label>
+  );
+}
+
 function StatusBadge({ status }) {
   const key = String(status || "").toLowerCase().replace(/\s+/g, "-");
   return <span className={`status-badge status-${key}`}>{status}</span>;
@@ -11783,67 +11793,106 @@ function JourneyStageCard({ stage, index, total, onUpdate, onRemove, onMove, pos
       <div className="journey-stage-card__header">
         <strong>Stage {index + 1}</strong>
         <div className="journey-stage-card__actions">
-          <GhostButton disabled={index === 0} onClick={() => onMove(index, -1)}>←</GhostButton>
-          <GhostButton disabled={index === total - 1} onClick={() => onMove(index, 1)}>→</GhostButton>
-          <GhostButton onClick={() => onRemove(stage.id)}>Remove</GhostButton>
+          <GhostButton disabled={index === 0} onClick={() => onMove(index, -1)} title="Move stage left">←</GhostButton>
+          <GhostButton disabled={index === total - 1} onClick={() => onMove(index, 1)} title="Move stage right">→</GhostButton>
+          <GhostButton onClick={() => onRemove(stage.id)} title="Remove this stage">Remove</GhostButton>
         </div>
       </div>
 
-      <FormField value={stage.name} onChange={(e) => onUpdate({ name: e.target.value })} placeholder="Stage Name" />
-      <FormField as="select" value={stage.channel} onChange={(e) => onUpdate({ channel: e.target.value })}>
-        {JOURNEY_CHANNEL_OPTIONS.map((channel) => <option key={channel} value={channel}>{channel}</option>)}
-      </FormField>
-      <textarea className="ui-field" rows={2} value={stage.touchpoint} onChange={(e) => onUpdate({ touchpoint: e.target.value })} placeholder="Touchpoint description" />
-      <input className="ui-field" value={stage.customerGoal} onChange={(e) => onUpdate({ customerGoal: e.target.value })} placeholder="Customer goal" />
-      <input className="ui-field" value={stage.internalTeam} onChange={(e) => onUpdate({ internalTeam: e.target.value })} placeholder="Internal team involved" />
-      <label className="journey-score-row">Current experience rating (1–5)
-        <input type="range" min="1" max="5" value={stage.experienceScore} onChange={(e) => onUpdate({ experienceScore: Number(e.target.value) })} />
-        <span>{stage.experienceScore}</span>
-      </label>
+      <div className="journey-stage-layout">
+        <div className="journey-stage-section">
+          <h4>Stage overview</h4>
+          <div className="journey-stage-grid">
+            <FieldBlock label="Stage name" required>
+              <FormField value={stage.name} onChange={(e) => onUpdate({ name: e.target.value })} placeholder="e.g. Initial Contact" />
+            </FieldBlock>
+            <FieldBlock label="Primary channel" hint="Choose the dominant channel for this stage.">
+              <FormField as="select" value={stage.channel} onChange={(e) => onUpdate({ channel: e.target.value })}>
+                {JOURNEY_CHANNEL_OPTIONS.map((channel) => <option key={channel} value={channel}>{channel}</option>)}
+              </FormField>
+            </FieldBlock>
+            <FieldBlock label="Touchpoint details" hint="What exactly happens at this stage?" full>
+              <textarea className="ui-field" rows={2} value={stage.touchpoint} onChange={(e) => onUpdate({ touchpoint: e.target.value })} placeholder="Entry point, hand-off, or interaction details" />
+            </FieldBlock>
+            <FieldBlock label="Customer goal">
+              <input className="ui-field" value={stage.customerGoal} onChange={(e) => onUpdate({ customerGoal: e.target.value })} placeholder="What the customer is trying to achieve" />
+            </FieldBlock>
+            <FieldBlock label="Internal owner / team">
+              <input className="ui-field" value={stage.internalTeam} onChange={(e) => onUpdate({ internalTeam: e.target.value })} placeholder="Team accountable for this stage" />
+            </FieldBlock>
+          </div>
+        </div>
 
-      <div className="journey-chip-list">
-        {JOURNEY_PAIN_POINT_OPTIONS.map((painPoint) => (
-          <button type="button" key={painPoint} onClick={() => togglePainPoint(painPoint)} className={`journey-chip ${stage.painPoints.includes(painPoint) ? "is-active" : ""}`}>{painPoint}</button>
-        ))}
+        <div className="journey-stage-section">
+          <h4>Experience score & pain points</h4>
+          <label className="journey-score-row">Current experience rating (1–5)
+            <input type="range" min="1" max="5" value={stage.experienceScore} onChange={(e) => onUpdate({ experienceScore: Number(e.target.value) })} />
+            <span>{stage.experienceScore}</span>
+          </label>
+          <p className="journey-inline-help">Select every pain point that applies, then capture context in notes.</p>
+          <div className="journey-chip-list">
+            {JOURNEY_PAIN_POINT_OPTIONS.map((painPoint) => (
+              <button type="button" key={painPoint} onClick={() => togglePainPoint(painPoint)} className={`journey-chip ${stage.painPoints.includes(painPoint) ? "is-active" : ""}`}>{painPoint}</button>
+            ))}
+          </div>
+          <FieldBlock label="Friction notes" hint="What specifically causes delays, effort, or risk?" full>
+            <textarea className="ui-field" rows={3} value={stage.frictionNotes} onChange={(e) => onUpdate({ frictionNotes: e.target.value })} placeholder="Describe root causes and examples" />
+          </FieldBlock>
+        </div>
       </div>
-      <textarea className="ui-field" rows={2} value={stage.frictionNotes} onChange={(e) => onUpdate({ frictionNotes: e.target.value })} placeholder="Friction notes" />
 
       <div className="journey-stage-card__toggles">
-        <SecondaryButton onClick={() => setShowMetrics((v) => !v)}>{showMetrics ? "Hide Metrics" : "Edit Metrics"}</SecondaryButton>
-        <SecondaryButton onClick={() => setShowOpportunityForm((v) => !v)}>{showOpportunityForm ? "Hide Opportunity Form" : "Add Opportunity"}</SecondaryButton>
+        <SecondaryButton onClick={() => setShowMetrics((v) => !v)}>{showMetrics ? "Hide KPI Inputs" : "Add / Edit KPI Inputs"}</SecondaryButton>
+        <SecondaryButton onClick={() => setShowOpportunityForm((v) => !v)}>{showOpportunityForm ? "Hide Opportunity" : "Add Opportunity"}</SecondaryButton>
       </div>
 
       {showMetrics ? (
-        <div className="journey-metrics-grid">
-          <input className="ui-field" value={stage.metrics.averageWaitTime} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, averageWaitTime: e.target.value } })} placeholder="Average Wait Time" />
-          <input className="ui-field" value={stage.metrics.averageHandleTime} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, averageHandleTime: e.target.value } })} placeholder="Average Handle Time" />
-          <input className="ui-field" value={stage.metrics.resolutionRate} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, resolutionRate: e.target.value } })} placeholder="Resolution Rate" />
-          <input className="ui-field" value={stage.metrics.csat} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, csat: e.target.value } })} placeholder="CSAT" />
-          <input className="ui-field" value={stage.metrics.dropRate} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, dropRate: e.target.value } })} placeholder="Drop Rate" />
-          <input className="ui-field" value={stage.metrics.transferRate} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, transferRate: e.target.value } })} placeholder="Transfer Rate" />
-          <input className="ui-field" value={stage.metrics.containmentRate} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, containmentRate: e.target.value } })} placeholder="Containment Rate" />
-          <input className="ui-field" value={stage.metrics.paymentSuccessRate} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, paymentSuccessRate: e.target.value } })} placeholder="Payment Success Rate" />
-          <input className="ui-field" value={stage.metrics.otherKpi} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, otherKpi: e.target.value } })} placeholder="Other KPI" />
+        <div className="journey-metrics-wrap">
+          <p className="journey-inline-help">Use consistent units (%, secs, mins, £) so comparison across stages stays meaningful.</p>
+          <div className="journey-metrics-grid">
+            <FieldBlock label="Average wait time"><input className="ui-field" value={stage.metrics.averageWaitTime} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, averageWaitTime: e.target.value } })} placeholder="e.g. 120s" /></FieldBlock>
+            <FieldBlock label="Average handle time"><input className="ui-field" value={stage.metrics.averageHandleTime} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, averageHandleTime: e.target.value } })} placeholder="e.g. 7m 30s" /></FieldBlock>
+            <FieldBlock label="Resolution rate"><input className="ui-field" value={stage.metrics.resolutionRate} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, resolutionRate: e.target.value } })} placeholder="e.g. 72%" /></FieldBlock>
+            <FieldBlock label="CSAT"><input className="ui-field" value={stage.metrics.csat} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, csat: e.target.value } })} placeholder="e.g. 4.3/5" /></FieldBlock>
+            <FieldBlock label="Drop rate"><input className="ui-field" value={stage.metrics.dropRate} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, dropRate: e.target.value } })} placeholder="e.g. 8%" /></FieldBlock>
+            <FieldBlock label="Transfer rate"><input className="ui-field" value={stage.metrics.transferRate} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, transferRate: e.target.value } })} placeholder="e.g. 24%" /></FieldBlock>
+            <FieldBlock label="Containment rate"><input className="ui-field" value={stage.metrics.containmentRate} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, containmentRate: e.target.value } })} placeholder="e.g. 55%" /></FieldBlock>
+            <FieldBlock label="Payment success rate"><input className="ui-field" value={stage.metrics.paymentSuccessRate} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, paymentSuccessRate: e.target.value } })} placeholder="e.g. 96%" /></FieldBlock>
+            <FieldBlock label="Other KPI" full><input className="ui-field" value={stage.metrics.otherKpi} onChange={(e) => onUpdate({ metrics: { ...stage.metrics, otherKpi: e.target.value } })} placeholder="Optional additional KPI" /></FieldBlock>
+          </div>
         </div>
       ) : null}
 
       {showOpportunityForm ? (
         <div className="journey-opportunity-form">
-          <input className="ui-field" placeholder="Opportunity title" value={draftOpportunity.title} onChange={(e) => setDraftOpportunity((prev) => ({ ...prev, title: e.target.value }))} />
-          <textarea className="ui-field" rows={2} placeholder="Description" value={draftOpportunity.description} onChange={(e) => setDraftOpportunity((prev) => ({ ...prev, description: e.target.value }))} />
-          <FormField as="select" value={draftOpportunity.priority} onChange={(e) => setDraftOpportunity((prev) => ({ ...prev, priority: e.target.value }))}>
-            {[
-              "Low", "Medium", "High",
-            ].map((priority) => <option key={priority}>{priority}</option>)}
-          </FormField>
-          <FormField as="select" value={draftOpportunity.impact} onChange={(e) => setDraftOpportunity((prev) => ({ ...prev, impact: e.target.value }))}>
-            {["CX", "Cost", "Productivity", "Compliance", "Revenue"].map((impact) => <option key={impact}>{impact}</option>)}
-          </FormField>
-          <FormField as="select" value={draftOpportunity.solution} onChange={(e) => setDraftOpportunity((prev) => ({ ...prev, solution: e.target.value }))}>
-            {JOURNEY_SOLUTION_OPTIONS.map((solution) => <option key={solution}>{solution}</option>)}
-          </FormField>
-          <textarea className="ui-field" rows={2} placeholder="Notes" value={draftOpportunity.notes} onChange={(e) => setDraftOpportunity((prev) => ({ ...prev, notes: e.target.value }))} />
-          <StandardButton onClick={addOpportunity}>Add Opportunity</StandardButton>
+          <FieldBlock label="Opportunity title" required>
+            <input className="ui-field" placeholder="e.g. Deflect payment verification to secure self-service" value={draftOpportunity.title} onChange={(e) => setDraftOpportunity((prev) => ({ ...prev, title: e.target.value }))} />
+          </FieldBlock>
+          <FieldBlock label="Description" full>
+            <textarea className="ui-field" rows={2} placeholder="What change is needed and why?" value={draftOpportunity.description} onChange={(e) => setDraftOpportunity((prev) => ({ ...prev, description: e.target.value }))} />
+          </FieldBlock>
+          <FieldBlock label="Priority">
+            <FormField as="select" value={draftOpportunity.priority} onChange={(e) => setDraftOpportunity((prev) => ({ ...prev, priority: e.target.value }))}>
+              {["Low", "Medium", "High"].map((priority) => <option key={priority}>{priority}</option>)}
+            </FormField>
+          </FieldBlock>
+          <FieldBlock label="Business impact">
+            <FormField as="select" value={draftOpportunity.impact} onChange={(e) => setDraftOpportunity((prev) => ({ ...prev, impact: e.target.value }))}>
+              {["CX", "Cost", "Productivity", "Compliance", "Revenue"].map((impact) => <option key={impact}>{impact}</option>)}
+            </FormField>
+          </FieldBlock>
+          <FieldBlock label="Suggested solution">
+            <FormField as="select" value={draftOpportunity.solution} onChange={(e) => setDraftOpportunity((prev) => ({ ...prev, solution: e.target.value }))}>
+              {JOURNEY_SOLUTION_OPTIONS.map((solution) => <option key={solution}>{solution}</option>)}
+            </FormField>
+          </FieldBlock>
+          <FieldBlock label="Notes" full>
+            <textarea className="ui-field" rows={2} placeholder="Dependencies, owners, timing, or risk notes" value={draftOpportunity.notes} onChange={(e) => setDraftOpportunity((prev) => ({ ...prev, notes: e.target.value }))} />
+          </FieldBlock>
+          <div className="journey-opportunity-actions">
+            <GhostButton onClick={() => setShowOpportunityForm(false)}>Cancel</GhostButton>
+            <StandardButton onClick={addOpportunity} disabled={!draftOpportunity.title.trim()}>Add Opportunity</StandardButton>
+          </div>
         </div>
       ) : null}
 
@@ -11999,17 +12048,32 @@ function CustomerJourneyMappingPage() {
         <div>
           <SectionHeader title="Customer Context" description="Set the business context before mapping the journey." />
           <div className="journey-context-grid ds-card ds-card--standard">
-            <input className="ui-field" placeholder="Company Name" value={customerContext.companyName} onChange={(e) => setCustomerContext((prev) => ({ ...prev, companyName: e.target.value }))} />
-            <input className="ui-field" placeholder="Industry" value={customerContext.industry} onChange={(e) => setCustomerContext((prev) => ({ ...prev, industry: e.target.value }))} />
-            <input className="ui-field" placeholder="Journey Name" value={customerContext.journeyName} onChange={(e) => setCustomerContext((prev) => ({ ...prev, journeyName: e.target.value }))} />
-            <input className="ui-field" placeholder="Primary Customer Type / Persona" value={customerContext.persona} onChange={(e) => setCustomerContext((prev) => ({ ...prev, persona: e.target.value }))} />
-            <input className="ui-field" placeholder="Main Service Scenario" value={customerContext.serviceScenario} onChange={(e) => setCustomerContext((prev) => ({ ...prev, serviceScenario: e.target.value }))} />
-            <input className="ui-field" placeholder="Current Platform / Environment" value={customerContext.currentPlatform} onChange={(e) => setCustomerContext((prev) => ({ ...prev, currentPlatform: e.target.value }))} />
-            <textarea className="ui-field" rows={3} placeholder="Notes" value={customerContext.notes} onChange={(e) => setCustomerContext((prev) => ({ ...prev, notes: e.target.value }))} style={{ gridColumn: "1 / -1" }} />
+            <FieldBlock label="Company name" required>
+              <input className="ui-field" placeholder="e.g. Northbridge Retail" value={customerContext.companyName} onChange={(e) => setCustomerContext((prev) => ({ ...prev, companyName: e.target.value }))} />
+            </FieldBlock>
+            <FieldBlock label="Industry">
+              <input className="ui-field" placeholder="e.g. Retail" value={customerContext.industry} onChange={(e) => setCustomerContext((prev) => ({ ...prev, industry: e.target.value }))} />
+            </FieldBlock>
+            <FieldBlock label="Journey name" required>
+              <input className="ui-field" placeholder="e.g. Returns and support" value={customerContext.journeyName} onChange={(e) => setCustomerContext((prev) => ({ ...prev, journeyName: e.target.value }))} />
+            </FieldBlock>
+            <FieldBlock label="Primary persona" hint="Who is the dominant customer type in this journey?">
+              <input className="ui-field" placeholder="e.g. Busy omnichannel shopper" value={customerContext.persona} onChange={(e) => setCustomerContext((prev) => ({ ...prev, persona: e.target.value }))} />
+            </FieldBlock>
+            <FieldBlock label="Main service scenario">
+              <input className="ui-field" placeholder="e.g. Post-purchase support" value={customerContext.serviceScenario} onChange={(e) => setCustomerContext((prev) => ({ ...prev, serviceScenario: e.target.value }))} />
+            </FieldBlock>
+            <FieldBlock label="Current platform / environment">
+              <input className="ui-field" placeholder="e.g. Legacy PBX + email inbox" value={customerContext.currentPlatform} onChange={(e) => setCustomerContext((prev) => ({ ...prev, currentPlatform: e.target.value }))} />
+            </FieldBlock>
+            <FieldBlock label="Context notes" hint="Capture commercial context, constraints, or known blockers." full>
+              <textarea className="ui-field" rows={3} placeholder="Key assumptions, risk areas, transformation goals" value={customerContext.notes} onChange={(e) => setCustomerContext((prev) => ({ ...prev, notes: e.target.value }))} />
+            </FieldBlock>
           </div>
         </div>
         <aside className="journey-insights-panel ds-card ds-card--highlight">
           <h3>Journey Insights</h3>
+          <p className="journey-inline-help">Complete context first, then capture current-state stages before mapping future improvements.</p>
           <ul>
             <li><strong>{currentJourneyStages.length}</strong> journey stages</li>
             <li><strong>{allPainPoints}</strong> pain points captured</li>
@@ -12019,10 +12083,12 @@ function CustomerJourneyMappingPage() {
             <li><strong>{suggestedSolutionStack.map(([solution]) => solution).join(", ") || "None yet"}</strong> suggested solution stack</li>
           </ul>
           {!!savedJourneys.length && (
-            <FormField as="select" onChange={(e) => loadSavedJourney(e.target.value)} value="">
-              <option value="">Load saved journey…</option>
-              {savedJourneys.map((journey) => <option key={journey.id} value={journey.id}>{journey.label} · {new Date(journey.savedAt).toLocaleDateString()}</option>)}
-            </FormField>
+            <FieldBlock label="Load existing draft" hint="Use a saved draft to continue where you left off." full>
+              <FormField as="select" onChange={(e) => loadSavedJourney(e.target.value)} value="">
+                <option value="">Select a saved journey…</option>
+                {savedJourneys.map((journey) => <option key={journey.id} value={journey.id}>{journey.label} · {new Date(journey.savedAt).toLocaleDateString()}</option>)}
+              </FormField>
+            </FieldBlock>
           )}
         </aside>
       </SectionWrapper>
@@ -12055,8 +12121,8 @@ function CustomerJourneyMappingPage() {
           <pre className="journey-summary-text">{summaryText}</pre>
           <div className="journey-export-actions">
             <StandardButton onClick={saveJourneySnapshot}>Save Journey</StandardButton>
+            <SecondaryButton onClick={exportJourney}>Export Journey JSON</SecondaryButton>
             <SecondaryButton onClick={() => navigator.clipboard?.writeText(summaryText)}>Copy Summary</SecondaryButton>
-            <SecondaryButton onClick={exportJourney}>Export Journey</SecondaryButton>
             <GhostButton onClick={() => window.alert("Added to account planning queue.")}>Send to Account Planning</GhostButton>
             <GhostButton onClick={() => window.alert("Opening CX Discovery Questionnaire workflow.")}>Open CX Discovery Questionnaire</GhostButton>
           </div>
