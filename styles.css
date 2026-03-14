@@ -1988,3 +1988,30 @@ small,.muted,.text-muted{color:var(--text-secondary) !important;}
 
 :root[data-theme="light"] .ui-btn--primary,.btn-p{color:#ffffff !important;}
 :root[data-theme="light"] .prospect-row-selected td{background:color-mix(in srgb,var(--bg-tint) 70%,#d8eef7) !important;}
+
+/* Journey mapping form UX refinements */
+.form-field-block{display:flex;flex-direction:column;gap:6px;min-width:0;}
+.form-field-block--full{grid-column:1 / -1;}
+.form-field-block__label{font-size:12px;font-weight:800;color:var(--heading-primary);line-height:1.3;display:flex;align-items:center;gap:4px;}
+.form-field-block__label em{font-style:normal;color:#f5b766;}
+.form-field-block__hint{font-size:11px;line-height:1.5;color:var(--text-secondary);}
+
+.journey-context-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:16px;}
+.journey-stage-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+.journey-stage-section{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:12px;border:1px solid var(--border-soft);background:color-mix(in srgb,var(--bg-subtle) 60%,transparent);}
+.journey-stage-section h4{margin:0;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary);}
+.journey-stage-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+.journey-metrics-wrap{display:flex;flex-direction:column;gap:10px;}
+.journey-metrics-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
+.journey-opportunity-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start;}
+.journey-opportunity-actions{display:flex;justify-content:flex-end;gap:8px;grid-column:1 / -1;}
+.journey-inline-help{margin:0;font-size:11px;line-height:1.6;color:var(--text-secondary);}
+.journey-insights-panel{display:flex;flex-direction:column;gap:10px;}
+.journey-export-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-start;}
+
+@media (max-width:1080px){
+  .journey-stage-layout,.journey-metrics-grid{grid-template-columns:1fr 1fr;}
+}
+@media (max-width:760px){
+  .journey-context-grid,.journey-stage-layout,.journey-stage-grid,.journey-opportunity-form,.journey-metrics-grid{grid-template-columns:1fr;}
+}
