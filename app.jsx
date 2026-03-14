@@ -4997,13 +4997,53 @@ function ProspectToolPage() {
 
   const pageCount = Math.max(1, Math.ceil(sorted.length / pageSize));
   const pageRows = sorted.slice((page - 1) * pageSize, (page - 1) * pageSize + pageSize);
-  const avgScore = sorted.length ? (sorted.reduce((a, b) => a + b.idealPartnerScore, 0) / sorted.length).toFixed(1) : '0.0';
+  const topSlice = sorted.slice(0, Math.min(sorted.length, 50));
+  const topSummary = {
+    avgScore: topSlice.length ? (topSlice.reduce((sum, row) => sum + row.idealPartnerScore, 0) / topSlice.length).toFixed(1) : '0.0',
+    websites: topSlice.filter((r) => r.hasWebsite).length,
+    linkedin: topSlice.filter((r) => r.hasLinkedIn).length,
+    emails: topSlice.filter((r) => r.hasEmail).length,
+  };
   const kpis = {
     total: rows.length,
     email: rows.filter((r) => r.hasEmail).length,
     avgAll: rows.length ? (rows.reduce((a, b) => a + b.idealPartnerScore, 0) / rows.length).toFixed(1) : '0.0',
     filtered: sorted.length
   };
+  const prospectKpiTiles = [
+    {
+      label: 'Total Prospects',
+      value: kpis.total,
+      meta: `Coverage: ${rows.filter((r) => r.hasWebsite).length} with websites`,
+      context: 'Dataset',
+      icon: '🗂️',
+      tone: 'info',
+    },
+    {
+      label: 'Prospects with Email',
+      value: kpis.email,
+      meta: `${rows.length ? Math.round((kpis.email / rows.length) * 100) : 0}% reachable`,
+      context: 'Contactability',
+      icon: '✉️',
+      tone: 'success',
+    },
+    {
+      label: 'Average Score (All)',
+      value: kpis.avgAll,
+      meta: 'Ideal partner scoring baseline',
+      context: 'Quality Index',
+      icon: '📊',
+      tone: 'accent',
+    },
+    {
+      label: 'Current Result Set',
+      value: kpis.filtered,
+      meta: `${activeFilterCount} active filters`,
+      context: top50 ? 'Top 50 mode' : 'Live shortlist',
+      icon: top50 ? '🏅' : '🎯',
+      tone: 'neutral',
+    },
+  ];
 
   const selectedIndex = React.useMemo(() => sorted.findIndex((r) => r.id === selectedRowId), [sorted, selectedRowId]);
   const selected = selectedIndex >= 0 ? sorted[selectedIndex] : null;
@@ -5168,9 +5208,17 @@ function ProspectToolPage() {
     <PageHeader title="Partner Prospect Tool" subtitle="Explore, filter and rank reseller prospects from the channel dataset" right={<span className="pill">{rows.length} records</span>} />
 
     <div className="kpi-grid">
-      {[
-        ['Total Prospects', kpis.total], ['Prospects with Email', kpis.email], ['Average Score (All)', kpis.avgAll], ['Current Result Set', kpis.filtered]
-      ].map(([label, value]) => <div className="kpi-card" key={label}><div className="kpi-label">{label}</div><div className="kpi-value">{value}</div></div>)}
+      {prospectKpiTiles.map((tile) => (
+        <article className={`kpi-card kpi-card--${tile.tone}`} key={tile.label}>
+          <div className="kpi-card__head">
+            <div className="kpi-card__context">{tile.context}</div>
+            <div className="kpi-card__icon" aria-hidden="true">{tile.icon}</div>
+          </div>
+          <div className="kpi-label">{tile.label}</div>
+          <div className="kpi-value">{tile.value}</div>
+          <div className="kpi-card__meta">{tile.meta}</div>
+        </article>
+      ))}
     </div>
 
     <div className="ds-card prospect-controls" style={{ display: 'grid', gap: 10 }}>
@@ -5226,7 +5274,26 @@ function ProspectToolPage() {
       <div className="prospect-filter-summary">{activeFilterCount} active filters · {sorted.length} matching rows</div>
     </div>
 
-    {top50 && <div className="ds-card" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: 12 }}><strong>Top 50 summary</strong><span>Avg score: {avgScore}</span><span>Websites: {sorted.filter((r) => r.hasWebsite).length}</span><span>LinkedIn: {sorted.filter((r) => r.hasLinkedIn).length}</span><span>Emails: {sorted.filter((r) => r.hasEmail).length}</span></div>}
+    {top50 && <div className="top50-summary-panel ds-card">
+      <div className="top50-summary-panel__header">
+        <strong>Top 50 Partner Snapshot</strong>
+        <span className="top50-badge">Ranked shortlist</span>
+      </div>
+      <div className="top50-summary-grid">
+        {[
+          { label: 'Average score', value: topSummary.avgScore, icon: '📈', meta: 'Top-ranked quality signal' },
+          { label: 'With website', value: topSummary.websites, icon: '🌐', meta: 'Digital presence check' },
+          { label: 'With LinkedIn', value: topSummary.linkedin, icon: 'in', meta: 'Social proof available' },
+          { label: 'With email', value: topSummary.emails, icon: '✉️', meta: 'Direct outreach ready' },
+        ].map((item) => (
+          <div key={item.label} className="top50-summary-tile">
+            <div className="top50-summary-tile__head"><span>{item.icon}</span>{item.label}</div>
+            <div className="top50-summary-tile__value">{item.value}</div>
+            <div className="top50-summary-tile__meta">{item.meta}</div>
+          </div>
+        ))}
+      </div>
+    </div>}
 
     {sorted.length === 0 ? <div className="ds-card">No results found.</div> : view === 'table' ? <div className="prospect-table-wrap"><table className="prospect-table"><thead><tr>{visibleColumnDefs.map((h) => <th key={h.key} className={h.key === 'actions' ? 'cell-actions-head' : ''}>{h.label}</th>)}</tr></thead><tbody>{pageRows.map((r, i) => <tr key={r.id} data-prospect-row-id={r.id} className={selectedRowId === r.id ? 'prospect-row-selected' : ''} onClick={() => setSelectedRowId(r.id)} style={{ cursor: 'pointer' }} aria-selected={selectedRowId === r.id}>{visibleColumnDefs.map((col) => <React.Fragment key={`${r.id}-${col.key}`}>{renderCell(r, col.key, i)}</React.Fragment>)}</tr>)}</tbody></table></div> : <div className="prospect-cards">{pageRows.map((r) => <div className={`prospect-card ${selectedRowId === r.id ? 'prospect-card-selected' : ''}`.trim()} key={r.id} onClick={() => setSelectedRowId(r.id)}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}><strong>{r.displayName}</strong><div style={{ display: 'flex', gap: 6, alignItems: 'center' }}><span className="score-badge">{r.idealPartnerScore}</span><span className={getTierClass(r)}>{r.partnerTierName || 'Low Priority'}</span></div></div><div>{r.industry || '—'}</div><div>{r.channel_role || '—'} / {r.channel_segment || '—'}</div><div>{r.city || '—'}, {r.country || '—'}</div><div>{r.displayRevenue} · {r.displayEmployees}</div><div className="prospect-card-secondary">{r.keywords || '—'}</div><div style={{ display: 'flex', gap: 8 }}>{r.website && <a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>}{r.linkedin && <a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}</div></div>)}</div>}
 
@@ -9944,10 +10011,17 @@ function ChannelManagerDashboardPage() {
           <div className="channel-grid-kpi">
             {CHANNEL_MANAGER_DATA.kpis.map((kpi) => (
               <div key={kpi.label} className="channel-card channel-kpi-card">
-                <div className="channel-kpi-icon" aria-hidden="true">{CHANNEL_CADENCE_KPI_ICONS[kpi.label] || "📌"}</div>
-                <div className="channel-kpi-label">{kpi.label}</div>
-                <div className="channel-kpi-value">{kpi.current}</div>
-                <div className="channel-kpi-meta">Target: {kpi.target}</div>
+                <div className="channel-kpi-header">
+                  <div className="channel-kpi-title-wrap">
+                    <div className="channel-kpi-eyebrow">Performance KPI</div>
+                    <div className="channel-kpi-label">{kpi.label}</div>
+                  </div>
+                  <div className="channel-kpi-icon" aria-hidden="true">{CHANNEL_CADENCE_KPI_ICONS[kpi.label] || "📌"}</div>
+                </div>
+                <div className="channel-kpi-main">
+                  <div className="channel-kpi-value">{kpi.current}</div>
+                  <div className="channel-kpi-target">Target {kpi.target}</div>
+                </div>
                 <div className="channel-kpi-hint">{kpi.trend}</div>
                 <span className="channel-chip">{kpi.status}</span>
               </div>
