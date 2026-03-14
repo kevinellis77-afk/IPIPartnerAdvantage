@@ -11458,7 +11458,544 @@ function MarketVisionPage({ onNavigate }) {
             <SecondaryButton onClick={() => onNavigate?.("channel-marketing")}>Open Sales Toolkit</SecondaryButton>
           </div>
         </div>
+      </div></SectionWrapper>
+    </div>
+  );
+}
+
+
+function CXDiscoveryQuestionnairePage({ onNavigate }) {
+  const STORAGE_KEY = "ipi-cx-discovery-assessment";
+  const wizardRef = React.useRef(null);
+
+  const questionnaireSections = React.useMemo(() => ([
+    {
+      id: "operations",
+      title: "Contact Centre Operations",
+      scoreKey: "operations",
+      questions: [
+        { id: "ops_platform", label: "What contact centre platform do you currently use?", type: "text" },
+        { id: "ops_interactions", label: "How many customer interactions do you handle per month?", type: "number", min: 0 },
+        { id: "ops_routing_complexity", label: "How complex is your routing model?", type: "range", min: 1, max: 5, step: 1 },
+        { id: "ops_multi_bu", label: "Do you support multiple business units or queues?", type: "yesno" },
+        { id: "ops_callback", label: "Do you have callback capability?", type: "yesno" },
+        { id: "ops_admin_ease", label: "How easy is it to make admin changes today?", type: "range", min: 1, max: 5, step: 1 },
+      ],
+    },
+    {
+      id: "channels",
+      title: "Customer Channels",
+      scoreKey: "channels",
+      questions: [
+        { id: "channels_supported", label: "Which channels do you currently support?", type: "multiselect", options: ["Voice", "Email", "Chat", "SMS", "Social", "WhatsApp", "Video"] },
+        { id: "channels_priority", label: "Which channels are most important to your customers?", type: "multiselect", options: ["Voice", "Email", "Chat", "SMS", "Social", "WhatsApp", "Video"] },
+        { id: "channels_seamless", label: "Can customers move seamlessly between channels?", type: "yesno" },
+        { id: "channels_omni_history", label: "Do you offer true omnichannel interaction history to agents?", type: "yesno" },
+        { id: "channels_gaps", label: "Are there gaps in digital channel support?", type: "yesno" },
+      ],
+    },
+    {
+      id: "workforce",
+      title: "Workforce & Agents",
+      scoreKey: "workforce",
+      questions: [
+        { id: "workforce_wfm", label: "Do you use workforce management today?", type: "yesno" },
+        { id: "workforce_qa", label: "How do you handle QA and coaching?", type: "text" },
+        { id: "workforce_ramp", label: "How long does agent ramp-up typically take (weeks)?", type: "number", min: 0 },
+        { id: "workforce_after_call", label: "Do agents spend significant time on after-call admin?", type: "yesno" },
+        { id: "workforce_visibility", label: "How confident are you in agent productivity visibility?", type: "range", min: 1, max: 5, step: 1 },
+      ],
+    },
+    {
+      id: "automation",
+      title: "Automation & AI",
+      scoreKey: "automation",
+      questions: [
+        { id: "ai_bots", label: "Do you currently use bots or self-service automation?", type: "yesno" },
+        { id: "ai_features", label: "Do you use AI for transcription, summarisation, sentiment, or QA?", type: "multiselect", options: ["Transcription", "Summarisation", "Sentiment", "QA", "None"] },
+        { id: "ai_assist_importance", label: "How important is AI-enabled agent assist?", type: "range", min: 1, max: 5, step: 1 },
+        { id: "ai_reduce_acw", label: "Are you interested in reducing after-call work?", type: "yesno" },
+        { id: "ai_value_areas", label: "Where would automation create most value?", type: "multiselect", options: ["Routing", "Self-service", "QA", "Reporting", "Payments", "Knowledge", "Other"] },
+      ],
+    },
+    {
+      id: "analytics",
+      title: "Reporting & Analytics",
+      scoreKey: "analytics",
+      questions: [
+        { id: "analytics_realtime", label: "Do you have access to real-time reporting?", type: "yesno" },
+        { id: "analytics_sentiment", label: "Can you analyse sentiment or recurring themes?", type: "yesno" },
+        { id: "analytics_pain_points", label: "How easy is it to identify customer pain points from interaction data?", type: "range", min: 1, max: 5, step: 1 },
+        { id: "analytics_scorecards", label: "Do you have quality scorecards?", type: "yesno" },
+        { id: "analytics_confidence", label: "How confident are you in your reporting today?", type: "range", min: 1, max: 5, step: 1 },
+      ],
+    },
+    {
+      id: "security",
+      title: "Security & Compliance",
+      scoreKey: "security",
+      questions: [
+        { id: "sec_payments", label: "Do you take payments in the contact centre?", type: "yesno" },
+        { id: "sec_pci_support", label: "Do you need PCI DSS compliance support?", type: "yesno" },
+        { id: "sec_agent_card_data", label: "Do agents currently hear or see payment card data?", type: "yesno" },
+        { id: "sec_major_concern", label: "Are compliance and audit requirements a major concern?", type: "yesno" },
+        { id: "sec_regulated", label: "Are there regulated industry requirements that affect your CX environment?", type: "yesno" },
+      ],
+    },
+    {
+      id: "infrastructure",
+      title: "Infrastructure & Connectivity",
+      scoreKey: "infrastructure",
+      questions: [
+        { id: "infra_model", label: "Is your environment cloud, hybrid, or on-prem?", type: "single", options: ["Cloud", "Hybrid", "On-prem"] },
+        { id: "infra_remote", label: "Do you have remote or hybrid agents?", type: "yesno" },
+        { id: "infra_issues", label: "Are connectivity or network issues affecting CX performance?", type: "yesno" },
+        { id: "infra_secure_connectivity", label: "Do you need secure connectivity between sites, remote workers, and cloud apps?", type: "yesno" },
+        { id: "infra_workplace", label: "Is your IT environment modern workplace enabled?", type: "yesno" },
+      ],
+    },
+    {
+      id: "vision",
+      title: "Future Vision",
+      scoreKey: "visionReadiness",
+      questions: [
+        { id: "vision_priorities", label: "What are your top 3 CX priorities over the next 12–24 months?", type: "multiselect", options: ["Lower cost", "Better experience", "AI", "Security", "Flexibility", "Analytics", "Scalability"] },
+        { id: "vision_migration", label: "Are you planning a migration or transformation initiative?", type: "yesno" },
+        { id: "vision_timeline", label: "What is the expected timeline?", type: "single", options: ["0–3 months", "3–6 months", "6–12 months", "12+ months"] },
+        { id: "vision_blockers", label: "What is blocking progress today?", type: "text" },
+      ],
+    },
+  ]), []);
+
+  const customerProfileFields = React.useMemo(() => ([
+    { id: "companyName", label: "Company Name", type: "text" },
+    { id: "industry", label: "Industry", type: "text" },
+    { id: "region", label: "Region / Geography", type: "text" },
+    { id: "agents", label: "Number of Agents", type: "number", min: 0 },
+    { id: "teamSize", label: "Customer Service Team Size", type: "number", min: 0 },
+    { id: "contactPlatform", label: "Current Contact Centre Platform", type: "text" },
+    { id: "telephonyPlatform", label: "Current Telephony / UC Platform", type: "text" },
+    { id: "deploymentModel", label: "Deployment Model", type: "single", options: ["On-prem", "Hybrid", "Cloud"] },
+    { id: "primaryChannels", label: "Primary Customer Channels", type: "multiselect", options: ["Voice", "Email", "Chat", "SMS", "Social", "WhatsApp", "Video"] },
+    { id: "notes", label: "Notes", type: "textarea" },
+  ]), []);
+
+  const stepDefinitions = React.useMemo(() => ([
+    { id: "profile", title: "Customer Profile", fields: customerProfileFields },
+    ...questionnaireSections,
+    { id: "summary", title: "Summary Output" },
+  ]), [customerProfileFields, questionnaireSections]);
+
+  const [stepIndex, setStepIndex] = React.useState(0);
+  const [assessment, setAssessment] = React.useState(() => {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "null");
+      if (saved && typeof saved === "object") return saved;
+    } catch (error) {
+      // no-op
+    }
+    return { customerProfile: {}, answers: {}, savedAt: null, label: "Draft" };
+  });
+
+  React.useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(assessment));
+  }, [assessment]);
+
+  const setAnswer = React.useCallback((id, value, scope = "answers") => {
+    setAssessment((prev) => ({ ...prev, [scope]: { ...(prev[scope] || {}), [id]: value } }));
+  }, []);
+
+  const scoringRules = React.useMemo(() => ({
+    channels: (a) => {
+      const supported = Array.isArray(a.channels_supported) ? a.channels_supported.length : 0;
+      const omni = a.channels_omni_history === "yes" ? 1 : 0;
+      const seamless = a.channels_seamless === "yes" ? 1 : 0;
+      const gapsPenalty = a.channels_gaps === "yes" ? -1 : 0;
+      return Math.max(1, Math.min(5, Math.round(1 + supported / 2 + omni + seamless + gapsPenalty)));
+    },
+    operations: (a) => {
+      const complexity = Number(a.ops_routing_complexity || 1);
+      const adminEase = Number(a.ops_admin_ease || 1);
+      const callback = a.ops_callback === "yes" ? 1 : 0;
+      const multi = a.ops_multi_bu === "yes" ? 1 : 0;
+      return Math.max(1, Math.min(5, Math.round((complexity + adminEase + callback + multi) / 1.6)));
+    },
+    workforce: (a) => {
+      const visibility = Number(a.workforce_visibility || 1);
+      const wfm = a.workforce_wfm === "yes" ? 1 : 0;
+      const afterCallPenalty = a.workforce_after_call === "yes" ? -1 : 0;
+      return Math.max(1, Math.min(5, Math.round(visibility + wfm + afterCallPenalty)));
+    },
+    automation: (a) => {
+      const assist = Number(a.ai_assist_importance || 1);
+      const bots = a.ai_bots === "yes" ? 1 : 0;
+      const aiUses = Array.isArray(a.ai_features) ? a.ai_features.filter((f) => f !== "None").length : 0;
+      return Math.max(1, Math.min(5, Math.round((assist + bots + aiUses) / 1.5)));
+    },
+    analytics: (a) => {
+      const confidence = Number(a.analytics_confidence || 1);
+      const pain = Number(a.analytics_pain_points || 1);
+      const realtime = a.analytics_realtime === "yes" ? 1 : 0;
+      return Math.max(1, Math.min(5, Math.round((confidence + pain + realtime) / 1.4)));
+    },
+    security: (a) => {
+      const pciNeed = a.sec_pci_support === "yes" ? 0 : 1;
+      const cardExposure = a.sec_agent_card_data === "yes" ? -1 : 1;
+      const concern = a.sec_major_concern === "yes" ? 0 : 1;
+      const regulated = a.sec_regulated === "yes" ? 1 : 0;
+      return Math.max(1, Math.min(5, 2 + pciNeed + cardExposure + concern + regulated));
+    },
+    infrastructure: (a) => {
+      const model = a.infra_model === "Cloud" ? 5 : a.infra_model === "Hybrid" ? 4 : 2;
+      const remote = a.infra_remote === "yes" ? 1 : 0;
+      const issues = a.infra_issues === "yes" ? -2 : 1;
+      return Math.max(1, Math.min(5, Math.round((model + remote + issues) / 1.2)));
+    },
+    visionReadiness: (a) => {
+      const migration = a.vision_migration === "yes" ? 1 : 0;
+      const priorities = Array.isArray(a.vision_priorities) ? Math.min(3, a.vision_priorities.length) : 0;
+      const timeline = a.vision_timeline === "0–3 months" ? 5 : a.vision_timeline === "3–6 months" ? 4 : a.vision_timeline === "6–12 months" ? 3 : 2;
+      return Math.max(1, Math.min(5, Math.round((timeline + migration + priorities) / 1.5)));
+    },
+  }), []);
+
+  const scores = React.useMemo(() => {
+    const answers = assessment.answers || {};
+    return Object.fromEntries(Object.entries(scoringRules).map(([key, fn]) => [key, fn(answers)]));
+  }, [assessment.answers, scoringRules]);
+
+  const opportunityRules = React.useMemo(() => ([
+    {
+      id: "omnichannel",
+      when: (a, s) => (a.channels_seamless !== "yes" || a.channels_omni_history !== "yes" || s.channels <= 3),
+      title: "Introduce omnichannel routing",
+      description: "Unify voice and digital interactions so agents can deliver a consistent experience with full context.",
+      solution: ["ElasticCX CCaaS"],
+      impact: "Higher FCR, reduced handoff friction",
+    },
+    {
+      id: "digital-gap",
+      when: (a) => a.channels_gaps === "yes",
+      title: "Improve digital channel coverage",
+      description: "Expand into priority digital channels with queueing and service-level consistency.",
+      solution: ["ElasticCX CCaaS", "ElasticCX UCaaS"],
+      impact: "Better channel choice and service accessibility",
+    },
+    {
+      id: "ai-insights",
+      when: (a, s) => (a.ai_bots !== "yes" || s.automation <= 3),
+      title: "Add AI transcription and summarisation",
+      description: "Capture richer interaction intelligence and reduce manual QA burden.",
+      solution: ["AI Insights"],
+      impact: "Faster insight cycles and quality visibility",
+    },
+    {
+      id: "agent-assist",
+      when: (a) => a.ai_reduce_acw === "yes" || Number(a.ops_admin_ease || 3) <= 2,
+      title: "Enable real-time agent assist",
+      description: "Use live prompts and next-best actions to reduce after-call work and improve guidance.",
+      solution: ["AI Sidekick"],
+      impact: "Lower AHT and improved agent confidence",
+    },
+    {
+      id: "qa-automation",
+      when: (a) => a.workforce_wfm !== "yes" || a.analytics_sentiment !== "yes",
+      title: "Automate QA and sentiment analysis",
+      description: "Scale QA beyond manual sampling and quickly identify recurring customer pain points.",
+      solution: ["AI Insights"],
+      impact: "More complete coaching and trend visibility",
+    },
+    {
+      id: "pci",
+      when: (a) => a.sec_payments === "yes" && (a.sec_pci_support === "yes" || a.sec_agent_card_data === "yes"),
+      title: "Secure payment handling with PCI controls",
+      description: "Reduce risk and simplify compliance by removing card-data exposure from the agent workflow.",
+      solution: ["Cloud PCI"],
+      impact: "Improved compliance posture and reduced scope",
+    },
+    {
+      id: "comms",
+      when: (a) => a.infra_model === "On-prem" || a.contactPlatform?.toLowerCase?.().includes("legacy"),
+      title: "Modernise telephony and communications",
+      description: "Move from fragmented legacy estates to an integrated cloud communications model.",
+      solution: ["ElasticCX UCaaS", "ElasticCX CCaaS"],
+      impact: "Greater flexibility and easier change management",
+    },
+    {
+      id: "sdwan",
+      when: (a) => a.infra_remote === "yes" && (a.infra_issues === "yes" || a.infra_secure_connectivity === "yes"),
+      title: "Improve connectivity for hybrid teams",
+      description: "Support remote and multi-site users with policy-driven, performance-aware networking.",
+      solution: ["SD-WAN"],
+      impact: "More reliable CX performance and resilience",
+    },
+    {
+      id: "desktoplive",
+      when: (a) => a.infra_workplace !== "yes",
+      title: "Support modern workplace operations",
+      description: "Standardise endpoints, governance and support to improve digital employee experience.",
+      solution: ["DesktopLive"],
+      impact: "Lower support overhead and better user productivity",
+    },
+  ]), []);
+
+  const opportunities = React.useMemo(() => {
+    const answers = { ...(assessment.answers || {}), ...(assessment.customerProfile || {}) };
+    return opportunityRules.filter((rule) => rule.when(answers, scores));
+  }, [assessment.answers, assessment.customerProfile, opportunityRules, scores]);
+
+  const completion = React.useMemo(() => {
+    const totalQuestions = customerProfileFields.length + questionnaireSections.reduce((acc, section) => acc + section.questions.length, 0);
+    const profileDone = Object.values(assessment.customerProfile || {}).filter((value) => Array.isArray(value) ? value.length > 0 : Boolean(value)).length;
+    const answersDone = Object.values(assessment.answers || {}).filter((value) => Array.isArray(value) ? value.length > 0 : Boolean(value)).length;
+    return Math.round(((profileDone + answersDone) / totalQuestions) * 100);
+  }, [assessment.answers, assessment.customerProfile, customerProfileFields, questionnaireSections]);
+
+  const summary = React.useMemo(() => {
+    const profile = assessment.customerProfile || {};
+    const allAnswers = assessment.answers || {};
+    const lowScores = Object.entries(scores).filter(([, value]) => value <= 3).map(([key]) => key);
+    const challengeMap = {
+      channels: "Channel fragmentation and inconsistent digital continuity",
+      operations: "Operational admin complexity and routing inflexibility",
+      workforce: "Agent productivity, coaching, and workforce visibility",
+      automation: "Limited automation and AI adoption in core workflows",
+      analytics: "Reporting confidence and weak insight-to-action loops",
+      security: "Payment security, compliance, and audit-risk exposure",
+      infrastructure: "Connectivity resilience and hybrid-work readiness",
+      visionReadiness: "Transformation clarity, prioritisation, and execution pace",
+    };
+    const challenges = lowScores.map((item) => challengeMap[item]);
+    const recommendedStack = Array.from(new Set(opportunities.flatMap((item) => item.solution)));
+    const nextSteps = [
+      "Discovery workshop",
+      "Architecture review",
+      "CX journey workshop",
+      "Proof of concept",
+      "Security / compliance assessment",
+    ].filter((_, idx) => idx < Math.max(2, Math.min(5, opportunities.length)));
+
+    return {
+      customerProfile: profile,
+      currentState: `Current environment appears ${profile.deploymentModel || "mixed"} with ${profile.agents || "unknown"} agents and primary channels across ${(profile.primaryChannels || []).join(", ") || "voice-led interactions"}.`,
+      keyChallenges: challenges,
+      maturitySnapshot: scores,
+      opportunities,
+      recommendedStack,
+      nextSteps,
+      generatedAt: new Date().toLocaleString(),
+      blocker: allAnswers.vision_blockers || "No major blockers recorded.",
+    };
+  }, [assessment.answers, assessment.customerProfile, opportunities, scores]);
+
+  const handleSave = () => {
+    const next = { ...assessment, savedAt: new Date().toISOString(), label: `${assessment.customerProfile?.companyName || "CX Discovery"} Draft` };
+    setAssessment(next);
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  };
+
+  const copySummary = async () => {
+    const txt = `CX Discovery Summary
+Customer: ${summary.customerProfile.companyName || "N/A"}
+Current State: ${summary.currentState}
+Key Challenges: ${summary.keyChallenges.join("; ") || "N/A"}
+Suggested IPI Solution Stack: ${summary.recommendedStack.join(", ") || "N/A"}
+Next Steps: ${summary.nextSteps.join(", ")}`;
+    await navigator.clipboard.writeText(txt);
+  };
+
+  const exportSummary = () => {
+    const doc = `<!doctype html><html><head><meta charset='utf-8'><title>CX Discovery Summary</title><style>body{font-family:Arial,sans-serif;padding:28px;line-height:1.5}h1,h2{margin:0 0 10px}section{margin:0 0 20px}ul{margin:8px 0 0 20px}</style></head><body><h1>CX Discovery Summary</h1><section><h2>Customer Profile</h2><p><strong>Company:</strong> ${summary.customerProfile.companyName || "N/A"}<br><strong>Industry:</strong> ${summary.customerProfile.industry || "N/A"}<br><strong>Region:</strong> ${summary.customerProfile.region || "N/A"}</p></section><section><h2>Current State</h2><p>${summary.currentState}</p></section><section><h2>Key Challenges</h2><ul>${summary.keyChallenges.map((item) => `<li>${item}</li>`).join("")}</ul></section><section><h2>Suggested IPI Solution Stack</h2><ul>${summary.recommendedStack.map((item) => `<li>${item}</li>`).join("")}</ul></section><section><h2>Next Steps</h2><ul>${summary.nextSteps.map((item) => `<li>${item}</li>`).join("")}</ul></section></body></html>`;
+    const blob = new Blob([doc], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${summary.customerProfile.companyName || "cx-discovery"}-summary.html`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const loadExample = () => {
+    setAssessment({
+      customerProfile: {
+        companyName: "Northstar Retail Group",
+        industry: "Retail",
+        region: "UK & Ireland",
+        agents: 180,
+        teamSize: 240,
+        contactPlatform: "Legacy PBX + siloed digital tools",
+        telephonyPlatform: "Mixed carrier estate",
+        deploymentModel: "Hybrid",
+        primaryChannels: ["Voice", "Email", "Chat", "SMS"],
+        notes: "Strong growth plans with seasonal peaks and strict payment compliance controls.",
+      },
+      answers: {
+        channels_supported: ["Voice", "Email", "Chat"],
+        channels_seamless: "no",
+        channels_omni_history: "no",
+        channels_gaps: "yes",
+        ops_routing_complexity: 3,
+        ops_admin_ease: 2,
+        ops_multi_bu: "yes",
+        workforce_wfm: "no",
+        workforce_after_call: "yes",
+        workforce_visibility: 2,
+        ai_bots: "no",
+        ai_features: ["None"],
+        ai_assist_importance: 5,
+        ai_reduce_acw: "yes",
+        analytics_realtime: "no",
+        analytics_sentiment: "no",
+        analytics_confidence: 2,
+        analytics_pain_points: 2,
+        sec_payments: "yes",
+        sec_pci_support: "yes",
+        sec_agent_card_data: "yes",
+        sec_major_concern: "yes",
+        infra_model: "Hybrid",
+        infra_remote: "yes",
+        infra_issues: "yes",
+        infra_secure_connectivity: "yes",
+        infra_workplace: "no",
+        vision_priorities: ["Better experience", "AI", "Scalability"],
+        vision_migration: "yes",
+        vision_timeline: "6–12 months",
+        vision_blockers: "Data silos and inconsistent governance across channel operations.",
+      },
+      savedAt: null,
+      label: "Example Output",
+    });
+    setStepIndex(stepDefinitions.length - 1);
+  };
+
+  const renderInput = (field, scope = "answers") => {
+    const value = assessment[scope]?.[field.id];
+    if (field.type === "yesno") {
+      return <div className="cx-pill-row">{["yes", "no"].map((opt) => <button key={opt} type="button" className={`cx-pill ${value === opt ? "active" : ""}`.trim()} onClick={() => setAnswer(field.id, opt, scope)}>{opt === "yes" ? "Yes" : "No"}</button>)}</div>;
+    }
+    if (field.type === "single") {
+      return (
+        <select className="ui-field ui-dropdown" value={value || ""} onChange={(e) => setAnswer(field.id, e.target.value, scope)}>
+          <option value="">Select</option>
+          {field.options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+        </select>
+      );
+    }
+    if (field.type === "multiselect") {
+      const selected = Array.isArray(value) ? value : [];
+      return <div className="cx-pill-row">{field.options.map((opt) => <button type="button" key={opt} className={`cx-pill ${selected.includes(opt) ? "active" : ""}`.trim()} onClick={() => setAnswer(field.id, selected.includes(opt) ? selected.filter((item) => item !== opt) : [...selected, opt], scope)}>{opt}</button>)}</div>;
+    }
+    if (field.type === "range") {
+      const sliderValue = Number(value || field.min || 1);
+      return <div className="cx-slider-wrap"><input type="range" className="cx-range" min={field.min} max={field.max} step={field.step || 1} value={sliderValue} onChange={(e) => setAnswer(field.id, Number(e.target.value), scope)} /><span>{sliderValue}</span></div>;
+    }
+    if (field.type === "textarea") {
+      return <textarea className="ui-field cx-textarea" value={value || ""} onChange={(e) => setAnswer(field.id, e.target.value, scope)} rows={3} />;
+    }
+    return <input className="ui-field" type={field.type || "text"} min={field.min} value={value || ""} onChange={(e) => setAnswer(field.id, field.type === "number" ? Number(e.target.value || 0) : e.target.value, scope)} />;
+  };
+
+  const currentStep = stepDefinitions[stepIndex];
+
+  return (
+    <div className="cx-discovery-page">
+      <PageHeader
+        eyebrow="Tools"
+        title="CX Discovery Questionnaire"
+        subtitle="Guide better discovery conversations, assess CX maturity, and identify the right transformation opportunities."
+        actions={<SecondaryButton onClick={() => wizardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}>Start Discovery</SecondaryButton>}
+      />
+
+      <SectionWrapper>
+        <div className="cx-hero-card ds-card ds-card--highlight">
+          <p>Use this tool to structure consultative customer conversations across channels, operations, automation, analytics, compliance, infrastructure, and future vision.</p>
+          <div className="cx-summary-grid">
+            {["CX Maturity Assessment", "Opportunity Detection", "Solution Mapping", "Exportable Summary"].map((item) => <StandardCard key={item} className="cx-mini-card"><strong>{item}</strong></StandardCard>)}
+          </div>
+          <div className="cx-hero-actions">
+            <StandardButton onClick={() => wizardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}>Start Discovery</StandardButton>
+            <SecondaryButton onClick={loadExample}>View Example Output</SecondaryButton>
+          </div>
+        </div>
       </SectionWrapper>
+
+      <SectionWrapper><div className="cx-wizard-layout" id="cx-discovery-wizard" ref={wizardRef}>
+        <div className="cx-wizard-main">
+          <div className="ds-card ds-card--standard cx-progress-card">
+            <div><strong>{currentStep.title}</strong><p>Completion: {completion}%</p></div>
+            <div className="cx-progress"><span style={{ width: `${completion}%` }} /></div>
+            <div className="cx-stepper">{stepDefinitions.map((step, idx) => <button type="button" key={step.id} className={`cx-step-dot ${idx === stepIndex ? "active" : ""}`.trim()} onClick={() => setStepIndex(idx)}>{idx + 1}</button>)}</div>
+          </div>
+
+          {currentStep.id === "profile" ? (
+            <div className="ds-card ds-card--standard">
+              <h3>Customer Profile</h3>
+              <div className="cx-grid">
+                {currentStep.fields.map((field) => <label key={field.id} className={`cx-field ${field.type === "textarea" || field.type === "multiselect" ? "full" : ""}`.trim()}><span>{field.label}</span>{renderInput(field, "customerProfile")}</label>)}
+              </div>
+            </div>
+          ) : currentStep.id === "summary" ? (
+            <div className="ds-card ds-card--highlight cx-summary-output">
+              <h3>Discovery Summary Output</h3>
+              <p>Generated: {summary.generatedAt}</p>
+              <div className="cx-summary-sections">
+                <section><h4>Customer Profile</h4><p>{summary.customerProfile.companyName || "N/A"} · {summary.customerProfile.industry || "N/A"} · {summary.customerProfile.region || "N/A"}</p></section>
+                <section><h4>Current State</h4><p>{summary.currentState}</p></section>
+                <section><h4>Key Challenges</h4><ul>{summary.keyChallenges.length ? summary.keyChallenges.map((item) => <li key={item}>{item}</li>) : <li>No critical challenges flagged yet.</li>}</ul></section>
+                <section><h4>CX Maturity Snapshot</h4><div className="cx-score-grid">{Object.entries(summary.maturitySnapshot).map(([key, value]) => <div key={key} className="cx-score-card"><span>{key}</span><strong>{value}/5</strong></div>)}</div></section>
+                <section><h4>Recommended Opportunities</h4><ul>{summary.opportunities.length ? summary.opportunities.map((item) => <li key={item.id}><strong>{item.title}</strong> — {item.description}</li>) : <li>Continue discovery to generate recommendations.</li>}</ul></section>
+                <section><h4>Suggested IPI Solution Stack</h4><p>{summary.recommendedStack.join(" • ") || "N/A"}</p></section>
+                <section><h4>Suggested Next Steps</h4><ul>{summary.nextSteps.map((step) => <li key={step}>{step}</li>)}</ul></section>
+              </div>
+              <div className="cx-hero-actions">
+                <StandardButton onClick={handleSave}>Save Discovery</StandardButton>
+                <SecondaryButton onClick={copySummary}>Copy Summary</SecondaryButton>
+                <SecondaryButton onClick={exportSummary}>Export Summary</SecondaryButton>
+                <SecondaryButton onClick={handleSave}>Send to Account Planning</SecondaryButton>
+                <GhostButton onClick={() => onNavigate?.("partner-account-plan")}>Open Journey Mapping Tool</GhostButton>
+              </div>
+            </div>
+          ) : (
+            <div className="ds-card ds-card--standard">
+              <h3>{currentStep.title}</h3>
+              <div className="cx-question-list">
+                {currentStep.questions.map((question) => <div key={question.id} className="cx-question-card"><label><span>{question.label}</span>{renderInput(question)}</label></div>)}
+              </div>
+            </div>
+          )}
+
+          <div className="cx-nav-actions">
+            <SecondaryButton onClick={() => setStepIndex((idx) => Math.max(0, idx - 1))} disabled={stepIndex === 0}>Back</SecondaryButton>
+            <StandardButton onClick={() => setStepIndex((idx) => Math.min(stepDefinitions.length - 1, idx + 1))} disabled={stepIndex === stepDefinitions.length - 1}>Next</StandardButton>
+          </div>
+        </div>
+
+        <aside className="cx-sidebar">
+          <div className="ds-card ds-card--standard">
+            <h4>Live CX Maturity Scoring</h4>
+            <div className="cx-score-grid">{Object.entries(scores).map(([key, value]) => <div key={key} className="cx-score-card"><span>{key.replace(/([A-Z])/g, " $1")}</span><strong>{value}/5</strong></div>)}</div>
+            <div className="cx-bars">{Object.entries(scores).map(([key, value]) => <div key={key} className="cx-bar"><div className="cx-bar-head"><span>{key.replace(/([A-Z])/g, " $1")}</span><span>{value}</span></div><div className="cx-progress"><span style={{ width: `${(value / 5) * 100}%` }} /></div></div>)}</div>
+          </div>
+          <div className="ds-card ds-card--highlight">
+            <h4>Opportunity Recommendations</h4>
+            <div className="cx-opportunity-list">{opportunities.length ? opportunities.map((item) => <div key={item.id} className="cx-opportunity-card"><strong>{item.title}</strong><p>{item.description}</p><small>IPI fit: {item.solution.join(" + ")}</small></div>) : <p>Add more discovery detail to surface recommendations.</p>}</div>
+          </div>
+          <div className="ds-card ds-card--standard">
+            <h4>Saved Session</h4>
+            <p>{assessment.savedAt ? `Last saved ${new Date(assessment.savedAt).toLocaleString()}` : "Not yet saved manually. Autosave is active."}</p>
+            <div className="cx-hero-actions">
+              <SecondaryButton onClick={() => {
+                const stored = window.localStorage.getItem(STORAGE_KEY);
+                if (stored) setAssessment(JSON.parse(stored));
+              }}>Reload Saved Session</SecondaryButton>
+              <GhostButton onClick={() => {
+                setAssessment({ customerProfile: {}, answers: {}, savedAt: null, label: "Draft" });
+                setStepIndex(0);
+              }}>Reset</GhostButton>
+            </div>
+          </div>
+        </aside>
+      </div></SectionWrapper>
     </div>
   );
 }
@@ -11501,6 +12038,7 @@ const NAV_SECTIONS = [
     title: "Tools",
     items: [
       { id: "prospect", icon: <NavIcon name="search" />, label: "Prospect Search" },
+      { id: "cx-discovery", icon: <NavIcon name="checklist" />, label: "CX Discovery Questionnaire" },
       { id: "competitive-matrix", icon: <NavIcon name="chart" />, label: "Competitive Matrix" },
       { id: "partner-account-plan", icon: <NavIcon name="checklist" />, label: "Account Planning" },
       { id: "governance", icon: <NavIcon name="badge" />, label: "Governance RACI" },
@@ -11530,6 +12068,7 @@ const PAGE_PATHS = {
   "partner-account-plan": "/partner-account-plan-tool",
   "competitive-matrix": "/competitive-matrix",
   prospect: "/partner-prospect-tool",
+  "cx-discovery": "/cx-discovery-questionnaire",
   "sample-customers": "/sample-customers",
   "market-vision": "/market-vision",
   "competitive-matrix": "/competitive-matrix",
@@ -11745,6 +12284,7 @@ function App() {
         <EnablementHub onBack={() => setPage("main")} onNavigate={setPage} />
       );
     if (page === "prospect") return <ProspectToolPage />;
+    if (page === "cx-discovery") return <CXDiscoveryQuestionnairePage onNavigate={setPage} />;
     if (page === "market-vision") return <MarketVisionPage onNavigate={setPage} />;
     if (page === "bse") return <BuildSellExpand />;
     if (page === "program") return <PartnerProgramPage />;

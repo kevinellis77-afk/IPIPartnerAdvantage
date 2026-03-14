@@ -1782,3 +1782,55 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
   .market-hero__panel{padding:20px;}
   .market-cta{flex-direction:column;align-items:flex-start;}
 }
+
+/* CX Discovery Questionnaire */
+.cx-discovery-page{padding-bottom:42px;}
+.cx-hero-card{display:flex;flex-direction:column;gap:16px;}
+.cx-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;}
+.cx-mini-card{padding:14px;display:flex;align-items:center;justify-content:center;text-align:center;min-height:72px;}
+.cx-hero-actions{display:flex;flex-wrap:wrap;gap:10px;}
+.cx-wizard-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(280px,1fr);gap:16px;align-items:start;scroll-margin-top:80px;}
+.cx-wizard-main{display:flex;flex-direction:column;gap:14px;min-width:0;}
+.cx-sidebar{position:sticky;top:20px;display:flex;flex-direction:column;gap:14px;}
+.cx-progress-card{display:flex;flex-direction:column;gap:10px;}
+.cx-progress{height:10px;border-radius:999px;background:rgba(99,171,143,0.14);border:1px solid rgba(99,171,143,0.24);overflow:hidden;}
+.cx-progress span{display:block;height:100%;background:linear-gradient(90deg,#63AB8F,#67D8FF);}
+.cx-stepper{display:flex;flex-wrap:wrap;gap:8px;}
+.cx-step-dot{width:34px;height:34px;border-radius:10px;border:1px solid var(--border-soft);background:var(--bg-surface);color:var(--text-primary);font-weight:700;cursor:pointer;}
+.cx-step-dot.active{border-color:#67D8FF;background:rgba(103,216,255,0.12);}
+.cx-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+.cx-field{display:flex;flex-direction:column;gap:7px;}
+.cx-field.full{grid-column:1/-1;}
+.cx-field span,.cx-question-card span{font-size:12px;color:var(--text-secondary);font-weight:700;}
+.cx-question-list{display:flex;flex-direction:column;gap:10px;}
+.cx-question-card{border:1px solid var(--border-soft);background:var(--bg-subtle);border-radius:12px;padding:12px;}
+.cx-pill-row{display:flex;flex-wrap:wrap;gap:8px;}
+.cx-pill{padding:7px 12px;border-radius:999px;border:1px solid var(--border-soft);background:var(--bg-surface);color:var(--text-primary);font-size:12px;font-weight:700;cursor:pointer;}
+.cx-pill.active{background:rgba(99,171,143,0.18);border-color:rgba(99,171,143,0.44);color:#91C4B0;}
+.cx-slider-wrap{display:flex;align-items:center;gap:12px;}
+.cx-range{width:100%;accent-color:#63AB8F;}
+.cx-textarea{resize:vertical;min-height:90px;}
+.cx-nav-actions{display:flex;justify-content:space-between;gap:10px;}
+.cx-score-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+.cx-score-card{padding:10px;border-radius:10px;background:var(--bg-subtle);border:1px solid var(--border-soft);display:flex;justify-content:space-between;gap:8px;font-size:11px;}
+.cx-score-card strong{font-size:16px;font-family:'Syne',sans-serif;color:var(--heading-primary);}
+.cx-bars{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+.cx-bar-head{display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);margin-bottom:4px;}
+.cx-opportunity-list{display:flex;flex-direction:column;gap:10px;}
+.cx-opportunity-card{padding:12px;border-radius:12px;border:1px solid rgba(163,121,146,0.3);background:rgba(163,121,146,0.1);display:flex;flex-direction:column;gap:6px;}
+.cx-opportunity-card p{font-size:12px;line-height:1.5;color:var(--text-primary);}
+.cx-opportunity-card small{font-size:11px;color:var(--text-secondary);}
+.cx-summary-output h3{margin-bottom:8px;}
+.cx-summary-sections{display:grid;grid-template-columns:1fr;gap:10px;}
+.cx-summary-sections section{padding:10px;border-radius:10px;background:var(--bg-subtle);border:1px solid var(--border-soft);}
+.cx-summary-sections h4{font-size:13px;color:var(--heading-primary);margin-bottom:4px;}
+.cx-summary-sections p,.cx-summary-sections li{font-size:12px;color:var(--text-primary);line-height:1.5;}
+@media (max-width:1024px){
+  .cx-wizard-layout{grid-template-columns:1fr;}
+  .cx-sidebar{position:static;}
+}
+@media (max-width:680px){
+  .cx-grid,.cx-score-grid{grid-template-columns:1fr;}
+  .ds-page-header{padding:46px 18px 8px;}
+  .ds-section{padding:26px 18px 0;}
+}
