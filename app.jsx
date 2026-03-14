@@ -11346,7 +11346,7 @@ function MarketVisionPage({ onNavigate }) {
       <SectionWrapper className="market-hero">
         <div className="market-hero__panel ds-card ds-card--highlight">
           <p className="market-chip">Overview</p>
-          <h1>Market &amp; Vision</h1>
+          <h1>Our Vision</h1>
           <p className="market-hero__subtitle">The future of customer experience is platform-led, AI-enabled and built for seamless orchestration across every interaction.</p>
           <p className="market-hero__copy">IPI delivers an integrated CX platform that combines communication, intelligence, security and connectivity to help organisations deliver exceptional customer and employee experiences. We are building a complete CX ecosystem combining contact centre, communications, AI, security, connectivity and workplace services.</p>
           <div className="market-hero__actions">
@@ -11472,7 +11472,7 @@ const NAV_SECTIONS = [
     title: "Overview",
     items: [
       { id: "main", icon: <NavIcon name="sparkles" />, label: "Why IPI" },
-      { id: "market-vision", icon: <NavIcon name="layers" />, label: "Market & Vision" },
+      { id: "market-vision", icon: <NavIcon name="layers" />, label: "Our Vision" },
     ],
   },
   {
