@@ -2054,3 +2054,84 @@ small,.muted,.text-muted{color:var(--text-secondary) !important;}
 @media (max-width:760px){
   .journey-context-grid,.journey-stage-layout,.journey-stage-grid,.journey-opportunity-form,.journey-metrics-grid{grid-template-columns:1fr;}
 }
+
+
+/* 2026 cohesive SaaS refinement layer */
+:root{
+  --type-display: clamp(1.9rem, 2.8vw, 2.65rem);
+  --type-h1: clamp(1.5rem, 2.1vw, 2.1rem);
+  --type-h2: clamp(1.25rem, 1.7vw, 1.6rem);
+  --type-h3: 1.05rem;
+  --type-body: 0.95rem;
+  --type-caption: 0.82rem;
+  --layout-max: min(var(--content-max-wide), calc(100vw - (var(--page-gutter) * 2)));
+  --surface-elev-1: color-mix(in srgb, var(--bg-surface) 94%, transparent);
+  --surface-elev-2: color-mix(in srgb, var(--bg-surface) 98%, transparent);
+  --ring-soft: 0 0 0 1px color-mix(in srgb, var(--brand-secondary) 24%, transparent);
+  --panel-gap: clamp(12px, 1.6vw, 18px);
+}
+
+.app-main,.page-container{background:linear-gradient(180deg,color-mix(in srgb,var(--bg-app) 94%,transparent),var(--bg-app));}
+.page-content,.ds-section,.prospect-shell,.home-page-shell,.channel-dashboard-page,.partner-plan-page{max-width:var(--layout-max);}
+
+.app-topbar{position:sticky;top:0;z-index:220;backdrop-filter:blur(8px);background:color-mix(in srgb,var(--bg-app) 86%, transparent);border-bottom:1px solid color-mix(in srgb,var(--border-soft) 78%, transparent);}
+.app-topbar__title{font-family:var(--font-title);font-size:var(--type-h3);letter-spacing:-.015em;}
+.app-topbar__context,.app-topbar__eyebrow{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text-secondary);font-weight:800;}
+
+.ds-page-header{padding-top:clamp(28px,4.3vw,48px);padding-bottom:12px;}
+.ds-page-header__content{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.ds-page-header__title{font-weight:700;line-height:1.06;}
+.ds-page-header__subtitle{max-width:78ch;line-height:1.65;}
+.ds-page-header__actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+
+.ds-section{padding-top:clamp(18px,2.3vw,28px);}
+.ds-section + .ds-section{padding-top:clamp(26px,3.1vw,38px);}
+.ds-section-header{margin-bottom:var(--panel-gap);}
+.ds-section-header__eyebrow{font-size:10px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:color-mix(in srgb,var(--brand-secondary) 72%, var(--text-secondary));}
+.ds-section-header h2{line-height:1.15;margin:0;}
+.ds-section-header p{max-width:74ch;margin:0;}
+
+.ds-card,.channel-card,.panel-card,.saved-view-card,.prospect-card,.kpi-card,.cx-score-card,.cx-opportunity-card{background:var(--surface-elev-1)!important;border-radius:16px!important;box-shadow:var(--shadow-xs), inset 0 1px 0 color-mix(in srgb,#fff 7%, transparent);}
+.ds-card:hover,.channel-card:hover,.market-ai-card:hover{box-shadow:var(--shadow-soft);}
+
+.kpi-grid,.channel-grid-kpi,.channel-grid-3,.channel-grid-4,.channel-grid-5,.cx-score-grid{gap:var(--panel-gap)!important;}
+.kpi-card,.channel-kpi-card,.ds-metric-card{padding:18px!important;}
+.ds-metric-card__label,.channel-kpi-label{font-size:11px;letter-spacing:.08em;}
+.ds-metric-card__value,.channel-kpi-value{font-size:clamp(1.5rem,2.2vw,2rem);line-height:1.12;}
+
+.ds-filter-bar,.filter-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding:14px;border:1px solid var(--border-soft);border-radius:14px;background:color-mix(in srgb,var(--bg-subtle) 70%, transparent);}
+.ds-filter-bar .form-field-block,.filter-bar .form-field-block{min-width:min(220px,100%);flex:1 1 220px;}
+
+.table-wrapper,.ds-table-wrap,.prospect-table-wrap,.channel-table-wrap{overflow:auto;border-radius:14px;}
+.table-wrapper table,.ds-table-wrap table,.prospect-table,.channel-table{width:100%;border-collapse:separate;border-spacing:0;}
+.table-wrapper thead th,.ds-table-wrap th,.prospect-table th,.channel-table th{position:sticky;top:0;z-index:1;font-size:11px;line-height:1.2;padding:11px 12px;}
+.table-wrapper tbody td,.ds-table-wrap td,.prospect-table td,.channel-table td{padding:11px 12px;vertical-align:middle;}
+.table-wrapper tbody tr:hover td,.prospect-table tbody tr:hover td,.channel-table tbody tr:hover td{background:color-mix(in srgb,var(--bg-tint) 18%, transparent);}
+
+.ui-field,.ui-dropdown,select,input,textarea{font-size:14px;line-height:1.35;box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 5%, transparent);}
+.ui-field:focus-visible,.ui-dropdown:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:none;box-shadow:var(--focus-ring), inset 0 1px 0 color-mix(in srgb,#fff 8%, transparent)!important;border-color:color-mix(in srgb,var(--focus) 55%, var(--border-soft))!important;}
+
+.settings-menu__panel,.prospect-drawer,.modal-box{border:1px solid var(--border-soft);background:var(--surface-elev-2);box-shadow:var(--shadow-md);}
+.theme-toggle,.settings-menu__trigger,.icon-btn,.prospect-inline-icon{border-radius:12px;}
+
+@media (max-width:1100px){
+  .app-sidebar,.sidebar{width:260px;min-width:260px;max-width:260px;}
+  .app-main,.page-container{width:calc(100% - 260px);max-width:calc(100% - 260px);margin-left:260px;}
+  .cx-wizard-shell{grid-template-columns:1fr;}
+}
+
+@media (max-width:920px){
+  .app-sidebar,.sidebar{position:sticky;top:0;height:100dvh;}
+  .ds-page-header__content{align-items:flex-start;}
+  .channel-lifecycle-flow{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+
+@media (max-width:760px){
+  .app-shell,.app-layout{display:block;}
+  .app-sidebar,.sidebar{position:relative;width:100%;max-width:none;min-width:0;height:auto;border-right:0;border-bottom:1px solid var(--border-soft);padding:14px;}
+  .app-main,.page-container{margin-left:0;width:100%;max-width:100%;}
+  .sidebar-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  .sidebar-nav-item{min-height:46px;padding:10px 12px;}
+  .ds-page-header,.ds-section{padding-inline:var(--space-4);}
+  .channel-lifecycle-flow,.journey-stage-layout,.journey-metrics-grid,.cx-form-grid{grid-template-columns:1fr!important;}
+}
