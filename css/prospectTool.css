@@ -150,3 +150,22 @@
   .prospect-state__spinner{animation:none}
   .prospect-card,.prospect-icon-link,.prospect-inline-icon,.prospect-table tr,.modal-overlay,.modal-box,.prospect-feedback{transition:none;animation:none}
 }
+.prospect-drawer-tabs{display:flex;gap:8px;padding:4px;border:1px solid var(--border-soft);border-radius:12px;background:color-mix(in srgb,var(--card-bg) 80%,transparent);width:max-content}
+.prospect-drawer-tab{border:0;background:transparent;color:var(--text-secondary);padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}
+.prospect-drawer-tab.active{background:rgba(103,216,255,.2);color:#dff6ff}
+.prospect-research-panel{display:grid;gap:12px}
+.prospect-research-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.prospect-research-head h4{margin:0;color:var(--heading-primary)}
+.prospect-research-head p{margin:4px 0 0;font-size:12px;color:var(--text-secondary)}
+.prospect-research-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.prospect-research-list{margin:0;padding:0;list-style:none;display:grid;gap:7px}
+.prospect-research-list li{display:flex;justify-content:space-between;gap:8px;border:1px solid color-mix(in srgb,var(--border-soft) 70%, transparent);padding:8px;border-radius:10px;background:color-mix(in srgb,var(--card-bg) 88%, transparent)}
+.prospect-confidence{font-size:10px;text-transform:uppercase;letter-spacing:.04em;padding:2px 6px;border-radius:999px;align-self:flex-start}
+.prospect-confidence--confirmed{background:rgba(54,198,131,.18);color:#b6f5d6}
+.prospect-confidence--inferred{background:rgba(103,216,255,.2);color:#c5ebff}
+.prospect-confidence--unknown{background:rgba(255,190,97,.2);color:#ffe1ae}
+.prospect-templates{display:grid;gap:10px}
+.prospect-template-card{border:1px solid var(--border-soft);border-radius:12px;padding:10px;display:grid;gap:8px;background:var(--card-bg)}
+.prospect-template-card>div{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.prospect-template-card pre{margin:0;white-space:pre-wrap;font-family:inherit;font-size:12px;color:var(--text-primary);background:rgba(4,10,16,.4);padding:10px;border-radius:10px;max-height:200px;overflow:auto}
+@media (max-width:860px){.prospect-research-grid{grid-template-columns:1fr}}
