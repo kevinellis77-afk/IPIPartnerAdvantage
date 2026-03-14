@@ -4838,22 +4838,23 @@ function ProspectToolPage() {
     maxRevenue: '', hasWebsite: false, hasLinkedIn: false, hasEmail: false, minScore: 0
   };
   const ALL_COLUMNS = [
-    { key: 'rank', label: 'No.', essential: true },
-    { key: 'displayName', label: 'Company' },
-    { key: 'idealPartnerScore', label: 'Score' },
-    { key: 'partnerTierName', label: 'Tier' },
+    { key: 'rank', label: '#', essential: true },
+    { key: 'displayName', label: 'Company', essential: true },
+    { key: 'idealPartnerScore', label: 'Score', essential: true },
+    { key: 'partnerTierName', label: 'Tier', essential: true },
+    { key: 'channel_role', label: 'Role', essential: true },
+    { key: 'channel_segment', label: 'Segment', essential: true },
     { key: 'industry', label: 'Industry' },
     { key: 'category', label: 'Category', hiddenByDefault: true },
-    { key: 'channel_role', label: 'Role' },
-    { key: 'channel_segment', label: 'Segment' },
-    { key: 'displayEmployees', label: 'Employees', hiddenByDefault: true },
     { key: 'displayRevenue', label: '£' },
+    { key: 'displayEmployees', label: 'Employees', hiddenByDefault: true },
     { key: 'city', label: 'City', hiddenByDefault: true },
     { key: 'country', label: 'Country', hiddenByDefault: true },
-    { key: 'website', label: '🌐' },
+    { key: 'website', label: 'Web' },
     { key: 'linkedin', label: 'LinkedIn', hiddenByDefault: true },
     { key: 'contactCount', label: 'Contacts', hiddenByDefault: true },
-    { key: 'trading_status', label: 'Trading Status', hiddenByDefault: true }
+    { key: 'trading_status', label: 'Trading Status', hiddenByDefault: true },
+    { key: 'actions', label: 'Actions', essential: true }
   ];
   const DEFAULT_VISIBLE_COLUMNS = ALL_COLUMNS.filter((c) => !c.hiddenByDefault).map((c) => c.key);
   const DEFAULT_COLUMN_ORDER = ALL_COLUMNS.map((c) => c.key);
@@ -4875,6 +4876,7 @@ function ProspectToolPage() {
   const [visibleColumns, setVisibleColumns] = React.useState(DEFAULT_VISIBLE_COLUMNS);
   const [columnOrder] = React.useState(DEFAULT_COLUMN_ORDER);
   const [showColumnMenu, setShowColumnMenu] = React.useState(false);
+  const [showAdvancedFilters, setShowAdvancedFilters] = React.useState(false);
   const [saveViewOpen, setSaveViewOpen] = React.useState(false);
   const [saveViewForm, setSaveViewForm] = React.useState({ name: '', description: '', setDefault: false, overwrite: false, error: '' });
 
@@ -5043,6 +5045,13 @@ function ProspectToolPage() {
 
   const getTierClass = (record) => `tier-badge tier-${record.partnerTier?.color || 'gray'}`;
   const activeChips = [keyword && `Search: ${keyword}`, ...Object.entries(filters).filter(([k, v]) => v && v !== 0).map(([k, v]) => `${k}: ${v}`)].filter(Boolean);
+  const filterLabels = {
+    industry: 'Industry', category: 'Category', channel_role: 'Role', channel_segment: 'Segment', country: 'Country', city: 'City',
+    trading_status: 'Trading', adopter_profile: 'Adopter profile', partnerTierName: 'Tier', minEmployees: 'Min employees',
+    maxEmployees: 'Max employees', minRevenue: 'Min revenue', maxRevenue: 'Max revenue', hasWebsite: 'Website only',
+    hasLinkedIn: 'LinkedIn only', hasEmail: 'Email only', minScore: 'Min score'
+  };
+  const activeFilterCount = Object.entries(filters).filter(([_, v]) => v && v !== 0).length;
   const resetFilters = () => {
     setFilters(DEFAULT_FILTERS);
     setSearchInput('');
@@ -5126,12 +5135,19 @@ function ProspectToolPage() {
   const visibleColumnDefs = columnOrder.map((key) => ALL_COLUMNS.find((c) => c.key === key)).filter(Boolean).filter((c) => visibleColumns.includes(c.key));
 
   const renderCell = (record, key, rowIndex) => {
-    if (key === 'rank') return <td>{(page - 1) * pageSize + rowIndex + 1}</td>;
-    if (key === 'displayName') return <td><strong>{record.displayName}</strong>{record.ch_link && <div><a href={window.ProspectToolUtils.normalizeUrl(record.ch_link)} target="_blank" rel="noreferrer">Companies House</a></div>}</td>;
-    if (key === 'idealPartnerScore') return <td><span className="score-badge">{record.idealPartnerScore}</span></td>;
+    if (key === 'rank') return <td className="cell-number">{(page - 1) * pageSize + rowIndex + 1}</td>;
+    if (key === 'displayName') return <td className="cell-company"><strong>{record.displayName}</strong>{record.ch_link && <div><a href={window.ProspectToolUtils.normalizeUrl(record.ch_link)} target="_blank" rel="noreferrer">Companies House</a></div>}</td>;
+    if (key === 'idealPartnerScore') return <td className="cell-number"><span className="score-badge">{record.idealPartnerScore}</span></td>;
     if (key === 'partnerTierName') return <td><span className={getTierClass(record)}>{record.partnerTierName || 'Low Priority'}</span></td>;
-    if (key === 'website') return <td>{record.website ? <a className="prospect-inline-icon" href={window.ProspectToolUtils.normalizeUrl(record.website)} target="_blank" rel="noreferrer" aria-label="Open Website" title="Open Website">🌐</a> : '—'}</td>;
-    if (key === 'linkedin') return <td>{record.linkedin ? <a className="prospect-inline-icon" href={window.ProspectToolUtils.normalizeUrl(record.linkedin)} target="_blank" rel="noreferrer" aria-label="Open LinkedIn" title="Open LinkedIn">in</a> : '—'}</td>;
+    if (key === 'displayRevenue' || key === 'displayEmployees' || key === 'contactCount') return <td className="cell-number">{record[key] || '—'}</td>;
+    if (key === 'website') return <td className="cell-icon">{record.website ? <a className="prospect-inline-icon" href={window.ProspectToolUtils.normalizeUrl(record.website)} target="_blank" rel="noreferrer" aria-label="Open Website" title="Open Website">🌐</a> : '—'}</td>;
+    if (key === 'linkedin') return <td className="cell-icon">{record.linkedin ? <a className="prospect-inline-icon" href={window.ProspectToolUtils.normalizeUrl(record.linkedin)} target="_blank" rel="noreferrer" aria-label="Open LinkedIn" title="Open LinkedIn">in</a> : '—'}</td>;
+    if (key === 'actions') {
+      return <td className="cell-actions"><div className="table-row-actions">
+        <IconButton icon="view" label={`Open details for ${record.displayName}`} onClick={(event) => { event.stopPropagation(); setSelectedRowId(record.id); }} />
+        <IconButton icon="copy" label={`Export ${record.displayName} row`} onClick={(event) => { event.stopPropagation(); exportRows([record], `${record.id}-prospect.csv`); }} />
+      </div></td>;
+    }
     return <td>{record[key] || '—'}</td>;
   };
 
@@ -5147,15 +5163,16 @@ function ProspectToolPage() {
       ].map(([label, value]) => <div className="kpi-card" key={label}><div className="kpi-label">{label}</div><div className="kpi-value">{value}</div></div>)}
     </div>
 
-    <div className="ds-card" style={{ display: 'grid', gap: 10 }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+    <div className="ds-card prospect-controls" style={{ display: 'grid', gap: 10 }}>
+      <div className="prospect-toolbar" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
         <input className="ui-search" placeholder="Search company, role, market, technology…" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
         <IconButton icon="clear" label="Clear search" onClick={() => setSearchInput('')} disabled={!searchInput} />
         <IconButton icon="reset" label="Reset filters" onClick={resetFilters} />
+        <IconButton icon="filter" label={showAdvancedFilters ? 'Hide advanced filters' : 'Show advanced filters'} onClick={() => setShowAdvancedFilters((v) => !v)} className={showAdvancedFilters ? 'is-active' : ''} />
         <IconButton icon="columns" label="Manage columns" onClick={() => setShowColumnMenu((v) => !v)} className={showColumnMenu ? 'is-active' : ''} />
         <IconButton icon="save" label="Save view" onClick={() => setSaveViewOpen(true)} />
         <IconButton icon="export" label="Export filtered CSV" onClick={() => exportRows(sorted, 'prospects-filtered.csv')} />
-        <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#b8d5cf' }}><input type="checkbox" checked={top50} onChange={(e) => setTop50(e.target.checked)} /> Top 50 only</label>
+        <label className="prospect-toggle"><input type="checkbox" checked={top50} onChange={(e) => setTop50(e.target.checked)} /> Top 50 only</label>
         <div style={{ marginLeft: 'auto', display: 'inline-flex', gap: 6 }}>
           <IconButton icon="table" label="Table view" onClick={() => setView('table')} className={view === 'table' ? 'is-active' : ''} />
           <IconButton icon="cards" label="Card view" onClick={() => setView('cards')} className={view === 'cards' ? 'is-active' : ''} />
@@ -5169,7 +5186,7 @@ function ProspectToolPage() {
         }} /> {column.label}{column.essential ? ' (always visible)' : ''}</label>)}
       </div>}
 
-      <div className="filter-grid">
+      <div className="filter-grid prospect-filter-grid--primary">
         {['industry', 'category', 'channel_role', 'channel_segment', 'country', 'city', 'trading_status', 'adopter_profile'].map((k) => (
           <select className="ui-search" key={k} value={filters[k]} onChange={(e) => setFilters((f) => ({ ...f, [k]: e.target.value }))}>
             <option value="">{k.replace(/_/g, ' ')}</option>
@@ -5177,6 +5194,8 @@ function ProspectToolPage() {
           </select>
         ))}
         <select className="ui-search" value={filters.partnerTierName} onChange={(e) => setFilters((f) => ({ ...f, partnerTierName: e.target.value }))}><option value="">Partner tier</option>{['Strategic - Tier 1', 'Growth - Tier 2', 'Select - Tier 3', 'Low Priority'].map((v) => <option key={v}>{v}</option>)}</select>
+      </div>
+      {showAdvancedFilters && <div className="filter-grid prospect-filter-grid--advanced">
         <input className="ui-search" placeholder="Min employees" type="number" value={filters.minEmployees} onChange={(e) => setFilters((f) => ({ ...f, minEmployees: e.target.value }))} />
         <input className="ui-search" placeholder="Max employees" type="number" value={filters.maxEmployees} onChange={(e) => setFilters((f) => ({ ...f, maxEmployees: e.target.value }))} />
         <input className="ui-search" placeholder="Min revenue" type="number" value={filters.minRevenue} onChange={(e) => setFilters((f) => ({ ...f, minRevenue: e.target.value }))} />
@@ -5188,13 +5207,18 @@ function ProspectToolPage() {
         <label><input type="checkbox" checked={filters.hasWebsite} onChange={(e) => setFilters((f) => ({ ...f, hasWebsite: e.target.checked }))} /> Has website</label>
         <label><input type="checkbox" checked={filters.hasLinkedIn} onChange={(e) => setFilters((f) => ({ ...f, hasLinkedIn: e.target.checked }))} /> Has LinkedIn</label>
         <label><input type="checkbox" checked={filters.hasEmail} onChange={(e) => setFilters((f) => ({ ...f, hasEmail: e.target.checked }))} /> Has email</label>
-      </div>
-      <div className="chip-row">{activeChips.map((c) => <span className="chip" key={c}>{c}</span>)}{activeChips.length === 0 && <span className="chip">No active filters</span>}</div>
+      </div>}
+      <div className="chip-row">{activeChips.map((c) => {
+        const [rawKey, value] = c.split(': ');
+        const label = rawKey === 'Search' ? rawKey : (filterLabels[rawKey] || rawKey);
+        return <span className="chip" key={c}>{label}: {value}</span>;
+      })}{activeChips.length === 0 && <span className="chip">No active filters</span>}</div>
+      <div className="prospect-filter-summary">{activeFilterCount} active filters · {sorted.length} matching rows</div>
     </div>
 
     {top50 && <div className="ds-card" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: 12 }}><strong>Top 50 summary</strong><span>Avg score: {avgScore}</span><span>Websites: {sorted.filter((r) => r.hasWebsite).length}</span><span>LinkedIn: {sorted.filter((r) => r.hasLinkedIn).length}</span><span>Emails: {sorted.filter((r) => r.hasEmail).length}</span></div>}
 
-    {sorted.length === 0 ? <div className="ds-card">No results found.</div> : view === 'table' ? <div className="prospect-table-wrap"><table className="prospect-table"><thead><tr>{visibleColumnDefs.map((h) => <th key={h.key}>{h.label}</th>)}</tr></thead><tbody>{pageRows.map((r, i) => <tr key={r.id} data-prospect-row-id={r.id} className={selectedRowId === r.id ? 'prospect-row-selected' : ''} onClick={() => setSelectedRowId(r.id)} style={{ cursor: 'pointer' }}>{visibleColumnDefs.map((col) => <React.Fragment key={`${r.id}-${col.key}`}>{renderCell(r, col.key, i)}</React.Fragment>)}</tr>)}</tbody></table></div> : <div className="prospect-cards">{pageRows.map((r) => <div className={`prospect-card ${selectedRowId === r.id ? 'prospect-card-selected' : ''}`.trim()} key={r.id} onClick={() => setSelectedRowId(r.id)}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}><strong>{r.displayName}</strong><div style={{ display: 'flex', gap: 6, alignItems: 'center' }}><span className="score-badge">{r.idealPartnerScore}</span><span className={getTierClass(r)}>{r.partnerTierName || 'Low Priority'}</span></div></div><div>{r.industry || '—'}</div><div>{r.channel_role || '—'} / {r.channel_segment || '—'}</div><div>{r.city || '—'}, {r.country || '—'}</div><div>{r.displayRevenue} · {r.displayEmployees}</div><div>{r.keywords || '—'}</div><div style={{ display: 'flex', gap: 8 }}>{r.website && <a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>}{r.linkedin && <a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}</div></div>)}</div>}
+    {sorted.length === 0 ? <div className="ds-card">No results found.</div> : view === 'table' ? <div className="prospect-table-wrap"><table className="prospect-table"><thead><tr>{visibleColumnDefs.map((h) => <th key={h.key} className={h.key === 'actions' ? 'cell-actions-head' : ''}>{h.label}</th>)}</tr></thead><tbody>{pageRows.map((r, i) => <tr key={r.id} data-prospect-row-id={r.id} className={selectedRowId === r.id ? 'prospect-row-selected' : ''} onClick={() => setSelectedRowId(r.id)} style={{ cursor: 'pointer' }} aria-selected={selectedRowId === r.id}>{visibleColumnDefs.map((col) => <React.Fragment key={`${r.id}-${col.key}`}>{renderCell(r, col.key, i)}</React.Fragment>)}</tr>)}</tbody></table></div> : <div className="prospect-cards">{pageRows.map((r) => <div className={`prospect-card ${selectedRowId === r.id ? 'prospect-card-selected' : ''}`.trim()} key={r.id} onClick={() => setSelectedRowId(r.id)}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}><strong>{r.displayName}</strong><div style={{ display: 'flex', gap: 6, alignItems: 'center' }}><span className="score-badge">{r.idealPartnerScore}</span><span className={getTierClass(r)}>{r.partnerTierName || 'Low Priority'}</span></div></div><div>{r.industry || '—'}</div><div>{r.channel_role || '—'} / {r.channel_segment || '—'}</div><div>{r.city || '—'}, {r.country || '—'}</div><div>{r.displayRevenue} · {r.displayEmployees}</div><div className="prospect-card-secondary">{r.keywords || '—'}</div><div style={{ display: 'flex', gap: 8 }}>{r.website && <a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>}{r.linkedin && <a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}</div></div>)}</div>}
 
     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
       <IconButton icon="prev" label="Previous page" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} />
@@ -5204,7 +5228,7 @@ function ProspectToolPage() {
     </div>
 
     <div className="saved-views-section ds-card">
-      <h3>Saved Views</h3>
+      <div className="saved-views-header"><h3>Saved Views</h3><span>{savedViews.length} total</span></div>
       {!savedViews.length && <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>No saved views yet.</p>}
       <div className="saved-views-grid">
         {savedViews.map((savedView) => {
@@ -5218,7 +5242,6 @@ function ProspectToolPage() {
             <div className="saved-view-meta">
               <span><b>Filters:</b> {summary.filters}</span>
               <span><b>Columns:</b> {summary.columns}</span>
-              <span><b>Created:</b> {new Date(savedView.createdAt).toLocaleString()}</span>
               <span><b>Updated:</b> {new Date(savedView.updatedAt).toLocaleString()}</span>
             </div>
             <div className="saved-view-actions">
