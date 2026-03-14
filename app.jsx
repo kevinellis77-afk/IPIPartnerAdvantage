@@ -4886,6 +4886,11 @@ function ProspectToolPage() {
   const [saveViewOpen, setSaveViewOpen] = React.useState(false);
   const [saveViewForm, setSaveViewForm] = React.useState({ name: '', description: '', setDefault: false, overwrite: false, error: '' });
   const [feedback, setFeedback] = React.useState(null);
+  const [drawerTab, setDrawerTab] = React.useState('details');
+  const [researchLoading, setResearchLoading] = React.useState(false);
+  const [researchError, setResearchError] = React.useState('');
+  const [researchResult, setResearchResult] = React.useState(null);
+  const [researchPromptMeta, setResearchPromptMeta] = React.useState(null);
 
   const keyword = useDebouncedValue(searchInput, 180);
 
@@ -5091,6 +5096,16 @@ function ProspectToolPage() {
     rowEl?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }, [selected?.id]);
 
+  React.useEffect(() => {
+    if (!selected) {
+      setDrawerTab('details');
+      setResearchResult(null);
+      setResearchError('');
+      setResearchLoading(false);
+      setResearchPromptMeta(null);
+    }
+  }, [selected?.id]);
+
   const exportRows = (records, name) => {
     const blob = new Blob([window.ProspectToolUtils.toCsv(records)], { type: 'text/csv;charset=utf-8;' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); URL.revokeObjectURL(a.href);
@@ -5113,6 +5128,47 @@ function ProspectToolPage() {
     setSort('score_desc');
     setVisibleColumns(DEFAULT_VISIBLE_COLUMNS);
     setFeedback({ tone: 'info', message: 'Filters, search, and columns reset to defaults.' });
+  };
+
+  const runCompanyResearch = async (company) => {
+    if (!company) return;
+    setDrawerTab('research');
+    setResearchLoading(true);
+    setResearchError('');
+    try {
+      const service = window.ProspectResearch;
+      if (!service?.researchCompany) throw new Error('Research service is not available.');
+      const payload = await service.researchCompany(company);
+      setResearchResult(payload.research || null);
+      setResearchPromptMeta(payload.prompt || null);
+    } catch (err) {
+      setResearchError(err.message || 'Failed to generate company research.');
+      setResearchResult(null);
+    } finally {
+      setResearchLoading(false);
+    }
+  };
+
+  const saveResearchToNotes = () => {
+    if (!selected || !researchResult) return;
+    try {
+      const key = 'prospect-research-notes';
+      const existing = JSON.parse(localStorage.getItem(key) || '[]');
+      const next = [{ companyId: selected.id, companyName: selected.displayName, savedAt: new Date().toISOString(), research: researchResult }, ...existing].slice(0, 50);
+      localStorage.setItem(key, JSON.stringify(next));
+      setFeedback({ tone: 'success', message: `Research saved to notes for ${selected.displayName}.` });
+    } catch (_err) {
+      setFeedback({ tone: 'warning', message: 'Unable to save notes locally.' });
+    }
+  };
+
+  const copyTemplate = async (template) => {
+    try {
+      await navigator.clipboard.writeText(template.body);
+      setFeedback({ tone: 'success', message: `Copied template: ${template.title}` });
+    } catch (_err) {
+      setFeedback({ tone: 'warning', message: 'Clipboard permission unavailable.' });
+    }
   };
 
   const toSummary = (tableState) => {
@@ -5382,8 +5438,8 @@ function ProspectToolPage() {
             </div>
           </div>
           <div className="prospect-drawer-actions">
-            <button type="button" className="prospect-link-chip" aria-label={selected.website ? 'Open Website' : 'Website unavailable'} title={selected.website ? 'Open Website' : 'Website unavailable'} disabled={!selected.website} onClick={() => selected.website && window.open(window.ProspectToolUtils.normalizeUrl(selected.website), '_blank', 'noopener,noreferrer')}>🌐 Website ↗</button>
-            <button type="button" className="prospect-link-chip" aria-label={selected.linkedin ? 'Open LinkedIn' : 'LinkedIn unavailable'} title={selected.linkedin ? 'Open LinkedIn' : 'LinkedIn unavailable'} disabled={!selected.linkedin} onClick={() => selected.linkedin && window.open(window.ProspectToolUtils.normalizeUrl(selected.linkedin), '_blank', 'noopener,noreferrer')}>in LinkedIn ↗</button>
+            <button type="button" className="prospect-icon-link" aria-label={selected.website ? 'Open Website' : 'Website unavailable'} title={selected.website ? 'Open Website' : 'Website unavailable'} disabled={!selected.website} onClick={() => selected.website && window.open(window.ProspectToolUtils.normalizeUrl(selected.website), '_blank', 'noopener,noreferrer')}>🌐</button>
+            <button type="button" className="prospect-icon-link" aria-label="Research Company" title="Research Company" onClick={() => runCompanyResearch(selected)}>✦</button>
             <button type="button" className="prospect-icon-link" aria-label="Download to CSV" title="Download to CSV" onClick={() => exportRows([selected], `${selected.id}-prospect.csv`)}>⬇</button>
             <IconButton icon="prev" label="Previous record" disabled={selectedIndex <= 0} onClick={() => setSelectedRowId(sorted[selectedIndex - 1].id)} />
             <IconButton icon="next" label="Next record" disabled={selectedIndex >= sorted.length - 1} onClick={() => setSelectedRowId(sorted[selectedIndex + 1].id)} />
@@ -5392,29 +5448,71 @@ function ProspectToolPage() {
         </div>
 
         <div className="prospect-drawer-body" ref={drawerBodyRef} tabIndex={-1}>
-          <div className="prospect-summary-strip">
-            <div><span>Tier</span><strong>{selected.partnerTierName || 'Low Priority'}</strong></div>
-            <div><span>Status</span><strong>{selected.trading_status || '—'}</strong></div>
-            <div><span>Region</span><strong>{selected.country || '—'}</strong></div>
-            <div><span>Type</span><strong>{selected.channel_role || '—'}</strong></div>
+          <div className="prospect-drawer-tabs" role="tablist" aria-label="Prospect drawer tabs">
+            <button type="button" role="tab" aria-selected={drawerTab === 'details'} className={`prospect-drawer-tab ${drawerTab === 'details' ? 'active' : ''}`} onClick={() => setDrawerTab('details')}>Details</button>
+            <button type="button" role="tab" aria-selected={drawerTab === 'research'} className={`prospect-drawer-tab ${drawerTab === 'research' ? 'active' : ''}`} onClick={() => setDrawerTab('research')}>Research</button>
           </div>
 
-          <div className="prospect-drawer-grid prospect-drawer-grid--two">
+          {drawerTab === 'details' && <>
+            <div className="prospect-summary-strip">
+              <div><span>Tier</span><strong>{selected.partnerTierName || 'Low Priority'}</strong></div>
+              <div><span>Status</span><strong>{selected.trading_status || '—'}</strong></div>
+              <div><span>Region</span><strong>{selected.country || '—'}</strong></div>
+              <div><span>Type</span><strong>{selected.channel_role || '—'}</strong></div>
+            </div>
+
             <div className="panel-card"><h4>Company details</h4><p>Industry: {selected.industry || '—'}</p><p>Company Type: {selected.category || '—'}</p><p>Employees: {selected.displayEmployees}</p><p>Revenue: {selected.displayRevenue}</p><p>Location: {selected.displayLocation} {selected.postcode}</p></div>
             <div className="panel-card"><h4>Commercial profile</h4><p>Channel Role: {selected.channel_role || '—'}</p><p>Channel Segment: {selected.channel_segment || '—'}</p><p>Adopter Profile: {selected.adopter_profile || '—'}</p><p>Keywords: {selected.keywords || '—'}</p></div>
-          </div>
 
-          <div className="panel-card"><h4>Technology signals</h4><div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{(selected.tech_stack || '').split(/[,;|]/).map((t) => t.trim()).filter(Boolean).map((tech) => <span key={tech} className="tech-tag">{tech}</span>)}{!selected.tech_stack && <span className="tech-tag">No data</span>}</div></div>
+            <div className="panel-card"><h4>Technology signals</h4><div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{(selected.tech_stack || '').split(/[,;|]/).map((t) => t.trim()).filter(Boolean).map((tech) => <span key={tech} className="tech-tag">{tech}</span>)}{!selected.tech_stack && <span className="tech-tag">No data</span>}</div></div>
 
-          <div className="panel-card"><h4>Contacts</h4>{selected.contacts.length ? selected.contacts.map((c, idx) => <div key={`${c.name}-${idx}`} className="prospect-contact-row"><span>{c.name || c.email || '—'}</span><span className="tech-tag">{c.role || 'Role not set'}</span></div>) : <p>—</p>}</div>
+            <div className="panel-card"><h4>Contacts</h4>{selected.contacts.length ? selected.contacts.map((c, idx) => <div key={`${c.name}-${idx}`} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}><span>{c.name || c.email || '—'}</span><span className="tech-tag">{c.role || 'Role not set'}</span></div>) : <p>—</p>}</div>
 
-          <div className="panel-card"><h4>Score breakdown</h4>{selected.scoreBreakdown.map((f, idx) => {
-            const m = f.match(/([+-]?\d+(?:\.\d+)?)/);
-            const raw = m ? Number(m[1]) : 0;
-            const fill = Math.min(100, Math.max(8, Math.abs(raw) * 5));
-            const label = f.replace(/\s*[+-]?\d+(?:\.\d+)?$/, '');
-            return <div className="score-bar" key={`${f}-${idx}`}><span>{label}</span><div className="bar"><div className="fill" style={{ width: `${fill}%`, opacity: raw < 0 ? 0.45 : 1 }} /></div></div>;
-          })}</div>
+            <div className="panel-card"><h4>Score breakdown</h4>{selected.scoreBreakdown.map((f, idx) => {
+              const m = f.match(/([+-]?\d+(?:\.\d+)?)/);
+              const raw = m ? Number(m[1]) : 0;
+              const fill = Math.min(100, Math.max(8, Math.abs(raw) * 5));
+              const label = f.replace(/\s*[+-]?\d+(?:\.\d+)?$/, '');
+              return <div className="score-bar" key={`${f}-${idx}`}><span>{label}</span><div className="bar"><div className="fill" style={{ width: `${fill}%`, opacity: raw < 0 ? 0.45 : 1 }} /></div></div>;
+            })}</div>
+          </>}
+
+          {drawerTab === 'research' && <div className="prospect-research-panel">
+            <div className="prospect-research-head">
+              <div>
+                <h4>AI Company Research</h4>
+                <p>Structured analysis generated from selected company data.</p>
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <IconButton icon="load" label="Regenerate research" onClick={() => runCompanyResearch(selected)} />
+                <IconButton icon="save" label="Save to notes" onClick={saveResearchToNotes} disabled={!researchResult} />
+              </div>
+            </div>
+
+            {!researchLoading && !researchError && !researchResult && <div className="prospect-state prospect-state--empty"><strong>No research generated yet</strong><p>Run AI research to build a partner-ready summary for this company.</p><div><IconButton icon="load" label="Research Company now" onClick={() => runCompanyResearch(selected)} /></div></div>}
+            {researchLoading && <div className="prospect-state prospect-state--loading" role="status" aria-live="polite"><span className="prospect-state__spinner" aria-hidden="true" />Generating AI research…</div>}
+            {researchError && <div className="prospect-state prospect-state--error" role="alert"><strong>Research failed</strong><p>{researchError}</p><div><IconButton icon="load" label="Retry research" onClick={() => runCompanyResearch(selected)} /></div></div>}
+
+            {researchResult && !researchLoading && !researchError && <div className="prospect-research-grid">
+              {[researchResult.companySummary, researchResult.servicesCapabilities, researchResult.likelyVendors, researchResult.ipiSuitability, researchResult.recommendedPartnerMotion, researchResult.suggestedTier, researchResult.keyContactsToTarget, researchResult.suggestedDiscussionThemes].map((section) => <section key={section.title} className="panel-card"><h4>{section.title}</h4><ul className="prospect-research-list">{(section.items || []).map((item, idx) => <li key={`${section.title}-${idx}`}><span>{item.statement}</span><em className={`prospect-confidence prospect-confidence--${item.confidence || 'unknown'}`}>{item.confidence || 'unknown'}</em></li>)}</ul></section>)}
+
+              <section className="panel-card">
+                <h4>Outreach Templates</h4>
+                <div className="prospect-templates">{(researchResult.outreachTemplates?.templates || []).map((template, idx) => <article key={`${template.title}-${idx}`} className="prospect-template-card"><div><strong>{template.title}</strong><span className="tech-tag">{template.channel}</span></div><pre>{template.body}</pre><IconButton icon="copy" label={`Copy ${template.title}`} onClick={() => copyTemplate(template)} /></article>)}</div>
+              </section>
+
+              <section className="panel-card">
+                <h4>Unknown / Not Found</h4>
+                {researchResult.unknowns?.length ? <ul className="prospect-research-list">{researchResult.unknowns.map((item, idx) => <li key={`${item}-${idx}`}><span>{item}</span><em className="prospect-confidence prospect-confidence--unknown">unknown</em></li>)}</ul> : <p>None listed.</p>}
+              </section>
+
+              <section className="panel-card">
+                <h4>Backend integration metadata</h4>
+                <p style={{ marginBottom: 8 }}>Ready for OpenAI backend integration with deterministic JSON rendering.</p>
+                <p style={{ margin: 0, fontSize: 11, color: 'var(--text-secondary)' }}>Prompt template available in <code>window.ProspectResearch.buildResearchPrompt</code>. {researchPromptMeta?.backendPromptTemplate ? 'Template prepared.' : 'Template unavailable.'}</p>
+              </section>
+            </div>}
+          </div>}
         </div>
       </aside>
     </div>}
