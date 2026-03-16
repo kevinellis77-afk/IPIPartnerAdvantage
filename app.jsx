@@ -9686,7 +9686,6 @@ function GovernancePage() {
   }, { total: 0, complete: 0, inProgress: 0, blocked: 0, overdue: 0 });
 
   const completePct = summary.total ? Math.round((summary.complete / summary.total) * 100) : 0;
-  const ownershipSummary = buildRoleSummary(tasks, RACI_DROPDOWN_OPTIONS);
   const currentNoteTask = tasks.find((task) => task.id === noteTaskId);
 
   const getTaskRowStyle = (task) => {
@@ -9752,17 +9751,15 @@ function GovernancePage() {
           <div id="raci-export-container">
             <div className="raciTableWrap">
               <div className="raciTableGrid">
-                <div className="raciTableHeader">{["Name of Task", "R", "A", "C", "I", "Status", "Owner"].map((h) => <div key={h} className={`raciHeaderCell ${h.length === 1 ? `col-${h.toLowerCase()}` : ""}`}>{h}</div>)}</div>
+                <div className="raciTableHeader">{["Name of Task", "Responsible Division", "Status", "Owner"].map((h) => <div key={h} className="raciHeaderCell">{h}</div>)}</div>
                 {filteredTasks.map((task, idx) => {
                   const rowStyle = getTaskRowStyle(task);
                   return (
                     <div key={task.id} className="raciTableRow" style={{ borderTop: idx ? `1px solid ${rowStyle.borderColor}` : "none", background: rowStyle.background }}>
                       <div style={{ padding: "10px 14px", fontSize: 12.5, fontWeight: 700, color: "#EAF5FF", display: "flex", alignItems: "center" }}>{task.activity}</div>
-                      {[["r", "Responsible"], ["a", "Accountable"], ["c", "Consulted"], ["i", "Informed"]].map(([field, label]) => (
-                        <div key={`${task.id}-${field}`} style={{ padding: "10px" }}>
-                          <MultiRoleDropdown id={`raci-${task.id}-${field}`} label={`${label} roles for ${task.activity}`} value={task[field]} options={RACI_DROPDOWN_OPTIONS} onChange={(values) => updateRaciField(task.id, field, values)} />
-                        </div>
-                      ))}
+                      <div style={{ padding: "10px" }}>
+                        <MultiRoleDropdown id={`raci-${task.id}-r`} label={`Responsible division for ${task.activity}`} value={task.r} options={RACI_DROPDOWN_OPTIONS} onChange={(values) => updateRaciField(task.id, "r", values)} />
+                      </div>
                       <div style={{ padding: "10px" }}><select className="ui-dropdown" value={task.status} onChange={(e) => updateTask(task.id, { status: e.target.value })} style={{ width: "100%", boxShadow: "none" }}>{GOVERNANCE_STATUS_OPTIONS.map((v) => <option key={v} value={v}>{v}</option>)}</select></div>
                       <div style={{ padding: "10px" }}><input value={task.owner} onChange={(e) => updateTask(task.id, { owner: e.target.value })} placeholder="Owner" style={{ width: "100%", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(123,150,163,0.3)", borderRadius: 6, color: "var(--text-primary)", padding: "6px", fontSize: 12 }} /></div>
                     </div>
@@ -9794,11 +9791,6 @@ function GovernancePage() {
                 </div>
               </section>
             )}
-
-            <section style={{ marginTop: 20 }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color: "#9DB8C5", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>Key Ownership Summary</div>
-              <div className="ownershipDashboard">{ownershipSummary.map((role) => (<div className="ownershipCard" key={role.name}><div className="ownershipHeader"><div className="ownershipRole">{role.name}</div><div className="ownershipTotal">{role.total}</div></div><div className="ownershipMetrics"><div className="metric metric-r"><div className="metricValue">{role.responsible}</div><div className="metricLabel">R</div></div><div className="metric metric-a"><div className="metricValue">{role.accountable}</div><div className="metricLabel">A</div></div><div className="metric metric-c"><div className="metricValue">{role.consulted}</div><div className="metricLabel">C</div></div><div className="metric metric-i"><div className="metricValue">{role.informed}</div><div className="metricLabel">I</div></div></div></div>))}</div>
-            </section>
           </div>
 
           {toast && <div className="raciToast">{toast}</div>}
