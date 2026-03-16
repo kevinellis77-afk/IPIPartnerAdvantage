@@ -12352,80 +12352,6 @@ const MARKET_VISION_DATA = {
     { icon: "📞", title: "Unify communications" },
     { icon: "🖥️", title: "Connect and support the modern workplace" },
   ],
-  platformLayers: [
-    { id: "channels", title: "Customer Channels", items: ["Voice", "Chat", "Email", "SMS", "Social", "Bots"], moduleId: "elasticcx-ccaas" },
-    { id: "engagement", title: "CX & Engagement Platform", items: ["ElasticCX CCaaS", "Routing", "IVR", "Queue Management", "Callbacks", "Quality Management"], moduleId: "elasticcx-ccaas" },
-    { id: "ai", title: "AI & Automation", items: ["AI Insights", "AI Sidekick", "Transcription", "Summaries", "Topic Detection", "Sentiment", "Score Assist", "Smart Wrap-Up"], moduleId: "ai-insights" },
-    { id: "payments", title: "Secure Transactions", items: ["Cloud PCI", "Pauseable", "Pay by Link", "DTMF Suppression", "IVR Assist"], moduleId: "cloud-pci" },
-    { id: "collaboration", title: "Collaboration", items: ["ElasticCX UCaaS", "Voice", "Mobile", "Collaboration", "Presence", "Reporting"], moduleId: "elasticcx-ucaas" },
-    { id: "connectivity", title: "Connectivity & Infrastructure", items: ["SD-WAN", "Secure Cloud Connectivity", "Traffic Optimisation", "Remote Work Support"], moduleId: "sd-wan" },
-    { id: "workplace", title: "Digital Workplace", items: ["DesktopLive", "Managed End User Services", "Microsoft 365", "Endpoint Security", "Service Desk"], moduleId: "desktoplive" },
-  ],
-  architectureModules: [
-    {
-      id: "elasticcx-ccaas",
-      name: "ElasticCX CCaaS",
-      description: "Flexible omnichannel contact centre platform with voice, digital and social channels, configurable APIs, cloud releases, scalability and managed services.",
-      businessValue: "Accelerates CX modernisation while giving partners a scalable, services-led growth foundation.",
-      keyCapabilities: ["Omnichannel routing", "Journey orchestration", "APIs & integrations", "Cloud release cadence"],
-      useCases: ["Unify fragmented customer channels", "Scale seasonal demand without infrastructure friction"],
-      relatedProducts: ["ElasticCX CCaaS", "ElasticCX UCaaS"],
-    },
-    {
-      id: "ai-insights",
-      name: "AI Insights",
-      description: "Post-interaction intelligence including transcription, summarisation, topic detection, sentiment analysis and quality monitoring.",
-      businessValue: "Turns interaction data into decision-ready intelligence for continuous CX improvement.",
-      keyCapabilities: ["Transcription", "Summarisation", "Topic detection", "Sentiment analysis", "Score assist"],
-      useCases: ["Detect service issues early", "Scale QA and coaching across more interactions"],
-      relatedProducts: ["ECX AI Insights"],
-    },
-    {
-      id: "ai-sidekick",
-      name: "AI Sidekick",
-      description: "Real-time agent assist with transcription, voicemail transcription, historical conversation insight and smart wrap-up.",
-      businessValue: "Improves agent productivity in the moment while increasing consistency and quality.",
-      keyCapabilities: ["Real-time guidance", "Smart wrap-up", "Historical context", "Voicemail transcription"],
-      useCases: ["Reduce average handling time", "Support new agents during ramp-up"],
-      relatedProducts: ["ECX AI Sidekick", "ECX AI Insights"],
-    },
-    {
-      id: "cloud-pci",
-      name: "Cloud PCI",
-      description: "PCI DSS Level 1 payment security platform supporting pause/resume, pay by link, DTMF suppression and IVR payment journeys.",
-      businessValue: "Protects customer trust and reduces compliance risk without disrupting service flow.",
-      keyCapabilities: ["Pauseable", "Pay by link", "DTMF suppression", "IVR assist"],
-      useCases: ["Take compliant payments in contact centres", "Reduce PCI scope and audit burden"],
-      relatedProducts: ["Cloud PCI"],
-    },
-    {
-      id: "elasticcx-ucaas",
-      name: "ElasticCX UCaaS",
-      description: "Cloud unified communications platform for voice, collaboration, analytics and flexible communications across devices.",
-      businessValue: "Connects service, operations and leadership teams on one communication fabric.",
-      keyCapabilities: ["Voice and mobile", "Collaboration tools", "Presence", "Reporting and analytics"],
-      useCases: ["Enable hybrid teams", "Improve cross-functional response times"],
-      relatedProducts: ["ElasticCX UCaaS"],
-    },
-    {
-      id: "sd-wan",
-      name: "SD-WAN",
-      description: "Secure, resilient connectivity layer with centralised management, traffic optimisation, performance improvement and remote work support.",
-      businessValue: "Delivers stable, high-quality experiences across sites, branches and remote teams.",
-      keyCapabilities: ["Central policy control", "Traffic optimisation", "Performance visibility", "Remote user support"],
-      useCases: ["Prioritise CX traffic", "Support distributed workforces securely"],
-      relatedProducts: ["SD-WAN Services"],
-    },
-    {
-      id: "desktoplive",
-      name: "DesktopLive",
-      description: "Managed digital workplace platform delivering Microsoft 365 services, endpoint security, service desk, support and productivity tooling.",
-      businessValue: "Extends CX value into employee experience with secure, managed workplace operations.",
-      keyCapabilities: ["Microsoft 365 management", "Endpoint security", "Service desk", "Remote support"],
-      useCases: ["Standardise employee tooling", "Improve workplace uptime and user productivity"],
-      relatedProducts: ["DesktopLive"],
-    },
-  ],
   aiCapabilities: [
     { icon: "📝", title: "Transcription", description: "Capture every interaction accurately to improve compliance, searchability and service quality.", why: "Creates reliable interaction intelligence at scale." },
     { icon: "📚", title: "Summarisation", description: "Reduce admin time and accelerate hand-offs with concise AI-generated summaries.", why: "Returns agent capacity to high-value conversations." },
@@ -12437,22 +12363,16 @@ const MARKET_VISION_DATA = {
     { icon: "🕰️", title: "Historical Conversation Insight", description: "Give agents context from previous interactions across channels.", why: "Supports faster and more personalised service." },
   ],
   valueCards: [
-    "Better customer journeys",
-    "Faster agent productivity",
-    "Lower cost to serve",
-    "Stronger security and compliance",
-    "More flexible cloud operations",
-    "Scalable modern workplace support",
+    { icon: "🌟", title: "Better customer journeys", detail: "Connected channels and context create smoother, lower-effort experiences." },
+    { icon: "⚡", title: "Faster agent productivity", detail: "AI guidance and automation reduce effort and speed up resolution times." },
+    { icon: "💸", title: "Lower cost to serve", detail: "Operational efficiency and smarter workflows reduce service delivery overhead." },
+    { icon: "🛡️", title: "Stronger security and compliance", detail: "Built-in controls protect customer data and simplify regulatory alignment." },
+    { icon: "☁️", title: "More flexible cloud operations", detail: "Cloud-native tooling improves resilience, scalability and deployment agility." },
+    { icon: "🧩", title: "Scalable modern workplace support", detail: "Managed digital workplace services keep teams secure, productive and supported." },
   ],
 };
 
 function MarketVisionPage({ onNavigate }) {
-  const [activeModuleId, setActiveModuleId] = React.useState("elasticcx-ccaas");
-  const activeModule = React.useMemo(
-    () => MARKET_VISION_DATA.architectureModules.find((module) => module.id === activeModuleId) || MARKET_VISION_DATA.architectureModules[0],
-    [activeModuleId],
-  );
-
   const scrollToId = (id) => {
     const target = document.getElementById(id);
     target?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -12467,7 +12387,6 @@ function MarketVisionPage({ onNavigate }) {
           <p className="market-hero__subtitle">The future of customer experience is platform-led, AI-enabled and built for seamless orchestration across every interaction.</p>
           <p className="market-hero__copy">IPI delivers an integrated CX platform that combines communication, intelligence, security and connectivity to help organisations deliver exceptional customer and employee experiences. We are building a complete CX ecosystem combining contact centre, communications, AI, security, connectivity and workplace services.</p>
           <div className="market-hero__actions">
-            <StandardButton onClick={() => scrollToId("market-architecture-explorer")}>Explore Architecture</StandardButton>
             <SecondaryButton onClick={() => scrollToId("market-ai-capabilities")}>View AI Capabilities</SecondaryButton>
           </div>
         </div>
@@ -12506,43 +12425,6 @@ function MarketVisionPage({ onNavigate }) {
         </div>
       </SectionWrapper>
 
-      <SectionWrapper id="market-architecture-explorer">
-        <SectionHeader title="Integrated platform architecture" description="A layered architecture connecting channels, engagement, intelligence, security, communications, connectivity and workplace services." />
-        <div className="market-layer-stack">
-          {MARKET_VISION_DATA.platformLayers.map((layer, index) => (
-            <button
-              key={layer.id}
-              type="button"
-              className={`market-layer ${activeModuleId === layer.moduleId ? "active" : ""}`}
-              style={{ animationDelay: `${index * 0.08}s` }}
-              onClick={() => setActiveModuleId(layer.moduleId)}
-            >
-              <div className="market-layer__title">{layer.title}</div>
-              <div className="market-layer__items">{layer.items.map((item) => <span key={item}>{item}</span>)}</div>
-            </button>
-          ))}
-        </div>
-
-        <div className="market-explorer" id="market-explorer-panel">
-          <div className="market-explorer__list ds-card ds-card--standard">
-            <h3>Architecture Explorer</h3>
-            {MARKET_VISION_DATA.architectureModules.map((module) => (
-              <button key={module.id} type="button" className={`market-explorer__item ${activeModuleId === module.id ? "active" : ""}`} onClick={() => setActiveModuleId(module.id)}>
-                {module.name}
-              </button>
-            ))}
-          </div>
-          <div className="market-explorer__detail ds-card ds-card--highlight">
-            <h3>{activeModule.name}</h3>
-            <p>{activeModule.description}</p>
-            <div><strong>Business value:</strong> {activeModule.businessValue}</div>
-            <div><strong>Key capabilities:</strong> {activeModule.keyCapabilities.join(" • ")}</div>
-            <div><strong>Example use cases:</strong> {activeModule.useCases.join(" • ")}</div>
-            <div><strong>Related products:</strong> {activeModule.relatedProducts.join(" • ")}</div>
-          </div>
-        </div>
-      </SectionWrapper>
-
       <SectionWrapper id="market-ai-capabilities">
         <SectionHeader title="AI capabilities built into the platform" />
         <div className="market-ai-grid">
@@ -12560,7 +12442,13 @@ function MarketVisionPage({ onNavigate }) {
       <SectionWrapper>
         <SectionHeader title="Why this platform model matters" />
         <div className="market-value-grid">
-          {MARKET_VISION_DATA.valueCards.map((value) => <StandardCard className="market-value-card" key={value}>{value}</StandardCard>)}
+          {MARKET_VISION_DATA.valueCards.map((value) => (
+            <StandardCard className="market-value-card" key={value.title}>
+              <div className="market-value-card__icon" aria-hidden="true">{value.icon}</div>
+              <h3>{value.title}</h3>
+              <p>{value.detail}</p>
+            </StandardCard>
+          ))}
         </div>
       </SectionWrapper>
 
