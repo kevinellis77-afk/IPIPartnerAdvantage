@@ -10396,11 +10396,11 @@ function ChannelMarketingPage() {
       <div style={{ position: "relative", zIndex: 1, minHeight: "100vh", paddingBottom: 40 }}>
         <AppPageHeader
           title="Channel Marketing"
-          subtitle="Designing a partner-first website experience that helps IP Integration attract, convert and enable reseller partners."
+          subtitle={<span className="cm-single-line-copy">Designing a partner-first website experience that helps IP Integration attract, convert and enable reseller partners.</span>}
         />
 
         <SectionWrapper>
-          <SectionHeader title="Channel Marketing Mission" description="The website must do more than describe technology. It must sell the business opportunity to a reseller." />
+          <SectionHeader title="Channel Marketing Mission" description={<span className="cm-single-line-copy">The website must do more than describe technology. It must sell the business opportunity to a reseller.</span>} />
           <HighlightCard className="cm-hero-card">
             <div className="cm-hero-layout">
               <div>
@@ -10436,7 +10436,7 @@ function ChannelMarketingPage() {
         </SectionWrapper>
 
         <SectionWrapper>
-          <SectionHeader title="What Resellers Need to See" description="The three questions every reseller asks are: why should I partner with you, how do I make money, and how easy is it to work with you?" />
+          <SectionHeader title="What Resellers Need to See" description={<span className="cm-single-line-copy">The three questions every reseller asks are: why should I partner with you, how do I make money, and how easy is it to work with you?</span>} />
           <div className="cm-grid-3">
             {CHANNEL_RESELLER_QUESTIONS.map((item) => (
               <StandardCard key={item.title} className="cm-big-card">
