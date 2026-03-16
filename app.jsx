@@ -5525,478 +5525,536 @@ function useDebouncedValue(value, wait) {
   return debounced;
 }
 
-const CX_DISCOVERY_STORAGE_KEY = "ipi-cx-discovery-session-v1";
+const CUSTOMER_DISCOVERY_STORAGE_KEYS = {
+  records: "ipiCustomerDiscoveryRecords",
+  draft: "ipiCustomerDiscoveryDraft",
+};
 
-const CX_DISCOVERY_PROFILE_FIELDS = [
-  { key: "companyName", label: "Company Name", type: "text", placeholder: "Acme Contact Services" },
-  { key: "industry", label: "Industry", type: "text", placeholder: "Retail, Utilities, Financial Services…" },
-  { key: "region", label: "Region / Geography", type: "text", placeholder: "UK & Ireland" },
-  { key: "agentCount", label: "Number of Agents", type: "number", min: 0, placeholder: "250" },
-  { key: "teamSize", label: "Customer Service Team Size", type: "number", min: 0, placeholder: "320" },
-  { key: "ccPlatform", label: "Current Contact Centre Platform", type: "text", placeholder: "Genesys / NICE / Five9 / Other" },
-  { key: "ucPlatform", label: "Current Telephony / UC Platform", type: "text", placeholder: "Teams, Zoom Phone, Cisco…" },
-  { key: "deploymentModel", label: "Deployment Model", type: "select", options: ["On-prem", "Hybrid", "Cloud"] },
+const CUSTOMER_DISCOVERY_SECTIONS = [
   {
-    key: "primaryChannels",
-    label: "Primary Customer Channels",
-    type: "multi-select",
-    options: ["Voice", "Email", "Chat", "SMS", "Social", "WhatsApp", "Video"],
-  },
-  { key: "notes", label: "Notes", type: "textarea", placeholder: "Commercial context, strategic pressures, known blockers…" },
-];
-
-const CX_DISCOVERY_SECTIONS = [
-  {
-    id: "operations",
-    title: "Contact Centre Operations",
-    category: "Operations",
-    questions: [
-      { id: "opsPlatform", label: "What contact centre platform do you currently use?", type: "text" },
-      { id: "monthlyInteractions", label: "How many customer interactions do you handle per month?", type: "number", min: 0 },
-      { id: "routingComplexity", label: "How complex is your routing model?", type: "slider", min: 1, max: 5, step: 1 },
-      { id: "multiBusinessUnits", label: "Do you support multiple business units or queues?", type: "boolean" },
-      { id: "callbackCapability", label: "Do you have callback capability?", type: "boolean" },
-      { id: "adminChangeEase", label: "How easy is it to make admin changes today?", type: "slider", min: 1, max: 5, step: 1 },
+    id: "overview",
+    title: "Overview",
+    fields: [
+      { key: "companyName", label: "Company Name", type: "text", required: true },
+      { key: "accountOwner", label: "Account Owner", type: "text", required: true },
+      { key: "discoveryDate", label: "Discovery Date", type: "date", required: true },
+      { key: "industry", label: "Industry", type: "text" },
+      { key: "opportunityStage", label: "Opportunity Stage", type: "select", options: ["Qualification", "Discovery", "Proposal", "Negotiation", "Closed Won", "Closed Lost"] },
+      { key: "generalNotes", label: "General Notes", type: "textarea", full: true },
     ],
   },
   {
-    id: "channels",
+    id: "companyProfile",
+    title: "Company Profile",
+    fields: [
+      { key: "companyName", label: "Company Name", type: "text" },
+      { key: "industry", label: "Industry", type: "text" },
+      { key: "countryRegion", label: "Country / Region", type: "text" },
+      { key: "employeeCount", label: "Number of Employees", type: "number", min: 0 },
+      { key: "contactCentreLocations", label: "Contact Centre Locations", type: "textarea", full: true },
+      { key: "agentCount", label: "Number of Agents", type: "number", min: 0 },
+      { key: "operatingModel", label: "Operating Model", type: "radio", options: ["Onsite", "Hybrid", "Remote"] },
+      { key: "customerType", label: "Customer Type", type: "radio", options: ["B2B", "B2C", "Both"] },
+      { key: "existingVendors", label: "Existing Vendors", type: "textarea", full: true },
+      { key: "keyStakeholders", label: "Key Stakeholders", type: "textarea", full: true },
+      { key: "notes", label: "Notes", type: "textarea", full: true },
+    ],
+  },
+  {
+    id: "businessDrivers",
+    title: "Business Drivers",
+    fields: [
+      { key: "drivers", label: "Business Drivers", type: "multi-select", options: ["Improve Customer Experience", "Reduce Operational Cost", "Replace Legacy Platform", "Introduce AI / Automation", "Improve Reporting & Visibility", "Enable Hybrid Working", "Support Growth / Scale", "Improve Compliance", "Improve Agent Productivity"], full: true },
+      { key: "primaryBusinessChallenge", label: "Primary Business Challenge", type: "textarea", full: true },
+      { key: "desiredOutcomes", label: "Desired Outcomes", type: "textarea", full: true },
+      { key: "successMetrics", label: "Success Metrics", type: "textarea", full: true },
+      { key: "projectTimeline", label: "Project Timeline", type: "text" },
+      { key: "budgetAwareness", label: "Budget Awareness", type: "select", options: ["Not discussed", "Indicative range", "Defined budget"] },
+      { key: "executiveSponsor", label: "Executive Sponsor", type: "text" },
+    ],
+  },
+  {
+    id: "customerChannels",
     title: "Customer Channels",
-    category: "Channels",
-    questions: [
-      { id: "supportedChannels", label: "Which channels do you currently support?", type: "multi-select", options: ["Voice", "Email", "Chat", "SMS", "Social", "WhatsApp", "Video"] },
-      { id: "priorityChannels", label: "Which channels are most important to your customers?", type: "multi-select", options: ["Voice", "Email", "Chat", "SMS", "Social", "WhatsApp", "Video"] },
-      { id: "channelSeamless", label: "Can customers move seamlessly between channels?", type: "boolean" },
-      { id: "omniHistory", label: "Do you offer true omnichannel interaction history to agents?", type: "boolean" },
-      { id: "digitalGaps", label: "Are there gaps in digital channel support?", type: "boolean" },
+    fields: [
+      { key: "channels", label: "Active Channels", type: "multi-select", options: ["Voice", "Email", "Webchat", "SMS", "WhatsApp", "Social", "Video", "Self-Service / Knowledge Base"], full: true },
+      { key: "dominantChannel", label: "Dominant Channel", type: "text" },
+      { key: "channelsIntegrated", label: "Channels Integrated?", type: "boolean" },
+      { key: "journeyVisibility", label: "Journey Visibility Available?", type: "boolean" },
+      { key: "channelPainPoints", label: "Current Pain Points", type: "textarea", full: true },
+      { key: "selfServiceMaturity", label: "Self-Service Maturity", type: "select", options: ["None", "Basic", "Developing", "Advanced"] },
     ],
   },
   {
-    id: "workforce",
-    title: "Workforce & Agents",
-    category: "Workforce",
-    questions: [
-      { id: "wfmInUse", label: "Do you use workforce management today?", type: "boolean" },
-      { id: "qaApproach", label: "How do you handle QA and coaching?", type: "select", options: ["Manual spreadsheet process", "Basic quality sampling", "Structured scorecards", "Automated QA with coaching insights"] },
-      { id: "rampWeeks", label: "How long does agent ramp-up typically take (weeks)?", type: "number", min: 0 },
-      { id: "afterCallAdminBurden", label: "Do agents spend significant time on after-call admin?", type: "boolean" },
-      { id: "productivityVisibility", label: "How confident are you in agent productivity visibility?", type: "slider", min: 1, max: 5, step: 1 },
+    id: "contactCentreOps",
+    title: "Contact Centre Operations",
+    fields: [
+      { key: "numberOfAgents", label: "Number of Agents", type: "number", min: 0 },
+      { key: "teamsDepartments", label: "Teams / Departments", type: "text" },
+      { key: "languages", label: "Languages Supported", type: "text" },
+      { key: "operatingHours", label: "Operating Hours", type: "text" },
+      { key: "peakPeriods", label: "Peak Periods / Seasonal Demand", type: "textarea", full: true },
+      { key: "outsourcedOps", label: "Outsourced Operations?", type: "boolean" },
+      { key: "currentKpis", label: "Current KPIs Measured", type: "textarea", full: true },
+      { key: "slaTargets", label: "SLA Targets", type: "textarea", full: true },
+      { key: "operationalChallenges", label: "Operational Challenges", type: "textarea", full: true },
     ],
   },
   {
-    id: "automation",
-    title: "Automation & AI",
-    category: "Automation",
-    questions: [
-      { id: "botsUsed", label: "Do you currently use bots or self-service automation?", type: "boolean" },
-      { id: "aiFeatures", label: "Do you use AI for transcription, summarisation, sentiment, or QA?", type: "multi-select", options: ["Transcription", "Summarisation", "Sentiment", "Automated QA", "None"] },
-      { id: "agentAssistImportance", label: "How important is AI-enabled agent assist?", type: "slider", min: 1, max: 5, step: 1 },
-      { id: "reduceAfterCall", label: "Are you interested in reducing after-call work?", type: "boolean" },
-      { id: "automationValue", label: "Where would automation create most value?", type: "multi-select", options: ["Routing", "Self-service", "QA", "Reporting", "Payments", "Knowledge", "Other"] },
+    id: "technologyStack",
+    title: "Current Technology Stack",
+    fields: [
+      { key: "contactCentrePlatform", label: "Current Contact Centre Platform", type: "text" },
+      { key: "telephonyPlatform", label: "Telephony / Voice Platform", type: "text" },
+      { key: "ucPlatform", label: "UC Platform", type: "text" },
+      { key: "crm", label: "CRM", type: "text" },
+      { key: "ticketing", label: "Ticketing / ITSM", type: "text" },
+      { key: "wemTools", label: "WEM Tools", type: "text" },
+      { key: "analyticsTools", label: "Analytics Tools", type: "text" },
+      { key: "knowledgeSystems", label: "Knowledge Systems", type: "text" },
+      { key: "otherSystems", label: "Other Integrated Systems", type: "textarea", full: true },
+      { key: "worksWell", label: "What Works Well", type: "textarea", full: true },
+      { key: "notWorking", label: "What Does Not Work Well", type: "textarea", full: true },
+      { key: "limitations", label: "Known Limitations", type: "textarea", full: true },
+    ],
+  },
+  {
+    id: "aiAutomation",
+    title: "AI & Automation",
+    fields: [
+      { key: "usingAi", label: "Currently Using AI?", type: "boolean" },
+      { key: "aiMaturityLevel", label: "AI Maturity Level", type: "select", options: ["None", "Early", "Active", "Advanced"] },
+      { key: "currentAiUseCases", label: "Current AI Use Cases", type: "multi-select", options: ["Chatbots", "Voice Bots", "Agent Assist", "Automated QA", "Conversation Analytics", "Summarisation", "Predictive Routing", "Workflow Automation"], full: true },
+      { key: "desiredAiUseCases", label: "Desired AI Use Cases", type: "multi-select", options: ["Chatbots", "Voice Bots", "Agent Assist", "Automated QA", "Conversation Analytics", "Summarisation", "Predictive Routing", "Workflow Automation"], full: true },
+      { key: "interestLevel", label: "Interest Level", type: "radio", options: ["Low", "Medium", "High"] },
+      { key: "concerns", label: "Concerns / Blockers", type: "textarea", full: true },
+    ],
+  },
+  {
+    id: "workforceEngagement",
+    title: "Workforce Engagement",
+    fields: [
+      { key: "forecasting", label: "Forecasting In Place?", type: "boolean" },
+      { key: "scheduling", label: "Scheduling In Place?", type: "boolean" },
+      { key: "qualityMonitoring", label: "Quality Monitoring In Place?", type: "boolean" },
+      { key: "performanceManagement", label: "Performance Management In Place?", type: "boolean" },
+      { key: "coaching", label: "Coaching In Place?", type: "boolean" },
+      { key: "painPoints", label: "Pain Points", type: "textarea", full: true },
+      { key: "manualEffortLevel", label: "Manual Effort Level", type: "select", options: ["Low", "Medium", "High"] },
+      { key: "performanceVisibility", label: "Visibility Into Agent Performance", type: "select", options: ["Low", "Medium", "High"] },
     ],
   },
   {
     id: "analytics",
     title: "Reporting & Analytics",
-    category: "Analytics",
-    questions: [
-      { id: "realtimeReporting", label: "Do you have access to real-time reporting?", type: "boolean" },
-      { id: "sentimentThemes", label: "Can you analyse sentiment or recurring themes?", type: "boolean" },
-      { id: "painPointInsight", label: "How easy is it to identify customer pain points from interaction data?", type: "slider", min: 1, max: 5, step: 1 },
-      { id: "qualityScorecards", label: "Do you have quality scorecards?", type: "boolean" },
-      { id: "reportingConfidence", label: "How confident are you in your reporting today?", type: "slider", min: 1, max: 5, step: 1 },
+    fields: [
+      { key: "reportingMethod", label: "Reporting Method", type: "select", options: ["Native", "BI", "Excel", "Other"] },
+      { key: "realtimeReporting", label: "Real-Time Reporting Available?", type: "boolean" },
+      { key: "historicalQuality", label: "Historical Reporting Quality", type: "select", options: ["Poor", "Fair", "Good", "Excellent"] },
+      { key: "conversationAnalysis", label: "Conversation Analysis Available?", type: "boolean" },
+      { key: "missingInsights", label: "Missing Insights", type: "textarea", full: true },
+      { key: "reportingPainPoints", label: "Reporting Pain Points", type: "textarea", full: true },
     ],
   },
   {
-    id: "security",
+    id: "securityCompliance",
     title: "Security & Compliance",
-    category: "Security",
-    questions: [
-      { id: "takesPayments", label: "Do you take payments in the contact centre?", type: "boolean" },
-      { id: "needsPci", label: "Do you need PCI DSS compliance support?", type: "boolean" },
-      { id: "agentsSeeCardData", label: "Do agents currently hear or see payment card data?", type: "boolean" },
-      { id: "complianceConcern", label: "Are compliance and audit requirements a major concern?", type: "slider", min: 1, max: 5, step: 1 },
-      { id: "regulatedRequirements", label: "Are there regulated industry requirements that affect your CX environment?", type: "boolean" },
+    fields: [
+      { key: "gdpr", label: "GDPR Requirements", type: "textarea", full: true },
+      { key: "pci", label: "PCI Requirements", type: "textarea", full: true },
+      { key: "recordingRequirements", label: "Call Recording Requirements", type: "textarea", full: true },
+      { key: "dataResidency", label: "Data Residency Requirements", type: "textarea", full: true },
+      { key: "retention", label: "Retention Requirements", type: "textarea", full: true },
+      { key: "identitySso", label: "Identity / SSO Requirements", type: "textarea", full: true },
+      { key: "securityConcerns", label: "Security Concerns", type: "textarea", full: true },
+      { key: "complianceNotes", label: "Compliance Notes", type: "textarea", full: true },
     ],
   },
   {
-    id: "infrastructure",
-    title: "Infrastructure & Connectivity",
-    category: "Infrastructure",
-    questions: [
-      { id: "infraModel", label: "Is your environment cloud, hybrid, or on-prem?", type: "select", options: ["Cloud", "Hybrid", "On-prem"] },
-      { id: "remoteAgents", label: "Do you have remote or hybrid agents?", type: "boolean" },
-      { id: "networkImpact", label: "Are connectivity or network issues affecting CX performance?", type: "boolean" },
-      { id: "secureConnectivityNeed", label: "Do you need secure connectivity between sites, remote workers, and cloud apps?", type: "boolean" },
-      { id: "modernWorkplaceEnabled", label: "Is your IT environment modern workplace enabled?", type: "boolean" },
+    id: "integration",
+    title: "Integration Requirements",
+    fields: [
+      { key: "crmIntegration", label: "CRM Integration Needed?", type: "boolean" },
+      { key: "ticketingIntegration", label: "Ticketing Integration Needed?", type: "boolean" },
+      { key: "billingIntegration", label: "Billing Integration Needed?", type: "boolean" },
+      { key: "identityIntegration", label: "Identity Integration Needed?", type: "boolean" },
+      { key: "dataPlatformIntegration", label: "Data Platform Integration Needed?", type: "boolean" },
+      { key: "otherIntegrations", label: "Other Integrations", type: "textarea", full: true },
+      { key: "integrationComplexity", label: "Integration Complexity", type: "radio", options: ["Low", "Medium", "High"] },
+      { key: "integrationNotes", label: "Key Integration Notes", type: "textarea", full: true },
     ],
   },
   {
-    id: "vision",
-    title: "Future Vision",
-    category: "Vision Readiness",
-    questions: [
-      { id: "priorities", label: "What are your top 3 CX priorities over the next 12–24 months?", type: "multi-select", options: ["Lower cost", "Better experience", "AI", "Security", "Flexibility", "Analytics", "Scalability"] },
-      { id: "transformationPlanned", label: "Are you planning a migration or transformation initiative?", type: "boolean" },
-      { id: "mostImportant", label: "What matters most today?", type: "select", options: ["Lower cost", "Better experience", "AI", "Security", "Flexibility", "Analytics", "Scalability"] },
-      { id: "timeline", label: "What is the expected timeline?", type: "select", options: ["0–3 months", "3–6 months", "6–12 months", "12–24 months", "24+ months"] },
-      { id: "blockers", label: "What is blocking progress today?", type: "text" },
+    id: "migration",
+    title: "Migration Context",
+    fields: [
+      { key: "platformReplacement", label: "Platform Replacement?", type: "boolean" },
+      { key: "platformAge", label: "Current Platform Age", type: "text" },
+      { key: "renewalDate", label: "Renewal / Contract Date", type: "date" },
+      { key: "migrationUrgency", label: "Migration Urgency", type: "select", options: ["Low", "Medium", "High", "Critical"] },
+      { key: "migrationRisks", label: "Migration Risks", type: "textarea", full: true },
+      { key: "preferredApproach", label: "Preferred Migration Approach", type: "text" },
+      { key: "businessImpact", label: "Business Change Impact", type: "textarea", full: true },
     ],
+  },
+  {
+    id: "commercial",
+    title: "Commercial Context",
+    fields: [
+      { key: "decisionProcess", label: "Decision Process", type: "textarea", full: true },
+      { key: "budgetOwner", label: "Budget Owner", type: "text" },
+      { key: "procurementRequirements", label: "Procurement Requirements", type: "textarea", full: true },
+      { key: "vendorShortlist", label: "Vendor Shortlist", type: "textarea", full: true },
+      { key: "competitivePressure", label: "Competitive Pressure", type: "textarea", full: true },
+      { key: "targetGoLiveDate", label: "Target Go-Live Date", type: "date" },
+      { key: "keyRisksToClose", label: "Key Risks to Close", type: "textarea", full: true },
+    ],
+  },
+  {
+    id: "summary",
+    title: "Summary",
+    fields: [],
   },
 ];
 
-function CXDiscoveryQuestionnairePage({ onNavigate }) {
-  const wizardRef = React.useRef(null);
-  const [step, setStep] = React.useState(0);
-  const [profile, setProfile] = React.useState(() => {
-    const initial = {};
-    CX_DISCOVERY_PROFILE_FIELDS.forEach((field) => {
-      initial[field.key] = field.type === "multi-select" ? [] : "";
+function createEmptyDiscoveryRecord() {
+  const record = {
+    id: "",
+    createdAt: "",
+    updatedAt: "",
+    status: "draft",
+    scoring: null,
+    mappedSolutions: [],
+    recommendedNextSteps: [],
+    summaryNotes: "",
+  };
+  CUSTOMER_DISCOVERY_SECTIONS.forEach((section) => {
+    record[section.id] = {};
+    section.fields.forEach((field) => {
+      record[section.id][field.key] = field.type === "multi-select" ? [] : "";
     });
-    return initial;
   });
-  const [answers, setAnswers] = React.useState({});
-  const [saveMessage, setSaveMessage] = React.useState("");
+  return record;
+}
 
-  const totalSteps = 1 + CX_DISCOVERY_SECTIONS.length;
-  const completion = Math.round((step / (totalSteps - 1)) * 100);
-  const activeSection = step > 0 ? CX_DISCOVERY_SECTIONS[step - 1] : null;
+function boolToScore(value, yes = 4, no = 2) {
+  if (value === true) return yes;
+  if (value === false) return no;
+  return 1;
+}
+
+function escapeCsv(value) {
+  const text = String(value ?? "");
+  if (/[",\n]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
+  return text;
+}
+
+function CXDiscoveryQuestionnairePage() {
+  const [records, setRecords] = React.useState([]);
+  const [record, setRecord] = React.useState(() => createEmptyDiscoveryRecord());
+  const [step, setStep] = React.useState(0);
+  const [search, setSearch] = React.useState("");
+  const [message, setMessage] = React.useState("");
 
   React.useEffect(() => {
     try {
-      const raw = localStorage.getItem(CX_DISCOVERY_STORAGE_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw);
-      if (parsed.profile) setProfile((prev) => ({ ...prev, ...parsed.profile }));
-      if (parsed.answers) setAnswers(parsed.answers);
-      if (typeof parsed.step === "number") setStep(Math.min(Math.max(parsed.step, 0), totalSteps - 1));
+      const saved = JSON.parse(localStorage.getItem(CUSTOMER_DISCOVERY_STORAGE_KEYS.records) || "[]");
+      if (Array.isArray(saved)) setRecords(saved);
+      const draft = JSON.parse(localStorage.getItem(CUSTOMER_DISCOVERY_STORAGE_KEYS.draft) || "null");
+      if (draft && typeof draft === "object") setRecord((prev) => ({ ...prev, ...draft }));
     } catch (_error) {
-      // no-op
+      // ignore malformed storage
     }
-  }, [totalSteps]);
+  }, []);
 
   React.useEffect(() => {
     try {
-      localStorage.setItem(CX_DISCOVERY_STORAGE_KEY, JSON.stringify({ profile, answers, step, savedAt: new Date().toISOString() }));
+      localStorage.setItem(CUSTOMER_DISCOVERY_STORAGE_KEYS.records, JSON.stringify(records));
     } catch (_error) {
       // no-op
     }
-  }, [profile, answers, step]);
+  }, [records]);
 
-  const updateProfile = (key, value) => setProfile((prev) => ({ ...prev, [key]: value }));
-  const updateAnswer = (key, value) => setAnswers((prev) => ({ ...prev, [key]: value }));
+  React.useEffect(() => {
+    try {
+      localStorage.setItem(CUSTOMER_DISCOVERY_STORAGE_KEYS.draft, JSON.stringify(record));
+    } catch (_error) {
+      // no-op
+    }
+  }, [record]);
 
-  const scores = React.useMemo(() => {
-    const s = {
-      Channels: 2,
-      Operations: 2,
-      Workforce: 2,
-      Automation: 2,
-      Analytics: 2,
-      Security: 2,
-      Infrastructure: 2,
-      "Vision Readiness": 2,
+  const showMessage = (text) => {
+    setMessage(text);
+    window.setTimeout(() => setMessage(""), 2200);
+  };
+
+  const updateField = (sectionId, key, value) => {
+    setRecord((prev) => ({ ...prev, [sectionId]: { ...(prev[sectionId] || {}), [key]: value } }));
+  };
+
+  const scoring = React.useMemo(() => {
+    const channels = record.customerChannels || {};
+    const ai = record.aiAutomation || {};
+    const analytics = record.analytics || {};
+    const workforce = record.workforceEngagement || {};
+    const integration = record.integration || {};
+
+    const omnichannelBase = Math.min(5, Math.max(1, 1 + ((channels.channels || []).length * 0.45) + (channels.channelsIntegrated === true ? 1 : 0) + (channels.journeyVisibility === true ? 0.8 : 0)));
+    const aiUseCaseCount = ((ai.currentAiUseCases || []).length + (ai.desiredAiUseCases || []).length) / 2;
+    const aiMaturityMap = { None: 1, Early: 2.5, Active: 3.8, Advanced: 4.8 };
+    const automationScore = Math.min(5, Math.max(1, 1.2 + aiUseCaseCount * 0.45 + (ai.interestLevel === "High" ? 1 : ai.interestLevel === "Medium" ? 0.6 : 0.2)));
+    const categoryScores = {
+      "Omnichannel Maturity": Number(omnichannelBase.toFixed(1)),
+      "AI Adoption": Number((aiMaturityMap[ai.aiMaturityLevel] || boolToScore(ai.usingAi, 3.8, 1.8)).toFixed(1)),
+      "Automation Maturity": Number(automationScore.toFixed(1)),
+      "Analytics Capability": Number((1 + (analytics.realtimeReporting === true ? 1.2 : 0.3) + (analytics.conversationAnalysis === true ? 1.2 : 0.2) + ({ Poor: 0.4, Fair: 1.2, Good: 2.0, Excellent: 2.8 }[analytics.historicalQuality] || 0.6)).toFixed(1)),
+      "Workforce Optimisation": Number((1 + boolToScore(workforce.forecasting, 0.9, 0.2) + boolToScore(workforce.scheduling, 0.9, 0.2) + boolToScore(workforce.qualityMonitoring, 0.8, 0.2) + boolToScore(workforce.performanceManagement, 0.7, 0.2) + boolToScore(workforce.coaching, 0.7, 0.2)).toFixed(1)),
+      "Integration Maturity": Number((1 + boolToScore(integration.crmIntegration, 0.7, 0.2) + boolToScore(integration.ticketingIntegration, 0.7, 0.2) + boolToScore(integration.identityIntegration, 0.7, 0.2) + ({ Low: 1.8, Medium: 1.1, High: 0.5 }[integration.integrationComplexity] || 0.9)).toFixed(1)),
     };
-    const channelCount = (answers.supportedChannels || []).length;
-    s.Channels = Math.max(1, Math.min(5, 1 + channelCount * 0.45 + (answers.channelSeamless ? 0.8 : 0) + (answers.omniHistory ? 0.7 : 0) - (answers.digitalGaps ? 0.7 : 0)));
-    s.Operations = Math.max(1, Math.min(5, 1 + Number(answers.adminChangeEase || 0) * 0.55 + (answers.callbackCapability ? 0.6 : 0) + (answers.multiBusinessUnits ? 0.4 : 0)));
-    s.Workforce = Math.max(1, Math.min(5, 1 + Number(answers.productivityVisibility || 0) * 0.6 + (answers.wfmInUse ? 0.7 : 0) - (answers.afterCallAdminBurden ? 0.4 : 0)));
-    const aiCount = (answers.aiFeatures || []).filter((item) => item !== "None").length;
-    s.Automation = Math.max(1, Math.min(5, 1 + aiCount * 0.6 + (answers.botsUsed ? 0.7 : 0) + Number(answers.agentAssistImportance || 0) * 0.25));
-    s.Analytics = Math.max(1, Math.min(5, 1 + (answers.realtimeReporting ? 0.8 : 0) + (answers.sentimentThemes ? 0.8 : 0) + Number(answers.reportingConfidence || 0) * 0.35 + Number(answers.painPointInsight || 0) * 0.3));
-    s.Security = Math.max(1, Math.min(5, 1 + (answers.needsPci ? 0.5 : 0) + (answers.regulatedRequirements ? 0.5 : 0) + Number(answers.complianceConcern || 0) * 0.35 - (answers.agentsSeeCardData ? 0.8 : 0)));
-    s.Infrastructure = Math.max(1, Math.min(5, 1 + (answers.infraModel === "Cloud" ? 1 : answers.infraModel === "Hybrid" ? 0.5 : 0.2) + (answers.remoteAgents ? 0.4 : 0) - (answers.networkImpact ? 0.7 : 0) + (answers.secureConnectivityNeed ? 0.4 : 0)));
-    s["Vision Readiness"] = Math.max(1, Math.min(5, 1 + (answers.transformationPlanned ? 0.8 : 0) + ((answers.priorities || []).length >= 3 ? 0.8 : 0.2) + (answers.timeline === "0–3 months" || answers.timeline === "3–6 months" ? 1 : answers.timeline ? 0.6 : 0.2)));
 
-    return Object.fromEntries(Object.entries(s).map(([key, value]) => [key, Math.round(value * 10) / 10]));
-  }, [answers]);
+    Object.keys(categoryScores).forEach((key) => {
+      categoryScores[key] = Math.min(5, Math.max(1, categoryScores[key]));
+    });
+
+    const values = Object.values(categoryScores);
+    const overall = Number((values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(1));
+    const label = overall < 2.1 ? "Emerging" : overall < 3.2 ? "Developing" : overall < 4.2 ? "Mature" : "Advanced";
+    return { categoryScores, overall, label };
+  }, [record]);
 
   const recommendations = React.useMemo(() => {
-    const recs = [];
-    if (answers.takesPayments && (answers.needsPci || answers.agentsSeeCardData || Number(answers.complianceConcern || 0) >= 4)) {
-      recs.push({
-        title: "Secure payment handling with PCI controls",
-        rationale: "Payment interactions are active and compliance risk is material.",
-        solutions: ["Cloud PCI"],
-      });
-    }
-    if ((answers.supportedChannels || []).length <= 3 || !answers.channelSeamless || !answers.omniHistory) {
-      recs.push({
-        title: "Introduce omnichannel routing",
-        rationale: "Channel journeys appear fragmented and agent context is inconsistent.",
-        solutions: ["ElasticCX CCaaS"],
-      });
-    }
-    if ((answers.supportedChannels || []).includes("Voice") && answers.digitalGaps) {
-      recs.push({
-        title: "Improve digital channel coverage",
-        rationale: "Customers are likely starting in digital channels but support breadth is limited.",
-        solutions: ["ElasticCX CCaaS"],
-      });
-    }
-    if (!answers.botsUsed || (answers.aiFeatures || []).includes("None")) {
-      recs.push({
-        title: "Add AI transcription and summarisation",
-        rationale: "AI coverage is low and there is opportunity to reduce manual effort.",
-        solutions: ["AI Insights", "AI Sidekick"],
-      });
-    }
-    if (answers.afterCallAdminBurden || answers.reduceAfterCall || Number(answers.agentAssistImportance || 0) >= 4) {
-      recs.push({
-        title: "Enable real-time agent assist",
-        rationale: "Agent productivity friction indicates value from live guidance and smart wrap-up.",
-        solutions: ["AI Sidekick"],
-      });
-    }
-    if (!answers.sentimentThemes || !answers.qualityScorecards) {
-      recs.push({
-        title: "Automate QA and sentiment analysis",
-        rationale: "Limited quality intelligence makes it hard to spot recurring customer pain points.",
-        solutions: ["AI Insights"],
-      });
-    }
-    if (answers.remoteAgents && answers.networkImpact) {
-      recs.push({
-        title: "Improve connectivity for hybrid teams",
-        rationale: "Distributed operations and network instability are impacting customer outcomes.",
-        solutions: ["SD-WAN", "ElasticCX UCaaS"],
-      });
-    }
-    if (answers.mostImportant === "Flexibility" || answers.infraModel === "On-prem") {
-      recs.push({
-        title: "Modernise telephony and communications",
-        rationale: "Platform flexibility requirements suggest value from cloud communications modernisation.",
-        solutions: ["ElasticCX UCaaS"],
-      });
-    }
-    if (!answers.modernWorkplaceEnabled) {
-      recs.push({
-        title: "Support modern workplace operations",
-        rationale: "Operational tooling for distributed teams appears immature.",
-        solutions: ["DesktopLive"],
-      });
-    }
+    const recs = new Set();
+    const add = (item) => recs.add(item);
+    const drivers = record.businessDrivers?.drivers || [];
+    const ai = record.aiAutomation || {};
+    const workforce = record.workforceEngagement || {};
+    const analytics = record.analytics || {};
+    const integration = record.integration || {};
+    const migration = record.migration || {};
+    const tech = record.technologyStack || {};
 
-    return recs.slice(0, 6);
-  }, [answers]);
+    if (drivers.includes("Replace Legacy Platform") || migration.platformReplacement === true || migration.migrationUrgency === "High" || migration.migrationUrgency === "Critical") add("CCaaS");
+    if (tech.ucPlatform || record.companyProfile?.operatingModel === "Hybrid" || drivers.includes("Enable Hybrid Working")) add("UCaaS");
+    if (ai.interestLevel === "High" || drivers.includes("Introduce AI / Automation") || (ai.desiredAiUseCases || []).length > 2) add("AI & Automation");
+    if (workforce.painPoints || workforce.manualEffortLevel === "High" || workforce.scheduling === false) add("Workforce Engagement");
+    if (analytics.reportingPainPoints || analytics.missingInsights || analytics.realtimeReporting === false) add("CX Analytics");
+    if (integration.integrationComplexity === "High" || [integration.crmIntegration, integration.ticketingIntegration, integration.identityIntegration, integration.dataPlatformIntegration, integration.billingIntegration].filter(Boolean).length >= 3) add("Integration Services");
+    if (drivers.includes("Support Growth / Scale") || drivers.includes("Improve Customer Experience")) add("Consulting / Discovery Workshops");
+    if (record.commercial?.procurementRequirements || migration.preferredApproach || record.commercial?.targetGoLiveDate) add("Professional Services");
+    if (record.commercial?.keyRisksToClose || record.securityCompliance?.complianceNotes) add("Managed Services");
+
+    return Array.from(recs);
+  }, [record]);
 
   const nextSteps = React.useMemo(() => {
-    const steps = ["Discovery workshop", "Architecture review"];
-    if (scores.Channels < 3 || scores.Operations < 3) steps.push("CX journey workshop");
-    if (scores.Automation < 3) steps.push("Proof of concept");
-    if (scores.Security < 3) steps.push("Security / compliance assessment");
-    return [...new Set(steps)].slice(0, 5);
-  }, [scores]);
+    const steps = new Set(["Discovery Workshop"]);
+    if (recommendations.includes("Integration Services")) steps.add("Integration Scoping Session");
+    if (recommendations.includes("AI & Automation")) steps.add("AI Use Case Workshop");
+    if (record.migration?.platformReplacement === true) steps.add("Migration Assessment");
+    if (record.commercial?.budgetOwner || record.businessDrivers?.executiveSponsor) steps.add("Executive Strategy Review");
+    if (scoring.overall >= 3) steps.add("Proof of Concept");
+    if (recommendations.includes("CCaaS") || recommendations.includes("UCaaS")) steps.add("Technical Architecture Session");
+    return Array.from(steps);
+  }, [record, recommendations, scoring.overall]);
 
-  const summaryText = React.useMemo(() => {
-    const maturityLines = Object.entries(scores).map(([k, v]) => `${k}: ${v}/5`).join("\n");
-    const recLines = recommendations.map((r, i) => `${i + 1}. ${r.title} (${r.solutions.join(", ")})`).join("\n") || "No priority opportunities identified yet.";
-    const challengeLines = [
-      answers.digitalGaps ? "Digital channel support gaps" : null,
-      answers.afterCallAdminBurden ? "High after-call admin burden" : null,
-      answers.networkImpact ? "Connectivity impacting CX performance" : null,
-      answers.agentsSeeCardData ? "Payment data exposed to agents" : null,
-      answers.blockers ? `Current blocker: ${answers.blockers}` : null,
-    ].filter(Boolean);
+  const summaryNotes = React.useMemo(() => {
+    const overview = record.overview || {};
+    const painPoints = [record.customerChannels?.channelPainPoints, record.contactCentreOps?.operationalChallenges, record.analytics?.reportingPainPoints, record.aiAutomation?.concerns].filter(Boolean).join(" | ");
+    return `${overview.companyName || "Prospect"} is currently at ${scoring.label} CX maturity (${scoring.overall}/5). Primary drivers: ${(record.businessDrivers?.drivers || []).join(", ") || "Not captured"}. Main pain points: ${painPoints || "Not yet documented"}. Recommended IPI focus areas: ${recommendations.join(", ") || "Consulting / Discovery Workshops"}. Suggested next steps: ${nextSteps.join(", ")}.`;
+  }, [record, scoring, recommendations, nextSteps]);
 
-    return `Customer Profile\n- Company: ${profile.companyName || "Not provided"}\n- Industry: ${profile.industry || "Not provided"}\n- Region: ${profile.region || "Not provided"}\n- Deployment: ${profile.deploymentModel || "Not provided"}\n\nCurrent State\n- Contact Centre Platform: ${profile.ccPlatform || answers.opsPlatform || "Not provided"}\n- Telephony/UC: ${profile.ucPlatform || "Not provided"}\n- Channels: ${(answers.supportedChannels || profile.primaryChannels || []).join(", ") || "Not provided"}\n\nKey Challenges\n- ${(challengeLines.length ? challengeLines.join("\n- ") : "No major blockers captured yet")}\n\nCX Maturity Snapshot\n${maturityLines}\n\nRecommended Opportunities\n${recLines}\n\nSuggested IPI Solution Stack\n- ${[...new Set(recommendations.flatMap((rec) => rec.solutions))].join("\n- ") || "ElasticCX CCaaS"}\n\nSuggested Next Steps\n- ${nextSteps.join("\n- ")}`;
-  }, [profile, answers, scores, recommendations, nextSteps]);
+  const buildRecordForSave = () => {
+    const now = new Date().toISOString();
+    const createdAt = record.createdAt || now;
+    const id = record.id || `disc-${Date.now()}`;
+    return {
+      ...record,
+      id,
+      createdAt,
+      updatedAt: now,
+      status: step === CUSTOMER_DISCOVERY_SECTIONS.length - 1 ? "completed" : "draft",
+      scoring,
+      mappedSolutions: recommendations,
+      recommendedNextSteps: nextSteps,
+      summaryNotes,
+    };
+  };
+
+  const validateCore = () => {
+    const overview = record.overview || {};
+    if (!overview.companyName || !overview.accountOwner || !overview.discoveryDate) {
+      showMessage("Company Name, Account Owner and Discovery Date are required before saving.");
+      return false;
+    }
+    return true;
+  };
 
   const saveDiscovery = () => {
-    setSaveMessage("Discovery saved locally.");
-    setTimeout(() => setSaveMessage(""), 2200);
+    if (!validateCore()) return;
+    const ready = buildRecordForSave();
+    setRecord(ready);
+    setRecords((prev) => {
+      const idx = prev.findIndex((item) => item.id === ready.id);
+      if (idx === -1) return [ready, ...prev];
+      const clone = [...prev];
+      clone[idx] = ready;
+      return clone;
+    });
+    showMessage("Discovery saved.");
   };
-  const copySummary = async () => {
-    try {
-      await navigator.clipboard.writeText(summaryText);
-      setSaveMessage("Summary copied.");
-      setTimeout(() => setSaveMessage(""), 2200);
-    } catch (_error) {
-      setSaveMessage("Copy unavailable in this browser context.");
-      setTimeout(() => setSaveMessage(""), 2200);
+
+  const resetForm = () => {
+    setRecord(createEmptyDiscoveryRecord());
+    setStep(0);
+    showMessage("Draft reset.");
+  };
+
+  const loadRecord = (item) => {
+    setRecord({ ...createEmptyDiscoveryRecord(), ...item });
+    setStep(0);
+    showMessage(`Loaded ${item.overview?.companyName || "discovery"}.`);
+  };
+
+  const duplicateRecord = (item) => {
+    const copy = { ...item, id: `disc-${Date.now()}`, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), status: "draft" };
+    setRecords((prev) => [copy, ...prev]);
+    showMessage("Discovery duplicated.");
+  };
+
+  const deleteRecord = (id) => {
+    setRecords((prev) => prev.filter((item) => item.id !== id));
+    if (record.id === id) setRecord(createEmptyDiscoveryRecord());
+    showMessage("Discovery deleted.");
+  };
+
+  const toCsvRow = (item) => {
+    const source = { ...item, scoring: item.scoring || scoring, mappedSolutions: item.mappedSolutions || recommendations, recommendedNextSteps: item.recommendedNextSteps || nextSteps, summaryNotes: item.summaryNotes || summaryNotes };
+    return [
+      source.id,
+      source.overview?.companyName,
+      source.overview?.accountOwner,
+      source.overview?.discoveryDate,
+      source.overview?.industry,
+      source.overview?.opportunityStage,
+      (source.businessDrivers?.drivers || []).join("; "),
+      (source.customerChannels?.channels || []).join("; "),
+      source.technologyStack?.contactCentrePlatform,
+      source.technologyStack?.crm,
+      source.aiAutomation?.aiMaturityLevel,
+      source.workforceEngagement?.painPoints,
+      source.analytics?.reportingPainPoints,
+      source.securityCompliance?.complianceNotes,
+      source.integration?.integrationComplexity,
+      source.migration?.platformReplacement,
+      source.commercial?.decisionProcess,
+      source.scoring?.overall,
+      source.scoring?.label,
+      (source.mappedSolutions || []).join("; "),
+      (source.recommendedNextSteps || []).join("; "),
+      source.summaryNotes,
+    ].map(escapeCsv).join(",");
+  };
+
+  const exportCsv = (single) => {
+    const headers = ["Discovery ID", "Company Name", "Account Owner", "Discovery Date", "Industry", "Opportunity Stage", "Business Drivers", "Channels", "Current Platform", "CRM", "AI Maturity", "Workforce Issues", "Analytics Issues", "Security Notes", "Integration Complexity", "Migration Required", "Commercial Notes", "CX Maturity Score", "Maturity Label", "Recommended IPI Solutions", "Recommended Next Steps", "Summary Notes"];
+    const rows = single ? [toCsvRow(single)] : records.map((item) => toCsvRow(item));
+    if (!rows.length) {
+      showMessage("No saved discoveries to export.");
+      return;
     }
-  };
-  const exportSummary = () => {
-    const blob = new Blob([summaryText], { type: "text/plain;charset=utf-8" });
+    const csv = `${headers.map(escapeCsv).join(",")}\n${rows.join("\n")}`;
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `cx-discovery-${(profile.companyName || "assessment").toLowerCase().replace(/\s+/g, "-")}.txt`;
+    link.download = single ? `${single.overview?.companyName || "customer-discovery"}-discovery.csv` : "customer-discoveries.csv";
     document.body.appendChild(link);
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
   };
 
+  const filteredRecords = React.useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return records
+      .filter((item) => {
+        if (!term) return true;
+        return [item.overview?.companyName, item.overview?.accountOwner, item.overview?.industry, item.overview?.opportunityStage].join(" ").toLowerCase().includes(term);
+      })
+      .sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""));
+  }, [records, search]);
+
+  const section = CUSTOMER_DISCOVERY_SECTIONS[step];
+
   const renderInput = (field, value, onChange) => {
-    if (field.type === "textarea") {
-      return <textarea className="ui-field cx-field-textarea" placeholder={field.placeholder || ""} value={value || ""} onChange={(event) => onChange(event.target.value)} />;
-    }
-    if (field.type === "select") {
-      return (
-        <select className="ui-field ui-dropdown" value={value || ""} onChange={(event) => onChange(event.target.value)}>
-          <option value="">Select an option</option>
-          {(field.options || []).map((option) => <option key={option} value={option}>{option}</option>)}
-        </select>
-      );
-    }
+    if (field.type === "textarea") return <textarea className="ui-field cx-field-textarea" value={value || ""} onChange={(e) => onChange(e.target.value)} />;
+    if (field.type === "select") return <select className="ui-field ui-dropdown" value={value || ""} onChange={(e) => onChange(e.target.value)}><option value="">Select</option>{field.options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}</select>;
+    if (field.type === "radio") return <div className="cx-boolean-toggle">{field.options.map((opt) => <button type="button" key={opt} className={`cx-segment-btn ${value === opt ? "is-active" : ""}`} onClick={() => onChange(opt)}>{opt}</button>)}</div>;
+    if (field.type === "boolean") return <div className="cx-boolean-toggle">{[{label:"Yes",value:true},{label:"No",value:false}].map((opt) => <button type="button" key={opt.label} className={`cx-segment-btn ${value === opt.value ? "is-active" : ""}`} onClick={() => onChange(opt.value)}>{opt.label}</button>)}</div>;
     if (field.type === "multi-select") {
       const selected = Array.isArray(value) ? value : [];
-      return (
-        <div className="cx-multi-grid">
-          {field.options.map((option) => (
-            <label key={option} className={`cx-chip ${selected.includes(option) ? "is-selected" : ""}`}>
-              <input
-                type="checkbox"
-                checked={selected.includes(option)}
-                onChange={(event) => {
-                  if (event.target.checked) onChange([...selected, option]);
-                  else onChange(selected.filter((item) => item !== option));
-                }}
-              />
-              <span>{option}</span>
-            </label>
-          ))}
-        </div>
-      );
+      return <div className="cx-multi-grid">{field.options.map((opt) => <label key={opt} className={`cx-chip ${selected.includes(opt) ? "is-selected" : ""}`}><input type="checkbox" checked={selected.includes(opt)} onChange={(e) => onChange(e.target.checked ? [...selected, opt] : selected.filter((item) => item !== opt))} /><span>{opt}</span></label>)}</div>;
     }
-    if (field.type === "boolean") {
-      return (
-        <div className="cx-boolean-toggle" role="group" aria-label={field.label}>
-          {[{ label: "Yes", value: true }, { label: "No", value: false }].map((choice) => (
-            <button type="button" key={choice.label} className={`cx-segment-btn ${value === choice.value ? "is-active" : ""}`} onClick={() => onChange(choice.value)}>{choice.label}</button>
-          ))}
-        </div>
-      );
-    }
-    if (field.type === "slider") {
-      return (
-        <div className="cx-slider-wrap">
-          <input type="range" className="cx-slider" min={field.min || 1} max={field.max || 5} step={field.step || 1} value={value || 1} onChange={(event) => onChange(Number(event.target.value))} />
-          <span className="cx-slider-value">{value || 1}/5</span>
-        </div>
-      );
-    }
-    return <input className="ui-field" type={field.type || "text"} min={field.min} placeholder={field.placeholder || ""} value={value || ""} onChange={(event) => onChange(field.type === "number" ? Number(event.target.value) || "" : event.target.value)} />;
+    return <input className="ui-field" type={field.type || "text"} min={field.min} value={value || ""} onChange={(e) => onChange(field.type === "number" ? (Number(e.target.value) || "") : e.target.value)} />;
   };
 
   return (
     <div className="cx-discovery-page">
       <AppPageHeader
-        eyebrow="Tools · CX Consulting"
-        title="CX Discovery Questionnaire"
-        subtitle="Guide better discovery conversations, assess CX maturity, and identify the right transformation opportunities."
-        actions={(
-          <div className="cx-hero-actions">
-            <StandardButton onClick={() => wizardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}>Start Discovery</StandardButton>
-            <SecondaryButton onClick={() => setStep(totalSteps - 1)}>View Example Output</SecondaryButton>
-          </div>
-        )}
+        eyebrow="Tools · Customer Discovery"
+        title="Customer Discovery"
+        subtitle="Structured discovery for sales and pre-sales conversations, with CX maturity scoring and IPI capability mapping."
+        actions={<div className="cx-hero-actions"><StandardButton onClick={() => { setRecord(createEmptyDiscoveryRecord()); setStep(0); }}>New Discovery</StandardButton><StandardButton onClick={saveDiscovery}>Save</StandardButton><SecondaryButton onClick={() => exportCsv()}>Export CSV</SecondaryButton><GhostButton onClick={resetForm}>Clear / Reset</GhostButton></div>}
       />
 
-      <SectionWrapper>
-        <div className="cx-intro-card ds-card ds-card--highlight">
-          <p>Use this tool to structure consultative customer conversations across channels, operations, automation, analytics, compliance, infrastructure, and future vision.</p>
-          <div className="cx-summary-grid">
-            {["CX Maturity Assessment", "Opportunity Detection", "Solution Mapping", "Exportable Summary"].map((item) => <StandardCard key={item} className="cx-mini-summary-card">{item}</StandardCard>)}
+      <SectionWrapper className="cx-discovery-layout" id="customer-discovery-tool">
+        <aside className="cx-discovery-rail ds-card ds-card--standard">
+          <div className="cx-progress-pill">{step + 1}/{CUSTOMER_DISCOVERY_SECTIONS.length}</div>
+          <div className="cx-progress-bar"><span style={{ width: `${((step + 1) / CUSTOMER_DISCOVERY_SECTIONS.length) * 100}%` }} /></div>
+          <div className="cx-stepper-nav cx-stepper-nav--stacked">
+            {CUSTOMER_DISCOVERY_SECTIONS.map((item, idx) => <button key={item.id} type="button" className={`cx-stepper-item ${step === idx ? "is-active" : ""}`} onClick={() => setStep(idx)}>{item.title}</button>)}
           </div>
-        </div>
-      </SectionWrapper>
+        </aside>
 
-      <SectionWrapper className="cx-wizard-shell" id="cx-discovery-wizard" ref={wizardRef}>
         <div className="cx-wizard-main">
-          <div className="cx-progress-head">
-            <div>
-              <h3>{step === 0 ? "Customer Profile" : activeSection.title}</h3>
-              <p>Step {step + 1} of {totalSteps}</p>
-            </div>
-            <div className="cx-progress-pill">{completion}% complete</div>
-          </div>
-          <div className="cx-progress-bar"><span style={{ width: `${completion}%` }} /></div>
+          <StandardCard className="cx-discovery-form-card">
+            <div className="cx-progress-head"><div><h3>{section.title}</h3><p>{section.id === "summary" ? "Executive-ready output for handoff and planning" : "Capture structured discovery detail."}</p></div>{record.status ? <span className="pill">{record.status}</span> : null}</div>
 
-          <div className="cx-stepper-nav">
-            <button type="button" className={`cx-stepper-item ${step === 0 ? "is-active" : ""}`} onClick={() => setStep(0)}>Profile</button>
-            {CX_DISCOVERY_SECTIONS.map((section, index) => (
-              <button key={section.id} type="button" className={`cx-stepper-item ${step === index + 1 ? "is-active" : ""}`} onClick={() => setStep(index + 1)}>{index + 1}. {section.title}</button>
-            ))}
-          </div>
+            {section.id !== "summary" ? <div className="cx-form-grid">{section.fields.map((field) => <label key={field.key} className={`cx-form-field ${field.full ? "cx-form-field--full" : ""}`}><span>{field.label}{field.required ? " *" : ""}</span>{renderInput(field, record[section.id]?.[field.key], (value) => updateField(section.id, field.key, value))}</label>)}</div> : <div className="cx-summary-dashboard">
+              <div className="cx-summary-grid">
+                <StandardCard className="cx-mini-summary-card"><strong>{record.overview?.companyName || "No company yet"}</strong><span>Company</span></StandardCard>
+                <StandardCard className="cx-mini-summary-card"><strong>{scoring.overall}/5</strong><span>{scoring.label}</span></StandardCard>
+                <StandardCard className="cx-mini-summary-card"><strong>{recommendations.length || 0}</strong><span>IPI Solution Areas</span></StandardCard>
+              </div>
+              <StandardCard className="cx-opportunity-card"><strong>Mapped IPI Solutions</strong><div className="cx-opportunity-tags">{recommendations.length ? recommendations.map((item) => <span key={item}>{item}</span>) : <span>Consulting / Discovery Workshops</span>}</div></StandardCard>
+              <StandardCard className="cx-opportunity-card"><strong>Recommended Next Steps</strong><div className="cx-opportunity-tags">{nextSteps.map((item) => <span key={item}>{item}</span>)}</div></StandardCard>
+              <StandardCard className="cx-opportunity-card"><strong>Summary Notes</strong><p>{summaryNotes}</p></StandardCard>
+            </div>}
 
-          {step === 0 ? (
-            <div className="cx-form-grid">
-              {CX_DISCOVERY_PROFILE_FIELDS.map((field) => (
-                <label key={field.key} className={`cx-form-field ${field.type === "textarea" ? "cx-form-field--full" : ""}`}>
-                  <span>{field.label}</span>
-                  {renderInput(field, profile[field.key], (value) => updateProfile(field.key, value))}
-                </label>
-              ))}
-            </div>
-          ) : (
-            <div className="cx-question-stack">
-              {activeSection.questions.map((question) => (
-                <StandardCard key={question.id} className="cx-question-card">
-                  <label>
-                    <span>{question.label}</span>
-                    {renderInput(question, answers[question.id], (value) => updateAnswer(question.id, value))}
-                  </label>
-                </StandardCard>
-              ))}
-            </div>
-          )}
-
-          <div className="cx-nav-actions">
-            <SecondaryButton onClick={() => setStep((prev) => Math.max(0, prev - 1))} disabled={step === 0}>Back</SecondaryButton>
-            <StandardButton onClick={() => setStep((prev) => Math.min(totalSteps - 1, prev + 1))} disabled={step === totalSteps - 1}>Next</StandardButton>
-          </div>
-
-          <div className="cx-summary-output ds-card ds-card--standard">
-            <div className="cx-summary-output__head">
-              <h3>Discovery Summary Output</h3>
-              <span>Commercially useful and ready to share</span>
-            </div>
-            <pre>{summaryText}</pre>
-            <div className="cx-summary-actions">
-              <StandardButton onClick={saveDiscovery}>Save Discovery</StandardButton>
-              <SecondaryButton onClick={copySummary}>Copy Summary</SecondaryButton>
-              <SecondaryButton onClick={exportSummary}>Export Summary</SecondaryButton>
-              <GhostButton onClick={() => setSaveMessage("Sent to Account Planning workspace.")}>Send to Account Planning</GhostButton>
-              <GhostButton onClick={() => onNavigate?.("partner-account-plan")}>Open Account Planning Tool</GhostButton>
-            </div>
-            {saveMessage ? <p className="cx-inline-message">{saveMessage}</p> : null}
-          </div>
+            <div className="cx-nav-actions"><SecondaryButton onClick={() => setStep((prev) => Math.max(0, prev - 1))} disabled={step === 0}>Previous</SecondaryButton><StandardButton onClick={() => setStep((prev) => Math.min(CUSTOMER_DISCOVERY_SECTIONS.length - 1, prev + 1))} disabled={step === CUSTOMER_DISCOVERY_SECTIONS.length - 1}>Next</StandardButton></div>
+            {message ? <p className="cx-inline-message">{message}</p> : null}
+          </StandardCard>
         </div>
 
         <aside className="cx-score-panel ds-card ds-card--standard">
-          <h3>Live CX Maturity Scoring</h3>
-          <div className="cx-score-grid">
-            {Object.entries(scores).map(([key, value]) => (
-              <div key={key} className="cx-score-card">
-                <span>{key}</span>
-                <strong>{value}/5</strong>
-              </div>
-            ))}
-          </div>
-          <div className="cx-radar-sim">
-            {Object.entries(scores).map(([key, value]) => (
-              <div key={key} className="cx-radar-row">
-                <span>{key}</span>
-                <div className="cx-radar-track"><i style={{ width: `${(value / 5) * 100}%` }} /></div>
-              </div>
-            ))}
+          <h3>CX Maturity Assessment</h3>
+          <div className="cx-score-grid">{Object.entries(scoring.categoryScores).map(([key, value]) => <div key={key} className="cx-score-card"><span>{key}</span><strong>{value}/5</strong></div>)}</div>
+          <div className="cx-radar-sim">{Object.entries(scoring.categoryScores).map(([key, value]) => <div key={key} className="cx-radar-row"><span>{key}</span><div className="cx-radar-track"><i style={{ width: `${(value / 5) * 100}%` }} /></div></div>)}</div>
+          <div className="cx-opportunity-stack"><h4>IPI Capability Mapping</h4>{recommendations.length ? recommendations.map((item) => <div key={item} className="cx-opportunity-card"><strong>{item}</strong></div>) : <p className="cx-opportunity-empty">Complete discovery inputs to refine recommendation quality.</p>}</div>
+          <SecondaryButton onClick={() => exportCsv(buildRecordForSave())}>Export Current Record CSV</SecondaryButton>
+        </aside>
+      </SectionWrapper>
+
+      <SectionWrapper>
+        <StandardCard>
+          <div className="cx-progress-head"><div><h3>Saved Discoveries</h3><p>Reload, duplicate, delete, and export saved discovery sessions.</p></div><span className="pill">{records.length} records</span></div>
+          <div className="prospect-toolbar" style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+            <input className="ui-field" type="search" placeholder="Search company, owner, industry…" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <SecondaryButton onClick={() => exportCsv()}>Export All CSV</SecondaryButton>
           </div>
 
-          <div className="cx-opportunity-stack">
-            <h4>Opportunity Recommendations</h4>
-            {recommendations.length ? recommendations.map((recommendation) => (
-              <div className="cx-opportunity-card" key={recommendation.title}>
-                <strong>{recommendation.title}</strong>
-                <p>{recommendation.rationale}</p>
-                <div className="cx-opportunity-tags">
-                  {recommendation.solutions.map((solution) => <span key={solution}>{solution}</span>)}
-                </div>
-              </div>
-            )) : <p className="cx-opportunity-empty">Answer a few discovery questions to unlock recommendations.</p>}
-          </div>
-        </aside>
+          {filteredRecords.length === 0 ? <div className="prospect-state prospect-state--empty"><strong>No discoveries saved yet</strong><p>Create a discovery and click Save to build a reusable pipeline record.</p></div> : <div className="prospect-table-wrap"><table className="prospect-table"><thead><tr><th>Company</th><th>Owner</th><th>Discovery Date</th><th>Industry</th><th>Opportunity Stage</th><th>Maturity</th><th>Top Solutions</th><th className="cell-actions-head">Actions</th></tr></thead><tbody>{filteredRecords.map((item) => <tr key={item.id}><td><strong>{item.overview?.companyName || "—"}</strong></td><td>{item.overview?.accountOwner || "—"}</td><td>{item.overview?.discoveryDate || "—"}</td><td>{item.overview?.industry || "—"}</td><td>{item.overview?.opportunityStage || "—"}</td><td><span className="score-badge">{item.scoring?.label || "Draft"}</span></td><td>{(item.mappedSolutions || []).slice(0, 2).join(", ") || "—"}</td><td className="cell-actions"><div className="cell-actions"><button type="button" className="prospect-icon-link" title="Open" onClick={() => loadRecord(item)}>📂</button><button type="button" className="prospect-icon-link" title="Duplicate" onClick={() => duplicateRecord(item)}>📄</button><button type="button" className="prospect-icon-link" title="Export CSV" onClick={() => exportCsv(item)}>⬇️</button><button type="button" className="prospect-icon-link" title="Delete" onClick={() => deleteRecord(item.id)}>🗑️</button></div></td></tr>)}</tbody></table></div>}
+        </StandardCard>
       </SectionWrapper>
     </div>
   );
@@ -12114,7 +12172,7 @@ const NAV_SECTIONS = [
       { id: "competitive-matrix", icon: <NavIcon name="chart" />, label: "Competitive Matrix" },
       { id: "partner-account-plan", icon: <NavIcon name="checklist" />, label: "Account Planning" },
       { id: "governance", icon: <NavIcon name="badge" />, label: "Governance RACI" },
-      { id: "cx-discovery", icon: <NavIcon name="lightbulb" />, label: "CX Discovery Questionnaire" },
+      { id: "cx-discovery", icon: <NavIcon name="lightbulb" />, label: "Customer Discovery" },
     ],
   },
 ];
@@ -12143,7 +12201,7 @@ const PAGE_PATHS = {
   prospect: "/partner-prospect-tool",
   "sample-customers": "/sample-customers",
   "market-vision": "/market-vision",
-  "cx-discovery": "/cx-discovery-questionnaire",
+  "cx-discovery": "/customer-discovery",
   "competitive-matrix": "/competitive-matrix",
 };
 
