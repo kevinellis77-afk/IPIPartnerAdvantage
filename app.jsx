@@ -10152,7 +10152,6 @@ const CHANNEL_CADENCE_TEAM_ICONS = {
   "Finance / Commercial": "💹",
 };
 
-const CHANNEL_LIFECYCLE_VISUALS = ["🧲", "📚", "🌱", "📊"];
 const CHANNEL_WORKING_MODEL_ICONS = ["💬", "📝", "🤝", "🔍"];
 const CHANNEL_TIMELINE_ICONS = ["🏗️", "🔄", "📡", "🌍"];
 
@@ -10210,55 +10209,44 @@ function ChannelManagerDashboardPage() {
         </section>
 
         <section className="channel-section">
-          <h2 className="channel-title">Partner Lifecycle</h2>
-          <div className="channel-lifecycle-flow">
-            {CHANNEL_MANAGER_DATA.lifecycle.map((stage, idx) => (
-              <article key={stage.stage} className="channel-card channel-life-stage">
-                <div className="channel-inline-icon" aria-hidden="true">{CHANNEL_LIFECYCLE_VISUALS[idx] || "🔹"}</div>
-                <div className="channel-step">{idx + 1}. {stage.stage}</div>
-                <p className="channel-life-what">{stage.what}</p>
+          <h2 className="channel-title">Channel Program Maturity Timeline</h2>
+          <div className="channel-timeline-grid">
+            {CHANNEL_MANAGER_DATA.maturityTimeline.map((phase, idx) => (
+              <article key={phase.phase} className="channel-card channel-timeline-card">
+                <div className="channel-inline-icon" aria-hidden="true">{CHANNEL_TIMELINE_ICONS[idx] || "🔹"}</div>
+                <div className="channel-step">{phase.phase}</div>
                 <ul className="channel-list">
-                  {stage.activities.map((item) => (
+                  {phase.items.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
                 </ul>
-                <div className="channel-outcome">Outcome: {stage.outcome}</div>
+                {idx < CHANNEL_MANAGER_DATA.maturityTimeline.length - 1 && (
+                  <div className="channel-timeline-line" />
+                )}
               </article>
             ))}
           </div>
         </section>
 
         <section className="channel-section">
-          <h2 className="channel-title">Channel Manager Focus: First 90 Days</h2>
-          <p className="channel-support">
-            The first 90 days should focus on agreeing the strategy, building the essential elements of the partner program, reviewing existing partners, and beginning structured engagement with priority targets. The objective is to create the foundations for scalable channel growth, not to force near-term pipeline too early.
-          </p>
-          <div className="channel-grid-90">
-            {CHANNEL_MANAGER_DATA.first90Days.map((stream) => (
-              <article key={stream.key} className="channel-card channel-workstream-card">
-                <div className="channel-day">{CHANNEL_CADENCE_WORKSTREAM_ICONS[stream.key]} Workstream {stream.key}</div>
-                <h3>{stream.title}</h3>
+          <h2 className="channel-title">Partner Engagement</h2>
+          <div className="channel-grid-4">
+            {CHANNEL_MANAGER_DATA.workingModel.map((item, idx) => (
+              <div key={item.title} className="channel-card">
+                <div className="channel-inline-icon" aria-hidden="true">{CHANNEL_WORKING_MODEL_ICONS[idx] || "🔹"}</div>
+                <h3>{item.title}</h3>
                 <ul className="channel-list">
-                  {stream.items.map((item) => (
-                    <li key={item}>{item}</li>
+                  {item.points.map((point) => (
+                    <li key={point}>{point}</li>
                   ))}
                 </ul>
-                <div className="channel-outcome">Outcome: {stream.outcome}</div>
-              </article>
+              </div>
             ))}
-          </div>
-          <div className="channel-closing-panel">
-            <h2>Realistic 90-Day Success Measures</h2>
-            <div className="channel-measure-list">
-              {CHANNEL_MANAGER_DATA.successMeasures.map((item) => (
-                <span key={item.label} className="channel-chip"><span aria-hidden="true">{item.icon}</span> {item.label}</span>
-              ))}
-            </div>
           </div>
         </section>
 
         <section className="channel-section">
-          <h2 className="channel-title">Partner Communication & Engagement Cadence</h2>
+          <h2 className="channel-title">Partner Communication Cadence</h2>
           <div className="channel-cadence-pill-row">
             <span className="channel-chip">📅 Weekly to quarterly rhythm by tier</span>
             <span className="channel-chip">📣 Blended communication + events + co-marketing</span>
@@ -10297,39 +10285,31 @@ function ChannelManagerDashboardPage() {
         </section>
 
         <section className="channel-section">
-          <h2 className="channel-title">How We Work Alongside Partners</h2>
-          <div className="channel-grid-4">
-            {CHANNEL_MANAGER_DATA.workingModel.map((item, idx) => (
-              <div key={item.title} className="channel-card">
-                <div className="channel-inline-icon" aria-hidden="true">{CHANNEL_WORKING_MODEL_ICONS[idx] || "🔹"}</div>
-                <h3>{item.title}</h3>
+          <h2 className="channel-title">Channel Manager Focus: First 90 Days</h2>
+          <p className="channel-support">
+            The first 90 days should focus on agreeing the strategy, building the essential elements of the partner program, reviewing existing partners, and beginning structured engagement with priority targets. The objective is to create the foundations for scalable channel growth, not to force near-term pipeline too early.
+          </p>
+          <div className="channel-grid-90">
+            {CHANNEL_MANAGER_DATA.first90Days.map((stream) => (
+              <article key={stream.key} className="channel-card channel-workstream-card">
+                <div className="channel-day">{CHANNEL_CADENCE_WORKSTREAM_ICONS[stream.key]} Workstream {stream.key}</div>
+                <h3>{stream.title}</h3>
                 <ul className="channel-list">
-                  {item.points.map((point) => (
-                    <li key={point}>{point}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="channel-section">
-          <h2 className="channel-title">Channel Program Maturity Timeline</h2>
-          <div className="channel-timeline-grid">
-            {CHANNEL_MANAGER_DATA.maturityTimeline.map((phase, idx) => (
-              <article key={phase.phase} className="channel-card channel-timeline-card">
-                <div className="channel-inline-icon" aria-hidden="true">{CHANNEL_TIMELINE_ICONS[idx] || "🔹"}</div>
-                <div className="channel-step">{phase.phase}</div>
-                <ul className="channel-list">
-                  {phase.items.map((item) => (
+                  {stream.items.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
                 </ul>
-                {idx < CHANNEL_MANAGER_DATA.maturityTimeline.length - 1 && (
-                  <div className="channel-timeline-line" />
-                )}
+                <div className="channel-outcome">Outcome: {stream.outcome}</div>
               </article>
             ))}
+          </div>
+          <div className="channel-closing-panel">
+            <h2>90 Day Success Outcomes</h2>
+            <div className="channel-measure-list">
+              {CHANNEL_MANAGER_DATA.successMeasures.map((item) => (
+                <span key={item.label} className="channel-chip"><span aria-hidden="true">{item.icon}</span> {item.label}</span>
+              ))}
+            </div>
           </div>
         </section>
 
