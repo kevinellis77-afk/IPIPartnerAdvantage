@@ -5547,12 +5547,9 @@ const CUSTOMER_DISCOVERY_SECTIONS = [
     id: "companyProfile",
     title: "Company Profile",
     fields: [
-      { key: "companyName", label: "Company Name", type: "text" },
-      { key: "industry", label: "Industry", type: "text" },
       { key: "countryRegion", label: "Country / Region", type: "text" },
       { key: "employeeCount", label: "Number of Employees", type: "number", min: 0 },
       { key: "contactCentreLocations", label: "Contact Centre Locations", type: "textarea", full: true },
-      { key: "agentCount", label: "Number of Agents", type: "number", min: 0 },
       { key: "operatingModel", label: "Operating Model", type: "radio", options: ["Onsite", "Hybrid", "Remote"] },
       { key: "customerType", label: "Customer Type", type: "radio", options: ["B2B", "B2C", "Both"] },
       { key: "existingVendors", label: "Existing Vendors", type: "textarea", full: true },
@@ -5737,10 +5734,17 @@ function createEmptyDiscoveryRecord() {
   return record;
 }
 
-function boolToScore(value, yes = 4, no = 2) {
+function boolToScore(value, yes = 4, no = 2, unknown = 0) {
   if (value === true) return yes;
   if (value === false) return no;
-  return 1;
+  return unknown;
+}
+
+function hasValue(value) {
+  if (Array.isArray(value)) return value.length > 0;
+  if (value === null || value === undefined) return false;
+  if (typeof value === "string") return value.trim().length > 0;
+  return value === true || value === false || String(value).trim().length > 0;
 }
 
 function escapeCsv(value) {
@@ -5799,22 +5803,25 @@ function CXDiscoveryQuestionnairePage() {
     const workforce = record.workforceEngagement || {};
     const integration = record.integration || {};
 
-    const omnichannelBase = Math.min(5, Math.max(1, 1 + ((channels.channels || []).length * 0.45) + (channels.channelsIntegrated === true ? 1 : 0) + (channels.journeyVisibility === true ? 0.8 : 0)));
+    const hasChannelInputs = [channels.channels, channels.channelsIntegrated, channels.primaryChannel, channels.journeyVisibility].some(hasValue);
+    const hasAiInputs = [ai.usingAi, ai.aiMaturityLevel, ai.currentAiUseCases].some(hasValue);
+    const hasAutomationInputs = [ai.desiredAiUseCases, ai.interestLevel].some(hasValue);
+    const hasAnalyticsInputs = [analytics.realtimeReporting, analytics.conversationAnalysis, analytics.historicalQuality].some(hasValue);
+    const hasWorkforceInputs = [workforce.forecasting, workforce.scheduling, workforce.qualityMonitoring, workforce.performanceManagement, workforce.coaching].some(hasValue);
+    const hasIntegrationInputs = [integration.crmIntegration, integration.ticketingIntegration, integration.identityIntegration, integration.integrationComplexity].some(hasValue);
+
+    const omnichannelBase = 1 + ((channels.channels || []).length * 0.45) + (channels.channelsIntegrated === true ? 1 : 0) + (channels.journeyVisibility === true ? 0.8 : 0);
     const aiUseCaseCount = ((ai.currentAiUseCases || []).length + (ai.desiredAiUseCases || []).length) / 2;
     const aiMaturityMap = { None: 1, Early: 2.5, Active: 3.8, Advanced: 4.8 };
-    const automationScore = Math.min(5, Math.max(1, 1.2 + aiUseCaseCount * 0.45 + (ai.interestLevel === "High" ? 1 : ai.interestLevel === "Medium" ? 0.6 : 0.2)));
+    const automationScore = 1.2 + aiUseCaseCount * 0.45 + (ai.interestLevel === "High" ? 1 : ai.interestLevel === "Medium" ? 0.6 : 0.2);
     const categoryScores = {
-      "Omnichannel Maturity": Number(omnichannelBase.toFixed(1)),
-      "AI Adoption": Number((aiMaturityMap[ai.aiMaturityLevel] || boolToScore(ai.usingAi, 3.8, 1.8)).toFixed(1)),
-      "Automation Maturity": Number(automationScore.toFixed(1)),
-      "Analytics Capability": Number((1 + (analytics.realtimeReporting === true ? 1.2 : 0.3) + (analytics.conversationAnalysis === true ? 1.2 : 0.2) + ({ Poor: 0.4, Fair: 1.2, Good: 2.0, Excellent: 2.8 }[analytics.historicalQuality] || 0.6)).toFixed(1)),
-      "Workforce Optimisation": Number((1 + boolToScore(workforce.forecasting, 0.9, 0.2) + boolToScore(workforce.scheduling, 0.9, 0.2) + boolToScore(workforce.qualityMonitoring, 0.8, 0.2) + boolToScore(workforce.performanceManagement, 0.7, 0.2) + boolToScore(workforce.coaching, 0.7, 0.2)).toFixed(1)),
-      "Integration Maturity": Number((1 + boolToScore(integration.crmIntegration, 0.7, 0.2) + boolToScore(integration.ticketingIntegration, 0.7, 0.2) + boolToScore(integration.identityIntegration, 0.7, 0.2) + ({ Low: 1.8, Medium: 1.1, High: 0.5 }[integration.integrationComplexity] || 0.9)).toFixed(1)),
+      "Omnichannel Maturity": hasChannelInputs ? Number(Math.min(5, Math.max(1, omnichannelBase)).toFixed(1)) : 0,
+      "AI Adoption": hasAiInputs ? Number(Math.min(5, Math.max(1, (aiMaturityMap[ai.aiMaturityLevel] || boolToScore(ai.usingAi, 3.8, 1.8, 1)))).toFixed(1)) : 0,
+      "Automation Maturity": hasAutomationInputs ? Number(Math.min(5, Math.max(1, automationScore)).toFixed(1)) : 0,
+      "Analytics Capability": hasAnalyticsInputs ? Number(Math.min(5, Math.max(1, 1 + (analytics.realtimeReporting === true ? 1.2 : 0.3) + (analytics.conversationAnalysis === true ? 1.2 : 0.2) + ({ Poor: 0.4, Fair: 1.2, Good: 2.0, Excellent: 2.8 }[analytics.historicalQuality] || 0.6))).toFixed(1)) : 0,
+      "Workforce Optimisation": hasWorkforceInputs ? Number(Math.min(5, Math.max(1, 1 + boolToScore(workforce.forecasting, 0.9, 0.2, 0) + boolToScore(workforce.scheduling, 0.9, 0.2, 0) + boolToScore(workforce.qualityMonitoring, 0.8, 0.2, 0) + boolToScore(workforce.performanceManagement, 0.7, 0.2, 0) + boolToScore(workforce.coaching, 0.7, 0.2, 0))).toFixed(1)) : 0,
+      "Integration Maturity": hasIntegrationInputs ? Number(Math.min(5, Math.max(1, 1 + boolToScore(integration.crmIntegration, 0.7, 0.2, 0) + boolToScore(integration.ticketingIntegration, 0.7, 0.2, 0) + boolToScore(integration.identityIntegration, 0.7, 0.2, 0) + ({ Low: 1.8, Medium: 1.1, High: 0.5 }[integration.integrationComplexity] || 0.9))).toFixed(1)) : 0,
     };
-
-    Object.keys(categoryScores).forEach((key) => {
-      categoryScores[key] = Math.min(5, Math.max(1, categoryScores[key]));
-    });
 
     const values = Object.values(categoryScores);
     const overall = Number((values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(1));
