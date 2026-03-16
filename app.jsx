@@ -8639,7 +8639,7 @@ function PartnerTrustPage() {
   ];
 
   return (
-    <React.Fragment>
+    <div className="trust-page">
       <AppPageHeader
         eyebrow="Partner Trust"
         title="Partner Trust & Compliance Portal"
@@ -8763,7 +8763,7 @@ function PartnerTrustPage() {
           <p className="trust-note">This reinforces IP Integration’s positioning as a trusted technology and services partner in the CX market.</p>
         </StandardCard>
       </SectionWrapper>
-    </React.Fragment>
+    </div>
   );
 }
 

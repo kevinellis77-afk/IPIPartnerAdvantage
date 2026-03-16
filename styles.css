@@ -2082,6 +2082,9 @@ small,.muted,.text-muted{color:var(--text-secondary) !important;}
 .ds-section-header__eyebrow{font-size:10px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:color-mix(in srgb,var(--brand-secondary) 72%, var(--text-secondary));}
 .ds-section-header h2{line-height:1.15;margin:0;}
 .ds-section-header p{max-width:74ch;margin:0;}
+.trust-page .ds-page-header__subtitle{max-width:120ch;}
+.trust-page .ds-section-header p{max-width:120ch;}
+
 
 .ds-card,.channel-card,.panel-card,.saved-view-card,.prospect-card,.kpi-card,.cx-score-card,.cx-opportunity-card{background:var(--surface-elev-1)!important;border-radius:16px!important;box-shadow:var(--shadow-xs), inset 0 1px 0 color-mix(in srgb,#fff 7%, transparent);}
 .ds-card:hover,.channel-card:hover,.market-ai-card:hover{box-shadow:var(--shadow-soft);}
