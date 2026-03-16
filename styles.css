@@ -332,7 +332,9 @@ tbody tr:nth-child(even){background:rgba(255,255,255,0.015);}
 .prj-use-cases{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
 .prj-use-case-card{border-radius:14px;border:1px solid rgba(123,150,163,0.28);background:rgba(20,30,35,0.62);padding:14px;transition:all .2s ease;}
 .prj-use-case-card:hover{transform:translateY(-2px);border-color:rgba(99,171,143,0.52);}
-.prj-use-case-card h3{font-size:17px;color:#fff;font-family:'Syne',sans-serif;margin-bottom:8px;}
+.prj-use-case-card__title-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.prj-use-case-card__icon{width:32px;height:32px;border-radius:8px;object-fit:cover;flex-shrink:0;border:1px solid rgba(123,150,163,0.34);background:rgba(255,255,255,0.03);}
+.prj-use-case-card h3{font-size:17px;color:#fff;font-family:'Syne',sans-serif;margin-bottom:0;}
 .prj-use-case-card p{font-size:12px;color:#c4ddd6;line-height:1.6;margin-bottom:6px;}
 .prj-use-case-card strong{color:#91C4B0;}
 
