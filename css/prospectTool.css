@@ -15,7 +15,7 @@
 .prospect-table th{position:sticky;top:0;background:var(--table-head-bg);color:var(--text-secondary);font-size:11px;text-align:left;padding:10px 12px;border-bottom:1px solid var(--border-soft);white-space:nowrap}
 .prospect-table td{padding:10px 12px;border-bottom:1px solid color-mix(in srgb,var(--border-soft) 70%,transparent);font-size:12px;color:var(--text-primary);vertical-align:middle}
 .prospect-table--search th{text-align:center}
-.prospect-table--search td{text-align:left}
+.prospect-table--search td{text-align:center}
 .prospect-table--search th:first-child,.prospect-table--search td:first-child{width:72px;min-width:72px;max-width:72px;white-space:nowrap}
 .prospect-table tr:hover td{background:color-mix(in srgb,var(--bg-tint) 42%,transparent)}
 .cell-number{text-align:right;font-variant-numeric:tabular-nums;color:#cce3de}
@@ -31,12 +31,17 @@
 
 .prospect-table--search th[data-col="rank"],
 .prospect-table--search td[data-col="rank"],
+.prospect-table--search th[data-col="displayName"],
+.prospect-table--search td[data-col="displayName"],
 .prospect-table--search th[data-col="idealPartnerScore"],
 .prospect-table--search td[data-col="idealPartnerScore"],
 .prospect-table--search th[data-col="website"],
 .prospect-table--search td[data-col="website"],
 .prospect-table--search th[data-col="linkedin"],
 .prospect-table--search td[data-col="linkedin"]{text-align:center}
+
+.prospect-table--search th[data-col="displayName"],
+.prospect-table--search td[data-col="displayName"]{text-align:left}
 
 .prospect-row-selected td{background:rgba(103,216,255,.12)!important;box-shadow:inset 3px 0 0 #36c6ff}
 .chip-row{display:flex;flex-wrap:wrap;gap:8px}
