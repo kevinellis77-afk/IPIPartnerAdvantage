@@ -11478,7 +11478,7 @@ const SAMPLE_CUSTOMER_STORIES = [
   },
 ];
 
-const SAMPLE_CUSTOMER_LOGOS_IMAGE_SRC = "assets/sample-customer-logos-collage.svg";
+const SAMPLE_CUSTOMER_LOGOS_IMAGE_SRC = "assets/sample-customer-logos-collage.png";
 
 function SampleCustomersPage() {
   const stories = SAMPLE_CUSTOMER_STORIES;
