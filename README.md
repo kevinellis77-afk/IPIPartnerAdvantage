@@ -29,6 +29,33 @@ The app is bundled into `index.html` for easier direct opening. It still loads R
 
 If those CDN requests are blocked, the page shows an on-screen dependency error with the blocked URLs so you can diagnose network restrictions quickly.
 
+## Live company research configuration
+
+The Partner Prospect Tool can now run live company research in two ways:
+
+1. **Direct OpenAI call from the browser** (quickest to test)
+2. **Your own backend endpoint** (recommended for production)
+
+Add this before app scripts in `index.html` (or the partner prospect page):
+
+```html
+<script>
+  window.PROSPECT_RESEARCH_CONFIG = {
+    // Option A: direct OpenAI call
+    openAiApiKey: 'sk-...',
+    // Optional override:
+    // openAiModel: 'gpt-4.1-mini',
+
+    // Option B: backend endpoint (if set, used when openAiApiKey is absent)
+    // endpoint: '/api/research/company'
+  };
+</script>
+```
+
+If no config is provided, the app keeps using the built-in mock response.
+
+> Security note: do not expose API keys in production client-side code. Use the backend endpoint option for deployed environments.
+
 ## Troubleshooting blank page on GitHub Pages
 
 - Hard-refresh the page (`Ctrl+F5` / `Cmd+Shift+R`) to avoid stale cached JavaScript.
