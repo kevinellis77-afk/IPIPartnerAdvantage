@@ -2126,3 +2126,5 @@ small,.muted,.text-muted{color:var(--text-secondary) !important;}
   .ds-page-header,.ds-section{padding-inline:var(--space-4);}
   .channel-lifecycle-flow,.cx-form-grid{grid-template-columns:1fr!important;}
 }
+
+.cm-single-line-copy{white-space:nowrap;}
