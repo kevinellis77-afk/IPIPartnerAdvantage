@@ -377,7 +377,7 @@ tbody tr:nth-child(even){background:rgba(255,255,255,0.015);}
 .trust-list{margin:0;padding-left:20px;display:grid;gap:8px;color:#bfdad3;font-size:13px;line-height:1.7;}
 .trust-note{font-size:13px;color:#8ab9ad;line-height:1.72;margin:14px 0 0;}
 .trust-hero-card{background:linear-gradient(145deg,rgba(103,216,255,.14),rgba(163,121,146,.12) 45%,rgba(99,171,143,.14));}
-.trust-hero-layout{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;align-items:center;}
+.trust-hero-layout{display:grid;grid-template-columns:1fr;gap:18px;align-items:center;}
 .trust-hero-kicker{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#8ED3F1;margin:0 0 8px;}
 .trust-hero-title{font-size:30px;line-height:1.1;color:#fff;font-family:'Syne',sans-serif;margin:0 0 10px;max-width:22ch;}
 .trust-pillars-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
