@@ -8863,14 +8863,14 @@ function PartnerOperationalSupportPage() {
       <Bg />
       <AppPageHeader
         title="Partner Operational Support Framework"
-        subtitle="IP Integration provides structured operational support to enable partners to successfully sell, deploy and support solutions across the IPI ecosystem. This operational framework ensures partners have the tools, processes and support needed to consistently deliver strong customer outcomes."
+        subtitle={<span className="ops-single-line-copy">IP Integration provides structured operational support to enable partners to successfully sell, deploy and support solutions across the IPI ecosystem. This operational framework ensures partners have the tools, processes and support needed to consistently deliver strong customer outcomes.</span>}
       />
 
       <SectionWrapper>
         <SectionHeader
           eyebrow="Introduction"
           title="Structured Support Across the Partner Lifecycle"
-          description="Our operational framework is designed to reduce friction, improve execution consistency and help every partner scale with confidence."
+          description={<span className="ops-single-line-copy">Our operational framework is designed to reduce friction, improve execution consistency and help every partner scale with confidence.</span>}
         />
         <StandardCard>
           <div className="ops-hero">
@@ -8900,8 +8900,10 @@ function PartnerOperationalSupportPage() {
         <div className="operational-framework-grid">
           {PARTNER_OPERATIONAL_SUPPORT_SECTIONS.map((section, index) => (
             <StandardCard key={section.title} className={`operational-framework-card operational-framework-card--${section.accent} operational-framework-card--${index + 1}`}>
-              <div className="operational-framework-step">{String(index + 1).padStart(2, "0")}</div>
-              <div className="operational-framework-icon">{section.icon}</div>
+              <div className="operational-framework-card-head">
+                <div className="operational-framework-step">{String(index + 1).padStart(2, "0")}</div>
+                <div className="operational-framework-icon">{section.icon}</div>
+              </div>
               <h3 className="trust-card-title">{section.title}</h3>
               <ul className="trust-list">
                 {section.points.map((point) => (
