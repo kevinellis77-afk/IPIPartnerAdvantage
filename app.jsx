@@ -5759,6 +5759,7 @@ function CXDiscoveryQuestionnairePage() {
   const [step, setStep] = React.useState(0);
   const [search, setSearch] = React.useState("");
   const [message, setMessage] = React.useState("");
+  const [hasHydratedStorage, setHasHydratedStorage] = React.useState(false);
 
   React.useEffect(() => {
     try {
@@ -5768,24 +5769,28 @@ function CXDiscoveryQuestionnairePage() {
       if (draft && typeof draft === "object") setRecord((prev) => ({ ...prev, ...draft }));
     } catch (_error) {
       // ignore malformed storage
+    } finally {
+      setHasHydratedStorage(true);
     }
   }, []);
 
   React.useEffect(() => {
+    if (!hasHydratedStorage) return;
     try {
       localStorage.setItem(CUSTOMER_DISCOVERY_STORAGE_KEYS.records, JSON.stringify(records));
     } catch (_error) {
       // no-op
     }
-  }, [records]);
+  }, [records, hasHydratedStorage]);
 
   React.useEffect(() => {
+    if (!hasHydratedStorage) return;
     try {
       localStorage.setItem(CUSTOMER_DISCOVERY_STORAGE_KEYS.draft, JSON.stringify(record));
     } catch (_error) {
       // no-op
     }
-  }, [record]);
+  }, [record, hasHydratedStorage]);
 
   const showMessage = (text) => {
     setMessage(text);
