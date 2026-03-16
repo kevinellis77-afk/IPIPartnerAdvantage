@@ -12143,10 +12143,10 @@ const NAV_SECTIONS = [
     title: "Tools",
     items: [
       { id: "prospect", icon: <NavIcon name="search" />, label: "Prospect Search" },
-      { id: "competitive-matrix", icon: <NavIcon name="chart" />, label: "Competitive Matrix" },
       { id: "partner-account-plan", icon: <NavIcon name="checklist" />, label: "Account Planning" },
-      { id: "governance", icon: <NavIcon name="badge" />, label: "Governance RACI" },
       { id: "cx-discovery", icon: <NavIcon name="lightbulb" />, label: "Customer Discovery" },
+      { id: "competitive-matrix", icon: <NavIcon name="chart" />, label: "Competitive Matrix" },
+      { id: "governance", icon: <NavIcon name="badge" />, label: "Governance RACI" },
     ],
   },
 ];
