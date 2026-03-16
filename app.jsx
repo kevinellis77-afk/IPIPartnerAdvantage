@@ -6645,7 +6645,10 @@ const IPP_CRITERIA = [
   },
 ];
 
-const IPP_SCORING_STORAGE_KEY = "ipi_partner_profile_scoring_evaluations_v1";
+const IPP_SCORING_STORAGE_KEY = "ipi_partner_profile_scoring_evaluations";
+const IPP_SCORING_LEGACY_STORAGE_KEYS = [
+  "ipi_partner_profile_scoring_evaluations_v1",
+];
 
 const IPP_SCORING_CATEGORIES = [
   {
@@ -6767,26 +6770,33 @@ function PartnerProgramPage() {
     createEmptyEvaluation(),
   );
   const [savedEvaluations, setSavedEvaluations] = React.useState([]);
+  const [hasLoadedSavedEvaluations, setHasLoadedSavedEvaluations] = React.useState(false);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      const raw = window.localStorage.getItem(IPP_SCORING_STORAGE_KEY);
+      const storageKeys = [IPP_SCORING_STORAGE_KEY, ...IPP_SCORING_LEGACY_STORAGE_KEYS];
+      const raw = storageKeys
+        .map((key) => window.localStorage.getItem(key))
+        .find((value) => Boolean(value));
       if (!raw) return;
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) setSavedEvaluations(parsed);
     } catch (error) {
       console.error("Failed to load saved partner evaluations", error);
+    } finally {
+      setHasLoadedSavedEvaluations(true);
     }
   }, []);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
+    if (!hasLoadedSavedEvaluations) return;
     window.localStorage.setItem(
       IPP_SCORING_STORAGE_KEY,
       JSON.stringify(savedEvaluations),
     );
-  }, [savedEvaluations]);
+  }, [savedEvaluations, hasLoadedSavedEvaluations]);
 
   const totalScore = IPP_SCORING_CATEGORIES.reduce(
     (sum, category) => sum + Number(evaluationForm.scores[category.id] || 0),
