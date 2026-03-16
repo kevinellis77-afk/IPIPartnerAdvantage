@@ -9820,18 +9820,18 @@ const CHANNEL_MANAGER_DATA = {
     "This Channel Cadence page is designed for Channel Managers to run a practical partner rhythm across recruitment, enablement, joint selling and governance without forcing unrealistic short-term outcomes.",
   kpis: [
     {
-      label: "Signed Partners",
-      current: "25",
-      target: "30",
-      trend: "+3 this quarter",
-      status: "On Track",
-    },
-    {
       label: "Active Leads",
       current: "40",
       target: "50",
       trend: "+8 month-on-month",
       status: "Growing",
+    },
+    {
+      label: "Signed Partners",
+      current: "25",
+      target: "30",
+      trend: "+3 this quarter",
+      status: "On Track",
     },
     {
       label: "Activated Partners",
@@ -9841,11 +9841,11 @@ const CHANNEL_MANAGER_DATA = {
       status: "In Progress",
     },
     {
-      label: "Partner Pipeline Value",
-      current: "£2.5M",
-      target: "£4.0M",
-      trend: "Weighted view",
-      status: "Building",
+      label: "Partner Activation Rate",
+      current: "40%",
+      target: "60%",
+      trend: "+5 pts quarter-on-quarter",
+      status: "Improving",
     },
     {
       label: "Closed Won Revenue",
@@ -9855,11 +9855,11 @@ const CHANNEL_MANAGER_DATA = {
       status: "Foundation Phase",
     },
     {
-      label: "Partner Activation Rate",
-      current: "40%",
-      target: "60%",
-      trend: "+5 pts quarter-on-quarter",
-      status: "Improving",
+      label: "Partner Pipeline Value",
+      current: "£2.5M",
+      target: "£4.0M",
+      trend: "Weighted view",
+      status: "Building",
     },
   ],
   lifecycle: [
@@ -9982,13 +9982,13 @@ const CHANNEL_MANAGER_DATA = {
     },
   ],
   successMeasures: [
-    "Partner strategy agreed",
-    "Program essentials defined",
-    "Existing partners reviewed",
-    "Priority target list created",
-    "Discovery meetings started",
-    "Internal roles aligned",
-    "Cadence and governance model established",
+    { icon: "🧭", label: "Partner strategy agreed" },
+    { icon: "🧱", label: "Program essentials defined" },
+    { icon: "🔍", label: "Existing partners reviewed" },
+    { icon: "🎯", label: "Priority target list created" },
+    { icon: "🤝", label: "Discovery meetings started" },
+    { icon: "🧩", label: "Internal roles aligned" },
+    { icon: "📊", label: "Cadence and governance model established" },
   ],
   engagementMatrix: [
     {
@@ -10187,7 +10187,7 @@ function ChannelManagerDashboardPage() {
         </section>
 
         <section className="channel-section">
-          <h2 className="channel-title">Annual Partner KPI Dashboard</h2>
+          <h2 className="channel-title">Channel KPIs</h2>
           <div className="channel-grid-kpi">
             {CHANNEL_MANAGER_DATA.kpis.map((kpi) => (
               <div key={kpi.label} className="channel-card channel-kpi-card">
@@ -10210,25 +10210,20 @@ function ChannelManagerDashboardPage() {
         </section>
 
         <section className="channel-section">
-          <h2 className="channel-title">Partner Lifecycle & Operating Plan</h2>
+          <h2 className="channel-title">Partner Lifecycle</h2>
           <div className="channel-lifecycle-flow">
             {CHANNEL_MANAGER_DATA.lifecycle.map((stage, idx) => (
-              <React.Fragment key={stage.stage}>
-                <article className="channel-card channel-life-stage">
-                  <div className="channel-inline-icon" aria-hidden="true">{CHANNEL_LIFECYCLE_VISUALS[idx] || "🔹"}</div>
-                  <div className="channel-step">{idx + 1}. {stage.stage}</div>
-                  <p className="channel-life-what">{stage.what}</p>
-                  <ul className="channel-list">
-                    {stage.activities.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                  <div className="channel-outcome">Outcome: {stage.outcome}</div>
-                </article>
-                {idx < CHANNEL_MANAGER_DATA.lifecycle.length - 1 && (
-                  <div className="channel-arrow">→</div>
-                )}
-              </React.Fragment>
+              <article key={stage.stage} className="channel-card channel-life-stage">
+                <div className="channel-inline-icon" aria-hidden="true">{CHANNEL_LIFECYCLE_VISUALS[idx] || "🔹"}</div>
+                <div className="channel-step">{idx + 1}. {stage.stage}</div>
+                <p className="channel-life-what">{stage.what}</p>
+                <ul className="channel-list">
+                  {stage.activities.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+                <div className="channel-outcome">Outcome: {stage.outcome}</div>
+              </article>
             ))}
           </div>
         </section>
@@ -10238,7 +10233,7 @@ function ChannelManagerDashboardPage() {
           <p className="channel-support">
             The first 90 days should focus on agreeing the strategy, building the essential elements of the partner program, reviewing existing partners, and beginning structured engagement with priority targets. The objective is to create the foundations for scalable channel growth, not to force near-term pipeline too early.
           </p>
-          <div className="channel-grid-4">
+          <div className="channel-grid-90">
             {CHANNEL_MANAGER_DATA.first90Days.map((stream) => (
               <article key={stream.key} className="channel-card channel-workstream-card">
                 <div className="channel-day">{CHANNEL_CADENCE_WORKSTREAM_ICONS[stream.key]} Workstream {stream.key}</div>
@@ -10256,7 +10251,7 @@ function ChannelManagerDashboardPage() {
             <h2>Realistic 90-Day Success Measures</h2>
             <div className="channel-measure-list">
               {CHANNEL_MANAGER_DATA.successMeasures.map((item) => (
-                <span key={item} className="channel-chip">{item}</span>
+                <span key={item.label} className="channel-chip"><span aria-hidden="true">{item.icon}</span> {item.label}</span>
               ))}
             </div>
           </div>
