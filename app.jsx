@@ -12453,7 +12453,6 @@ function App() {
     if (page === "channel-dashboard") return <ChannelManagerDashboardPage />;
     if (page === "partner-account-plan") return <PartnerAccountPlanToolPage />;
     if (page === "competitive-matrix") return <CompetitiveMatrixPage />;
-    if (page === "cx-discovery") return <CXDiscoveryQuestionnairePage onNavigate={setPage} />;
     if (page === "hub")
       return (
         <EnablementHub onBack={() => setPage("main")} onNavigate={setPage} />
