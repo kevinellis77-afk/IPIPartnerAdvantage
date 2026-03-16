@@ -192,7 +192,7 @@ tbody tr:nth-child(even){background:rgba(255,255,255,0.015);}
 .stack-pill:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);}
 
 /* Channel Manager Dashboard */
-.channel-dashboard-page{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;gap:24px;max-width:1280px;padding:24px;width:100%;margin:0 auto;box-sizing:border-box;min-width:0;}
+.channel-dashboard-page{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;gap:24px;max-width:none;padding:24px;width:100%;margin:0;box-sizing:border-box;min-width:0;}
 .channel-dashboard-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-left:0;min-width:0;}
 .channel-dashboard-pill{background:rgba(99,171,143,0.12);border:1px solid rgba(99,171,143,0.3);color:#91C4B0;font-size:10px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;border-radius:100px;padding:6px 14px;}
 .channel-hero{background:linear-gradient(145deg,rgba(99,171,143,0.14),rgba(15,31,28,0.8));border:1px solid rgba(99,171,143,0.28);border-radius:20px;padding:30px;box-shadow:0 12px 45px rgba(0,0,0,0.3);}
@@ -277,12 +277,12 @@ tbody tr:nth-child(even){background:rgba(255,255,255,0.015);}
 }
 
 /* Build Sell Expand + Six Pillars merged page */
-.bse-section-index-wrap{max-width:1280px;width:100%;margin:24px auto 0;padding:0 24px;box-sizing:border-box;min-width:0;}
+.bse-section-index-wrap{max-width:none;width:100%;margin:24px 0 0;padding:0 24px;box-sizing:border-box;min-width:0;}
 .bse-section-index{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:rgba(255,255,255,0.025);border:1px solid rgba(99,171,143,0.22);border-radius:14px;padding:12px 14px;}
 .bse-section-index-label{font-size:10px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:rgba(145,196,176,0.7);margin-right:4px;}
 .bse-section-index-link{font-size:12px;font-weight:700;color:#91C4B0;text-decoration:none;padding:6px 10px;border-radius:999px;border:1px solid rgba(99,171,143,0.26);background:rgba(99,171,143,0.08);}
 .bse-section-index-link:hover{background:rgba(99,171,143,0.16);}
-.bse-section-shell{max-width:1280px;margin:0 auto;padding:40px 24px 0;width:100%;box-sizing:border-box;min-width:0;}
+.bse-section-shell{max-width:none;margin:0;padding:40px 24px 0;width:100%;box-sizing:border-box;min-width:0;}
 .bse-section-heading{margin-bottom:20px;}
 .bse-section-heading h2{font-size:clamp(22px,2.6vw,34px);font-weight:800;color:#fff;letter-spacing:-0.03em;line-height:1.12;font-family:'Syne',sans-serif;margin-bottom:8px;}
 .bse-section-heading p{font-size:13.5px;color:#6E9990;line-height:1.8;max-width:760px;}
@@ -1445,7 +1445,7 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
 .content-narrow,.ds-page-header__subtitle,.cm-intro-copy,.bse-section-heading p{max-width:1100px;}
 
 /* Partner Account Plan Tool */
-.partner-plan-page{max-width:1280px;margin:0 auto;padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0;}
+.partner-plan-page{max-width:none;margin:0;padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0;}
 .partner-plan-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap;background:linear-gradient(150deg,color-mix(in srgb,#4E8DFF 10%, var(--ds-surface-muted)),var(--ds-surface-muted));border:1px solid var(--ds-border);border-radius:16px;padding:18px;position:sticky;top:12px;z-index:22;backdrop-filter:blur(6px);}
 .partner-plan-head h1{font-size:30px;line-height:1.1;color:var(--ds-text);}
 .partner-plan-head p{font-size:14px;color:var(--ds-text-muted);max-width:860px;line-height:1.7;margin-top:8px;}
@@ -1975,7 +1975,7 @@ p,li,td,th,label,input,textarea,select,span{color:var(--text-primary);}
 small,.muted,.text-muted{color:var(--text-secondary) !important;}
 
 .page-shell,.home-page-shell,.ds-section,.prospect-shell,.channel-dashboard-page,.partner-plan-page{
-  width: min(var(--content-max), calc(100% - (var(--page-gutter) * 2)));
+  width: calc(100% - (var(--page-gutter) * 2));
   margin-inline: auto;
 }
 .app-main-inner.with-sidebar{max-width:var(--content-max-wide);}
@@ -2063,7 +2063,7 @@ small,.muted,.text-muted{color:var(--text-secondary) !important;}
 }
 
 .app-main,.page-container{background:linear-gradient(180deg,color-mix(in srgb,var(--bg-app) 94%,transparent),var(--bg-app));}
-.page-content,.ds-section,.prospect-shell,.home-page-shell,.channel-dashboard-page,.partner-plan-page{max-width:var(--layout-max);}
+.page-content,.ds-section,.prospect-shell,.home-page-shell,.channel-dashboard-page,.partner-plan-page{max-width:none;}
 
 .app-topbar{position:sticky;top:0;z-index:220;backdrop-filter:blur(8px);background:color-mix(in srgb,var(--bg-app) 86%, transparent);border-bottom:1px solid color-mix(in srgb,var(--border-soft) 78%, transparent);}
 .app-topbar__title{font-family:var(--font-title);font-size:var(--type-h3);letter-spacing:-.015em;}
