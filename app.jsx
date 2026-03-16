@@ -5261,7 +5261,7 @@ function ProspectToolPage() {
     if (key === 'actions') {
       return <td className="cell-actions"><div className="table-row-actions">
         <IconButton icon="view" label={`Open details for ${record.displayName}`} onClick={(event) => { event.stopPropagation(); setSelectedRowId(record.id); }} />
-        <IconButton icon="copy" label={`Export ${record.displayName} row`} onClick={(event) => { event.stopPropagation(); exportRows([record], `${record.id}-prospect.csv`); }} />
+        <IconButton icon="export" label={`Export ${record.displayName} row`} onClick={(event) => { event.stopPropagation(); exportRows([record], `${record.id}-prospect.csv`); }} />
       </div></td>;
     }
     return <td>{record[key] || '—'}</td>;
