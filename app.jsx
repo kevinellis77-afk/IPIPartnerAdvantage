@@ -6841,15 +6841,15 @@ function PartnerProgramPage() {
             />
             <span
               style={{
-                fontSize: 10,
+                fontSize: 11,
                 fontWeight: 800,
                 color: "rgba(54,198,255,0.6)",
-                letterSpacing: "0.14em",
+                letterSpacing: "0.1em",
                 textTransform: "uppercase",
                 whiteSpace: "normal",
               }}
             >
-              Target Partner Priorities
+              Ideal Partner Profiles
             </span>
             <div
               style={{
