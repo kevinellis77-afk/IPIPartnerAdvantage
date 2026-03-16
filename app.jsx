@@ -6056,6 +6056,8 @@ function BuildSellExpand() {
   const useCaseExamples = [
     {
       title: "Land with Telephony",
+      icon: "assets/icons/land-telephony.svg",
+      iconAlt: "Telephony icon",
       issue: "Customer needs resilient voice operations across sites.",
       solution: "Telephony Infrastructure",
       expand: "UCaaS, CCaaS and Managed Services",
@@ -6063,6 +6065,8 @@ function BuildSellExpand() {
     },
     {
       title: "Land with Secure Payments",
+      icon: "assets/icons/land-secure-payments.svg",
+      iconAlt: "Secure payments icon",
       issue: "Customer faces payment compliance and risk pressure.",
       solution: "Secure Payments",
       expand: "Contact Centre, AI and Compliance-led services",
@@ -6070,6 +6074,8 @@ function BuildSellExpand() {
     },
     {
       title: "Land with AI & Automation",
+      icon: "assets/icons/land-ai-automation.svg",
+      iconAlt: "AI and automation icon",
       issue: "Customer wants efficiency gains and faster customer response.",
       solution: "AI & Automation",
       expand: "CCaaS, UCaaS and Consultancy",
@@ -6077,6 +6083,8 @@ function BuildSellExpand() {
     },
     {
       title: "Land with Managed Services",
+      icon: "assets/icons/land-managed-services.svg",
+      iconAlt: "Managed services icon",
       issue: "Customer lacks operational capacity to maintain performance.",
       solution: "Managed Services",
       expand: "Core communications and customer engagement platform services",
@@ -6203,7 +6211,10 @@ function BuildSellExpand() {
           <div className="prj-use-cases" style={{ marginTop: 14 }}>
             {useCaseExamples.map((example) => (
               <article key={example.title} className="prj-use-case-card">
-                <h3>{example.title}</h3>
+                <div className="prj-use-case-card__title-row">
+                  <img src={example.icon} alt={example.iconAlt} className="prj-use-case-card__icon" />
+                  <h3>{example.title}</h3>
+                </div>
                 <p><strong>Initial customer issue:</strong> {example.issue}</p>
                 <p><strong>Initial solution:</strong> {example.solution}</p>
                 <p><strong>Expansion opportunity:</strong> {example.expand}</p>
