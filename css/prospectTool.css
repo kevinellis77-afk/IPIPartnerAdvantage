@@ -28,6 +28,16 @@
 .prospect-table--search .cell-number{text-align:left}
 .prospect-table--search .cell-actions-head,.prospect-table--search .cell-actions{text-align:left}
 .prospect-table--search .table-row-actions{justify-content:flex-start}
+
+.prospect-table--search th[data-col="rank"],
+.prospect-table--search td[data-col="rank"],
+.prospect-table--search th[data-col="idealPartnerScore"],
+.prospect-table--search td[data-col="idealPartnerScore"],
+.prospect-table--search th[data-col="website"],
+.prospect-table--search td[data-col="website"],
+.prospect-table--search th[data-col="linkedin"],
+.prospect-table--search td[data-col="linkedin"]{text-align:center}
+
 .prospect-row-selected td{background:rgba(103,216,255,.12)!important;box-shadow:inset 3px 0 0 #36c6ff}
 .chip-row{display:flex;flex-wrap:wrap;gap:8px}
 .chip{font-size:11px;background:rgba(103,216,255,.14);padding:4px 8px;border-radius:999px;color:#a9d7e7}
