@@ -60,35 +60,28 @@
 
     const instructions = `You are an expert channel sales and partner strategy analyst for IP Integration.
 
-Research the following company using the supplied company data and any publicly available information accessible to you.
+Research the following company using:
+1) the supplied structured company data and
+2) publicly available information.
 
-Your task is to assess whether this company is a strong candidate to become an IP Integration partner.
+Primary fields to prioritise: company name and website.
 
 Return a structured assessment covering:
-1. A concise summary of the company
+1. A concise summary of the business
 2. Core services and capabilities
-3. Relevant technology, CX, UC, cloud, contact centre, managed service, or integration focus areas
-4. Known or likely vendor relationships
-5. Suitability to become an IPI partner, with rationale
-6. The most likely partner type:
-   - CCaaS Reseller
-   - MSP
-   - Solution Provider
-   - Consultant
-   - Other
-7. Recommended priority/tier with rationale
-8. Likely key buyer/contact personas to approach
-9. Suggested discussion themes for first engagement
-10. Two outreach templates:
-   - email
-   - LinkedIn message
+3. Likely technology vendors/ecosystems in use
+4. Suitability as an IPI partner
+5. Suggested partner type and priority tier
+6. Key contacts or personas to approach (name where verifiable, otherwise persona)
+7. Suggested outreach themes for opening engagement
+8. Two outreach templates (email + LinkedIn)
 
 Important rules:
 - Distinguish confirmed facts from reasonable inference
 - Do not invent people or partnerships
-- If something cannot be verified, say so
-- Keep the output concise, commercially useful, and practical for a channel manager
-- Return the result as structured JSON`;
+- If a detail cannot be verified, say so
+- Keep output concise, commercially useful, practical for a channel manager
+- Return only structured JSON matching the requested schema`;
 
     const responseSchema = {
       generatedAt: 'ISO-8601 string',
@@ -117,19 +110,152 @@ Important rules:
     return { statement, confidence, sources: sources || [] };
   }
 
+  function getResearchConfig() {
+    const config = window.PROSPECT_RESEARCH_CONFIG || {};
+    return {
+      endpoint: typeof config.endpoint === 'string' ? config.endpoint : '',
+      openAiApiKey: typeof config.openAiApiKey === 'string' ? config.openAiApiKey : '',
+      openAiModel: typeof config.openAiModel === 'string' ? config.openAiModel : 'gpt-4.1-mini'
+    };
+  }
+
+  function buildOpenAiSchema() {
+    return {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        generatedAt: { type: 'string' },
+        model: { type: 'string' },
+        companySummary: { $ref: '#/$defs/section' },
+        servicesCapabilities: { $ref: '#/$defs/section' },
+        likelyVendors: { $ref: '#/$defs/section' },
+        ipiSuitability: { $ref: '#/$defs/section' },
+        recommendedPartnerMotion: { $ref: '#/$defs/section' },
+        suggestedTier: { $ref: '#/$defs/section' },
+        keyContactsToTarget: { $ref: '#/$defs/section' },
+        suggestedDiscussionThemes: { $ref: '#/$defs/section' },
+        outreachTemplates: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            templates: {
+              type: 'array',
+              items: {
+                type: 'object',
+                additionalProperties: false,
+                properties: {
+                  title: { type: 'string' },
+                  channel: { type: 'string', enum: ['email', 'linkedin', 'call'] },
+                  body: { type: 'string' }
+                },
+                required: ['title', 'channel', 'body']
+              }
+            }
+          },
+          required: ['templates']
+        },
+        unknowns: { type: 'array', items: { type: 'string' } }
+      },
+      required: ['generatedAt', 'model', 'companySummary', 'servicesCapabilities', 'likelyVendors', 'ipiSuitability', 'recommendedPartnerMotion', 'suggestedTier', 'keyContactsToTarget', 'suggestedDiscussionThemes', 'outreachTemplates', 'unknowns'],
+      $defs: {
+        evidenceItem: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            statement: { type: 'string' },
+            confidence: { type: 'string', enum: ['confirmed', 'inferred', 'unknown'] },
+            sources: { type: 'array', items: { type: 'string' } }
+          },
+          required: ['statement', 'confidence', 'sources']
+        },
+        section: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            title: { type: 'string' },
+            items: { type: 'array', items: { $ref: '#/$defs/evidenceItem' } }
+          },
+          required: ['title', 'items']
+        }
+      }
+    };
+  }
+
+  function parseModelJson(rawContent) {
+    if (!rawContent) throw new Error('Empty model response content.');
+    if (typeof rawContent === 'string') return JSON.parse(rawContent);
+    if (Array.isArray(rawContent)) {
+      const textBlock = rawContent.find((item) => item && item.type === 'text');
+      if (textBlock?.text) return JSON.parse(textBlock.text);
+    }
+    throw new Error('Unable to parse model JSON response.');
+  }
+
+  async function callOpenAi(company, prompt, config) {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${config.openAiApiKey}`
+      },
+      body: JSON.stringify({
+        model: config.openAiModel,
+        temperature: 0.2,
+        messages: [
+          { role: 'system', content: prompt.systemPrompt },
+          {
+            role: 'user',
+            content: `Research this company and return JSON only.\n\nCompany Name: ${valueOrUnknown(company.displayName || company.name)}\nWebsite: ${valueOrUnknown(company.website)}\n\nStructured company data:\n${JSON.stringify(prompt.context, null, 2)}`
+          }
+        ],
+        response_format: {
+          type: 'json_schema',
+          json_schema: {
+            name: 'company_research',
+            strict: true,
+            schema: buildOpenAiSchema()
+          }
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`OpenAI request failed (${response.status}): ${errorText.slice(0, 240)}`);
+    }
+
+    const completion = await response.json();
+    const content = completion?.choices?.[0]?.message?.content;
+    const research = parseModelJson(content);
+    return { research, prompt };
+  }
+
+  async function callBackend(prompt, endpoint) {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Research backend failed (${response.status}): ${errorText.slice(0, 240)}`);
+    }
+    return response.json();
+  }
+
   async function researchCompany(company) {
     const prompt = buildResearchPrompt(company);
+    const config = getResearchConfig();
 
-    // INTEGRATION POINT:
-    // Replace this mock implementation with a real API call to your backend endpoint.
-    // Example:
-    // const response = await fetch('/api/research/company', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ prompt })
-    // });
-    // const result = await response.json();
-    // return result;
+    if (config.openAiApiKey) {
+      return callOpenAi(company, prompt, config);
+    }
+
+    if (config.endpoint) {
+      return callBackend(prompt, config.endpoint);
+    }
+
+    // Fallback mock for local demos when live configuration has not been provided.
 
     await new Promise((resolve) => setTimeout(resolve, 900));
     const contact = company.contacts && company.contacts[0];
