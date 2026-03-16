@@ -11624,9 +11624,11 @@ function SampleCustomersPage() {
         <aside className={`sample-story-drawer ${selectedStory ? "open" : ""}`} onClick={(e) => e.stopPropagation()}>
           {selectedStory ? (
             <div className="sample-story-drawer__content">
-              <button className="ui-btn ui-btn--ghost" onClick={() => setSelectedStory(null)}>Close</button>
-              <h2>{selectedStory.customerName}</h2>
-              <p>{selectedStory.headline}</p>
+              <div className="sample-story-drawer__header">
+                <button className="ui-btn ui-btn--ghost" onClick={() => setSelectedStory(null)}>Close</button>
+                <h2>{selectedStory.customerName}</h2>
+                <p>{selectedStory.headline}</p>
+              </div>
               <div className="sample-detail-block"><h4>Customer Overview</h4><p>{selectedStory.shortSummary}</p></div>
               <div className="sample-detail-block"><h4>Challenge / Opportunity</h4><p>{selectedStory.challenge}</p></div>
               <div className="sample-detail-block"><h4>How IPI Enabled It</h4><p>{selectedStory.solution}</p></div>
