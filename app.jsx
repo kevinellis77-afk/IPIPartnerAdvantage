@@ -11723,12 +11723,12 @@ function SampleCustomersPage() {
 
 const COMPETITIVE_MATRIX_DATA = {
   competitors: [
-    { id: "elasticcx", name: "ElasticCX", descriptor: "Cloud-native CX platform", logo: "ECX", home: true },
-    { id: "avaya", name: "Avaya", descriptor: "Legacy enterprise CX", logo: "AV" },
-    { id: "cisco", name: "Cisco", descriptor: "Enterprise comms-led CX", logo: "CS" },
-    { id: "five9", name: "Five9", descriptor: "Outbound and cloud specialist", logo: "F9" },
-    { id: "genesys", name: "Genesys", descriptor: "Experience orchestration leader", logo: "GY" },
-    { id: "nice", name: "NICE", descriptor: "Enterprise AI CX suite", logo: "NC" },
+    { id: "elasticcx", name: "ElasticCX", descriptor: "Cloud-native CX platform", logo: "ECX", logoSrc: "assets/competitors/elasticcx.svg", home: true },
+    { id: "avaya", name: "Avaya", descriptor: "Legacy enterprise CX", logo: "AV", logoSrc: "assets/competitors/avaya.svg" },
+    { id: "cisco", name: "Cisco", descriptor: "Enterprise comms-led CX", logo: "CS", logoSrc: "assets/competitors/cisco.svg" },
+    { id: "five9", name: "Five9", descriptor: "Outbound and cloud specialist", logo: "F9", logoSrc: "assets/competitors/five9.svg" },
+    { id: "genesys", name: "Genesys", descriptor: "Experience orchestration leader", logo: "GY", logoSrc: "assets/competitors/genesys.svg" },
+    { id: "nice", name: "NICE", descriptor: "Enterprise AI CX suite", logo: "NC", logoSrc: "assets/competitors/nice.svg" },
   ],
   matrixCategories: [
     { id: "acd", label: "ACD / PBX / Agent Interface", takeaway: "Balanced voice and agent tooling that supports complex routing scenarios." },
@@ -11914,7 +11914,7 @@ function CompetitiveMatrixPage() {
         <div className="matrix-vendor-strip">
           {competitors.map((vendor) => (
             <div key={vendor.id} className={`matrix-vendor-card ${vendor.home ? "home" : ""}`.trim()}>
-              <span className="matrix-vendor-logo">{vendor.logo}</span>
+              <span className="matrix-vendor-logo">{vendor.logoSrc ? <img src={vendor.logoSrc} alt={`${vendor.name} logo`} loading="lazy" /> : vendor.logo}</span>
               <strong>{vendor.name}</strong>
               <small>{vendor.descriptor}</small>
             </div>
