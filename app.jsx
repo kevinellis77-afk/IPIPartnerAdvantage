@@ -11412,22 +11412,6 @@ function PartnerAccountPlanToolPage() {
             <div className="plan-header-kpi"><div className="plan-stat-label">Closed Won (GBP)</div><div className="plan-header-kpi-value">{formatCurrency(current.scorecard.closedWonCurrent)} <span>/ {formatCurrency(current.scorecard.closedWonTarget)}</span></div></div>
           </div>
 
-          <div className="plan-section-card">
-            <div className="plan-section-body">
-              <h3>Health & Performance</h3>
-              <div className="plan-health-rag-grid">
-                <div className="plan-health-rag-item"><span>Pipeline Health</span><RagStatusPill value={current.computed.kpiRag.pipelineHealth} /></div>
-                <div className="plan-health-rag-item"><span>Revenue Progress</span><RagStatusPill value={current.computed.kpiRag.revenueProgress} /></div>
-                <div className="plan-health-rag-item"><span>Enablement Readiness</span><RagStatusPill value={current.computed.kpiRag.enablementReadiness} /></div>
-                <div className="plan-health-rag-item"><span>Engagement Cadence</span><RagStatusPill value={current.computed.kpiRag.engagementCadence} /></div>
-                <div className="plan-health-rag-item"><span>Risk Level</span><RagStatusPill value={current.computed.kpiRag.riskLevel} /></div>
-                <div className="plan-health-rag-item"><span>Action Plan Delivery</span><RagStatusPill value={current.computed.kpiRag.actionPlanDelivery} /></div>
-              </div>
-              <HealthBreakdown breakdown={current.computed.healthBreakdown} />
-              <p className="plan-empty-inline">Each indicator now shows its current Red / Amber / Green status.</p>
-            </div>
-          </div>
-
           <div className="plan-section-tabs">{PLAN_SECTIONS.map(([id, label]) => <button type="button" key={id} onClick={() => jumpToSection(id)}>{label}</button>)}</div>
 
           <div className="plan-form-stack">
