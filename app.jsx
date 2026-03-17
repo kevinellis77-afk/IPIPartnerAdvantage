@@ -5525,10 +5525,59 @@ function useDebouncedValue(value, wait) {
   return debounced;
 }
 
-const CUSTOMER_DISCOVERY_STORAGE_KEYS = {
-  records: "ipiCustomerDiscoveryRecords",
-  draft: "ipiCustomerDiscoveryDraft",
-};
+const DISCOVERY_STORAGE_KEY = "ipi_customer_discovery_records";
+const LEGACY_DISCOVERY_STORAGE_KEYS = ["ipiCustomerDiscoveryRecords", "ipi_customer_discovery_records_v1"];
+
+function parseDiscoveryStorageJson(rawValue, fallback, context) {
+  if (!rawValue) return fallback;
+  try {
+    return JSON.parse(rawValue);
+  } catch (_error) {
+    console.warn(`[CustomerDiscovery] Failed to parse ${context}; using fallback.`);
+    return fallback;
+  }
+}
+
+function normalizeDiscoveryRecords(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (payload && Array.isArray(payload.records)) return payload.records;
+  return [];
+}
+
+function loadDiscoveryRecords() {
+  const parsed = parseDiscoveryStorageJson(window.localStorage.getItem(DISCOVERY_STORAGE_KEY), [], "records");
+  const records = normalizeDiscoveryRecords(parsed);
+  console.debug(`[CustomerDiscovery] Loaded ${records.length} record(s).`);
+  return records;
+}
+
+function saveDiscoveryRecords(records) {
+  window.localStorage.setItem(DISCOVERY_STORAGE_KEY, JSON.stringify(records));
+  console.debug(`[CustomerDiscovery] Saved ${records.length} record(s).`);
+}
+
+function migrateDiscoveryRecordsIfNeeded() {
+  const currentRaw = window.localStorage.getItem(DISCOVERY_STORAGE_KEY);
+  if (currentRaw) return;
+
+  let migrated = [];
+  LEGACY_DISCOVERY_STORAGE_KEYS.forEach((legacyKey) => {
+    const payload = parseDiscoveryStorageJson(window.localStorage.getItem(legacyKey), [], `legacy key ${legacyKey}`);
+    const records = normalizeDiscoveryRecords(payload);
+    if (!records.length) return;
+    const existing = new Set(migrated.map((item) => item?.id).filter(Boolean));
+    records.forEach((item) => {
+      if (!item || typeof item !== "object") return;
+      if (item.id && existing.has(item.id)) return;
+      if (item.id) existing.add(item.id);
+      migrated.push(item);
+    });
+  });
+
+  if (!migrated.length) return;
+  saveDiscoveryRecords(migrated);
+  console.info(`[CustomerDiscovery] Migrated ${migrated.length} record(s) into ${DISCOVERY_STORAGE_KEY}.`);
+}
 
 const CUSTOMER_DISCOVERY_SECTIONS = [
   {
@@ -5754,43 +5803,18 @@ function escapeCsv(value) {
 }
 
 function CXDiscoveryQuestionnairePage() {
-  const [records, setRecords] = React.useState([]);
+  const [records, setRecords] = React.useState(() => {
+    migrateDiscoveryRecordsIfNeeded();
+    return loadDiscoveryRecords();
+  });
   const [record, setRecord] = React.useState(() => createEmptyDiscoveryRecord());
   const [step, setStep] = React.useState(0);
   const [search, setSearch] = React.useState("");
   const [message, setMessage] = React.useState("");
-  const [hasHydratedStorage, setHasHydratedStorage] = React.useState(false);
 
   React.useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(CUSTOMER_DISCOVERY_STORAGE_KEYS.records) || "[]");
-      if (Array.isArray(saved)) setRecords(saved);
-      const draft = JSON.parse(localStorage.getItem(CUSTOMER_DISCOVERY_STORAGE_KEYS.draft) || "null");
-      if (draft && typeof draft === "object") setRecord((prev) => ({ ...prev, ...draft }));
-    } catch (_error) {
-      // ignore malformed storage
-    } finally {
-      setHasHydratedStorage(true);
-    }
-  }, []);
-
-  React.useEffect(() => {
-    if (!hasHydratedStorage) return;
-    try {
-      localStorage.setItem(CUSTOMER_DISCOVERY_STORAGE_KEYS.records, JSON.stringify(records));
-    } catch (_error) {
-      // no-op
-    }
-  }, [records, hasHydratedStorage]);
-
-  React.useEffect(() => {
-    if (!hasHydratedStorage) return;
-    try {
-      localStorage.setItem(CUSTOMER_DISCOVERY_STORAGE_KEYS.draft, JSON.stringify(record));
-    } catch (_error) {
-      // no-op
-    }
-  }, [record, hasHydratedStorage]);
+    saveDiscoveryRecords(records);
+  }, [records]);
 
   const showMessage = (text) => {
     setMessage(text);
