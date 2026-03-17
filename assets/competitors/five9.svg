@@ -1,0 +1,6 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 90'>
+  <rect width='300' height='90' fill='white'/>
+  <path d='M123 25c8-13 22-21 38-21 15 0 28 8 36 21M82 41c8-11 20-17 35-17 13 0 24 5 31 14M199 38c8-9 18-14 31-14 15 0 27 6 35 17' fill='none' stroke='#1d9cc8' stroke-width='7' stroke-linecap='round'/>
+  <text x='24' y='80' font-family='Arial, Helvetica, sans-serif' font-size='72' font-weight='700' fill='#064a67'>Five</text>
+  <text x='221' y='80' font-family='Arial, Helvetica, sans-serif' font-size='72' font-weight='700' fill='#1d9cc8'>9</text>
+</svg>
