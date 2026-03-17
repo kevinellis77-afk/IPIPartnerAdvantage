@@ -1,7 +1,11 @@
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 90'>
-  <rect width='300' height='90' fill='white'/>
-  <circle cx='34' cy='45' r='28' fill='#41525d'/>
-  <path d='M20 32h28v8H28v9h20v8H28v9h20v8H20z' fill='#f4f4f4'/>
-  <rect x='76' y='36' width='62' height='10' fill='#6aa9ba'/>
-  <text x='84' y='72' font-family='Arial, Helvetica, sans-serif' font-size='33' font-weight='700' fill='#41525d'>UC</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2048 675" role="img" aria-label="ElasticCX cCaaS logo">
+  <rect width="2048" height="675" fill="#000"/>
+  <g fill="#d9d9d9">
+    <circle cx="210" cy="210" r="210"/>
+    <path d="M118 142h171v45H155v74h134v45H155v69c0 21 8 40 23 55 15 15 33 23 55 23h107v45H233c-34 0-64-12-88-37-25-24-37-54-37-88V142z" fill="#000"/>
+    <rect x="118" y="142" width="171" height="45" fill="#000"/>
+    <rect x="118" y="261" width="171" height="45" fill="#000"/>
+  </g>
+  <text x="455" y="355" fill="#d9d9d9" font-family="Arial, Helvetica, sans-serif" font-size="320" font-weight="700" letter-spacing="4">LASTICCX</text>
+  <text x="455" y="555" fill="#d9d9d9" font-family="Arial, Helvetica, sans-serif" font-size="150" font-weight="700">cCaaS</text>
 </svg>
