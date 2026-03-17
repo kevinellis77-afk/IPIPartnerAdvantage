@@ -12150,13 +12150,41 @@ function MarketVisionPage({ onNavigate }) {
 }
 
 function PartnerDeckPage() {
+  const containerRef = React.useRef(null);
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement === containerRef.current);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    if (!containerRef.current) return;
+    if (document.fullscreenElement === containerRef.current) {
+      await document.exitFullscreen();
+      return;
+    }
+    await containerRef.current.requestFullscreen();
+  };
+
   return (
     <div className="content-shell" style={{ padding: "20px 22px" }}>
-      <div className="panel-card" style={{ padding: 0, overflow: "hidden", minHeight: "calc(100vh - 170px)" }}>
+      <div className="panel-card" style={{ padding: "12px", marginBottom: "12px" }}>
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <button type="button" className="btn btn-outline" onClick={toggleFullscreen}>
+            {isFullscreen ? "Exit Full Screen" : "Present Full Screen"}
+          </button>
+        </div>
+      </div>
+      <div ref={containerRef} className="panel-card" style={{ padding: 0, overflow: "hidden", minHeight: "calc(100vh - 232px)", background: "#0b1120" }}>
         <iframe
           title="Partner Deck"
           src="assets/Partner%20Pitch.html"
-          style={{ width: "100%", height: "calc(100vh - 170px)", border: "0", background: "#0b1120" }}
+          style={{ width: "100%", height: "calc(100vh - 232px)", minHeight: "560px", border: "0", background: "#0b1120" }}
         />
       </div>
     </div>
