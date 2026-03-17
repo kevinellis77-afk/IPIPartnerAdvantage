@@ -5868,6 +5868,8 @@ function CXDiscoveryQuestionnairePage() {
     const integration = record.integration || {};
     const migration = record.migration || {};
     const tech = record.technologyStack || {};
+    const pciRequirements = String(record.securityCompliance?.pci || "").toLowerCase();
+    const indicatesPaymentNeed = /(take|accept|process)\s+payments?|payment\s+processing|card\s+payments?/.test(pciRequirements);
 
     if (drivers.includes("Replace Legacy Platform") || migration.platformReplacement === true || migration.migrationUrgency === "High" || migration.migrationUrgency === "Critical") add("CCaaS");
     if (tech.ucPlatform || record.companyProfile?.operatingModel === "Hybrid" || drivers.includes("Enable Hybrid Working")) add("UCaaS");
@@ -5878,6 +5880,7 @@ function CXDiscoveryQuestionnairePage() {
     if (drivers.includes("Support Growth / Scale") || drivers.includes("Improve Customer Experience")) add("Consulting / Discovery Workshops");
     if (record.commercial?.procurementRequirements || migration.preferredApproach || record.commercial?.targetGoLiveDate) add("Professional Services");
     if (record.commercial?.keyRisksToClose || record.securityCompliance?.complianceNotes) add("Managed Services");
+    if (indicatesPaymentNeed) add("PCI Cloud");
 
     return Array.from(recs);
   }, [record]);
