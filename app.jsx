@@ -12149,6 +12149,20 @@ function MarketVisionPage({ onNavigate }) {
   );
 }
 
+function PartnerDeckPage() {
+  return (
+    <div className="content-shell" style={{ padding: "20px 22px" }}>
+      <div className="panel-card" style={{ padding: 0, overflow: "hidden", minHeight: "calc(100vh - 170px)" }}>
+        <iframe
+          title="Partner Deck"
+          src="assets/Partner%20Pitch.html"
+          style={{ width: "100%", height: "calc(100vh - 170px)", border: "0", background: "#0b1120" }}
+        />
+      </div>
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════════════════
 // SIDEBAR NAV WRAPPER
 // ═══════════════════════════════════════════════════════
@@ -12159,6 +12173,7 @@ const NAV_SECTIONS = [
     items: [
       { id: "main", icon: <NavIcon name="sparkles" />, label: "Why IPI" },
       { id: "market-vision", icon: <NavIcon name="layers" />, label: "Our Vision" },
+      { id: "partner-deck", icon: <NavIcon name="layers" />, label: "Partner Deck" },
     ],
   },
   {
@@ -12219,6 +12234,7 @@ const PAGE_PATHS = {
   prospect: "/partner-prospect-tool",
   "sample-customers": "/sample-customers",
   "market-vision": "/market-vision",
+  "partner-deck": "/partner-deck",
   "cx-discovery": "/customer-discovery",
   "competitive-matrix": "/competitive-matrix",
 };
@@ -12478,6 +12494,7 @@ function App() {
       );
     if (page === "prospect") return <ProspectToolPage />;
     if (page === "market-vision") return <MarketVisionPage onNavigate={setPage} />;
+    if (page === "partner-deck") return <PartnerDeckPage />;
     if (page === "bse") return <BuildSellExpand />;
     if (page === "program") return <PartnerProgramPage />;
     if (page === "commercial") return <CommercialFrameworkPage />;
