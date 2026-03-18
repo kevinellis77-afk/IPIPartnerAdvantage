@@ -6862,6 +6862,73 @@ function PartnerProgramPage() {
   const classification = evaluationScore.classification;
   const companyClassification = evaluationScore.companyClassification;
   const hasRiskFlag = Object.values(evaluationForm.risks).some(Boolean);
+  const riskFlagOptions = [
+    ["competitorCommitment", "Already heavily committed to competitor CCaaS vendors"],
+    ["limitedTechnicalResource", "Limited technical resource"],
+    ["noSalesInvestment", "No visible sales investment in CX or cloud communications"],
+  ];
+  const activeRiskFlags = riskFlagOptions.filter(([key]) => evaluationForm.risks[key]);
+  const selectedServiceLabels = IPP_SERVICE_AREAS.filter((option) => evaluationForm.serviceAreas.includes(option.id)).map((option) => option.label);
+  const selectedIndustryLabels = IPP_INDUSTRIES.filter((option) => evaluationForm.industries.includes(option.id)).map((option) => option.label);
+  const scoringFrameworkSections = [
+    {
+      title: "Company Turnover",
+      description: "Weight towards the mid-market revenue band where enablement and route-to-market alignment are strongest.",
+      accent: "Commercial fit",
+      value: evaluationForm.companyTurnover,
+      onChange: (value) => setDetailField("companyTurnover", value),
+      options: IPP_TURNOVER_OPTIONS,
+      selectionType: "radio",
+      maxScore: Math.max(...IPP_TURNOVER_OPTIONS.map((option) => option.score)),
+      selectedCount: evaluationForm.companyTurnover ? 1 : 0,
+    },
+    {
+      title: "Number of Employees",
+      description: "Use employee size as a proxy for delivery capacity and partner scale.",
+      accent: "Delivery profile",
+      value: evaluationForm.employeeBand,
+      onChange: (value) => setDetailField("employeeBand", value),
+      options: IPP_EMPLOYEE_OPTIONS,
+      selectionType: "radio",
+      maxScore: Math.max(...IPP_EMPLOYEE_OPTIONS.map((option) => option.score)),
+      selectedCount: evaluationForm.employeeBand ? 1 : 0,
+    },
+    {
+      title: "HQ Location",
+      description: "Prioritise where the strongest operational support and market coverage already exist.",
+      accent: "Coverage",
+      value: evaluationForm.hqLocation,
+      onChange: (value) => setDetailField("hqLocation", value),
+      options: IPP_HQ_OPTIONS,
+      selectionType: "radio",
+      maxScore: Math.max(...IPP_HQ_OPTIONS.map((option) => option.score)),
+      selectedCount: evaluationForm.hqLocation ? 1 : 0,
+    },
+    {
+      title: "Service Areas",
+      description: "Layer in adjacent capabilities that increase expansion potential and solution relevance.",
+      accent: "Portfolio alignment",
+      value: evaluationForm.serviceAreas,
+      onChange: (value) => toggleSelection("serviceAreas", value),
+      options: IPP_SERVICE_AREAS,
+      selectionType: "checkbox",
+      maxScore: IPP_SERVICE_AREAS.reduce((sum, option) => sum + option.score, 0),
+      selectedCount: evaluationForm.serviceAreas.length,
+      scrollable: false,
+    },
+    {
+      title: "Industries",
+      description: "Surface verticals with the highest strategic fit for IPI's current demand profile.",
+      accent: "Market focus",
+      value: evaluationForm.industries,
+      onChange: (value) => toggleSelection("industries", value),
+      options: IPP_INDUSTRIES,
+      selectionType: "checkbox",
+      maxScore: IPP_INDUSTRIES.reduce((sum, option) => sum + option.score, 0),
+      selectedCount: evaluationForm.industries.length,
+      scrollable: true,
+    },
+  ];
 
   const setDetailField = (field, value) => {
     setEvaluationForm((prev) => ({ ...prev, [field]: value }));
@@ -7698,10 +7765,21 @@ function PartnerProgramPage() {
               This tool helps IP Integration assess how closely a prospective reseller aligns to the ideal partner profile. It provides a structured, repeatable way to prioritise recruitment effort, highlight strengths and identify gaps before investing time in enablement and onboarding.
             </p>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: 14, alignItems: "start" }}>
-              <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 14, padding: 18 }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(54,198,255,0.75)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
-                  Partner Details
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(320px,1.05fr) minmax(280px,0.95fr)", gap: 16, alignItems: "start" }}>
+              <div style={{ background: "linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 18, padding: 20, boxShadow: "0 18px 48px rgba(2,8,20,0.18)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 14, flexWrap: "wrap" }}>
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(54,198,255,0.75)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 6 }}>
+                      Partner Details
+                    </div>
+                    <div style={{ fontSize: 12.5, color: "#8EA6BF", lineHeight: 1.6 }}>
+                      Capture the partner basics first, then refine the score using the framework on the right.
+                    </div>
+                  </div>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 999, padding: "7px 12px", background: "rgba(54,198,255,0.08)", border: "1px solid rgba(54,198,255,0.18)", color: "#C9E9FF", fontSize: 12, fontWeight: 700 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: 999, background: hasRiskFlag ? "#FF7A7A" : "#6FD9AE", boxShadow: `0 0 0 5px ${hasRiskFlag ? "rgba(255,122,122,0.12)" : "rgba(111,217,174,0.12)"}` }} />
+                    {hasRiskFlag ? "Risk review needed" : "No active risk flags"}
+                  </div>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 10 }}>
                   {[
@@ -7752,145 +7830,250 @@ function PartnerProgramPage() {
               </div>
 
               <div style={{ display: "grid", gap: 14 }}>
-                <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 14, padding: 18 }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(54,198,255,0.75)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
-                    Score Summary
+                <div style={{ background: "linear-gradient(180deg,rgba(54,198,255,0.08),rgba(12,26,46,0.74))", border: `1px solid ${classification.badgeBorder}`, borderRadius: 18, padding: 20, boxShadow: "0 18px 48px rgba(2,8,20,0.2)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "start", flexWrap: "wrap" }}>
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(54,198,255,0.75)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 8 }}>
+                        Score Summary
+                      </div>
+                      <div style={{ fontSize: 56, fontWeight: 900, lineHeight: 0.95, color: classification.color, fontFamily: "'Syne',sans-serif" }}>
+                        {totalScore}
+                      </div>
+                    </div>
+                    <div style={{ display: "grid", gap: 8, justifyItems: "end" }}>
+                      <div style={{ display: "inline-flex", padding: "6px 12px", borderRadius: 999, border: `1px solid ${classification.badgeBorder}`, background: classification.badgeBg, color: classification.color, fontSize: 12, fontWeight: 800 }}>
+                        {classification.label}
+                      </div>
+                      <div style={{ fontSize: 11.5, color: "#A3BCD6", fontWeight: 700 }}>
+                        {companyClassification}
+                      </div>
+                    </div>
                   </div>
-                  <div style={{ fontSize: 52, fontWeight: 900, lineHeight: 1, color: classification.color, fontFamily: "'Syne',sans-serif" }}>
-                    {totalScore}
-                  </div>
-                  <div style={{ marginTop: 10, display: "inline-flex", padding: "6px 12px", borderRadius: 999, border: `1px solid ${classification.badgeBorder}`, background: classification.badgeBg, color: classification.color, fontSize: 12, fontWeight: 800 }}>
-                    {classification.label}
-                  </div>
-                  <p style={{ marginTop: 12, fontSize: 12.5, color: "#A3BCD6", lineHeight: 1.7 }}>{classification.interpretation}</p>
-                  <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 8 }}>
-                    <div style={{ background: "rgba(54,198,255,0.06)", border: "1px solid rgba(54,198,255,0.18)", borderRadius: 10, padding: "10px 12px" }}>
+                  <p style={{ marginTop: 12, fontSize: 12.5, color: "#C3D8ED", lineHeight: 1.7 }}>{classification.interpretation}</p>
+                  <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10 }}>
+                    <div style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(54,198,255,0.16)", borderRadius: 12, padding: "12px 14px" }}>
                       <div style={{ fontSize: 10.5, color: "#7E97B4", textTransform: "uppercase", letterSpacing: "0.08em" }}>Company Class</div>
                       <strong style={{ color: "#D9ECFF", fontSize: 13 }}>{companyClassification}</strong>
                     </div>
-                    <div style={{ background: "rgba(54,198,255,0.06)", border: "1px solid rgba(54,198,255,0.18)", borderRadius: 10, padding: "10px 12px" }}>
+                    <div style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(54,198,255,0.16)", borderRadius: 12, padding: "12px 14px" }}>
                       <div style={{ fontSize: 10.5, color: "#7E97B4", textTransform: "uppercase", letterSpacing: "0.08em" }}>Matched Vendors</div>
                       <strong style={{ color: "#D9ECFF", fontSize: 13 }}>{evaluationScore.breakdown.vendorCount}</strong>
                     </div>
                   </div>
+                  <div style={{ marginTop: 14, display: "grid", gap: 8 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: hasRiskFlag ? "#FFB7B7" : "#A8E9C8", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                        Partner Risk Flags
+                      </div>
+                      <div style={{ fontSize: 11.5, color: hasRiskFlag ? "#FFB7B7" : "#8FD9B8", fontWeight: 700 }}>
+                        {hasRiskFlag ? `${activeRiskFlags.length} risk flag${activeRiskFlags.length === 1 ? "" : "s"} active` : "Clear to progress"}
+                      </div>
+                    </div>
+                    <div style={{ display: "grid", gap: 8 }}>
+                      {riskFlagOptions.map(([key, label]) => {
+                        const checked = evaluationForm.risks[key];
+                        return (
+                          <label
+                            key={key}
+                            style={{
+                              display: "flex",
+                              gap: 10,
+                              alignItems: "center",
+                              padding: "10px 12px",
+                              borderRadius: 12,
+                              border: checked ? "1px solid rgba(255,122,122,0.45)" : "1px solid rgba(54,198,255,0.14)",
+                              background: checked ? "rgba(255,122,122,0.12)" : "rgba(255,255,255,0.03)",
+                              color: checked ? "#FFD0D0" : "#C8D8EA",
+                              fontSize: 12.5,
+                            }}
+                          >
+                            <input type="checkbox" checked={checked} onChange={(e) => setRiskFlag(key, e.target.checked)} />
+                            <span style={{ flex: 1 }}>{label}</span>
+                            <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: checked ? "#FFB7B7" : "#7E97B4" }}>
+                              {checked ? "Flagged" : "Optional"}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    {hasRiskFlag && (
+                      <div style={{ marginTop: 2, background: "rgba(255,122,122,0.14)", border: "1px solid rgba(255,122,122,0.45)", borderRadius: 12, padding: "10px 12px", color: "#FFB7B7", fontSize: 12, fontWeight: 700 }}>
+                        Partner risk identified — validate capability and commitment before progressing.
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div style={{ background: "rgba(255,255,255,0.025)", border: `1px solid ${hasRiskFlag ? "rgba(255,122,122,0.5)" : "rgba(54,198,255,0.2)"}`, borderRadius: 14, padding: 18 }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: hasRiskFlag ? "rgba(255,122,122,0.84)" : "rgba(54,198,255,0.75)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
-                    Partner Risk Flags
+                <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 18, padding: 18 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(54,198,255,0.75)", letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                      Focus Snapshot
+                    </div>
+                    <div style={{ fontSize: 11.5, color: "#8EA6BF" }}>
+                      Use these chips to quickly sense where the strongest fit is emerging.
+                    </div>
                   </div>
-                  <div style={{ display: "grid", gap: 8 }}>
+                  <div style={{ display: "grid", gap: 12 }}>
                     {[
-                      ["competitorCommitment", "Already heavily committed to competitor CCaaS vendors"],
-                      ["limitedTechnicalResource", "Limited technical resource"],
-                      ["noSalesInvestment", "No visible sales investment in CX or cloud communications"],
-                    ].map(([key, label]) => (
-                      <label key={key} style={{ display: "flex", gap: 8, alignItems: "center", color: "#B6CAE0", fontSize: 12.5 }}>
-                        <input type="checkbox" checked={evaluationForm.risks[key]} onChange={(e) => setRiskFlag(key, e.target.checked)} />
-                        {label}
-                      </label>
+                      ["Service Areas", selectedServiceLabels, "Select capabilities that overlap with the IPI offer."],
+                      ["Industries", selectedIndustryLabels, "Mark the verticals with the best strategic fit."],
+                      ["Vendor Relationships", evaluationScore.breakdown.matchedVendors, "Useful context only — currently unweighted in score."],
+                    ].map(([label, items, emptyMessage]) => (
+                      <div key={label} style={{ display: "grid", gap: 8 }}>
+                        <div style={{ fontSize: 11.5, color: "#A3BCD6", fontWeight: 700 }}>{label}</div>
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                          {items.length ? items.map((item) => (
+                            <span key={item} style={{ display: "inline-flex", alignItems: "center", borderRadius: 999, padding: "6px 10px", background: "rgba(54,198,255,0.08)", border: "1px solid rgba(54,198,255,0.18)", color: "#D9ECFF", fontSize: 11.5, fontWeight: 700 }}>
+                              {item}
+                            </span>
+                          )) : <span style={{ color: "#7E97B4", fontSize: 12 }}>{emptyMessage}</span>}
+                        </div>
+                      </div>
                     ))}
                   </div>
-                  {hasRiskFlag && (
-                    <div style={{ marginTop: 10, background: "rgba(255,122,122,0.14)", border: "1px solid rgba(255,122,122,0.45)", borderRadius: 10, padding: "8px 10px", color: "#FFB7B7", fontSize: 12, fontWeight: 700 }}>
-                      Partner risk identified – validate capability and commitment before progressing.
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
 
-            <div style={{ marginTop: 14, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 14, padding: 18 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(54,198,255,0.75)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
-                Scoring Framework
+            <div style={{ marginTop: 16, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 18, padding: 20 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 14, alignItems: "start", flexWrap: "wrap", marginBottom: 16 }}>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(54,198,255,0.75)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 8 }}>
+                    Scoring Framework
+                  </div>
+                  <p style={{ fontSize: 12.5, color: "#8EA6BF", lineHeight: 1.7, maxWidth: 760 }}>
+                    Reframed as a more visual score builder so each category feels self-contained, easier to scan, and more deliberate to complete.
+                  </p>
+                </div>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  {[
+                    ["Turnover", evaluationScore.breakdown.turnoverScore, 10],
+                    ["Employees", evaluationScore.breakdown.employeeScore, 10],
+                    ["HQ", evaluationScore.breakdown.hqScore, 10],
+                    ["Services", evaluationScore.breakdown.serviceAreaScore, 72],
+                    ["Industries", evaluationScore.breakdown.industryScore, 111],
+                  ].map(([label, value, max]) => (
+                    <div key={label} style={{ minWidth: 104, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(54,198,255,0.14)", borderRadius: 12, padding: "10px 12px" }}>
+                      <div style={{ fontSize: 10.5, color: "#7E97B4", textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</div>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: 4 }}>
+                        <strong style={{ color: "#D9ECFF", fontSize: 14 }}>{value}</strong>
+                        <span style={{ fontSize: 11, color: "#67D8FF" }}>/{max}</span>
+                      </div>
+                      <div style={{ height: 6, marginTop: 8, borderRadius: 999, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+                        <span style={{ display: "block", height: "100%", width: `${Math.min(100, Math.max(0, Number(value) / Number(max) * 100))}%`, background: "linear-gradient(90deg,#36C6FF,#6FD9AE)" }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 10 }}>
-                {[
-                  {
-                    title: "Company Turnover",
-                    value: evaluationForm.companyTurnover,
-                    onChange: (value) => setDetailField("companyTurnover", value),
-                    options: IPP_TURNOVER_OPTIONS,
-                  },
-                  {
-                    title: "Number of Employees",
-                    value: evaluationForm.employeeBand,
-                    onChange: (value) => setDetailField("employeeBand", value),
-                    options: IPP_EMPLOYEE_OPTIONS,
-                  },
-                  {
-                    title: "HQ Location",
-                    value: evaluationForm.hqLocation,
-                    onChange: (value) => setDetailField("hqLocation", value),
-                    options: IPP_HQ_OPTIONS,
-                  },
-                ].map((section) => (
-                  <div key={section.title} style={{ background: "rgba(54,198,255,0.06)", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 12, padding: 12 }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 800, color: "#C9E9FF", marginBottom: 8 }}>{section.title}</div>
-                    <div style={{ display: "grid", gap: 8 }}>
-                      {section.options.map((option) => (
-                        <label key={option.id} style={{ display: "flex", gap: 8, alignItems: "center", color: "#D9ECFF", fontSize: 12.5 }}>
-                          <input type="radio" checked={section.value === option.id} onChange={() => section.onChange(option.id)} />
-                          <span>{option.label}</span>
-                          <span style={{ marginLeft: "auto", color: "#67D8FF", fontWeight: 800 }}>{option.score}</span>
-                        </label>
-                      ))}
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 14 }}>
+                {scoringFrameworkSections.map((section) => (
+                  <div key={section.title} style={{ background: "linear-gradient(180deg,rgba(54,198,255,0.06),rgba(6,15,28,0.34))", border: "1px solid rgba(54,198,255,0.18)", borderRadius: 16, padding: 14 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "start", marginBottom: 10 }}>
+                      <div>
+                        <div style={{ fontSize: 10.5, color: "#67D8FF", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 800, marginBottom: 6 }}>{section.accent}</div>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: "#D9ECFF" }}>{section.title}</div>
+                      </div>
+                      <div style={{ display: "grid", justifyItems: "end", gap: 4 }}>
+                        <span style={{ fontSize: 10.5, color: "#8EA6BF" }}>Selected</span>
+                        <strong style={{ color: "#C9E9FF", fontSize: 13 }}>{section.selectedCount}</strong>
+                      </div>
+                    </div>
+                    <p style={{ fontSize: 12, color: "#8EA6BF", lineHeight: 1.65, marginBottom: 12 }}>{section.description}</p>
+                    <div style={{ display: "grid", gap: 8, maxHeight: section.scrollable ? 300 : undefined, overflowY: section.scrollable ? "auto" : undefined, paddingRight: section.scrollable ? 4 : 0 }}>
+                      {section.options.map((option) => {
+                        const checked = section.selectionType === "radio" ? section.value === option.id : section.value.includes(option.id);
+                        return (
+                          <label
+                            key={option.id}
+                            style={{
+                              display: "flex",
+                              gap: 10,
+                              alignItems: "center",
+                              padding: "10px 12px",
+                              borderRadius: 12,
+                              border: checked ? "1px solid rgba(103,216,255,0.45)" : "1px solid rgba(54,198,255,0.14)",
+                              background: checked ? "rgba(54,198,255,0.12)" : "rgba(255,255,255,0.025)",
+                              color: checked ? "#F2FBFF" : "#D9ECFF",
+                              fontSize: 12.5,
+                              cursor: "pointer",
+                            }}
+                          >
+                            <input
+                              type={section.selectionType}
+                              checked={checked}
+                              onChange={() => section.onChange(option.id)}
+                            />
+                            <span style={{ flex: 1 }}>{option.label}</span>
+                            <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 36, padding: "4px 8px", borderRadius: 999, background: checked ? "rgba(111,217,174,0.18)" : "rgba(54,198,255,0.08)", color: checked ? "#9CF0C6" : "#67D8FF", fontWeight: 800 }}>
+                              {option.score}
+                            </span>
+                          </label>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}
-                <div style={{ background: "rgba(54,198,255,0.06)", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 12, padding: 12 }}>
-                  <div style={{ fontSize: 12.5, fontWeight: 800, color: "#C9E9FF", marginBottom: 8 }}>Service Areas</div>
-                  <div style={{ display: "grid", gap: 8 }}>
-                    {IPP_SERVICE_AREAS.map((option) => (
-                      <label key={option.id} style={{ display: "flex", gap: 8, alignItems: "center", color: "#D9ECFF", fontSize: 12.5 }}>
-                        <input type="checkbox" checked={evaluationForm.serviceAreas.includes(option.id)} onChange={() => toggleSelection("serviceAreas", option.id)} />
-                        <span>{option.label}</span>
-                        <span style={{ marginLeft: "auto", color: "#67D8FF", fontWeight: 800 }}>{option.score}</span>
-                      </label>
-                    ))}
+
+                <div style={{ background: "linear-gradient(180deg,rgba(54,198,255,0.06),rgba(6,15,28,0.34))", border: "1px solid rgba(54,198,255,0.18)", borderRadius: 16, padding: 14 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "start", marginBottom: 10 }}>
+                    <div>
+                      <div style={{ fontSize: 10.5, color: "#67D8FF", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 800, marginBottom: 6 }}>Context</div>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: "#D9ECFF" }}>Vendor Relationships</div>
+                    </div>
+                    <div style={{ display: "grid", justifyItems: "end", gap: 4 }}>
+                      <span style={{ fontSize: 10.5, color: "#8EA6BF" }}>Matched</span>
+                      <strong style={{ color: "#C9E9FF", fontSize: 13 }}>{evaluationScore.breakdown.vendorCount}</strong>
+                    </div>
                   </div>
-                </div>
-                <div style={{ background: "rgba(54,198,255,0.06)", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 12, padding: 12 }}>
-                  <div style={{ fontSize: 12.5, fontWeight: 800, color: "#C9E9FF", marginBottom: 8 }}>Industries</div>
-                  <div style={{ display: "grid", gap: 8, maxHeight: 280, overflowY: "auto", paddingRight: 4 }}>
-                    {IPP_INDUSTRIES.map((option) => (
-                      <label key={option.id} style={{ display: "flex", gap: 8, alignItems: "center", color: "#D9ECFF", fontSize: 12.5 }}>
-                        <input type="checkbox" checked={evaluationForm.industries.includes(option.id)} onChange={() => toggleSelection("industries", option.id)} />
-                        <span>{option.label}</span>
-                        <span style={{ marginLeft: "auto", color: "#67D8FF", fontWeight: 800 }}>{option.score}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                <div style={{ background: "rgba(54,198,255,0.06)", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 12, padding: 12 }}>
-                  <div style={{ fontSize: 12.5, fontWeight: 800, color: "#C9E9FF", marginBottom: 8 }}>Vendor Relationships</div>
-                  <p style={{ fontSize: 12, color: "#8EA6BF", lineHeight: 1.65, marginBottom: 10 }}>
-                    Vendor matches are recorded for context and saved with the evaluation. No score was applied because the internal source list did not include vendor weightings.
+                  <p style={{ fontSize: 12, color: "#8EA6BF", lineHeight: 1.65, marginBottom: 12 }}>
+                    Keep this section as contextual intelligence. It surfaces channel overlap without distorting the score until formal vendor weighting is agreed.
                   </p>
-                  <div style={{ display: "grid", gap: 8, maxHeight: 280, overflowY: "auto", paddingRight: 4 }}>
-                    {IPP_VENDOR_OPTIONS.map((vendor) => (
-                      <label key={vendor} style={{ display: "flex", gap: 8, alignItems: "center", color: "#D9ECFF", fontSize: 12.5 }}>
-                        <input type="checkbox" checked={evaluationForm.vendorRelationships.includes(vendor)} onChange={() => toggleSelection("vendorRelationships", vendor)} />
-                        <span>{vendor}</span>
-                      </label>
-                    ))}
+                  <div style={{ display: "grid", gap: 8, maxHeight: 300, overflowY: "auto", paddingRight: 4 }}>
+                    {IPP_VENDOR_OPTIONS.map((vendor) => {
+                      const checked = evaluationForm.vendorRelationships.includes(vendor);
+                      return (
+                        <label
+                          key={vendor}
+                          style={{
+                            display: "flex",
+                            gap: 10,
+                            alignItems: "center",
+                            padding: "10px 12px",
+                            borderRadius: 12,
+                            border: checked ? "1px solid rgba(103,216,255,0.45)" : "1px solid rgba(54,198,255,0.14)",
+                            background: checked ? "rgba(54,198,255,0.12)" : "rgba(255,255,255,0.025)",
+                            color: checked ? "#F2FBFF" : "#D9ECFF",
+                            fontSize: 12.5,
+                            cursor: "pointer",
+                          }}
+                        >
+                          <input type="checkbox" checked={checked} onChange={() => toggleSelection("vendorRelationships", vendor)} />
+                          <span style={{ flex: 1 }}>{vendor}</span>
+                          <span style={{ fontSize: 10.5, color: checked ? "#67D8FF" : "#7E97B4", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                            Context
+                          </span>
+                        </label>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
 
-              <div style={{ marginTop: 16, display: "flex", justifyContent: "space-between", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+              <div style={{ marginTop: 18, display: "flex", justifyContent: "space-between", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
                 <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                   {[
-                    ["Turnover", evaluationScore.breakdown.turnoverScore],
-                    ["Employees", evaluationScore.breakdown.employeeScore],
-                    ["HQ", evaluationScore.breakdown.hqScore],
-                    ["Services", evaluationScore.breakdown.serviceAreaScore],
-                    ["Industries", evaluationScore.breakdown.industryScore],
-                  ].map(([label, value]) => (
-                    <div key={label} style={{ display: "grid", gap: 4, minWidth: 90 }}>
+                    ["Turnover", evaluationScore.breakdown.turnoverScore, 10],
+                    ["Employees", evaluationScore.breakdown.employeeScore, 10],
+                    ["HQ", evaluationScore.breakdown.hqScore, 10],
+                    ["Services", evaluationScore.breakdown.serviceAreaScore, 72],
+                    ["Industries", evaluationScore.breakdown.industryScore, 111],
+                  ].map(([label, value, max]) => (
+                    <div key={label} style={{ display: "grid", gap: 4, minWidth: 110 }}>
                       <span style={{ fontSize: 10.5, color: "#8EA6BF" }}>{label}</span>
                       <div style={{ height: 6, borderRadius: 999, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
-                        <span style={{ display: "block", height: "100%", width: `${Math.min(100, Math.max(0, Number(value) / 30 * 100))}%`, background: "linear-gradient(90deg,#36C6FF,#6FD9AE)" }} />
+                        <span style={{ display: "block", height: "100%", width: `${Math.min(100, Math.max(0, Number(value) / Number(max) * 100))}%`, background: "linear-gradient(90deg,#36C6FF,#6FD9AE)" }} />
                       </div>
                     </div>
                   ))}
@@ -7898,13 +8081,12 @@ function PartnerProgramPage() {
                 <button
                   type="button"
                   onClick={handleSaveEvaluation}
-                  style={{ background: "linear-gradient(135deg,#36C6FF,#2C9DDF)", border: "1px solid rgba(54,198,255,0.5)", color: "#041426", borderRadius: 10, fontWeight: 800, fontSize: 13, padding: "10px 16px", cursor: "pointer" }}
+                  style={{ background: "linear-gradient(135deg,#36C6FF,#2C9DDF)", border: "1px solid rgba(54,198,255,0.5)", color: "#041426", borderRadius: 10, fontWeight: 800, fontSize: 13, padding: "10px 16px", cursor: "pointer", boxShadow: "0 10px 24px rgba(44,157,223,0.24)" }}
                 >
                   Save Evaluation
                 </button>
               </div>
             </div>
-
             <div style={{ marginTop: 16, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 14, padding: 18 }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(54,198,255,0.75)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
                 Saved Evaluations
