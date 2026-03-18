@@ -4848,6 +4848,7 @@ function ProspectToolPage() {
     { key: 'displayName', label: 'Company', essential: true },
     { key: 'idealPartnerScore', label: 'Score', essential: true },
     { key: 'partnerTierName', label: 'Tier', essential: true },
+    { key: 'companyClassification', label: 'Company Class' },
     { key: 'channel_role', label: 'Role', essential: true },
     { key: 'channel_segment', label: 'Segment', essential: true },
     { key: 'industry', label: 'Industry' },
@@ -5362,7 +5363,7 @@ function ProspectToolPage() {
       </div>
     </div>}
 
-    {sorted.length === 0 ? <div className="ds-card prospect-state prospect-state--empty" role="status" aria-live="polite"><strong>No results found</strong><p>Try broadening filters or clearing search terms to discover more partners.</p><IconButton icon="reset" label="Reset filters to show more results" onClick={resetFilters} /></div> : view === 'table' ? <div className="prospect-table-wrap"><table className="prospect-table prospect-table--search"><thead><tr>{visibleColumnDefs.map((h) => <th key={h.key} data-col={h.key} className={h.key === 'actions' ? 'cell-actions-head' : ''}>{h.label}</th>)}</tr></thead><tbody>{pageRows.map((r, i) => <tr key={r.id} data-prospect-row-id={r.id} className={selectedRowId === r.id ? 'prospect-row-selected' : ''} onClick={() => setSelectedRowId(r.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedRowId(r.id); } }} tabIndex={0} style={{ cursor: 'pointer' }} aria-selected={selectedRowId === r.id}>{visibleColumnDefs.map((col) => <React.Fragment key={`${r.id}-${col.key}`}>{renderCell(r, col.key, i)}</React.Fragment>)}</tr>)}</tbody></table></div> : <div className="prospect-cards">{pageRows.map((r) => <div className={`prospect-card ${selectedRowId === r.id ? 'prospect-card-selected' : ''}`.trim()} key={r.id} onClick={() => setSelectedRowId(r.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedRowId(r.id); } }} tabIndex={0}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}><strong>{r.displayName}</strong><div style={{ display: 'flex', gap: 6, alignItems: 'center' }}><span className="score-badge">{r.idealPartnerScore}</span><span className={getTierClass(r)}>{r.partnerTierName || 'Low Priority'}</span></div></div><div>{r.industry || '—'}</div><div>{r.channel_role || '—'} / {r.channel_segment || '—'}</div><div>{r.city || '—'}, {r.country || '—'}</div><div>{r.displayRevenue} · {r.displayEmployees}</div><div className="prospect-card-secondary">{r.keywords || '—'}</div><div style={{ display: 'flex', gap: 8 }}>{r.website && <a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>}{r.linkedin && <a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}</div></div>)}</div>}
+    {sorted.length === 0 ? <div className="ds-card prospect-state prospect-state--empty" role="status" aria-live="polite"><strong>No results found</strong><p>Try broadening filters or clearing search terms to discover more partners.</p><IconButton icon="reset" label="Reset filters to show more results" onClick={resetFilters} /></div> : view === 'table' ? <div className="prospect-table-wrap"><table className="prospect-table prospect-table--search"><thead><tr>{visibleColumnDefs.map((h) => <th key={h.key} data-col={h.key} className={h.key === 'actions' ? 'cell-actions-head' : ''}>{h.label}</th>)}</tr></thead><tbody>{pageRows.map((r, i) => <tr key={r.id} data-prospect-row-id={r.id} className={selectedRowId === r.id ? 'prospect-row-selected' : ''} onClick={() => setSelectedRowId(r.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedRowId(r.id); } }} tabIndex={0} style={{ cursor: 'pointer' }} aria-selected={selectedRowId === r.id}>{visibleColumnDefs.map((col) => <React.Fragment key={`${r.id}-${col.key}`}>{renderCell(r, col.key, i)}</React.Fragment>)}</tr>)}</tbody></table></div> : <div className="prospect-cards">{pageRows.map((r) => <div className={`prospect-card ${selectedRowId === r.id ? 'prospect-card-selected' : ''}`.trim()} key={r.id} onClick={() => setSelectedRowId(r.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedRowId(r.id); } }} tabIndex={0}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}><strong>{r.displayName}</strong><div style={{ display: 'flex', gap: 6, alignItems: 'center' }}><span className="score-badge">{r.idealPartnerScore}</span><span className={getTierClass(r)}>{r.partnerTierName || 'Low Priority'}</span></div></div><div>{r.industry || '—'}</div><div>{r.channel_role || '—'} / {r.channel_segment || '—'}</div><div>{r.companyClassification || 'Unclassified'} · {r.city || '—'}, {r.country || '—'}</div><div>{r.displayRevenue} · {r.displayEmployees}</div><div className="prospect-card-secondary">{r.keywords || '—'}</div><div style={{ display: 'flex', gap: 8 }}>{r.website && <a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>}{r.linkedin && <a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}</div></div>)}</div>}
 
     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
       <IconButton icon="prev" label="Previous page" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} />
@@ -5456,15 +5457,16 @@ function ProspectToolPage() {
           {drawerTab === 'details' && <>
             <div className="prospect-summary-strip">
               <div><span>Tier</span><strong>{selected.partnerTierName || 'Low Priority'}</strong></div>
+              <div><span>Company Class</span><strong>{selected.companyClassification || 'Unclassified'}</strong></div>
               <div><span>Status</span><strong>{selected.trading_status || '—'}</strong></div>
               <div><span>Region</span><strong>{selected.country || '—'}</strong></div>
               <div><span>Type</span><strong>{selected.channel_role || '—'}</strong></div>
             </div>
 
-            <div className="panel-card"><h4>Company details</h4><p>Industry: {selected.industry || '—'}</p><p>Company Type: {selected.category || '—'}</p><p>Employees: {selected.displayEmployees}</p><p>Revenue: {selected.displayRevenue}</p><p>Location: {selected.displayLocation} {selected.postcode}</p></div>
+            <div className="panel-card"><h4>Company details</h4><p>Industry: {selected.industry || '—'}</p><p>Company Type: {selected.category || '—'}</p><p>Company Classification: {selected.companyClassification || 'Unclassified'}</p><p>Employees: {selected.displayEmployees}</p><p>Revenue: {selected.displayRevenue}</p><p>Location: {selected.displayLocation} {selected.postcode}</p></div>
             <div className="panel-card"><h4>Commercial profile</h4><p>Channel Role: {selected.channel_role || '—'}</p><p>Channel Segment: {selected.channel_segment || '—'}</p><p>Adopter Profile: {selected.adopter_profile || '—'}</p><p>Keywords: {selected.keywords || '—'}</p></div>
 
-            <div className="panel-card"><h4>Technology signals</h4><div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{(selected.tech_stack || '').split(/[,;|]/).map((t) => t.trim()).filter(Boolean).map((tech) => <span key={tech} className="tech-tag">{tech}</span>)}{!selected.tech_stack && <span className="tech-tag">No data</span>}</div></div>
+            <div className="panel-card"><h4>Technology signals</h4><div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{(selected.tech_stack || '').split(/[,;|]/).map((t) => t.trim()).filter(Boolean).map((tech) => <span key={tech} className="tech-tag">{tech}</span>)}{!selected.tech_stack && <span className="tech-tag">No data</span>}</div><p style={{ marginTop: 10 }}>Matched vendors: {selected.matchedVendors?.join(', ') || 'None detected'}</p></div>
 
             <div className="panel-card"><h4>Contacts</h4>{selected.contacts.length ? selected.contacts.map((c, idx) => <div key={`${c.name}-${idx}`} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}><span>{c.name || c.email || '—'}</span><span className="tech-tag">{c.role || 'Role not set'}</span></div>) : <p>—</p>}</div>
 
@@ -6682,92 +6684,73 @@ const IPP_SCORING_LEGACY_STORAGE_KEYS = [
   "ipi_partner_profile_scoring_evaluations_v1",
 ];
 
-const IPP_SCORING_CATEGORIES = [
-  {
-    id: "customerBaseAlignment",
-    title: "A. Customer Base Alignment",
-    description:
-      "How well the partner’s existing customers match the IP Integration target market.",
-    helper:
-      "1 = Mostly SMB/general IT customers · 2 = Limited CX relevance · 3 = Some mid-market or UC customers · 4 = Strong mid-market CX/UC customer base · 5 = Established CX/contact centre customer base",
-  },
-  {
-    id: "portfolioSynergy",
-    title: "B. Portfolio Synergy",
-    description:
-      "How well the partner’s current portfolio aligns with and complements IP Integration solutions.",
-    helper:
-      "1 = No meaningful alignment · 2 = General IT reseller only · 3 = Some UC or networking relevance · 4 = Strong UC/contact centre relevance · 5 = Excellent fit with complementary CX, UC, CC or service portfolio",
-  },
-  {
-    id: "salesCapability",
-    title: "C. Sales Capability",
-    description:
-      "Ability to create pipeline and sell value-led customer experience solutions.",
-    helper:
-      "1 = No specialist sales capability · 2 = Reactive sales model · 3 = Some consultative sales ability · 4 = Dedicated sales specialists · 5 = Proven CX / solution-selling sales team",
-  },
-  {
-    id: "technicalCapability",
-    title: "D. Technical Capability",
-    description: "Ability to deploy, support and grow customer solutions.",
-    helper:
-      "1 = No technical delivery resource · 2 = Basic IT support only · 3 = UC engineering capability · 4 = Contact centre or complex communications capability · 5 = Strong implementation and support capability across relevant areas",
-  },
-  {
-    id: "strategicAlignment",
-    title: "E. Strategic Alignment",
-    description:
-      "How important customer experience, cloud communications or adjacent services are to the partner’s growth strategy.",
-    helper:
-      "1 = Not strategic · 2 = Opportunistic only · 3 = Moderate interest · 4 = Active growth area · 5 = Core strategic focus",
-  },
-  {
-    id: "growthPotential",
-    title: "F. Growth Potential",
-    description:
-      "Estimated revenue potential and expansion opportunity for IP Integration.",
-    helper:
-      "1 = Less than £50k potential · 2 = £50k–£100k · 3 = £100k–£250k · 4 = £250k–£500k · 5 = £500k+ potential",
-  },
+const IPP_TURNOVER_OPTIONS = [
+  { id: "under_10m", label: "Under £10M", score: 6 },
+  { id: "between_10m_50m", label: "£10M – £50M", score: 10 },
+  { id: "over_50m", label: "Over £50M", score: 3 },
+];
+
+const IPP_EMPLOYEE_OPTIONS = [
+  { id: "sub_50", label: "Sub 50", score: 6 },
+  { id: "between_50_500", label: "50 – 500", score: 10 },
+  { id: "over_500", label: "Over 500", score: 3 },
+];
+
+const IPP_HQ_OPTIONS = [
+  { id: "uk", label: "UK", score: 10 },
+  { id: "outside_uk", label: "Outside UK", score: 3 },
+];
+
+const IPP_SERVICE_AREAS = [
+  { id: "cloud", label: "Cloud", score: 10 },
+  { id: "uc", label: "UC", score: 10 },
+  { id: "cc", label: "CC", score: 2 },
+  { id: "managed_service", label: "Managed Service", score: 30 },
+  { id: "collaboration", label: "Collaboration", score: 10 },
+  { id: "cyber_security", label: "Cyber Security", score: 10 },
+];
+
+const IPP_INDUSTRIES = [
+  { id: "insurance", label: "Insurance", score: 10 },
+  { id: "retail", label: "Retail", score: 10 },
+  { id: "bpo", label: "BPO", score: 10 },
+  { id: "utilities", label: "Utilities", score: 10 },
+  { id: "education", label: "Education", score: 5 },
+  { id: "hospitality", label: "Hospitality", score: 8 },
+  { id: "legal", label: "Legal", score: 8 },
+  { id: "manufacturing", label: "Manufacturing", score: 3 },
+  { id: "not_for_profit", label: "Not-for-Profit", score: 5 },
+  { id: "travel", label: "Travel", score: 10 },
+  { id: "technology", label: "Technology", score: 9 },
+  { id: "public_sector", label: "Public Sector", score: 10 },
+  { id: "finance_professional_services", label: "Finance / Professional Services", score: 10 },
+  { id: "healthcare", label: "Healthcare", score: 5 },
+];
+
+const IPP_VENDOR_OPTIONS = [
+  "Avaya", "Mitel", "Cisco", "NICE CXOne", "Five9", "Genesys", "Content Guru",
+  "Dixa", "Dialpad", "Puzzel", "8x8", "Microsoft", "Calabrio", "Verint",
+  "Swyx", "RingCentral", "Gamma Horizon", "Zoom",
 ];
 
 const getIppClassification = (score) => {
-  if (score >= 25) {
+  if (score > 100) {
     return {
-      label: "Strategic Partner",
+      label: "High Priority",
       color: "#6FD9AE",
       badgeBg: "rgba(111,217,174,0.14)",
       badgeBorder: "rgba(111,217,174,0.38)",
       interpretation:
-        "Strong alignment to the Ideal Partner Profile. Prioritise recruitment and joint planning.",
+        "Strong alignment to the Ideal Partner Profile based on IP Integration's internal scoring model.",
     };
   }
-  if (score >= 20) {
+  if (score >= 70) {
     return {
-      label: "High Potential",
+      label: "Medium Priority",
       color: "#67D8FF",
       badgeBg: "rgba(103,216,255,0.14)",
       badgeBorder: "rgba(103,216,255,0.38)",
-      interpretation: "Good potential, but some capability gaps need validating.",
-    };
-  }
-  if (score >= 15) {
-    return {
-      label: "Developing Partner",
-      color: "#F3C874",
-      badgeBg: "rgba(243,200,116,0.14)",
-      badgeBorder: "rgba(243,200,116,0.34)",
-      interpretation: "Moderate fit. Suitable for selective engagement.",
-    };
-  }
-  if (score >= 10) {
-    return {
-      label: "Opportunistic Partner",
-      color: "#AEB9C8",
-      badgeBg: "rgba(174,185,200,0.16)",
-      badgeBorder: "rgba(174,185,200,0.32)",
-      interpretation: "Moderate fit. Suitable for selective engagement.",
+      interpretation: "Good fit with meaningful commercial potential, but not yet in the highest-priority band.",
     };
   }
   return {
@@ -6775,7 +6758,42 @@ const getIppClassification = (score) => {
     color: "#FF7A7A",
     badgeBg: "rgba(255,122,122,0.14)",
     badgeBorder: "rgba(255,122,122,0.35)",
-    interpretation: "Low fit against current reseller priorities.",
+    interpretation: "Below the current threshold for medium-priority recruitment focus.",
+  };
+};
+
+const getIppCompanyClassification = (annualRevenue, employeeCount) => {
+  const revenue = Number(annualRevenue);
+  const employees = Number(employeeCount);
+  const hasRevenue = Number.isFinite(revenue) && revenue > 0;
+  const hasEmployees = Number.isFinite(employees) && employees > 0;
+  if ((hasRevenue && revenue > 80000000) || (hasEmployees && employees > 400)) return "Enterprise";
+  if ((hasRevenue && revenue >= 20000000 && revenue <= 80000000) || (hasEmployees && employees >= 100 && employees <= 400)) return "Mid Market";
+  if ((hasRevenue && revenue < 20000000) || (hasEmployees && employees >= 10 && employees <= 99)) return "SMB";
+  return "Unclassified";
+};
+
+const calculateIppEvaluationScore = (evaluation) => {
+  const turnoverScore = IPP_TURNOVER_OPTIONS.find((option) => option.id === evaluation.companyTurnover)?.score || 0;
+  const employeeScore = IPP_EMPLOYEE_OPTIONS.find((option) => option.id === evaluation.employeeBand)?.score || 0;
+  const hqScore = IPP_HQ_OPTIONS.find((option) => option.id === evaluation.hqLocation)?.score || 0;
+  const serviceAreaScore = (evaluation.serviceAreas || []).reduce((sum, item) => sum + (IPP_SERVICE_AREAS.find((option) => option.id === item)?.score || 0), 0);
+  const industryScore = (evaluation.industries || []).reduce((sum, item) => sum + (IPP_INDUSTRIES.find((option) => option.id === item)?.score || 0), 0);
+  const matchedVendors = IPP_VENDOR_OPTIONS.filter((vendor) => (evaluation.vendorRelationships || []).includes(vendor));
+  const totalScore = turnoverScore + employeeScore + hqScore + serviceAreaScore + industryScore;
+  return {
+    totalScore,
+    classification: getIppClassification(totalScore),
+    companyClassification: getIppCompanyClassification(evaluation.annualRevenue, evaluation.employeeCount),
+    breakdown: {
+      turnoverScore,
+      employeeScore,
+      hqScore,
+      serviceAreaScore,
+      industryScore,
+      vendorCount: matchedVendors.length,
+      matchedVendors,
+    },
   };
 };
 
@@ -6788,9 +6806,15 @@ function PartnerProgramPage() {
     website: "",
     primaryContact: "",
     region: "",
-    existingVendorRelationships: "",
+    annualRevenue: "",
+    employeeCount: "",
+    companyTurnover: "between_10m_50m",
+    employeeBand: "between_50_500",
+    hqLocation: "uk",
+    serviceAreas: [],
+    industries: [],
+    vendorRelationships: [],
     notes: "",
-    scores: Object.fromEntries(IPP_SCORING_CATEGORIES.map((cat) => [cat.id, 3])),
     risks: {
       competitorCommitment: false,
       limitedTechnicalResource: false,
@@ -6830,21 +6854,25 @@ function PartnerProgramPage() {
     );
   }, [savedEvaluations, hasLoadedSavedEvaluations]);
 
-  const totalScore = IPP_SCORING_CATEGORIES.reduce(
-    (sum, category) => sum + Number(evaluationForm.scores[category.id] || 0),
-    0,
+  const evaluationScore = React.useMemo(
+    () => calculateIppEvaluationScore(evaluationForm),
+    [evaluationForm],
   );
-  const classification = getIppClassification(totalScore);
+  const totalScore = evaluationScore.totalScore;
+  const classification = evaluationScore.classification;
+  const companyClassification = evaluationScore.companyClassification;
   const hasRiskFlag = Object.values(evaluationForm.risks).some(Boolean);
 
   const setDetailField = (field, value) => {
     setEvaluationForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const setCategoryScore = (categoryId, value) => {
+  const toggleSelection = (field, value) => {
     setEvaluationForm((prev) => ({
       ...prev,
-      scores: { ...prev.scores, [categoryId]: Number(value) },
+      [field]: prev[field]?.includes(value)
+        ? prev[field].filter((item) => item !== value)
+        : [...(prev[field] || []), value],
     }));
   };
 
@@ -6864,6 +6892,8 @@ function PartnerProgramPage() {
       classification: classification.label,
       classificationColor: classification.color,
       interpretation: classification.interpretation,
+      companyClassification,
+      scoreBreakdown: evaluationScore.breakdown,
       dateEvaluated: evaluationForm.id
         ? evaluationForm.dateEvaluated || nowIso
         : nowIso,
@@ -6887,11 +6917,15 @@ function PartnerProgramPage() {
       website: record.website || "",
       primaryContact: record.primaryContact || "",
       region: record.region || "",
-      existingVendorRelationships: record.existingVendorRelationships || "",
+      annualRevenue: record.annualRevenue || "",
+      employeeCount: record.employeeCount || "",
+      companyTurnover: record.companyTurnover || "between_10m_50m",
+      employeeBand: record.employeeBand || "between_50_500",
+      hqLocation: record.hqLocation || "uk",
+      serviceAreas: Array.isArray(record.serviceAreas) ? record.serviceAreas : [],
+      industries: Array.isArray(record.industries) ? record.industries : [],
+      vendorRelationships: Array.isArray(record.vendorRelationships) ? record.vendorRelationships : [],
       notes: record.notes || "",
-      scores: Object.fromEntries(
-        IPP_SCORING_CATEGORIES.map((cat) => [cat.id, Number(record.scores?.[cat.id] || 1)]),
-      ),
       risks: {
         competitorCommitment: Boolean(record.risks?.competitorCommitment),
         limitedTechnicalResource: Boolean(record.risks?.limitedTechnicalResource),
@@ -7675,7 +7709,6 @@ function PartnerProgramPage() {
                     ["website", "Website"],
                     ["primaryContact", "Primary Contact"],
                     ["region", "Region"],
-                    ["existingVendorRelationships", "Existing Vendor Relationships"],
                   ].map(([field, label]) => (
                     <label key={field} style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                       <span style={{ fontSize: 11.5, color: "#A3BCD6", fontWeight: 700 }}>{label}</span>
@@ -7686,6 +7719,26 @@ function PartnerProgramPage() {
                       />
                     </label>
                   ))}
+                  <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                    <span style={{ fontSize: 11.5, color: "#A3BCD6", fontWeight: 700 }}>Annual Revenue (£)</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={evaluationForm.annualRevenue}
+                      onChange={(e) => setDetailField("annualRevenue", e.target.value)}
+                      style={{ background: "rgba(9,20,36,0.7)", border: "1px solid rgba(54,198,255,0.24)", borderRadius: 10, color: "#D9ECFF", padding: "10px 12px", fontSize: 12.5 }}
+                    />
+                  </label>
+                  <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                    <span style={{ fontSize: 11.5, color: "#A3BCD6", fontWeight: 700 }}>Employee Count</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={evaluationForm.employeeCount}
+                      onChange={(e) => setDetailField("employeeCount", e.target.value)}
+                      style={{ background: "rgba(9,20,36,0.7)", border: "1px solid rgba(54,198,255,0.24)", borderRadius: 10, color: "#D9ECFF", padding: "10px 12px", fontSize: 12.5 }}
+                    />
+                  </label>
                   <label style={{ display: "flex", flexDirection: "column", gap: 5, gridColumn: "1 / -1" }}>
                     <span style={{ fontSize: 11.5, color: "#A3BCD6", fontWeight: 700 }}>Notes</span>
                     <textarea
@@ -7704,12 +7757,22 @@ function PartnerProgramPage() {
                     Score Summary
                   </div>
                   <div style={{ fontSize: 52, fontWeight: 900, lineHeight: 1, color: classification.color, fontFamily: "'Syne',sans-serif" }}>
-                    {totalScore}<span style={{ fontSize: 20, color: "#8EA6BF" }}>/30</span>
+                    {totalScore}
                   </div>
                   <div style={{ marginTop: 10, display: "inline-flex", padding: "6px 12px", borderRadius: 999, border: `1px solid ${classification.badgeBorder}`, background: classification.badgeBg, color: classification.color, fontSize: 12, fontWeight: 800 }}>
                     {classification.label}
                   </div>
                   <p style={{ marginTop: 12, fontSize: 12.5, color: "#A3BCD6", lineHeight: 1.7 }}>{classification.interpretation}</p>
+                  <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 8 }}>
+                    <div style={{ background: "rgba(54,198,255,0.06)", border: "1px solid rgba(54,198,255,0.18)", borderRadius: 10, padding: "10px 12px" }}>
+                      <div style={{ fontSize: 10.5, color: "#7E97B4", textTransform: "uppercase", letterSpacing: "0.08em" }}>Company Class</div>
+                      <strong style={{ color: "#D9ECFF", fontSize: 13 }}>{companyClassification}</strong>
+                    </div>
+                    <div style={{ background: "rgba(54,198,255,0.06)", border: "1px solid rgba(54,198,255,0.18)", borderRadius: 10, padding: "10px 12px" }}>
+                      <div style={{ fontSize: 10.5, color: "#7E97B4", textTransform: "uppercase", letterSpacing: "0.08em" }}>Matched Vendors</div>
+                      <strong style={{ color: "#D9ECFF", fontSize: 13 }}>{evaluationScore.breakdown.vendorCount}</strong>
+                    </div>
+                  </div>
                 </div>
 
                 <div style={{ background: "rgba(255,255,255,0.025)", border: `1px solid ${hasRiskFlag ? "rgba(255,122,122,0.5)" : "rgba(54,198,255,0.2)"}`, borderRadius: 14, padding: 18 }}>
@@ -7742,31 +7805,92 @@ function PartnerProgramPage() {
                 Scoring Framework
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 10 }}>
-                {IPP_SCORING_CATEGORIES.map((category) => (
-                  <div key={category.id} style={{ background: "rgba(54,198,255,0.06)", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 12, padding: 12 }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 800, color: "#C9E9FF", marginBottom: 6 }}>{category.title}</div>
-                    <p style={{ fontSize: 12, color: "#8EA6BF", lineHeight: 1.65, marginBottom: 8 }}>{category.description}</p>
-                    <select
-                      value={evaluationForm.scores[category.id]}
-                      onChange={(e) => setCategoryScore(category.id, e.target.value)}
-                      style={{ width: "100%", background: "rgba(9,20,36,0.82)", border: "1px solid rgba(54,198,255,0.28)", borderRadius: 10, color: "#E8F4FF", padding: "9px 10px", fontSize: 13, fontWeight: 700, marginBottom: 6 }}
-                    >
-                      {[1, 2, 3, 4, 5].map((value) => (
-                        <option key={value} value={value}>{value}</option>
+                {[
+                  {
+                    title: "Company Turnover",
+                    value: evaluationForm.companyTurnover,
+                    onChange: (value) => setDetailField("companyTurnover", value),
+                    options: IPP_TURNOVER_OPTIONS,
+                  },
+                  {
+                    title: "Number of Employees",
+                    value: evaluationForm.employeeBand,
+                    onChange: (value) => setDetailField("employeeBand", value),
+                    options: IPP_EMPLOYEE_OPTIONS,
+                  },
+                  {
+                    title: "HQ Location",
+                    value: evaluationForm.hqLocation,
+                    onChange: (value) => setDetailField("hqLocation", value),
+                    options: IPP_HQ_OPTIONS,
+                  },
+                ].map((section) => (
+                  <div key={section.title} style={{ background: "rgba(54,198,255,0.06)", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 12, padding: 12 }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 800, color: "#C9E9FF", marginBottom: 8 }}>{section.title}</div>
+                    <div style={{ display: "grid", gap: 8 }}>
+                      {section.options.map((option) => (
+                        <label key={option.id} style={{ display: "flex", gap: 8, alignItems: "center", color: "#D9ECFF", fontSize: 12.5 }}>
+                          <input type="radio" checked={section.value === option.id} onChange={() => section.onChange(option.id)} />
+                          <span>{option.label}</span>
+                          <span style={{ marginLeft: "auto", color: "#67D8FF", fontWeight: 800 }}>{option.score}</span>
+                        </label>
                       ))}
-                    </select>
-                    <div style={{ fontSize: 11, color: "#7E97B4", lineHeight: 1.55 }}>{category.helper}</div>
+                    </div>
                   </div>
                 ))}
+                <div style={{ background: "rgba(54,198,255,0.06)", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 12, padding: 12 }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 800, color: "#C9E9FF", marginBottom: 8 }}>Service Areas</div>
+                  <div style={{ display: "grid", gap: 8 }}>
+                    {IPP_SERVICE_AREAS.map((option) => (
+                      <label key={option.id} style={{ display: "flex", gap: 8, alignItems: "center", color: "#D9ECFF", fontSize: 12.5 }}>
+                        <input type="checkbox" checked={evaluationForm.serviceAreas.includes(option.id)} onChange={() => toggleSelection("serviceAreas", option.id)} />
+                        <span>{option.label}</span>
+                        <span style={{ marginLeft: "auto", color: "#67D8FF", fontWeight: 800 }}>{option.score}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ background: "rgba(54,198,255,0.06)", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 12, padding: 12 }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 800, color: "#C9E9FF", marginBottom: 8 }}>Industries</div>
+                  <div style={{ display: "grid", gap: 8, maxHeight: 280, overflowY: "auto", paddingRight: 4 }}>
+                    {IPP_INDUSTRIES.map((option) => (
+                      <label key={option.id} style={{ display: "flex", gap: 8, alignItems: "center", color: "#D9ECFF", fontSize: 12.5 }}>
+                        <input type="checkbox" checked={evaluationForm.industries.includes(option.id)} onChange={() => toggleSelection("industries", option.id)} />
+                        <span>{option.label}</span>
+                        <span style={{ marginLeft: "auto", color: "#67D8FF", fontWeight: 800 }}>{option.score}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ background: "rgba(54,198,255,0.06)", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 12, padding: 12 }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 800, color: "#C9E9FF", marginBottom: 8 }}>Vendor Relationships</div>
+                  <p style={{ fontSize: 12, color: "#8EA6BF", lineHeight: 1.65, marginBottom: 10 }}>
+                    Vendor matches are recorded for context and saved with the evaluation. No score was applied because the internal source list did not include vendor weightings.
+                  </p>
+                  <div style={{ display: "grid", gap: 8, maxHeight: 280, overflowY: "auto", paddingRight: 4 }}>
+                    {IPP_VENDOR_OPTIONS.map((vendor) => (
+                      <label key={vendor} style={{ display: "flex", gap: 8, alignItems: "center", color: "#D9ECFF", fontSize: 12.5 }}>
+                        <input type="checkbox" checked={evaluationForm.vendorRelationships.includes(vendor)} onChange={() => toggleSelection("vendorRelationships", vendor)} />
+                        <span>{vendor}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               <div style={{ marginTop: 16, display: "flex", justifyContent: "space-between", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  {IPP_SCORING_CATEGORIES.map((category) => (
-                    <div key={category.id} style={{ display: "grid", gap: 4, minWidth: 80 }}>
-                      <span style={{ fontSize: 10.5, color: "#8EA6BF" }}>{category.title.split('. ')[0]}</span>
+                <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                  {[
+                    ["Turnover", evaluationScore.breakdown.turnoverScore],
+                    ["Employees", evaluationScore.breakdown.employeeScore],
+                    ["HQ", evaluationScore.breakdown.hqScore],
+                    ["Services", evaluationScore.breakdown.serviceAreaScore],
+                    ["Industries", evaluationScore.breakdown.industryScore],
+                  ].map(([label, value]) => (
+                    <div key={label} style={{ display: "grid", gap: 4, minWidth: 90 }}>
+                      <span style={{ fontSize: 10.5, color: "#8EA6BF" }}>{label}</span>
                       <div style={{ height: 6, borderRadius: 999, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
-                        <span style={{ display: "block", height: "100%", width: `${(evaluationForm.scores[category.id] / 5) * 100}%`, background: "linear-gradient(90deg,#36C6FF,#6FD9AE)" }} />
+                        <span style={{ display: "block", height: "100%", width: `${Math.min(100, Math.max(0, Number(value) / 30 * 100))}%`, background: "linear-gradient(90deg,#36C6FF,#6FD9AE)" }} />
                       </div>
                     </div>
                   ))}
@@ -7789,7 +7913,7 @@ function PartnerProgramPage() {
                 <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 760 }}>
                   <thead>
                     <tr>
-                      {["Partner Name", "Region", "Total Score", "Classification", "Date Evaluated", "Notes", "Actions"].map((head) => (
+                      {["Partner Name", "Region", "Company Class", "Total Score", "Classification", "Date Evaluated", "Notes", "Actions"].map((head) => (
                         <th key={head} style={{ textAlign: "left", fontSize: 11, color: "#7E97B4", fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", borderBottom: "1px solid rgba(54,198,255,0.16)", padding: "0 8px 10px" }}>{head}</th>
                       ))}
                     </tr>
@@ -7797,14 +7921,15 @@ function PartnerProgramPage() {
                   <tbody>
                     {savedEvaluations.length === 0 ? (
                       <tr>
-                        <td colSpan={7} style={{ color: "#7E97B4", fontSize: 12.5, padding: "12px 8px" }}>No evaluations saved yet.</td>
+                        <td colSpan={8} style={{ color: "#7E97B4", fontSize: 12.5, padding: "12px 8px" }}>No evaluations saved yet.</td>
                       </tr>
                     ) : (
                       savedEvaluations.map((record) => (
                         <tr key={record.id}>
                           <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.05)", color: "#D5E9FB", fontSize: 12.5 }}>{record.partnerName || "—"}</td>
                           <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.05)", color: "#B4C8DD", fontSize: 12.5 }}>{record.region || "—"}</td>
-                          <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.05)", color: "#D5E9FB", fontSize: 12.5, fontWeight: 800 }}>{record.totalScore}/30</td>
+                          <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.05)", color: "#D5E9FB", fontSize: 12.5 }}>{record.companyClassification || "Unclassified"}</td>
+                          <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.05)", color: "#D5E9FB", fontSize: 12.5, fontWeight: 800 }}>{record.totalScore}</td>
                           <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}><span style={{ fontSize: 11.5, fontWeight: 800, color: record.classificationColor || "#AEB9C8" }}>{record.classification}</span></td>
                           <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.05)", color: "#B4C8DD", fontSize: 12.5 }}>{record.dateEvaluated ? new Date(record.dateEvaluated).toLocaleDateString() : "—"}</td>
                           <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.05)", color: "#B4C8DD", fontSize: 12.5 }}>{record.notes || "—"}</td>
