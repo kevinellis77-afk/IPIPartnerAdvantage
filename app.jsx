@@ -8310,759 +8310,537 @@ function PartnerProgramPage() {
 }
 
 function CommercialFrameworkPage() {
-  const hierarchySteps = [
+  const summaryCards = [
     {
-      title: "Reseller Master Agreement",
-      subtitle: "Single governing agreement",
+      title: "Current State",
+      badge: "Too Rigid",
+      tone: "warning",
+      points: [
+        "Single long reseller contract mixing legal, pricing and operating detail.",
+        "New products trigger rework across clauses, schedules and internal approvals.",
+        "Different partner routes to market create overlap and drafting confusion.",
+      ],
     },
     {
+      title: "Target State",
+      badge: "Modular Framework",
+      tone: "accent",
+      points: [
+        "Short master agreement for universal legal terms and governance.",
+        "Optional addendums and schedules switched on by model, product and delivery type.",
+        "Clear customer-facing document stack for each route to market.",
+      ],
+    },
+    {
+      title: "Key Principle",
+      badge: "One Core Agreement, Many Optional Schedules",
+      tone: "success",
+      points: [
+        "Negotiate the foundation once.",
+        "Scale the portfolio through modular attachments.",
+        "Separate legal, commercial and operational mechanics cleanly.",
+      ],
+    },
+  ];
+
+  const architectureLayers = [
+    {
+      key: "mpa",
+      short: "01",
+      title: "Master Partner Agreement",
+      badge: "Core layer",
+      description: "Stable legal spine covering appointment, IP, confidentiality, liability, term and core compliance obligations.",
+      detail: "Should be short, durable and product-agnostic so it can govern the entire partner relationship over time.",
+    },
+    {
+      key: "addendums",
+      short: "02",
+      title: "Partner Type Addendums",
+      badge: "Model-specific",
+      description: "Attach only the rights and responsibilities needed for reseller, MSP, white-label and referral routes to market.",
+      detail: "This prevents one agreement from becoming legally confused across different operating models.",
+    },
+    {
+      key: "products",
+      short: "03",
       title: "Product Schedules",
-      subtitle: "Solution-specific operating terms",
+      badge: "Portfolio layer",
+      description: "Define product scope, usage rules, service-specific legal obligations and third-party dependencies by product family.",
+      detail: "New solutions should be launched by issuing a new schedule rather than redrafting the full partner contract.",
     },
     {
-      title: "EULAs & Service Terms",
-      subtitle: "End-customer legal documentation",
+      key: "commercial",
+      short: "04",
+      title: "Commercial Schedule",
+      badge: "Pricing layer",
+      description: "Maintain pricing, discounts, rebates, charging mechanics and payment details outside the core legal agreement.",
+      detail: "Commercial updates should follow change-control rules without reopening the full master agreement.",
     },
     {
-      title: "Pricing Framework",
-      subtitle: "Commercial model and discounting",
+      key: "operations",
+      short: "05",
+      title: "Operational Schedules",
+      badge: "Delivery layer",
+      description: "Capture support, service levels, security, privacy, ordering and branding mechanics in operational schedules.",
+      detail: "This keeps delivery detail current without cluttering or destabilising the legal core.",
+    },
+    {
+      key: "customer",
+      short: "06",
+      title: "Customer Legal Documents",
+      badge: "External layer",
+      description: "Clarify which terms the customer accepts and whether the contract is with IPI, the partner or both depending on the model.",
+      detail: "The customer-facing stack must align cleanly with the selected partner route to market.",
     },
   ];
-  const scheduleCards = [
-    "Telephony Services Schedule",
-    "UCaaS & CCaaS Platform Schedule",
-    "AI & Automation Schedule",
-    "Secure Payments Schedule",
+
+  const masterAgreementRows = [
+    ["Appointment of partner", "Establishes the relationship and baseline authorisation to market, resell or refer IPI services."],
+    ["Definitions and interpretation", "Creates a clean drafting framework so addendums and schedules can plug into the same terminology."],
+    ["General rights to market and resell", "Sets the universal commercial permission before model-specific rights are added."],
+    ["Territory rules", "Applies geographic controls only where needed for channel strategy or regulatory reasons."],
+    ["Core IP ownership rules", "Preserves ownership of platform IP, documentation, data outputs and partner-created materials."],
+    ["Confidentiality", "Protects roadmaps, pricing, security detail and commercial information across the relationship."],
+    ["Data protection framework", "Sets the overarching privacy allocation, with detailed processing mechanics moved into the DPA."],
+    ["Compliance and anti-bribery", "Provides baseline legal and ethical obligations across all partner activity."],
+    ["General liability framework", "Defines the default risk allocation, caps and exclusions before product-specific nuance is added."],
+    ["Term and termination", "Governs contract duration, suspension and exit rights across the whole framework."],
+    ["Dispute resolution", "Introduces governing law, escalation and dispute process once for all attached modules."],
+    ["Assignment / change of control", "Manages transfer and ownership change scenarios consistently across the ecosystem."],
+    ["General boilerplate", "Captures notices, variation, precedence, force majeure and standard legal mechanics."],
+  ];
+
+  const addendumCards = [
+    {
+      title: "Reseller Addendum",
+      tag: "Sell-through model",
+      items: ["right to resell", "order placement", "invoicing model", "support responsibilities", "use of vendor brand"],
+    },
+    {
+      title: "Managed Service Provider (MSP) Addendum",
+      tag: "Managed outcome model",
+      items: ["right to wrap managed services around the platform", "admin / operational access rights", "support boundary model", "service responsibility split", "ability to bundle vendor services into partner managed offering"],
+    },
+    {
+      title: "White-Label Addendum",
+      tag: "Brand abstraction model",
+      items: ["branding rights", "use under partner brand", "domain / UI branding", "customer contract model", "disclosure requirements", "restrictions on brand removal or attribution where needed"],
+    },
+    {
+      title: "Referral Addendum",
+      tag: "Demand generation model",
+      items: ["referral rules", "commission model", "when a referral becomes a reseller", "non-circumvention / deal handling rules"],
+    },
+  ];
+
+  const productSchedules = [
+    "ElasticCX Schedule",
+    "Cloud PCI Schedule",
+    "UCX / UCaaS Schedule",
+    "AI Services Schedule",
+    "Integrations Schedule",
     "Managed Services Schedule",
-    "Professional Services Schedule",
   ];
-  const eulaExamples = [
-    "End User Licence Agreement",
-    "Acceptable Use Policy",
-    "Service Level Agreements",
-    "Data Processing Agreements",
+
+  const productScheduleContents = [
+    "product scope",
+    "licensing model",
+    "service-specific usage rules",
+    "service-specific legal obligations",
+    "any product-specific limitations",
+    "dependency on third-party platforms if relevant",
+    "product-specific customer documentation references",
   ];
-  const pricingItems = [
-    "Wholesale partner pricing",
-    "Partner tier discounts",
-    "Recommended resale pricing",
-    "Usage-based pricing where applicable",
+
+  const commercialRows = [
+    "list pricing",
+    "partner discounts",
+    "usage charging rules",
+    "billing frequency",
+    "payment terms",
+    "rebate mechanisms",
+    "deal registration uplift",
+    "professional services rates",
+    "training rates",
+    "support rates if chargeable",
+  ];
+
+  const operationalCards = [
+    {
+      title: "Support Schedule",
+      tag: "Run-state model",
+      items: ["L1 / L2 / L3 responsibilities", "support hours", "escalation rules"],
+    },
+    {
+      title: "Service Level Schedule",
+      tag: "Performance model",
+      items: ["uptime commitments", "service credits if applicable", "incident handling"],
+    },
+    {
+      title: "Security Schedule",
+      tag: "Control model",
+      items: ["technical and organisational measures", "security obligations", "audit boundaries"],
+    },
+    {
+      title: "Data Processing Addendum / Privacy Schedule",
+      tag: "Privacy model",
+      items: ["controller / processor allocation", "transfer rules", "data handling commitments"],
+    },
+    {
+      title: "Ordering / Provisioning Schedule",
+      tag: "Activation model",
+      items: ["how partners place orders", "how services are activated", "what form of order document applies"],
+    },
+    {
+      title: "Branding / Marketing Schedule",
+      tag: "Go-to-market model",
+      items: ["approved use of marks", "co-branding rules", "white-label branding exceptions"],
+    },
+  ];
+
+  const customerModelCards = [
+    {
+      title: "Standard Reseller Model",
+      accent: "blue",
+      items: ["customer signs partner agreement", "customer accepts IPI EULA / service terms where needed"],
+    },
+    {
+      title: "White-Label Model",
+      accent: "purple",
+      items: ["customer signs partner terms", "IPI sits behind the scenes", "branding and liability structure differ"],
+    },
+    {
+      title: "MSP Model",
+      accent: "teal",
+      items: ["customer contracts with partner for managed outcome", "vendor platform terms sit behind the partner relationship"],
+    },
+  ];
+
+  const governanceRules = [
+    "MPA changes infrequently",
+    "product schedules added as portfolio expands",
+    "commercial schedule reviewed periodically",
+    "operational schedules updated under controlled process",
+    "version control and effective dates clearly displayed",
+    "partner acceptance workflow documented",
+  ];
+
+  const goodLooksLike = [
+    "One master partner agreement covers the whole relationship",
+    "New products can be added without renegotiating the whole contract",
+    "Different partner models are supported by tailored addendums",
+    "Pricing is separated from core legal terms",
+    "Operational terms sit in schedules, not scattered through the contract",
+    "White-label rights are clearly handled where applicable",
+    "Customer contract structure is unambiguous",
+    "Legal structure scales with portfolio growth",
+    "The framework is easy for partners to understand and sign",
+  ];
+
+  const recommendedStack = [
+    "Master Partner Agreement",
+    "Reseller Addendum",
+    "MSP Addendum",
+    "White-Label Addendum",
+    "Referral Addendum",
+    "Product Schedules · ElasticCX · Cloud PCI · UCX · AI Services · Integrations · Managed Services",
+    "Commercial Schedule",
+    "Support Schedule",
+    "SLA / Service Level Schedule",
+    "DPA / Privacy Schedule",
+    "Ordering / Provisioning Schedule",
+    "Branding & Marketing Schedule",
+    "Customer Terms / EULA Structure",
   ];
 
   return (
     <React.Fragment>
       <Bg />
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          minHeight: "100vh",
-          padding: "50px 44px 56px",
-          animation: "fadeIn 0.35s ease both",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "none",
-            margin: "0",
-            display: "flex",
-            flexDirection: "column",
-            gap: 26,
-          }}
-        >
-          <section style={{ textAlign: "center", padding: "0 6px" }}>
-            <h1
-              style={{
-                fontSize: "clamp(26px,4vw,50px)",
-                fontWeight: 800,
-                color: "var(--text-primary)",
-                lineHeight: 1.08,
-                letterSpacing: "-0.03em",
-                marginBottom: 16,
-                fontFamily: "'Syne',sans-serif",
-              }}
-            >
-              Commercial & Legal{" "}
-              <span style={{ color: "#36C6FF" }}>Framework</span>
-            </h1>
-            <p
-              style={{
-                fontSize: 14,
-                color: "#8EA6BF",
-                lineHeight: 1.85,
-                maxWidth: "none",
-                margin: "0",
-              }}
-            >
-              The IPI Partner Advantage program is designed to provide a simple,
-              scalable and partner-friendly commercial structure. Partners sign
-              a single Reseller Master Agreement which governs the overall
-              relationship with IP Integration. From that point onward, partners
-              can sell any solution within the IPI portfolio using modular
-              product schedules, standardised pricing frameworks and published
-              legal documentation.
-            </p>
-            <p
-              style={{
-                fontSize: 14,
-                color: "#8EA6BF",
-                lineHeight: 1.85,
-                maxWidth: "none",
-                margin: "12px auto 0",
-              }}
-            >
-              This structure removes contractual friction and allows partners to
-              rapidly expand their portfolio as new solutions are introduced.
-            </p>
-            <p
-              style={{
-                fontSize: 12,
-                fontWeight: 800,
-                color: "#67D8FF",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                marginTop: 18,
-              }}
-            >
-              Designed for scale, flexibility and rapid partner growth.
-            </p>
-          </section>
-
-          <div className="brand-line" />
-
-          <section
-            style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(54,198,255,0.24)",
-              borderRadius: 14,
-              padding: "18px",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 11,
-                fontWeight: 800,
-                color: "rgba(54,198,255,0.68)",
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                marginBottom: 14,
-              }}
-            >
-              1 · Partner Agreement Structure
+      <div className="legal-framework-page">
+        <section className="legal-hero">
+          <div className="legal-hero__content">
+            <div className="legal-kicker-row">
+              <span className="status-pill">Internal strategy design</span>
+              <span className="legal-kicker-note">Premium contract architecture dashboard</span>
             </div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
-                gap: 12,
-                marginBottom: 14,
-              }}
-            >
-              {hierarchySteps.map((step, i) => (
-                <div
-                  key={step.title}
-                  style={{
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px solid rgba(54,198,255,0.24)",
-                    borderRadius: 13,
-                    padding: "16px 14px",
-                    display: "flex",
-                    gap: 12,
-                    alignItems: "flex-start",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 26,
-                      height: 26,
-                      borderRadius: 8,
-                      background: "rgba(54,198,255,0.18)",
-                      border: "1px solid rgba(54,198,255,0.35)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 12,
-                      fontWeight: 800,
-                      color: "#67D8FF",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {i + 1}
+            <h1>Partner Program Legal Framework</h1>
+            <p className="legal-hero__subtitle">
+              Recommended contract architecture for a scalable IPI partner ecosystem across reseller, MSP, referral and white-label models.
+            </p>
+            <p className="legal-hero__summary">
+              This page is designed as an internal operating model for how IPI should structure its partner legal framework. The goal is to create a scalable, modular contract stack that supports product growth, multiple partner models and clean separation between legal terms, pricing and operational mechanics.
+            </p>
+            <div className="legal-summary-grid">
+              {summaryCards.map((card) => (
+                <article key={card.title} className={`legal-summary-card ${card.tone}`}>
+                  <div className="legal-summary-card__head">
+                    <span className="legal-summary-card__title">{card.title}</span>
+                    <span className="legal-chip">{card.badge}</span>
                   </div>
+                  <ul>
+                    {card.points.map((point) => <li key={point}>{point}</li>)}
+                  </ul>
+                </article>
+              ))}
+            </div>
+            <div className="legal-hero__callout">
+              <strong>Modern design principle.</strong> A modern partner programme should not rely on one long static reseller agreement. Instead, it should use a layered legal framework where the master agreement contains only core legal terms, while products, commercial terms, delivery models and optional partner rights are handled through modular schedules and addendums.
+            </div>
+          </div>
+          <aside className="legal-hero__aside">
+            <div className="legal-stack-preview">
+              <div className="legal-stack-preview__label">Target legal architecture</div>
+              {architectureLayers.slice(0, 5).map((layer, index) => (
+                <React.Fragment key={layer.key}>
+                  <div className="legal-stack-preview__item">
+                    <span>{layer.title}</span>
+                    <span className="legal-stack-preview__index">{layer.short}</span>
+                  </div>
+                  {index < 4 ? <div className="legal-stack-preview__arrow">↓</div> : null}
+                </React.Fragment>
+              ))}
+              <div className="legal-stack-preview__item legal-stack-preview__item--last">
+                <span>Customer Legal Documents</span>
+                <span className="legal-stack-preview__index">06</span>
+              </div>
+            </div>
+          </aside>
+        </section>
+
+        <section className="legal-section">
+          <div className="legal-section__heading">
+            <span className="legal-section__eyebrow">Section 2</span>
+            <h2>Target Legal Architecture</h2>
+            <p>Use a layered contract hierarchy so stakeholders can see what sits at the core, what is optional, and what can be changed without destabilising the whole framework.</p>
+          </div>
+          <div className="legal-architecture-map">
+            {architectureLayers.map((layer, index) => (
+              <details key={layer.key} className="legal-layer-card" open={index === 0}>
+                <summary>
                   <div>
-                    <div
-                      style={{
-                        fontSize: 13.5,
-                        fontWeight: 800,
-                        color: "#EAF5FF",
-                        fontFamily: "'Syne',sans-serif",
-                      }}
-                    >
-                      {step.title}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 11.5,
-                        color: "#7E97B4",
-                        lineHeight: 1.6,
-                        marginTop: 4,
-                      }}
-                    >
-                      {step.subtitle}
+                    <span className="legal-layer-card__index">{layer.short}</span>
+                    <div className="legal-layer-card__copy">
+                      <strong>{layer.title}</strong>
+                      <span>{layer.description}</span>
                     </div>
                   </div>
+                  <span className="legal-chip">{layer.badge}</span>
+                </summary>
+                <div className="legal-layer-card__detail">{layer.detail}</div>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        <section className="legal-section legal-section--split">
+          <div className="legal-section__heading">
+            <span className="legal-section__eyebrow">Section 3</span>
+            <h2>Master Partner Agreement</h2>
+            <p>The Master Partner Agreement should hold only the legal foundations that apply across the entire relationship.</p>
+          </div>
+          <div className="legal-panel">
+            <div className="legal-table-wrap">
+              <table className="legal-table">
+                <thead>
+                  <tr><th>Component</th><th>What belongs here</th></tr>
+                </thead>
+                <tbody>
+                  {masterAgreementRows.map(([label, desc]) => (
+                    <tr key={label}><td>{label}</td><td>{desc}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="legal-guidance-card">
+              <div className="legal-guidance-card__title">Guidance</div>
+              <p>The Master Partner Agreement should be short, stable and product-agnostic. It should not contain detailed pricing tables, detailed product descriptions, detailed service descriptions or highly specific delivery mechanics unless they apply universally.</p>
+              <details className="legal-expandable" open>
+                <summary>Why this matters</summary>
+                <ul>
+                  <li>easier to negotiate once</li>
+                  <li>easier to scale globally</li>
+                  <li>avoids contract rewrite for each new product</li>
+                </ul>
+              </details>
+            </div>
+          </div>
+        </section>
+
+        <section className="legal-section">
+          <div className="legal-section__heading">
+            <span className="legal-section__eyebrow">Section 4</span>
+            <h2>Partner Model Addendums</h2>
+            <p>Different partner business models require different legal rights and responsibilities. The framework should attach the relevant addendum or addendums without forcing every partner into the same structure.</p>
+          </div>
+          <div className="legal-card-grid legal-card-grid--four">
+            {addendumCards.map((card) => (
+              <article key={card.title} className="legal-info-card">
+                <div className="legal-info-card__head">
+                  <h3>{card.title}</h3>
+                  <span className="legal-chip">{card.tag}</span>
                 </div>
-              ))}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                fontSize: 12,
-                color: "rgba(103,216,255,0.85)",
-                letterSpacing: "0.05em",
-                marginBottom: 18,
-              }}
-            >
-              Master Agreement ↓ Product Schedules ↓ EULAs ↓ Pricing
-            </div>
-            <div
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(177,143,255,0.32)",
-                borderRadius: 14,
-                padding: "18px",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 800,
-                  color: "rgba(177,143,255,0.72)",
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  marginBottom: 8,
-                }}
-              >
-                Reseller Master Agreement (RMA)
-              </div>
-              <p
-                style={{
-                  fontSize: 12.5,
-                  color: "#8EA6BF",
-                  lineHeight: 1.75,
-                  marginBottom: 12,
-                }}
-              >
-                The Reseller Master Agreement defines the overall legal and
-                commercial relationship between IP Integration and the partner.
-              </p>
-              <ul
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
-                  gap: 8,
-                  paddingLeft: 18,
-                  color: "#D8B9CB",
-                  fontSize: 12,
-                  lineHeight: 1.7,
-                  margin: 0,
-                }}
-              >
-                <li>partnership terms and conditions</li>
-                <li>partner obligations and responsibilities</li>
-                <li>partner tier classification</li>
-                <li>discount framework</li>
-                <li>billing and payment terms</li>
-                <li>general commercial governance</li>
+                <ul>
+                  {card.items.map((item) => <li key={item}>{item}</li>)}
+                </ul>
+              </article>
+            ))}
+          </div>
+          <div className="legal-note-banner">Partners should not be forced into one model if IPI supports multiple routes to market. The legal framework should allow the correct addendum(s) to be attached depending on partner type.</div>
+        </section>
+
+        <section className="legal-section">
+          <div className="legal-section__heading">
+            <span className="legal-section__eyebrow">Section 5</span>
+            <h2>Product Schedules</h2>
+            <p>Each product family should sit in its own schedule rather than inside the master agreement, allowing the portfolio to expand with minimal legal friction.</p>
+          </div>
+          <div className="legal-card-grid legal-card-grid--three">
+            {productSchedules.map((item) => (
+              <article key={item} className="legal-schedule-card">
+                <div className="legal-schedule-card__name">{item}</div>
+                <div className="legal-schedule-card__meta">Product-specific schedule</div>
+              </article>
+            ))}
+          </div>
+          <div className="legal-content-grid">
+            <div className="legal-info-card legal-info-card--soft">
+              <h3>Each schedule should contain</h3>
+              <ul>
+                {productScheduleContents.map((item) => <li key={item}>{item}</li>)}
               </ul>
-              <p
-                style={{
-                  fontSize: 12,
-                  color: "#A88BA0",
-                  lineHeight: 1.75,
-                  marginTop: 12,
-                }}
-              >
-                Once signed, the RMA allows partners to sell the full IPI
-                portfolio without signing new master agreements.
-              </p>
             </div>
-          </section>
+            <div className="legal-principle-card">
+              <span className="legal-principle-card__eyebrow">Highlighted principle</span>
+              <h3>New products should be added by issuing a new schedule, not by rewriting the whole partner agreement.</h3>
+            </div>
+          </div>
+        </section>
 
-          <section
-            style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(54,198,255,0.24)",
-              borderRadius: 14,
-              padding: "18px",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 11,
-                fontWeight: 800,
-                color: "rgba(54,198,255,0.68)",
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                marginBottom: 12,
-              }}
-            >
-              2 · Product Schedules
-            </div>
-            <p
-              style={{
-                fontSize: 13,
-                color: "#8EA6BF",
-                lineHeight: 1.75,
-                marginBottom: 14,
-              }}
-            >
-              Each product family has its own schedule. Product Schedules define
-              the operational and commercial terms for each solution area.
-            </p>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit,minmax(210px,1fr))",
-                gap: 12,
-                marginBottom: 14,
-              }}
-            >
-              {scheduleCards.map((s) => (
-                <div
-                  key={s}
-                  style={{
-                    background: "rgba(255,255,255,0.025)",
-                    border: "1px solid rgba(54,198,255,0.2)",
-                    borderRadius: 12,
-                    padding: "14px 12px",
-                    fontSize: 12.5,
-                    fontWeight: 700,
-                    color: "#B7D7CE",
-                  }}
-                >
-                  {s}
+        <section className="legal-section">
+          <div className="legal-section__heading">
+            <span className="legal-section__eyebrow">Section 6</span>
+            <h2>Commercial Schedule</h2>
+            <p>Pricing should sit outside the core legal agreement so commercial updates do not reopen the legal foundation of the partner relationship.</p>
+          </div>
+          <div className="legal-commercial-grid">
+            {commercialRows.map((item) => (
+              <div key={item} className="legal-commercial-row">
+                <span>{item}</span>
+                <span className="legal-commercial-row__status">Scheduled outside MPA</span>
+              </div>
+            ))}
+          </div>
+          <div className="legal-callout legal-callout--orange">The Commercial Schedule should be capable of being updated without renegotiating the full Master Partner Agreement, subject to agreed change-control rules.</div>
+        </section>
+
+        <section className="legal-section">
+          <div className="legal-section__heading">
+            <span className="legal-section__eyebrow">Section 7</span>
+            <h2>Operational Schedules</h2>
+            <p>Detailed operational mechanics should sit outside the MPA and be controlled as modular schedules tied to delivery, service assurance and governance.</p>
+          </div>
+          <div className="legal-card-grid legal-card-grid--three">
+            {operationalCards.map((card) => (
+              <article key={card.title} className="legal-info-card legal-info-card--operational">
+                <div className="legal-info-card__head">
+                  <h3>{card.title}</h3>
+                  <span className="legal-chip">{card.tag}</span>
                 </div>
-              ))}
-            </div>
-            <ul
-              style={{
-                paddingLeft: 18,
-                color: "#67D8FF",
-                fontSize: 12.5,
-                lineHeight: 1.7,
-                margin: 0,
-              }}
-            >
-              <li>product scope and description</li>
-              <li>service delivery model</li>
-              <li>support structure</li>
-              <li>service levels</li>
-              <li>provisioning requirements</li>
-            </ul>
-            <p
-              style={{
-                fontSize: 12.5,
-                color: "#7FB3A6",
-                lineHeight: 1.75,
-                marginTop: 12,
-              }}
-            >
-              When a new IPI product is introduced, a new schedule can be added
-              without changing the master agreement.
-            </p>
-          </section>
+                <ul>
+                  {card.items.map((item) => <li key={item}>{item}</li>)}
+                </ul>
+              </article>
+            ))}
+          </div>
+        </section>
 
-          <section
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
-              gap: 14,
-            }}
-          >
-            <div
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(177,143,255,0.32)",
-                borderRadius: 14,
-                padding: "18px",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 800,
-                  color: "rgba(177,143,255,0.72)",
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  marginBottom: 8,
-                }}
-              >
-                3 · End User Legal Agreements (EULAs)
-              </div>
-              <p
-                style={{
-                  fontSize: 12.5,
-                  color: "#8EA6BF",
-                  lineHeight: 1.75,
-                  marginBottom: 10,
-                }}
-              >
-                EULAs govern the relationship between IP Integration and the end
-                customer using the platform. Partners reference these documents
-                when selling IPI services to their customers.
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {eulaExamples.map((e) => (
-                  <div
-                    key={e}
-                    style={{
-                      background: "rgba(177,143,255,0.1)",
-                      border: "1px solid rgba(177,143,255,0.25)",
-                      borderRadius: 10,
-                      padding: "9px 10px",
-                      fontSize: 12,
-                      color: "#D8B9CB",
-                    }}
-                  >
-                    {e}
-                  </div>
-                ))}
-              </div>
-              <p
-                style={{
-                  fontSize: 12,
-                  color: "#A88BA0",
-                  lineHeight: 1.75,
-                  marginTop: 10,
-                }}
-              >
-                All documents are maintained centrally and published through the
-                Trust Portal.
-              </p>
-            </div>
+        <section className="legal-section">
+          <div className="legal-section__heading">
+            <span className="legal-section__eyebrow">Section 8</span>
+            <h2>Customer Legal Document Stack</h2>
+            <p>The customer legal model may differ depending on the partner model, so the framework must make the contracting path visible and unambiguous.</p>
+          </div>
+          <div className="legal-relationship-map">
+            <div className="legal-relationship-node">IPI ↔ Partner</div>
+            <div className="legal-relationship-connector">↕</div>
+            <div className="legal-relationship-node legal-relationship-node--secondary">Partner ↔ Customer</div>
+            <div className="legal-relationship-connector">↕</div>
+            <div className="legal-relationship-node legal-relationship-node--tertiary">IPI ↔ Customer (where applicable)</div>
+          </div>
+          <div className="legal-card-grid legal-card-grid--three">
+            {customerModelCards.map((card) => (
+              <article key={card.title} className={`legal-info-card legal-info-card--${card.accent}`}>
+                <h3>{card.title}</h3>
+                <ul>
+                  {card.items.map((item) => <li key={item}>{item}</li>)}
+                </ul>
+              </article>
+            ))}
+          </div>
+          <div className="legal-note-banner legal-note-banner--strong">The contract model must clearly define who the customer contracts with, who provides support, who invoices, and whose terms govern platform use.</div>
+        </section>
 
-            <div
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(255,154,108,0.32)",
-                borderRadius: 14,
-                padding: "18px",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 800,
-                  color: "rgba(255,154,108,0.74)",
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  marginBottom: 8,
-                }}
-              >
-                4 · Pricing Framework
-              </div>
-              <p
-                style={{
-                  fontSize: 12.5,
-                  color: "#8EA6BF",
-                  lineHeight: 1.75,
-                  marginBottom: 10,
-                }}
-              >
-                Partner Pricing Structure
-              </p>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
-                  gap: 8,
-                }}
-              >
-                {pricingItems.map((item) => (
-                  <div
-                    key={item}
-                    style={{
-                      background: "rgba(255,154,108,0.1)",
-                      border: "1px solid rgba(255,154,108,0.25)",
-                      borderRadius: 10,
-                      padding: "9px 10px",
-                      fontSize: 11.5,
-                      color: "#DFB6AC",
-                    }}
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
-              <p
-                style={{
-                  fontSize: 12,
-                  color: "#C99A8E",
-                  lineHeight: 1.75,
-                  marginTop: 10,
-                }}
-              >
-                Pricing is maintained separately from legal agreements to allow
-                updates without renegotiating contracts. This ensures the
-                commercial framework remains agile while protecting the legal
-                integrity of the partner agreement.
-              </p>
-            </div>
-          </section>
-
-          <section
-            style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(54,198,255,0.24)",
-              borderRadius: 14,
-              padding: "18px",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 11,
-                fontWeight: 800,
-                color: "rgba(54,198,255,0.8)",
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                marginBottom: 8,
-              }}
-            >
-              5 · Portfolio Access Model
-            </div>
-            <h3
-              style={{
-                fontSize: 21,
-                color: "var(--text-primary)",
-                fontFamily: "'Syne',sans-serif",
-                marginBottom: 8,
-              }}
-            >
-              One Agreement — Full Portfolio Access
-            </h3>
-            <p style={{ fontSize: 13, color: "#8EA6BF", lineHeight: 1.75 }}>
-              Once a partner signs the Reseller Master Agreement they gain
-              access to the entire IPI product portfolio.
-            </p>
-            <ul
-              style={{
-                paddingLeft: 18,
-                color: "#A6D5C6",
-                fontSize: 12.5,
-                lineHeight: 1.75,
-                margin: "10px 0 0",
-              }}
-            >
-              <li>start by selling a single solution</li>
-              <li>expand into additional products over time</li>
-              <li>add new services without signing new contracts</li>
-            </ul>
-            <p
-              style={{
-                fontSize: 12.5,
-                color: "#8EBDAF",
-                lineHeight: 1.75,
-                marginTop: 10,
-              }}
-            >
-              This allows partners to evolve from selling point solutions to
-              delivering full CX platforms.
-            </p>
-          </section>
-
-          <section
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
-              gap: 14,
-            }}
-          >
-            <div
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(123,150,163,0.32)",
-                borderRadius: 14,
-                padding: "18px",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 800,
-                  color: "rgba(123,150,163,0.78)",
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  marginBottom: 8,
-                }}
-              >
-                6 · Trust Portal
-              </div>
-              <h3
-                style={{
-                  fontSize: 18,
-                  color: "var(--text-primary)",
-                  fontFamily: "'Syne',sans-serif",
-                  marginBottom: 8,
-                }}
-              >
-                Trust & Compliance Portal
-              </h3>
-              <p
-                style={{
-                  fontSize: 12.5,
-                  color: "#8EA6BF",
-                  lineHeight: 1.75,
-                  marginBottom: 10,
-                }}
-              >
-                The Partner Portal includes a dedicated Trust Page providing
-                access to the latest versions of:
-              </p>
-              <ul
-                style={{
-                  paddingLeft: 18,
-                  color: "#9DB8C5",
-                  fontSize: 12.5,
-                  lineHeight: 1.7,
-                  margin: 0,
-                }}
-              >
-                <li>Reseller Master Agreement</li>
-                <li>Product schedules</li>
-                <li>EULAs and service terms</li>
-                <li>security and compliance documentation</li>
-                <li>service descriptions and SLAs</li>
+        <section className="legal-section legal-section--split">
+          <div className="legal-section__heading">
+            <span className="legal-section__eyebrow">Section 9</span>
+            <h2>Document Governance & Change Control</h2>
+            <p>Maintain the framework over time through disciplined governance, visible version control and documented acceptance workflow.</p>
+          </div>
+          <div className="legal-governance-grid">
+            <div className="legal-info-card legal-info-card--soft">
+              <h3>Best-practice rules</h3>
+              <ul>
+                {governanceRules.map((rule) => <li key={rule}>{rule}</li>)}
               </ul>
-              <p
-                style={{
-                  fontSize: 12,
-                  color: "#87A3AF",
-                  lineHeight: 1.75,
-                  marginTop: 10,
-                }}
-              >
-                This ensures partners always have access to the most current
-                documentation.
-              </p>
             </div>
+            <div className="legal-timeline-card">
+              <div className="legal-timeline-card__title">Lifecycle view</div>
+              <div className="legal-timeline">
+                <div><span>Negotiate</span><strong>MPA & core addendums</strong></div>
+                <div><span>Launch</span><strong>Attach product and operational schedules</strong></div>
+                <div><span>Review</span><strong>Refresh commercial schedule periodically</strong></div>
+                <div><span>Expand</span><strong>Add new schedules as portfolio grows</strong></div>
+                <div><span>Control</span><strong>Track versions, dates and acceptance evidence</strong></div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-            <div
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(54,198,255,0.24)",
-                borderRadius: 14,
-                padding: "18px",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 800,
-                  color: "rgba(54,198,255,0.78)",
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  marginBottom: 8,
-                }}
-              >
-                7 · Why This Model Works
+        <section className="legal-section">
+          <div className="legal-section__heading">
+            <span className="legal-section__eyebrow">Section 10</span>
+            <h2>What Good Looks Like</h2>
+            <p>An executive-friendly checklist helps stakeholders quickly assess whether the partner legal framework is truly scalable and commercially credible.</p>
+          </div>
+          <div className="legal-scorecard">
+            {goodLooksLike.map((item) => (
+              <div key={item} className="legal-scorecard__item">
+                <span className="legal-scorecard__icon">✓</span>
+                <span>{item}</span>
               </div>
-              <div
-                style={{
-                  fontSize: 18,
-                  color: "var(--text-primary)",
-                  fontFamily: "'Syne',sans-serif",
-                  marginBottom: 8,
-                }}
-              >
-                Why This Model Works
-              </div>
-              <p
-                style={{
-                  fontSize: 12.5,
-                  color: "#8EA6BF",
-                  lineHeight: 1.75,
-                  marginBottom: 10,
-                }}
-              >
-                The model creates consistent benefits for both partners and IP
-                Integration while reducing legal and commercial friction.
-              </p>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
-                  gap: 12,
-                }}
-              >
-                <div>
-                  <div
-                    style={{
-                      fontSize: 12.5,
-                      fontWeight: 800,
-                      color: "#67D8FF",
-                      marginBottom: 6,
-                    }}
-                  >
-                    Benefits for Partners
-                  </div>
-                  <ul
-                    style={{
-                      paddingLeft: 18,
-                      color: "#A6D5C6",
-                      fontSize: 12.5,
-                      lineHeight: 1.7,
-                      margin: 0,
-                    }}
-                  >
-                    <li>simple onboarding process</li>
-                    <li>ability to sell multiple solutions</li>
-                    <li>no need to renegotiate contracts for new products</li>
-                    <li>faster sales cycles</li>
-                  </ul>
+            ))}
+          </div>
+        </section>
+
+        <section className="legal-section legal-section--final">
+          <div className="legal-section__heading">
+            <span className="legal-section__eyebrow">Section 11</span>
+            <h2>Recommended IPI Framework</h2>
+            <p>The recommended IPI stack below is designed to be modular, scalable and easy to negotiate while supporting an evolving product portfolio and multiple partner routes to market.</p>
+          </div>
+          <div className="legal-final-stack">
+            {recommendedStack.map((item, index) => (
+              <React.Fragment key={item}>
+                <div className="legal-final-stack__item">
+                  <span className="legal-final-stack__number">{index + 1}</span>
+                  <span>{item}</span>
                 </div>
-                <div>
-                  <div
-                    style={{
-                      fontSize: 12.5,
-                      fontWeight: 800,
-                      color: "#67D8FF",
-                      marginBottom: 6,
-                    }}
-                  >
-                    Benefits for IP Integration
-                  </div>
-                  <ul
-                    style={{
-                      paddingLeft: 18,
-                      color: "#A6D5C6",
-                      fontSize: 12.5,
-                      lineHeight: 1.7,
-                      margin: 0,
-                    }}
-                  >
-                    <li>scalable legal framework</li>
-                    <li>faster partner recruitment</li>
-                    <li>easier product expansion</li>
-                    <li>consistent governance across the ecosystem</li>
-                  </ul>
-                </div>
-              </div>
-              <p
-                style={{
-                  fontSize: 12,
-                  color: "#87A3AF",
-                  lineHeight: 1.75,
-                  marginTop: 10,
-                }}
-              >
-                This consistent structure supports repeatable partner onboarding
-                and predictable commercial scaling.
-              </p>
-            </div>
-          </section>
-        </div>
+                {index < recommendedStack.length - 1 ? <div className="legal-final-stack__arrow">↓</div> : null}
+              </React.Fragment>
+            ))}
+          </div>
+          <p className="legal-final-summary">The goal is to make the IPI partner legal framework modular, scalable, easy to negotiate, and able to support a broad and evolving portfolio of products, services and routes to market.</p>
+        </section>
       </div>
     </React.Fragment>
   );
