@@ -6646,6 +6646,57 @@ const PARTNER_TIERS_DATA = [
   },
 ];
 
+const PARTNER_ACQUISITION_TARGETS = [
+  {
+    id: "enterprise",
+    label: "Enterprise Partners",
+    shortLabel: "Enterprise",
+    icon: "🏢",
+    accent: "#68B69B",
+    accentSoft: "rgba(104,182,155,0.18)",
+    target: 3,
+    summary: "Strategic scale and credibility partners with complex, multi-stakeholder sales motions.",
+    points: [
+      "Typical partner type: VAR, MSP or SI",
+      "Partner revenue: £80m+ with 400+ employees",
+      "Customer size: 1,000+ employees and £1m+ ACV potential",
+      "Recruitment approach: highly selective with strategic ABM support",
+    ],
+  },
+  {
+    id: "mid_market",
+    label: "Mid Market Partners",
+    shortLabel: "Mid-Market",
+    icon: "📈",
+    accent: "#6F7F8E",
+    accentSoft: "rgba(111,127,142,0.18)",
+    target: 6,
+    summary: "Core growth engine partners that deliver predictable ARR through consultative selling.",
+    points: [
+      "Typical partner type: VAR or MSP",
+      "Partner revenue: £20m–£80m with 100–400 employees",
+      "Customer size: 250–999 employees and £250k–£1m ACV",
+      "Recruitment approach: targeted and selective with joint GTM support",
+    ],
+  },
+  {
+    id: "smb",
+    label: "SMB Partners",
+    shortLabel: "SMB",
+    icon: "🚀",
+    accent: "#C68F82",
+    accentSoft: "rgba(198,143,130,0.18)",
+    target: 9,
+    summary: "Volume and reach partners focused on efficient acquisition and fast-moving opportunities.",
+    points: [
+      "Typical partner type: VAR",
+      "Partner revenue: below £20m with 15–100 employees",
+      "Customer size: 1–249 employees and £10k–£250k ACV",
+      "Recruitment approach: broad and opportunistic with campaign-in-a-box marketing",
+    ],
+  },
+];
+
 const IPP_CRITERIA = [
   {
     icon: "🏢",
@@ -7675,6 +7726,120 @@ function PartnerProgramPage() {
             It helps avoid signing the wrong partners — one of the biggest
             mistakes in channel programs.
           </p>
+          <section
+            style={{
+              marginBottom: 28,
+              padding: "24px",
+              borderRadius: 20,
+              border: "1px solid rgba(54,198,255,0.18)",
+              background: "linear-gradient(180deg,rgba(7,18,34,0.72),rgba(7,18,34,0.38))",
+              boxShadow: "0 24px 60px rgba(2,8,20,0.18)",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16, flexWrap: "wrap", marginBottom: 18 }}>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(54,198,255,0.72)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 6 }}>
+                  2026 Recruitment Focus
+                </div>
+                <h3 style={{ fontSize: 26, color: "var(--text-primary)", fontFamily: "'Syne',sans-serif", margin: 0 }}>
+                  Our Partner Acquisition Targets for 2026
+                </h3>
+              </div>
+              <div style={{ fontSize: 12.5, color: "#8EA6BF", maxWidth: 520, lineHeight: 1.7 }}>
+                Focus recruitment across enterprise, mid-market and SMB profiles so the ecosystem balances strategic credibility, ARR growth and market coverage.
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12, marginBottom: 18 }}>
+              {PARTNER_ACQUISITION_TARGETS.map((segment) => (
+                <div
+                  key={segment.id + "-kpi"}
+                  style={{
+                    borderRadius: 16,
+                    padding: "18px 20px",
+                    background: "rgba(255,255,255,0.03)",
+                    border: `1px solid ${segment.accentSoft}`,
+                    boxShadow: `inset 0 1px 0 rgba(255,255,255,0.03), 0 18px 34px ${segment.accentSoft}`,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                    <span style={{ fontSize: 18 }}>{segment.icon}</span>
+                    <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: segment.accent }}>
+                      {segment.shortLabel}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 36, lineHeight: 1, fontWeight: 800, color: "#F4FAFF", fontFamily: "'Syne',sans-serif" }}>
+                    {segment.target}
+                  </div>
+                  <div style={{ fontSize: 12.5, color: "#8EA6BF", marginTop: 8 }}>
+                    Target partners to sign in 2026
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
+                gap: 14,
+              }}
+            >
+              {PARTNER_ACQUISITION_TARGETS.map((segment) => (
+                <div
+                  key={segment.id}
+                  style={{
+                    background: "rgba(255,255,255,0.025)",
+                    border: `1px solid ${segment.accentSoft}`,
+                    borderRadius: 18,
+                    padding: "20px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 14,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div
+                      style={{
+                        width: 42,
+                        height: 42,
+                        borderRadius: 12,
+                        background: segment.accentSoft,
+                        border: `1px solid ${segment.accent}`,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 20,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {segment.icon}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: segment.accent, fontFamily: "'Syne',sans-serif" }}>
+                        {segment.label}
+                      </div>
+                      <div style={{ fontSize: 11.5, color: "#8EA6BF", marginTop: 4 }}>
+                        FY26 target: {segment.target} new partners
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 12.5, color: "#C9E9FF", lineHeight: 1.72 }}>
+                    {segment.summary}
+                  </div>
+                  <div style={{ display: "grid", gap: 8 }}>
+                    {segment.points.map((point) => (
+                      <div key={point} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                        <span style={{ color: segment.accent, fontSize: 14, lineHeight: 1.4 }}>•</span>
+                        <span style={{ fontSize: 12, color: "#7E97B4", lineHeight: 1.7 }}>{point}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
           <div
             style={{
               display: "grid",
