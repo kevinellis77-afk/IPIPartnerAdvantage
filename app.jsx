@@ -7676,56 +7676,6 @@ function PartnerProgramPage() {
             width: "100%",
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-              marginBottom: 10,
-            }}
-          >
-            <div
-              style={{
-                height: 1,
-                flex: 1,
-                background:
-                  "linear-gradient(90deg,transparent,rgba(54,198,255,0.3))",
-              }}
-            />
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: 800,
-                color: "rgba(54,198,255,0.6)",
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                whiteSpace: "normal",
-              }}
-            >
-              Ideal Partner Profile (IPP)
-            </span>
-            <div
-              style={{
-                height: 1,
-                flex: 1,
-                background:
-                  "linear-gradient(90deg,rgba(54,198,255,0.3),transparent)",
-              }}
-            />
-          </div>
-          <p
-            style={{
-              fontSize: 13,
-              color: "#8EA6BF",
-              lineHeight: 1.75,
-              maxWidth: "none",
-              marginBottom: 24,
-            }}
-          >
-            The IPP defines exactly what a "perfect partner" looks like for IPI.
-            It helps avoid signing the wrong partners — one of the biggest
-            mistakes in channel programs.
-          </p>
           <section
             style={{
               marginBottom: 28,
@@ -7839,6 +7789,43 @@ function PartnerProgramPage() {
               ))}
             </div>
           </section>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+              marginBottom: 10,
+            }}
+          >
+            <div
+              style={{
+                height: 1,
+                flex: 1,
+                background:
+                  "linear-gradient(90deg,transparent,rgba(54,198,255,0.3))",
+              }}
+            />
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: 800,
+                color: "rgba(54,198,255,0.6)",
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                whiteSpace: "normal",
+              }}
+            >
+              Ideal Partner Profile (IPP)
+            </span>
+            <div
+              style={{
+                height: 1,
+                flex: 1,
+                background:
+                  "linear-gradient(90deg,rgba(54,198,255,0.3),transparent)",
+              }}
+            />
+          </div>
 
           <div
             style={{
