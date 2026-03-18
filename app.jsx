@@ -6727,11 +6727,29 @@ const IPP_INDUSTRIES = [
   { id: "healthcare", label: "Healthcare", score: 5 },
 ];
 
-const IPP_VENDOR_OPTIONS = [
-  "Avaya", "Mitel", "Cisco", "NICE CXOne", "Five9", "Genesys", "Content Guru",
-  "Dixa", "Dialpad", "Puzzel", "8x8", "Microsoft", "Calabrio", "Verint",
-  "Swyx", "RingCentral", "Gamma Horizon", "Zoom",
+const IPP_VENDOR_SCORES = [
+  { label: "Avaya", score: 10 },
+  { label: "Mitel", score: 10 },
+  { label: "Cisco", score: 10 },
+  { label: "NICE CXOne", score: -5 },
+  { label: "Five9", score: -5 },
+  { label: "Genesys", score: -5 },
+  { label: "Content Guru", score: -5 },
+  { label: "Dixa", score: 0 },
+  { label: "Dialpad", score: 8 },
+  { label: "Puzzel", score: 5 },
+  { label: "3CX", score: -2 },
+  { label: "8x8", score: 5 },
+  { label: "Microsoft", score: 7 },
+  { label: "Calabrio", score: 10 },
+  { label: "Verint", score: 8 },
+  { label: "Swyx", score: 9 },
+  { label: "RingCentral", score: 5 },
+  { label: "Gamma Horizon", score: -4 },
+  { label: "Zoom", score: -2 },
 ];
+
+const IPP_VENDOR_OPTIONS = IPP_VENDOR_SCORES.map((vendor) => vendor.label);
 
 const getIppClassification = (score) => {
   if (score > 100) {
@@ -6779,8 +6797,9 @@ const calculateIppEvaluationScore = (evaluation) => {
   const hqScore = IPP_HQ_OPTIONS.find((option) => option.id === evaluation.hqLocation)?.score || 0;
   const serviceAreaScore = (evaluation.serviceAreas || []).reduce((sum, item) => sum + (IPP_SERVICE_AREAS.find((option) => option.id === item)?.score || 0), 0);
   const industryScore = (evaluation.industries || []).reduce((sum, item) => sum + (IPP_INDUSTRIES.find((option) => option.id === item)?.score || 0), 0);
-  const matchedVendors = IPP_VENDOR_OPTIONS.filter((vendor) => (evaluation.vendorRelationships || []).includes(vendor));
-  const totalScore = turnoverScore + employeeScore + hqScore + serviceAreaScore + industryScore;
+  const matchedVendors = IPP_VENDOR_SCORES.filter((vendor) => (evaluation.vendorRelationships || []).includes(vendor.label));
+  const vendorRelationshipScore = matchedVendors.reduce((sum, vendor) => sum + vendor.score, 0);
+  const totalScore = turnoverScore + employeeScore + hqScore + serviceAreaScore + industryScore + vendorRelationshipScore;
   return {
     totalScore,
     classification: getIppClassification(totalScore),
@@ -6791,8 +6810,10 @@ const calculateIppEvaluationScore = (evaluation) => {
       hqScore,
       serviceAreaScore,
       industryScore,
+      vendorRelationshipScore,
       vendorCount: matchedVendors.length,
-      matchedVendors,
+      matchedVendors: matchedVendors.map((vendor) => vendor.label),
+      matchedVendorDetails: matchedVendors,
     },
   };
 };
@@ -6870,6 +6891,7 @@ function PartnerProgramPage() {
   const activeRiskFlags = riskFlagOptions.filter(([key]) => evaluationForm.risks[key]);
   const selectedServiceLabels = IPP_SERVICE_AREAS.filter((option) => evaluationForm.serviceAreas.includes(option.id)).map((option) => option.label);
   const selectedIndustryLabels = IPP_INDUSTRIES.filter((option) => evaluationForm.industries.includes(option.id)).map((option) => option.label);
+  const vendorRelationshipDetails = evaluationScore.breakdown.matchedVendorDetails || [];
   const scoringFrameworkSections = [
     {
       title: "Company Turnover",
@@ -6926,6 +6948,19 @@ function PartnerProgramPage() {
       selectionType: "checkbox",
       maxScore: IPP_INDUSTRIES.reduce((sum, option) => sum + option.score, 0),
       selectedCount: evaluationForm.industries.length,
+      scrollable: true,
+    },
+    {
+      title: "Vendor Relationships",
+      description: "Apply positive or negative weighting based on strategic vendor fit and competitive exposure.",
+      accent: "Vendor relationships",
+      value: evaluationForm.vendorRelationships,
+      onChange: (value) => toggleSelection("vendorRelationships", value),
+      options: IPP_VENDOR_SCORES.map((vendor) => ({ id: vendor.label, label: vendor.label, score: vendor.score })),
+      selectionType: "checkbox",
+      maxScore: IPP_VENDOR_SCORES.filter((vendor) => vendor.score > 0).reduce((sum, vendor) => sum + vendor.score, 0),
+      minScore: IPP_VENDOR_SCORES.filter((vendor) => vendor.score < 0).reduce((sum, vendor) => sum + vendor.score, 0),
+      selectedCount: evaluationForm.vendorRelationships.length,
       scrollable: true,
     },
   ];
@@ -7859,6 +7894,13 @@ function PartnerProgramPage() {
                       <div style={{ fontSize: 10.5, color: "#7E97B4", textTransform: "uppercase", letterSpacing: "0.08em" }}>Matched Vendors</div>
                       <strong style={{ color: "#D9ECFF", fontSize: 13 }}>{evaluationScore.breakdown.vendorCount}</strong>
                     </div>
+                    <div style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(54,198,255,0.16)", borderRadius: 12, padding: "12px 14px" }}>
+                      <div style={{ fontSize: 10.5, color: "#7E97B4", textTransform: "uppercase", letterSpacing: "0.08em" }}>Vendor Score</div>
+                      <strong style={{ color: evaluationScore.breakdown.vendorRelationshipScore >= 0 ? "#9CF0C6" : "#FFB7B7", fontSize: 13 }}>
+                        {evaluationScore.breakdown.vendorRelationshipScore >= 0 ? "+" : ""}
+                        {evaluationScore.breakdown.vendorRelationshipScore}
+                      </strong>
+                    </div>
                   </div>
                   <div style={{ marginTop: 14, display: "grid", gap: 8 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
@@ -7904,34 +7946,6 @@ function PartnerProgramPage() {
                   </div>
                 </div>
 
-                <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 18, padding: 18 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(54,198,255,0.75)", letterSpacing: "0.12em", textTransform: "uppercase" }}>
-                      Focus Snapshot
-                    </div>
-                    <div style={{ fontSize: 11.5, color: "#8EA6BF" }}>
-                      Use these chips to quickly sense where the strongest fit is emerging.
-                    </div>
-                  </div>
-                  <div style={{ display: "grid", gap: 12 }}>
-                    {[
-                      ["Service Areas", selectedServiceLabels, "Select capabilities that overlap with the IPI offer."],
-                      ["Industries", selectedIndustryLabels, "Mark the verticals with the best strategic fit."],
-                      ["Vendor Relationships", evaluationScore.breakdown.matchedVendors, "Useful context only — currently unweighted in score."],
-                    ].map(([label, items, emptyMessage]) => (
-                      <div key={label} style={{ display: "grid", gap: 8 }}>
-                        <div style={{ fontSize: 11.5, color: "#A3BCD6", fontWeight: 700 }}>{label}</div>
-                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                          {items.length ? items.map((item) => (
-                            <span key={item} style={{ display: "inline-flex", alignItems: "center", borderRadius: 999, padding: "6px 10px", background: "rgba(54,198,255,0.08)", border: "1px solid rgba(54,198,255,0.18)", color: "#D9ECFF", fontSize: 11.5, fontWeight: 700 }}>
-                              {item}
-                            </span>
-                          )) : <span style={{ color: "#7E97B4", fontSize: 12 }}>{emptyMessage}</span>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -7952,6 +7966,7 @@ function PartnerProgramPage() {
                     ["HQ", evaluationScore.breakdown.hqScore, 10],
                     ["Services", evaluationScore.breakdown.serviceAreaScore, 72],
                     ["Industries", evaluationScore.breakdown.industryScore, 111],
+                    ["Vendors", evaluationScore.breakdown.vendorRelationshipScore, 72],
                   ].map(([label, value, max]) => (
                     <div key={label} style={{ minWidth: 104, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(54,198,255,0.14)", borderRadius: 12, padding: "10px 12px" }}>
                       <div style={{ fontSize: 10.5, color: "#7E97B4", textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</div>
@@ -7967,7 +7982,7 @@ function PartnerProgramPage() {
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 14 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: 14 }}>
                 {scoringFrameworkSections.map((section) => (
                   <div key={section.title} style={{ background: "linear-gradient(180deg,rgba(54,198,255,0.06),rgba(6,15,28,0.34))", border: "1px solid rgba(54,198,255,0.18)", borderRadius: 16, padding: 14 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "start", marginBottom: 10 }}>
@@ -7981,6 +7996,12 @@ function PartnerProgramPage() {
                       </div>
                     </div>
                     <p style={{ fontSize: 12, color: "#8EA6BF", lineHeight: 1.65, marginBottom: 12 }}>{section.description}</p>
+                    {typeof section.minScore === "number" && (
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center", marginBottom: 10, padding: "8px 10px", borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(54,198,255,0.12)" }}>
+                        <span style={{ fontSize: 11, color: "#8EA6BF" }}>Weight range</span>
+                        <span style={{ fontSize: 11.5, fontWeight: 800, color: "#D9ECFF" }}>{section.minScore} to +{section.maxScore}</span>
+                      </div>
+                    )}
                     <div style={{ display: "grid", gap: 8, maxHeight: section.scrollable ? 300 : undefined, overflowY: section.scrollable ? "auto" : undefined, paddingRight: section.scrollable ? 4 : 0 }}>
                       {section.options.map((option) => {
                         const checked = section.selectionType === "radio" ? section.value === option.id : section.value.includes(option.id);
@@ -8006,8 +8027,8 @@ function PartnerProgramPage() {
                               onChange={() => section.onChange(option.id)}
                             />
                             <span style={{ flex: 1 }}>{option.label}</span>
-                            <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 36, padding: "4px 8px", borderRadius: 999, background: checked ? "rgba(111,217,174,0.18)" : "rgba(54,198,255,0.08)", color: checked ? "#9CF0C6" : "#67D8FF", fontWeight: 800 }}>
-                              {option.score}
+                            <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 36, padding: "4px 8px", borderRadius: 999, background: checked ? (option.score >= 0 ? "rgba(111,217,174,0.18)" : "rgba(255,122,122,0.18)") : "rgba(54,198,255,0.08)", color: checked ? (option.score >= 0 ? "#9CF0C6" : "#FFB7B7") : "#67D8FF", fontWeight: 800 }}>
+                              {option.score > 0 ? `+${option.score}` : option.score}
                             </span>
                           </label>
                         );
@@ -8015,49 +8036,34 @@ function PartnerProgramPage() {
                     </div>
                   </div>
                 ))}
+              </div>
 
-                <div style={{ background: "linear-gradient(180deg,rgba(54,198,255,0.06),rgba(6,15,28,0.34))", border: "1px solid rgba(54,198,255,0.18)", borderRadius: 16, padding: 14 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "start", marginBottom: 10 }}>
-                    <div>
-                      <div style={{ fontSize: 10.5, color: "#67D8FF", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 800, marginBottom: 6 }}>Context</div>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: "#D9ECFF" }}>Vendor Relationships</div>
-                    </div>
-                    <div style={{ display: "grid", justifyItems: "end", gap: 4 }}>
-                      <span style={{ fontSize: 10.5, color: "#8EA6BF" }}>Matched</span>
-                      <strong style={{ color: "#C9E9FF", fontSize: 13 }}>{evaluationScore.breakdown.vendorCount}</strong>
-                    </div>
+              <div style={{ marginTop: 16, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(54,198,255,0.2)", borderRadius: 18, padding: 18 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(54,198,255,0.75)", letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                    Focus Snapshot
                   </div>
-                  <p style={{ fontSize: 12, color: "#8EA6BF", lineHeight: 1.65, marginBottom: 12 }}>
-                    Keep this section as contextual intelligence. It surfaces channel overlap without distorting the score until formal vendor weighting is agreed.
-                  </p>
-                  <div style={{ display: "grid", gap: 8, maxHeight: 300, overflowY: "auto", paddingRight: 4 }}>
-                    {IPP_VENDOR_OPTIONS.map((vendor) => {
-                      const checked = evaluationForm.vendorRelationships.includes(vendor);
-                      return (
-                        <label
-                          key={vendor}
-                          style={{
-                            display: "flex",
-                            gap: 10,
-                            alignItems: "center",
-                            padding: "10px 12px",
-                            borderRadius: 12,
-                            border: checked ? "1px solid rgba(103,216,255,0.45)" : "1px solid rgba(54,198,255,0.14)",
-                            background: checked ? "rgba(54,198,255,0.12)" : "rgba(255,255,255,0.025)",
-                            color: checked ? "#F2FBFF" : "#D9ECFF",
-                            fontSize: 12.5,
-                            cursor: "pointer",
-                          }}
-                        >
-                          <input type="checkbox" checked={checked} onChange={() => toggleSelection("vendorRelationships", vendor)} />
-                          <span style={{ flex: 1 }}>{vendor}</span>
-                          <span style={{ fontSize: 10.5, color: checked ? "#67D8FF" : "#7E97B4", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                            Context
+                  <div style={{ fontSize: 11.5, color: "#8EA6BF" }}>
+                    A full-width summary of the strongest fit signals avoids the dead space beside Partner Details.
+                  </div>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: 12 }}>
+                  {[
+                    ["Service Areas", selectedServiceLabels, "Select capabilities that overlap with the IPI offer."],
+                    ["Industries", selectedIndustryLabels, "Mark the verticals with the best strategic fit."],
+                    ["Vendor Relationships", vendorRelationshipDetails.map((vendor) => `${vendor.label} (${vendor.score > 0 ? `+${vendor.score}` : vendor.score})`), "Highlight the vendors influencing the score most strongly."],
+                  ].map(([label, items, emptyMessage]) => (
+                    <div key={label} style={{ display: "grid", gap: 8, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(54,198,255,0.12)", borderRadius: 14, padding: 14 }}>
+                      <div style={{ fontSize: 11.5, color: "#A3BCD6", fontWeight: 700 }}>{label}</div>
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignContent: "start" }}>
+                        {items.length ? items.map((item) => (
+                          <span key={item} style={{ display: "inline-flex", alignItems: "center", borderRadius: 999, padding: "6px 10px", background: "rgba(54,198,255,0.08)", border: "1px solid rgba(54,198,255,0.18)", color: "#D9ECFF", fontSize: 11.5, fontWeight: 700 }}>
+                            {item}
                           </span>
-                        </label>
-                      );
-                    })}
-                  </div>
+                        )) : <span style={{ color: "#7E97B4", fontSize: 12 }}>{emptyMessage}</span>}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -8069,6 +8075,7 @@ function PartnerProgramPage() {
                     ["HQ", evaluationScore.breakdown.hqScore, 10],
                     ["Services", evaluationScore.breakdown.serviceAreaScore, 72],
                     ["Industries", evaluationScore.breakdown.industryScore, 111],
+                    ["Vendors", evaluationScore.breakdown.vendorRelationshipScore, 72],
                   ].map(([label, value, max]) => (
                     <div key={label} style={{ display: "grid", gap: 4, minWidth: 110 }}>
                       <span style={{ fontSize: 10.5, color: "#8EA6BF" }}>{label}</span>

@@ -35,11 +35,28 @@
     { label: 'Finance / Professional Services', score: 10, keywords: ['finance', 'financial', 'professional services', 'banking', 'accounting'] },
     { label: 'Healthcare', score: 5, keywords: ['healthcare', 'health care', 'medical', 'hospital'] },
   ];
-  const IPP_VENDOR_OPTIONS = [
-    'Avaya', 'Mitel', 'Cisco', 'NICE CXOne', 'Five9', 'Genesys', 'Content Guru',
-    'Dixa', 'Dialpad', 'Puzzel', '8x8', 'Microsoft', 'Calabrio', 'Verint',
-    'Swyx', 'RingCentral', 'Gamma Horizon', 'Zoom'
+  const IPP_VENDOR_SCORES = [
+    { label: 'Avaya', score: 10 },
+    { label: 'Mitel', score: 10 },
+    { label: 'Cisco', score: 10 },
+    { label: 'NICE CXOne', score: -5 },
+    { label: 'Five9', score: -5 },
+    { label: 'Genesys', score: -5 },
+    { label: 'Content Guru', score: -5 },
+    { label: 'Dixa', score: 0 },
+    { label: 'Dialpad', score: 8 },
+    { label: 'Puzzel', score: 5 },
+    { label: '3CX', score: -2 },
+    { label: '8x8', score: 5 },
+    { label: 'Microsoft', score: 7 },
+    { label: 'Calabrio', score: 10 },
+    { label: 'Verint', score: 8 },
+    { label: 'Swyx', score: 9 },
+    { label: 'RingCentral', score: 5 },
+    { label: 'Gamma Horizon', score: -4 },
+    { label: 'Zoom', score: -2 },
   ];
+  const IPP_VENDOR_OPTIONS = IPP_VENDOR_SCORES.map((vendor) => vendor.label);
 
   function parseNumber(value) {
     if (value === null || value === undefined) return null;
@@ -85,7 +102,7 @@
 
   function findVendorMatches(text) {
     const haystack = String(text || '').toLowerCase();
-    return IPP_VENDOR_OPTIONS.filter((vendor) => haystack.includes(vendor.toLowerCase()));
+    return IPP_VENDOR_SCORES.filter((vendor) => haystack.includes(vendor.label.toLowerCase()));
   }
 
   function calculateIdealPartnerScore(record) {
@@ -135,14 +152,18 @@
     factors.push(`Industry fit (${matchedIndustries.map((item) => item.label).join(', ') || 'None matched'}) +${industryScore}`);
 
     const matchedVendors = findVendorMatches([record.tech_stack, record.partners, record.keywords].join(' '));
-    factors.push(`Matched vendors (${matchedVendors.join(', ') || 'None detected'}) +0`);
+    const vendorRelationshipScore = matchedVendors.reduce((sum, vendor) => sum + vendor.score, 0);
+    score += vendorRelationshipScore;
+    scoreItems.vendorRelationships = vendorRelationshipScore;
+    factors.push(`Vendor relationships (${matchedVendors.map((vendor) => `${vendor.label} ${vendor.score > 0 ? `+${vendor.score}` : vendor.score}`).join(', ') || 'None detected'}) ${vendorRelationshipScore > 0 ? `+${vendorRelationshipScore}` : vendorRelationshipScore}`);
 
     return {
       score: Math.max(0, Math.round(score)),
       factors,
       matchedServices: matchedServices.map((item) => item.label),
       matchedIndustries: matchedIndustries.map((item) => item.label),
-      matchedVendors,
+      matchedVendors: matchedVendors.map((item) => item.label),
+      matchedVendorDetails: matchedVendors,
       companyClassification: getCompanyClassification(record.numericRevenue, record.numericEmployees),
       scoreItems,
     };
