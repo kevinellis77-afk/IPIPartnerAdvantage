@@ -1,0 +1,3755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPI Partner Quoting Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --charcoal: #36454F;
+    --charcoal-dark: #263238;
+    --charcoal-light: #4a5f6b;
+    --mauve: #A37992;
+    --mauve-light: #c49ab3;
+    --mauve-pale: #f3eaf1;
+    --green: #63AB8F;
+    --green-light: #85c4ab;
+    --green-pale: #e8f5f0;
+    --white: #ffffff;
+    --off-white: #f7f9fb;
+    --border: #dde4e8;
+    --text-muted: #7a8f9a;
+    --shadow-sm: 0 1px 3px rgba(54,69,79,0.08);
+    --shadow-md: 0 4px 16px rgba(54,69,79,0.12);
+    --shadow-lg: 0 8px 32px rgba(54,69,79,0.16);
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--off-white);
+    color: var(--charcoal);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    background: var(--charcoal-dark);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-md);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-mark {
+    width: 34px;
+    height: 34px;
+    background: linear-gradient(135deg, var(--green) 0%, var(--mauve) 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: white;
+    font-size: 13px;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-text {
+    color: white;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.3px;
+  }
+
+  .logo-text span {
+    color: var(--green-light);
+    font-weight: 300;
+    font-size: 13px;
+    margin-left: 6px;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .btn {
+    padding: 7px 16px;
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-primary {
+    background: var(--green);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--green-light); }
+
+  .btn-secondary {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .btn-secondary:hover { background: rgba(255,255,255,0.18); }
+
+  .btn-outline {
+    background: white;
+    color: var(--charcoal);
+    border: 1.5px solid var(--border);
+  }
+  .btn-outline:hover { border-color: var(--green); color: var(--green); }
+
+  .btn-danger {
+    background: #fff0f0;
+    color: #c0392b;
+    border: 1.5px solid #fad7d7;
+  }
+  .btn-danger:hover { background: #fad7d7; }
+
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* ─── LAYOUT ─── */
+  .app {
+    display: grid;
+    grid-template-columns: var(--panel-width, 360px) 1fr;
+    height: calc(100vh - 60px);
+  }
+
+  /* ─── LEFT PANEL ─── */
+  .left-panel {
+    background: white;
+    border-right: none;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Drag handle on right edge of left panel */
+  .panel-resizer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 5px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 10;
+    background: transparent;
+    transition: background 0.15s;
+    user-select: none;
+  }
+  .panel-resizer:hover,
+  .panel-resizer.dragging {
+    background: var(--green);
+    opacity: 0.6;
+  }
+  .panel-resizer::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1px;
+    height: 40px;
+    background: var(--border);
+    border-radius: 2px;
+    transition: background 0.15s;
+  }
+  .panel-resizer:hover::after,
+  .panel-resizer.dragging::after {
+    background: white;
+  }
+  /* Thin border is drawn by the resizer itself when not hovered */
+  .left-panel::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 1px;
+    height: 100%;
+    background: var(--border);
+    pointer-events: none;
+  }
+
+  .panel-header {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--charcoal);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 10px;
+  }
+
+  .search-box {
+    position: relative;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 9px 12px 9px 36px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--charcoal);
+    background: var(--off-white);
+    transition: border-color 0.15s;
+    outline: none;
+  }
+  .search-box input:focus { border-color: var(--green); background: white; }
+  .search-box input::placeholder { color: var(--text-muted); }
+
+  .search-icon {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+
+  /* Category filter tabs */
+  .category-tabs {
+    padding: 10px 20px 0;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+  }
+
+  .cat-tab {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: white;
+    color: var(--text-muted);
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .cat-tab:hover { border-color: var(--charcoal); color: var(--charcoal); }
+  .cat-tab.active {
+    background: var(--charcoal-dark);
+    border-color: var(--charcoal-dark);
+    color: white;
+  }
+  .cat-tab.active.cat-ccaas { background: var(--mauve); border-color: var(--mauve); }
+  .cat-tab.active.cat-pci { background: var(--green); border-color: var(--green); }
+  .cat-tab.active.cat-ai { background: #7c6ea3; border-color: #7c6ea3; }
+  .cat-tab.active.cat-services { background: #e07b3a; border-color: #e07b3a; }
+  .cat-tab.active.cat-telephony { background: #3a8de0; border-color: #3a8de0; }
+  .cat-tab.active.cat-networking { background: #2aab7e; border-color: #2aab7e; }
+  .cat-tab.active.cat-ucaas { background: #c0592f; border-color: #c0592f; }
+  .cat-tab.active.cat-consultancy { background: #5a6e7a; border-color: #5a6e7a; }
+
+  /* Product list */
+  .product-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px 0;
+  }
+
+  .product-list::-webkit-scrollbar { width: 5px; }
+  .product-list::-webkit-scrollbar-track { background: transparent; }
+  .product-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .product-item {
+    padding: 10px 20px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--off-white);
+    transition: background 0.1s;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .product-item:hover { background: var(--off-white); }
+
+  .product-item-info { flex: 1; min-width: 0; }
+
+  .product-item-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--charcoal);
+    line-height: 1.35;
+    margin-bottom: 3px;
+  }
+
+  .product-item-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-size: 10.5px;
+    font-weight: 500;
+  }
+
+  .tag-billing {
+    background: #e8f5f0;
+    color: #1e7a55;
+  }
+  .tag-billing.monthly { background: #e8f0f5; color: #1e4e7a; }
+
+  .product-item-price {
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .price-list {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--charcoal);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .price-threshold {
+    font-size: 10.5px;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .add-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--green-pale);
+    border: 1.5px solid var(--green);
+    color: var(--green);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 300;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    line-height: 1;
+  }
+  .add-btn:hover { background: var(--green); color: white; transform: scale(1.1); }
+
+  /* ─── RIGHT PANEL ─── */
+  .right-panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Quote Header */
+  .quote-header {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    padding: 16px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .quote-meta {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    flex: 1;
+    min-width: 600px;
+  }
+
+  .partner-level-display {
+    width: 100%;
+    padding: 7px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--off-white);
+    min-height: 34px;
+    display: flex;
+    align-items: center;
+  }
+  .partner-level-text {
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .partner-level-text.none { color: var(--text-muted); font-weight: 400; font-style: italic; font-size: 12px; }
+  .partner-level-text.accredited { color: #7a5800; }
+  .partner-level-text.silver     { color: #3d5060; }
+  .partner-level-text.gold       { color: #7a5c00; }
+  .partner-level-display.accredited { border-color: #b0851a; background-color: #fffbf0; }
+  .partner-level-display.silver     { border-color: #8a9aaa; background-color: #f4f7fa; }
+  .partner-level-display.gold       { border-color: #c8992a; background-color: #fffaf0; }
+  .level-icon { font-size: 15px; }
+
+  .level-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 6px;
+  }
+  .level-badge.accredited { background: #fff3cc; color: #7a5800; border: 1px solid #e8c84a; }
+  .level-badge.silver     { background: #eef2f5; color: #3d5060; border: 1px solid #a0b0bc; }
+  .level-badge.gold       { background: #fff7e0; color: #7a5c00; border: 1px solid #ddb830; }
+
+  .meta-field label {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+
+  .meta-field input, .meta-field select {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--charcoal);
+    background: white;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .meta-field input:focus, .meta-field select:focus { border-color: var(--green); }
+
+  /* Quote Body */
+  .quote-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 28px;
+  }
+
+  .quote-body::-webkit-scrollbar { width: 5px; }
+  .quote-body::-webkit-scrollbar-track { background: transparent; }
+  .quote-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+  }
+
+  .empty-icon {
+    width: 64px;
+    height: 64px;
+    background: var(--off-white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 26px;
+  }
+
+  .empty-state h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--charcoal);
+    margin-bottom: 6px;
+  }
+
+  .empty-state p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  /* Quote Line Items */
+  .quote-section {
+    margin-bottom: 20px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+  }
+
+  .section-divider {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .line-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .line-items-table th {
+    background: var(--charcoal-dark);
+    color: rgba(255,255,255,0.7);
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 9px 12px;
+    text-align: left;
+  }
+
+  .line-items-table th:last-child { text-align: right; }
+
+  .line-items-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--off-white);
+    font-size: 13px;
+    vertical-align: middle;
+  }
+
+  .line-items-table tr:last-child td { border-bottom: none; }
+  .line-items-table tbody tr:hover td { background: #fafcfd; }
+
+  .item-name-cell {
+    max-width: 220px;
+  }
+
+  .item-name {
+    font-weight: 500;
+    color: var(--charcoal);
+    font-size: 13px;
+    line-height: 1.3;
+  }
+
+  .item-sap {
+    font-size: 10.5px;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .qty-input {
+    width: 72px;
+    padding: 5px 8px;
+    border: 1.5px solid var(--border);
+    border-radius: 5px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    text-align: right;
+    color: var(--charcoal);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .qty-input:focus { border-color: var(--green); }
+
+  .price-cell {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--charcoal);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .override-input {
+    width: 88px;
+    padding: 5px 8px;
+    border: 1.5px solid var(--border);
+    border-radius: 5px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    text-align: right;
+    color: var(--charcoal);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .override-input:focus { border-color: var(--mauve); }
+  .override-input.overridden { border-color: var(--mauve); color: var(--mauve); background: var(--mauve-pale); }
+
+  .line-total {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--charcoal);
+    text-align: right;
+  }
+
+  .remove-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #ccc;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s;
+    font-size: 16px;
+  }
+  .remove-btn:hover { color: #c0392b; }
+
+  /* Discount badge */
+  .discount-badge {
+    display: inline-block;
+    background: var(--green-pale);
+    color: #1e7a55;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    margin-left: 4px;
+  }
+  .discount-badge.over { background: var(--mauve-pale); color: #7a3a5e; }
+
+  /* ─── QUOTE FOOTER ─── */
+  .quote-footer {
+    background: white;
+    border-top: 2px solid var(--border);
+    padding: 16px 28px;
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+    align-items: end;
+  }
+
+  .margin-summary {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .margin-item {
+    text-align: center;
+  }
+
+  .margin-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-muted);
+    margin-bottom: 3px;
+  }
+
+  .margin-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--charcoal);
+  }
+  .margin-value.green { color: var(--green); }
+  .margin-value.mauve { color: var(--mauve); }
+
+  .margin-sub {
+    font-size: 10.5px;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .footer-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  /* ─── MODAL ─── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(38,50,56,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal {
+    background: white;
+    border-radius: 14px;
+    box-shadow: var(--shadow-lg);
+    max-width: 700px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalIn 0.2s ease;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(8px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .modal-title { font-size: 16px; font-weight: 700; }
+  .modal-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+
+  .modal-close {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--off-white);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .modal-close:hover { background: var(--border); color: var(--charcoal); }
+
+  .modal-body { padding: 20px 24px; }
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  /* Preview / Export */
+  .preview-section {
+    margin-bottom: 20px;
+  }
+
+  .preview-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .preview-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .preview-table th {
+    background: var(--charcoal);
+    color: rgba(255,255,255,0.75);
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+
+  .preview-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--off-white);
+  }
+
+  .preview-table td:last-child { text-align: right; font-family: 'DM Mono', monospace; }
+
+  .preview-totals {
+    margin-top: 12px;
+    background: var(--off-white);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+
+  .preview-total-item { text-align: center; }
+  .preview-total-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); margin-bottom: 3px; }
+  .preview-total-value { font-size: 16px; font-weight: 700; font-family: 'DM Mono', monospace; }
+  .preview-total-value.green { color: var(--green); }
+
+  .hidden { display: none !important; }
+
+  /* Category colour dots */
+  .cat-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    margin-right: 5px;
+    flex-shrink: 0;
+  }
+
+  /* Confirm banner */
+  .confirm-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: #fff8f0;
+    border: 1.5px solid #f0c070;
+    border-radius: var(--radius-sm);
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    animation: toastIn 0.2s ease;
+  }
+  .confirm-msg { font-size: 13px; font-weight: 500; color: var(--charcoal); flex: 1; }
+  .confirm-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+  /* Notification toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--charcoal-dark);
+    color: white;
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    z-index: 300;
+    animation: toastIn 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .no-results {
+    padding: 32px 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  /* Billing block wrappers */
+  .billing-block {
+    margin-bottom: 24px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: white;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .billing-block-header {
+    background: var(--charcoal-dark);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .billing-block-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: white;
+    white-space: nowrap;
+  }
+
+  .billing-block-total {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--green-light);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Category group inside billing block */
+  .cat-group {
+    border-top: 1px solid var(--off-white);
+  }
+
+  .cat-group:first-child {
+    border-top: none;
+  }
+
+  .cat-group-header {
+    padding: 8px 16px;
+    background: var(--off-white);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cat-group-label {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--charcoal);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .cat-group-divider {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .cat-group-subtotal {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--charcoal);
+    white-space: nowrap;
+  }
+
+  .cat-table {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .cat-table th {
+    background: #3a4f5c;
+    font-size: 10px;
+    padding: 7px 12px;
+  }
+
+  /* Saved Quotes list */
+  .saved-quote-item {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--off-white);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: background 0.1s;
+  }
+  .saved-quote-item:hover { background: var(--off-white); }
+  .saved-quote-item:last-child { border-bottom: none; }
+  .sq-info { flex: 1; min-width: 0; }
+  .sq-ref { font-weight: 700; font-size: 13px; color: var(--charcoal); }
+  .sq-meta { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+  .sq-totals { text-align: right; flex-shrink: 0; }
+  .sq-mrc { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 600; color: var(--green); }
+  .sq-acv { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); }
+  .sq-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .saved-quotes-empty { padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: 13px; }
+  .sq-level-badge { display:inline-flex;align-items:center;padding:1px 7px;border-radius:10px;font-size:10.5px;font-weight:600;margin-left:6px; }
+  .sq-level-badge.accredited{background:#fff3cc;color:#7a5800;border:1px solid #e8c84a}
+  .sq-level-badge.silver{background:#eef2f5;color:#3d5060;border:1px solid #a0b0bc}
+  .sq-level-badge.gold{background:#fff7e0;color:#7a5c00;border:1px solid #ddb830}
+
+  /* Read-only price cell */
+  .price-display {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--charcoal);
+    padding: 5px 8px;
+    background: var(--off-white);
+    border-radius: 5px;
+    border: 1.5px solid var(--border);
+    display: inline-block;
+    min-width: 88px;
+    text-align: right;
+  }
+  .price-display.discounted { color: var(--green); border-color: var(--green-pale); background: var(--green-pale); }
+
+  /* Quote Notes */
+  .quote-notes-area {
+    margin: 0 28px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    background: white;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .quote-notes-header {
+    padding: 8px 14px;
+    background: var(--off-white);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+  }
+  .quote-notes-header:hover { background: var(--border); }
+  .quote-notes-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .quote-notes-toggle { font-size: 11px; color: var(--text-muted); }
+  .notes-textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--charcoal);
+    resize: vertical;
+    min-height: 80px;
+    outline: none;
+    line-height: 1.5;
+  }
+  .notes-textarea::placeholder { color: var(--text-muted); }
+
+  /* Validity date in meta */
+  .quote-meta { grid-template-columns: repeat(5, 1fr) !important; min-width: 700px !important; }
+
+  /* Status badges */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all 0.15s;
+  }
+  .status-badge.draft   { background:#f0f4f6; color:#5a6e7a; border-color:#c5d0d8; }
+  .status-badge.sent    { background:#e8f0ff; color:#2a52b0; border-color:#aac0f0; }
+  .status-badge.won     { background:#e8f5f0; color:#1e7a55; border-color:#7dc8a8; }
+  .status-badge.lost    { background:#fef0f0; color:#a02020; border-color:#f0a0a0; }
+  .status-badge:hover   { filter: brightness(0.95); }
+
+  .sq-status-select {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 6px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border);
+    outline: none;
+    cursor: pointer;
+    background: white;
+  }
+
+  /* Templates panel */
+  .templates-btn {
+    width: 100%;
+    padding: 9px 14px;
+    background: linear-gradient(135deg, var(--charcoal-dark), #3a5a6a);
+    color: white;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: opacity 0.15s;
+    letter-spacing: 0.3px;
+  }
+  .templates-btn:hover { opacity: 0.88; }
+
+  .template-item {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--off-white);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .template-item:hover { background: var(--off-white); }
+  .template-item:last-child { border-bottom: none; }
+  .template-name { font-size: 13px; font-weight: 600; color: var(--charcoal); margin-bottom: 2px; }
+  .template-desc { font-size: 11.5px; color: var(--text-muted); }
+  .template-meta { font-size: 11px; color: var(--green); font-weight: 600; margin-top: 3px; }
+
+  /* Duplicate button */
+  .sq-duplicate-btn { }
+
+  /* Pipeline summary bar */
+  .pipeline-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .pipeline-cell {
+    background: white;
+    padding: 10px 16px;
+    text-align: center;
+  }
+  .pipeline-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.7px; color: var(--text-muted); margin-bottom: 3px; font-weight: 600; }
+  .pipeline-value { font-size: 15px; font-weight: 700; font-family: 'DM Mono', monospace; }
+  .pipeline-count { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+  .pv-won { color: var(--green); }
+  .pv-sent { color: #2a52b0; }
+  .pv-draft { color: var(--charcoal); }
+  .pv-lost { color: #a02020; }
+
+  /* Product Detail Panel */
+  .product-detail-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(38,50,56,0.4);
+    backdrop-filter: blur(3px);
+    z-index: 150;
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-end;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .product-detail-overlay.visible {
+    pointer-events: all;
+    opacity: 1;
+  }
+  .product-detail-panel {
+    width: 400px;
+    max-width: 95vw;
+    background: white;
+    box-shadow: -4px 0 32px rgba(38,50,56,0.18);
+    display: flex;
+    flex-direction: column;
+    transform: translateX(40px);
+    transition: transform 0.22s cubic-bezier(0.16,1,0.3,1);
+    overflow: hidden;
+  }
+  .product-detail-overlay.visible .product-detail-panel {
+    transform: translateX(0);
+  }
+  .pd-header {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .pd-cat-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+  .pd-title { font-size: 15px; font-weight: 700; color: var(--charcoal); line-height: 1.3; flex: 1; }
+  .pd-sku { font-size: 11px; color: var(--text-muted); font-family: "DM Mono", monospace; margin-top: 3px; }
+  .pd-close {
+    width: 28px; height: 28px; border-radius: 50%; border: none; background: var(--off-white);
+    cursor: pointer; font-size: 15px; color: var(--text-muted); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; transition: background 0.15s;
+  }
+  .pd-close:hover { background: var(--border); color: var(--charcoal); }
+  .pd-body { flex: 1; overflow-y: auto; padding: 18px 20px; }
+  .pd-body::-webkit-scrollbar { width: 4px; }
+  .pd-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .pd-section-title {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;
+    color: var(--text-muted); margin: 0 0 8px; display: flex; align-items: center; gap: 8px;
+  }
+  .pd-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .pd-desc { font-size: 13px; color: var(--charcoal); line-height: 1.6; margin-bottom: 16px; }
+  .pd-specs {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px;
+  }
+  .pd-spec {
+    background: var(--off-white); border-radius: 6px; padding: 8px 10px;
+    border: 1px solid var(--border);
+  }
+  .pd-spec-label { font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 3px; }
+  .pd-spec-value { font-size: 12.5px; font-weight: 600; color: var(--charcoal); }
+  .pd-price-box {
+    background: var(--green-pale); border: 1.5px solid var(--green); border-radius: 8px;
+    padding: 12px 14px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .pd-price-label { font-size: 11px; font-weight: 600; color: var(--green); text-transform: uppercase; letter-spacing: 0.4px; }
+  .pd-price-value { font-size: 18px; font-weight: 700; color: var(--green); font-family: "DM Mono", monospace; }
+  .pd-price-sub { font-size: 10px; color: var(--green); opacity: 0.7; }
+  .pd-related-item {
+    padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+    margin-bottom: 8px; cursor: pointer; transition: all 0.15s; display: flex;
+    align-items: flex-start; gap: 10px;
+  }
+  .pd-related-item:hover { border-color: var(--green); background: var(--green-pale); }
+  .pd-related-name { font-size: 12.5px; font-weight: 600; color: var(--charcoal); line-height: 1.3; }
+  .pd-related-why { font-size: 11px; color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
+  .pd-related-price { font-size: 11.5px; font-weight: 700; color: var(--green); font-family: "DM Mono", monospace; white-space: nowrap; flex-shrink: 0; }
+  .pd-footer {
+    padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px;
+  }
+  .info-btn {
+    width: 22px; height: 22px; border-radius: 50%; background: var(--off-white);
+    border: 1.5px solid var(--border); color: var(--text-muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 11px;
+    font-weight: 700; flex-shrink: 0; transition: all 0.15s; line-height: 1;
+  }
+  .info-btn:hover { background: var(--charcoal); color: white; border-color: var(--charcoal); }
+
+  /* Version management */
+  .sq-group { border-bottom: 1px solid var(--border); }
+  .sq-group:last-child { border-bottom: none; }
+  .sq-group-header { padding: 12px 20px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: background 0.1s; user-select: none; }
+  .sq-group-header:hover { background: var(--off-white); }
+  .sq-group-baseref { font-size: 13px; font-weight: 700; color: var(--charcoal); flex: 1; }
+  .sq-group-meta { font-size: 11.5px; color: var(--text-muted); margin-top: 1px; }
+  .sq-group-summary { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .sq-version-count { font-size: 10.5px; font-weight: 600; background: var(--charcoal-dark); color: white; padding: 2px 7px; border-radius: 10px; }
+  .sq-group-chevron { font-size: 11px; color: var(--text-muted); transition: transform 0.2s; flex-shrink: 0; }
+  .sq-group-chevron.open { transform: rotate(90deg); }
+  .sq-versions-list { display: none; border-top: 1px solid var(--off-white); }
+  .sq-versions-list.open { display: block; }
+  .sq-version-row { padding: 10px 20px 10px 36px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--off-white); transition: background 0.1s; }
+  .sq-version-row:last-child { border-bottom: none; }
+  .sq-version-row:hover { background: #fafcfd; }
+  .sq-version-row.latest { background: var(--green-pale); }
+  .sq-version-row.latest:hover { background: #d8ede6; }
+  .sq-version-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 8px; background: var(--off-white); color: var(--text-muted); border: 1px solid var(--border); white-space: nowrap; flex-shrink: 0; }
+  .sq-version-row.latest .sq-version-badge { background: var(--green); color: white; border-color: var(--green); }
+  .sq-version-info { flex: 1; min-width: 0; }
+  .sq-version-date { font-size: 11.5px; color: var(--charcoal); font-weight: 500; }
+  .sq-version-change { font-size: 11px; color: var(--text-muted); margin-top: 1px; font-style: italic; }
+  .sq-version-totals { text-align: right; flex-shrink: 0; }
+  .sq-version-mrc { font-family: "DM Mono", monospace; font-size: 12.5px; font-weight: 600; color: var(--green); }
+  .sq-version-acv { font-family: "DM Mono", monospace; font-size: 10.5px; color: var(--text-muted); }
+  .sq-version-actions { display: flex; gap: 5px; flex-shrink: 0; }
+  .version-indicator { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; background: var(--charcoal-dark); color: white; border-radius: 10px; font-size: 11px; font-weight: 600; margin-left: 6px; vertical-align: middle; }
+  .version-indicator.unsaved { background: var(--mauve); }
+  .btn-version { background: linear-gradient(135deg, var(--charcoal-dark), #3a5a6a); color: white; border: none; }
+  .btn-version:hover { opacity: 0.88; }
+
+  /* Help button */
+  .help-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    border: 1.5px solid rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.85);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    font-family: Georgia, serif;
+    flex-shrink: 0;
+  }
+  .help-btn:hover {
+    background: var(--green);
+    border-color: var(--green);
+    color: white;
+    transform: scale(1.08);
+  }
+
+  /* Help modal */
+  .help-modal { max-width: 680px; }
+  .help-section { margin-bottom: 22px; }
+  .help-section:last-child { margin-bottom: 0; }
+  .help-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--charcoal);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--border);
+  }
+  .help-section-icon { font-size: 16px; }
+  .help-steps { list-style: none; }
+  .help-steps li {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 9px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--charcoal);
+  }
+  .help-step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--charcoal-dark);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .help-tips { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .help-tip {
+    background: var(--off-white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--charcoal);
+  }
+  .help-tip strong { display: block; margin-bottom: 2px; color: var(--charcoal-dark); }
+  .help-shortcut {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--off-white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 12px;
+    color: var(--charcoal);
+    margin: 3px 0;
+  }
+  .help-shortcut kbd {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 11px;
+    font-family: "DM Mono", monospace;
+    color: var(--charcoal-dark);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+  .help-badge {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 8px;
+    font-size: 10.5px;
+    font-weight: 600;
+    vertical-align: middle;
+  }
+  .hb-green { background: var(--green-pale); color: #1e7a55; border: 1px solid var(--green); }
+  .hb-mauve { background: var(--mauve-pale); color: #7a3a5e; border: 1px solid var(--mauve); }
+  .hb-gold  { background: #fff7e0; color: #7a5c00; border: 1px solid #ddb830; }
+
+  /* Email modal */
+  .email-field { margin-bottom: 14px; }
+  .email-field label {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+  }
+  .email-field input, .email-field textarea {
+    width: 100%;
+    padding: 8px 11px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: "DM Sans", sans-serif;
+    font-size: 13px;
+    color: var(--charcoal);
+    outline: none;
+    transition: border-color 0.15s;
+    background: white;
+  }
+  .email-field input:focus, .email-field textarea:focus { border-color: var(--green); }
+  .email-field textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+  .email-preview-box {
+    background: var(--off-white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--charcoal);
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .email-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12.5px;
+  }
+  .email-summary-row:last-child { border-bottom: none; }
+
+  /* Print styles */
+  @media print {
+    header, .left-panel, .quote-header, .quote-footer { display: none !important; }
+    .app { display: block; height: auto; }
+    .right-panel { display: block; }
+    .quote-body { overflow: visible; padding: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">IPI</div>
+    <div class="logo-text">Partner Quoting Tool <span>Channel Partner Portal</span></div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-secondary" onclick="clearQuote()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 .49-3.51"></path></svg>
+      New Quote
+    </button>
+    <button class="btn btn-secondary" onclick="openSavedQuotesModal()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+      Saved Quotes
+    </button>
+    <button class="btn btn-secondary btn-version" id="saveVersionBtn" onclick="promptSaveVersion()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+      <span id="saveVersionBtnLabel">Save v1</span>
+    </button>
+    <button class="btn btn-primary" onclick="openExportModal()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      Export Quote
+    </button>
+    <button class="help-btn" onclick="openHelpModal()" title="Help & Guide">?</button>
+  </div>
+</header>
+
+<div class="app">
+  <!-- LEFT: Product Catalogue -->
+  <div class="left-panel" id="leftPanel">
+    <div class="panel-resizer" id="panelResizer"></div>
+    <div class="panel-header">
+      <div class="panel-title">Product Catalogue</div>
+      <div class="search-box">
+        <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="searchInput" placeholder="Search products or SKU…" oninput="filterProducts()">
+      </div>
+    </div>
+    <div class="category-tabs" id="categoryTabs"></div>
+    <button class="templates-btn" onclick="openTemplatesModal()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>
+      Quick-Start Templates
+    </button>
+    <div class="product-list" id="productList"></div>
+  </div>
+
+  <!-- RIGHT: Quote Builder -->
+  <div class="right-panel">
+    <div class="quote-header">
+      <div class="quote-meta">
+        <div class="meta-field">
+          <label>Partner Name</label>
+          <input type="text" id="partnerName" placeholder="e.g. Acme Technologies Ltd" oninput="autoAssignPartnerLevel()">
+        </div>
+        <div class="meta-field">
+          <label>End Customer</label>
+          <input type="text" id="endCustomer" placeholder="e.g. Global Corp plc">
+        </div>
+        <div class="meta-field">
+          <label>Partner Level</label>
+          <div id="partnerLevelDisplay" class="partner-level-display">
+            <span id="partnerLevelText" class="partner-level-text none">— Enter partner name —</span>
+          </div>
+          <input type="hidden" id="partnerLevel" value="">
+        </div>
+        <div class="meta-field">
+          <label>Quote Reference <span id="versionIndicator" class="version-indicator unsaved" style="display:none"></span></label>
+          <input type="text" id="quoteRef" placeholder="e.g. QT-2025-001" oninput="onQuoteRefChange()">
+        </div>
+        <div class="meta-field">
+          <label>Valid Until</label>
+          <input type="date" id="validUntil">
+        </div>
+      </div>
+    </div>
+
+    <div class="quote-body" id="quoteBody">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">📋</div>
+        <h3>Your quote is empty</h3>
+        <p>Select products from the catalogue on the left<br>to start building your quote.</p>
+      </div>
+      <div id="lineItemsContainer"></div>
+    </div>
+
+    <!-- Quote Notes -->
+    <div class="quote-notes-area" id="quoteNotesArea">
+      <div class="quote-notes-header" onclick="toggleNotes()">
+        <div class="quote-notes-title">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+          Notes &amp; Terms
+        </div>
+        <span class="quote-notes-toggle" id="notesToggleLabel">+ Add notes</span>
+      </div>
+      <div id="notesBody" style="display:none">
+        <textarea class="notes-textarea" id="quoteNotes" placeholder="Add any notes, special terms, or covering message for this quote…" oninput="updateNotesToggle()"></textarea>
+      </div>
+    </div>
+
+    <div class="quote-footer">
+      <div class="footer-grid">
+        <div class="margin-summary">
+          <div class="margin-item">
+            <div class="margin-label">Monthly Recurring</div>
+            <div class="margin-value green" id="totalMRC">£0.00</div>
+            <div class="margin-sub" id="totalMRCNote">per month</div>
+          </div>
+          <div class="margin-item">
+            <div class="margin-label">One-Off Charges</div>
+            <div class="margin-value mauve" id="totalOTC">£0.00</div>
+            <div class="margin-sub">one time</div>
+          </div>
+          <div class="margin-item">
+            <div class="margin-label">Annual Value</div>
+            <div class="margin-value" id="totalACV">£0.00</div>
+            <div class="margin-sub">incl. one-off</div>
+          </div>
+          <div class="margin-item">
+            <div class="margin-label">Line Items</div>
+            <div class="margin-value" id="lineCount">0</div>
+            <div class="margin-sub">products</div>
+          </div>
+        </div>
+        <div class="footer-actions">
+          <button class="btn btn-outline btn-sm" onclick="openExportModal()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            Preview & Export
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Saved Quotes Modal -->
+<div class="modal-overlay hidden" id="savedQuotesModal" onclick="closeSavedQuotesModal(event)">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:780px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Saved Quotes</div>
+        <div class="modal-subtitle" id="savedQuotesSubtitle">Your locally saved quotes</div>
+      </div>
+      <button class="modal-close" onclick="closeSavedQuotesModal()">✕</button>
+    </div>
+    <div class="modal-body" id="savedQuotesBody" style="padding:0"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeSavedQuotesModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Templates Modal -->
+<div class="modal-overlay hidden" id="templatesModal" onclick="closeTemplatesModal(event)">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:580px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Quick-Start Templates</div>
+        <div class="modal-subtitle">Load a pre-built product bundle to start your quote</div>
+      </div>
+      <button class="modal-close" onclick="closeTemplatesModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0" id="templatesBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeTemplatesModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Version Note Modal -->
+<div class="modal-overlay hidden" id="versionNoteModal" onclick="closeVersionNoteModal(event)">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:460px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="versionNoteTitle">Save Version</div>
+        <div class="modal-subtitle" id="versionNoteSubtitle"></div>
+      </div>
+      <button class="modal-close" onclick="closeVersionNoteModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="meta-field" style="margin-bottom:0">
+        <label>What changed? <span style="font-weight:400;color:var(--text-muted)">(optional)</span></label>
+        <input type="text" id="versionNoteInput" placeholder="e.g. Added AI Side-Kick, revised to 75 seats"
+          style="margin-top:4px" maxlength="120">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeVersionNoteModal()">Cancel</button>
+      <button class="btn btn-primary" id="versionNoteConfirmBtn">Save Version</button>
+    </div>
+  </div>
+</div>
+
+<!-- Export Modal -->
+<div class="modal-overlay hidden" id="exportModal" onclick="closeExportModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Quote Preview</div>
+        <div class="modal-subtitle" id="modalSubtitle">Review before exporting</div>
+      </div>
+      <button class="modal-close" onclick="closeExportModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeExportModal()">Close</button>
+      <button class="btn btn-outline" onclick="copyCSV()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        Copy CSV
+      </button>
+      <button class="btn btn-outline" onclick="openEmailModal()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+        Email Quote
+      </button>
+      <button class="btn btn-primary" onclick="printQuote()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        Print / Save PDF
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── PRODUCT DATA ───────────────────────────────────────────────────────────
+const PRODUCTS = [
+  {id:"S100540",name:"Pauseable (Named-On Demand)",cat:"PCI Cloud",billing:"Monthly",list:18.5,cost:0,threshold:12.95},
+  {id:"S100541",name:"Pauseable (Conc-On Demand)",cat:"PCI Cloud",billing:"Monthly",list:24.0,cost:0,threshold:16.8},
+  {id:"S100841",name:"Pauseable (Named-Ann PrePay)",cat:"PCI Cloud",billing:"Monthly",list:13.524,cost:0,threshold:9.47},
+  {id:"S100842",name:"Pauseable (Conc-Ann PrePay)",cat:"PCI Cloud",billing:"Monthly",list:17.5812,cost:0,threshold:12.31},
+  {id:"S100843",name:"Pauseable (Named-Ann Pay M)",cat:"PCI Cloud",billing:"Monthly",list:14.2002,cost:0,threshold:9.95},
+  {id:"S100844",name:"Pauseable (Conc-Ann Pay M)",cat:"PCI Cloud",billing:"Monthly",list:18.46026,cost:0,threshold:12.93},
+  {id:"S100864",name:"Cloud PCI Standard (Nam-AnnPayM)",cat:"PCI Cloud",billing:"Monthly",list:19.9,cost:10.945,threshold:13.93},
+  {id:"S101019",name:"Cloud PCI Premium (Nam-AnPrePay)",cat:"PCI Cloud",billing:"Monthly",list:21.63,cost:11.8965,threshold:15.141},
+  {id:"S101020",name:"Cloud PCI Premium (Nam-AnnPayM)",cat:"PCI Cloud",billing:"Monthly",list:27.04,cost:14.872,threshold:18.928},
+  {id:"S101023",name:"Cloud PCI Premium (Conc-AnnPayM)",cat:"PCI Cloud",billing:"Monthly",list:35.41,cost:19.4755,threshold:24.787},
+  {id:"S101049",name:"Cloud PCI Digital (Nam-AnPrePay)",cat:"PCI Cloud",billing:"Monthly",list:4.5,cost:0,threshold:3.24},
+  {id:"S101050",name:"Cloud PCI Digital (Nam-AnnPayM)",cat:"PCI Cloud",billing:"Monthly",list:5.85,cost:0,threshold:4.212},
+  {id:"S101053",name:"Cloud PCI Digital (Conc-AnnPayM)",cat:"PCI Cloud",billing:"Monthly",list:6.75,cost:0,threshold:4.86},
+  {id:"S100937",name:"ECX Voice (Named) Annual Pre Pay",cat:"CCaaS",billing:"Monthly",list:58.0,cost:-8.86975,threshold:41.76},
+  {id:"S100938",name:"ECX Voice (Named) Pay Monthly",cat:"CCaaS",billing:"Monthly",list:61.0,cost:-8.86975,threshold:43.92},
+  {id:"S100939",name:"ECX Voice (Conc) Annual Pre Pay",cat:"CCaaS",billing:"Monthly",list:76.0,cost:-8.86975,threshold:54.72},
+  {id:"S100940",name:"ECX Voice (Conc) Pay Monthly",cat:"CCaaS",billing:"Monthly",list:79.0,cost:-8.86975,threshold:56.88},
+  {id:"S100941",name:"ECX Omni (Named) Annual Pre Pay",cat:"CCaaS",billing:"Monthly",list:78.0,cost:-8.86975,threshold:56.16},
+  {id:"S100942",name:"ECX Omni (Named) Pay Monthly",cat:"CCaaS",billing:"Monthly",list:80.0,cost:-8.86975,threshold:57.6},
+  {id:"S100943",name:"ECX Omni (Conc) Annual Pre Pay",cat:"CCaaS",billing:"Monthly",list:100.0,cost:-8.86975,threshold:72.0},
+  {id:"S100944",name:"ECX Omni (Conc) Pay Monthly",cat:"CCaaS",billing:"Monthly",list:104.0,cost:-8.86975,threshold:74.88},
+  {id:"S100945",name:"ECX Max (Named) Annual Pre Pay",cat:"CCaaS",billing:"Monthly",list:98.0,cost:-8.86975,threshold:70.56},
+  {id:"S100946",name:"ECX Max (Named) Pay Monthly",cat:"CCaaS",billing:"Monthly",list:101.0,cost:-8.86975,threshold:72.72},
+  {id:"S100947",name:"ECX Max (Conc) Annual Pre Pay",cat:"CCaaS",billing:"Monthly",list:127.0,cost:-8.86975,threshold:91.44},
+  {id:"S100948",name:"ECX Max (Conc) Pay Monthly",cat:"CCaaS",billing:"Monthly",list:132.0,cost:-8.86975,threshold:95.04},
+  {id:"S100951",name:"ECX MS Teams Annual Pre-Pay",cat:"CCaaS",billing:"Monthly",list:5.0,cost:0,threshold:3.6},
+  {id:"S100952",name:"ECX MS Teams Pay Monthly",cat:"CCaaS",billing:"Monthly",list:6.0,cost:0,threshold:4.32},
+  {id:"S100953",name:"ECX CCaaS CRM Annual Pre Pay",cat:"CCaaS",billing:"Monthly",list:8.0,cost:0,threshold:5.76},
+  {id:"S100954",name:"ECX CCaaS CRM Pay Monthly",cat:"CCaaS",billing:"Monthly",list:9.0,cost:0,threshold:6.48},
+  {id:"S100955",name:"ECX AI Insight NAMED Ann Pre-Pay",cat:"CCaaS",billing:"Monthly",list:15.0,cost:0,threshold:10.8},
+  {id:"S100956",name:"ECX AI Insight CONC Ann Pre-Pay",cat:"CCaaS",billing:"Monthly",list:19.0,cost:0,threshold:13.68},
+  {id:"S100957",name:"ECX AI Insight NAMED Pay Monthly",cat:"CCaaS",billing:"Monthly",list:16.0,cost:0,threshold:11.52},
+  {id:"S100958",name:"ECX AI Insight CONC Pay Monthly",cat:"CCaaS",billing:"Monthly",list:21.0,cost:0,threshold:15.12},
+  {id:"S100959",name:"ECX Voice (Named) Overage",cat:"CCaaS",billing:"Monthly",list:71.0,cost:-8.86975,threshold:51.12},
+  {id:"S100960",name:"ECX Voice (Concurrent) Overage",cat:"CCaaS",billing:"Monthly",list:92.0,cost:-8.86975,threshold:66.24},
+  {id:"S100961",name:"ECX Omni (Named) Overage",cat:"CCaaS",billing:"Monthly",list:87.0,cost:-8.86975,threshold:62.64},
+  {id:"S100962",name:"ECX Omni (Concurrent) Overage",cat:"CCaaS",billing:"Monthly",list:113.0,cost:-8.86975,threshold:81.36},
+  {id:"S100963",name:"ECX Max (Named) Overage",cat:"CCaaS",billing:"Monthly",list:112.0,cost:-8.86975,threshold:80.64},
+  {id:"S100964",name:"ECX Max (Concurrent) Overage",cat:"CCaaS",billing:"Monthly",list:146.0,cost:-8.86975,threshold:105.12},
+  {id:"S100965",name:"ECX UCX (Named) Overage",cat:"CCaaS",billing:"Monthly",list:11.0,cost:-1.06675,threshold:7.92},
+  {id:"S100966",name:"ECX MS Teams Standard Overage",cat:"CCaaS",billing:"Monthly",list:6.0,cost:0,threshold:4.32},
+  {id:"S100967",name:"ECX CC CRM On Demand",cat:"CCaaS",billing:"Monthly",list:10.0,cost:0,threshold:7.2},
+  {id:"S100968",name:"ECX AI Insight NAMED Overage",cat:"CCaaS",billing:"Monthly",list:17.0,cost:0,threshold:12.24},
+  {id:"S100969",name:"ECX AI Insight CONC Overage",cat:"CCaaS",billing:"Monthly",list:23.0,cost:0,threshold:16.56},
+  {id:"S100970",name:"ECX Batch Transcription Hours",cat:"CCaaS",billing:"Monthly",list:0.12,cost:0.08,threshold:0.09},
+  {id:"S100971",name:"ECX AI Insight Agt Monthly Trial",cat:"CCaaS",billing:"Monthly",list:0,cost:0,threshold:0},
+  {id:"S100976",name:"ECX Real-Time Transcriptions Hrs",cat:"CCaaS",billing:"Monthly",list:0.26,cost:0.13,threshold:0.16},
+  {id:"S100984",name:"ECX AI Side-Kick NAMED Pay Mthly",cat:"CCaaS",billing:"Monthly",list:19.0,cost:0,threshold:13.68},
+  {id:"S100985",name:"ECX AI Side-Kick NAMED Overage",cat:"CCaaS",billing:"Monthly",list:20.0,cost:0,threshold:14.4},
+  {id:"S100987",name:"ECX AI Side-Kick CONC Pay Mthly",cat:"CCaaS",billing:"Monthly",list:25.4,cost:0,threshold:18.29},
+  {id:"S100988",name:"ECX AI Side-Kick CONC Overage",cat:"CCaaS",billing:"Monthly",list:27.4,cost:0,threshold:19.73},
+  {id:"S100991",name:"ECX Autopilot AI Voice Bot P/Min",cat:"CCaaS",billing:"Monthly",list:0.08,cost:0.02,threshold:0.06},
+  {id:"S100880",name:"ECX CCaaS SMS Outbound Usage",cat:"CCaaS",billing:"Monthly",list:0.0346,cost:0.0246,threshold:0.03},
+  {id:"S100881",name:"ECX CCaaS SMS - Long Number Rental",cat:"CCaaS",billing:"Monthly",list:42,cost:20,threshold:23.53},
+  {id:"S100882",name:"ECX CCaaS SMS - Short Number Rental",cat:"CCaaS",billing:"Monthly",list:5.0,cost:0,threshold:3.5},
+  {id:"S100883",name:"ECX CCaaS SMS - Shortcode Keyword Rental",cat:"CCaaS",billing:"Monthly",list:105,cost:50,threshold:58.83},
+  {id:"S100949",name:"ECX UCX (Named) Annual Pre Pay",cat:"UCaaS",billing:"Monthly",list:7.0,cost:-1.06675,threshold:5.04},
+  {id:"S100950",name:"ECX UCX (Named) Ann Pay Monthly",cat:"UCaaS",billing:"Monthly",list:8.0,cost:-1.06675,threshold:5.76},
+  {id:"S100555",name:"Cloud AI - ID Me Usage",cat:"AI",billing:"Monthly",list:0.045,cost:0,threshold:0.032},
+  {id:"S100556",name:"Cloud AI - Q4Me Usage",cat:"AI",billing:"Monthly",list:0.035,cost:0,threshold:0.025},
+  {id:"S100557",name:"Cloud AI Bot Channel On Demand / Overage",cat:"AI",billing:"Monthly",list:388,cost:0,threshold:271.6},
+  {id:"S100558",name:"Cloud AI - Other Usage",cat:"AI",billing:"Monthly",list:0.08,cost:0,threshold:0.056},
+  {id:"S100884",name:"Cloud AI IPI MS",cat:"AI",billing:"Monthly",list:45.0,cost:0,threshold:31.5},
+  {id:"S100906",name:"ECX CCaaS AI Insight NAMED Annual PrePay",cat:"AI",billing:"Monthly",list:15,cost:6.375,threshold:7.5},
+  {id:"S100907",name:"ECX CCaaS AI Insight CONC Annual PrePay",cat:"AI",billing:"Monthly",list:19,cost:8.075,threshold:9.5},
+  {id:"S100908",name:"ECX CCaaS AI Insight NAMED Overage",cat:"AI",billing:"Monthly",list:17,cost:7.225,threshold:8.5},
+  {id:"S100909",name:"ECX CCaaS AI Insight CONCURRENT Overage",cat:"AI",billing:"Monthly",list:23,cost:9.775,threshold:11.5},
+  {id:"S100910",name:"ECX CCaaS AI Insight NAMED Annual PayMon",cat:"AI",billing:"Monthly",list:16,cost:6.8,threshold:8},
+  {id:"S100912",name:"ECX CCaaS AI Insight CONC Annual Pay Mon",cat:"AI",billing:"Monthly",list:21,cost:8.925,threshold:10.5},
+  {id:"S100913",name:"ECX CCaaS AI Insight Agent Monthly Trial",cat:"AI",billing:"Monthly",list:0,cost:0,threshold:0},
+  {id:"S100561",name:"NGN / Inbound Rev Share Usage",cat:"Inbound Telephony",billing:"Monthly",list:0.018,cost:0,threshold:0.013},
+  {id:"S100562",name:"NGN Usage",cat:"Inbound Telephony",billing:"Monthly",list:0.022,cost:0,threshold:0.015},
+  {id:"S100564",name:"VoiceConnect Call Usage",cat:"Inbound Telephony",billing:"Monthly",list:0.016,cost:0,threshold:0.011},
+  {id:"S100812",name:"VoiceConnect NGN/Inbound IPI Porting PS",cat:"Inbound Telephony",billing:"Monthly",list:350,cost:0,threshold:245},
+  {id:"S100813",name:"NGN/Inbound PS (IPI)",cat:"Inbound Telephony",billing:"Monthly",list:81.25,cost:0,threshold:56.88},
+  {id:"S100814",name:"VoiceConnect NGN/Inbound Carrier Porting",cat:"Inbound Telephony",billing:"Monthly",list:15.4,cost:11,threshold:12.95},
+  {id:"S100815",name:"NGN/Inbound Carrier PS (External)",cat:"Inbound Telephony",billing:"Monthly",list:35.0,cost:0,threshold:24.5},
+  {id:"S100816",name:"VoiceConnect Setup-no porting inc (IPI)",cat:"Inbound Telephony",billing:"Monthly",list:250,cost:0,threshold:175},
+  {id:"S100818",name:"VoiceConnect DDI Carrier Porting",cat:"Inbound Telephony",billing:"Monthly",list:15.4,cost:11,threshold:12.95},
+  {id:"S100896",name:"VoiceConnect - Customer Porting Activity",cat:"Inbound Telephony",billing:"Monthly",list:315,cost:0,threshold:220.5},
+  {id:"S100897",name:"VoiceConnect DDI IPI Porting PS",cat:"Inbound Telephony",billing:"Monthly",list:42,cost:0,threshold:29.4},
+  {id:"S100898",name:"Carrier Charge: Port Order Rejection",cat:"Inbound Telephony",billing:"Monthly",list:53.9,cost:13.5,threshold:15.89},
+  {id:"S100899",name:"Carrier Charge: Port Date Change",cat:"Inbound Telephony",billing:"Monthly",list:71.75,cost:26.25,threshold:30.89},
+  {id:"S100900",name:"Carrier Charge: Port Cancellation",cat:"Inbound Telephony",billing:"Monthly",list:18.9,cost:13.5,threshold:15.89},
+  {id:"S100901",name:"Carrier Charge: Port Order Timed Out",cat:"Inbound Telephony",billing:"Monthly",list:18.9,cost:13.5,threshold:15.89},
+  {id:"S100914",name:"VoiceConnect Per Channel Encryption",cat:"Inbound Telephony",billing:"Monthly",list:1,cost:0.65,threshold:0.77},
+  {id:"S100915",name:"NGN/Inbound CLI Rental - Standard UK",cat:"Inbound Telephony",billing:"Monthly",list:1.5,cost:0,threshold:1.05},
+  {id:"S100821",name:"SiteConnect Internal IP Adressing",cat:"Networking",billing:"Monthly",list:8.5,cost:0,threshold:5.95},
+  {id:"S100822",name:"SiteConnect Internet Capacity Rental",cat:"Networking",billing:"Monthly",list:95.0,cost:0,threshold:66.5},
+  {id:"S100887",name:"IPI MS (PCI Cloud)",cat:"Services",billing:"One Off",list:950.0,cost:0,threshold:712.5},
+  {id:"S101061",name:"Project Management (IPI) - ECX UCaaS",cat:"Services",billing:"One Off",list:118.75,cost:0,threshold:83.13},
+  {id:"S101069",name:"Project Management (IPI) - PCI",cat:"Services",billing:"One Off",list:118.75,cost:0,threshold:83.13},
+  {id:"S101070",name:"Project Management (IPI) - Pauseable",cat:"Services",billing:"One Off",list:118.75,cost:0,threshold:83.13},
+  {id:"S101071",name:"Project Management (IPI) - SiteConnect",cat:"Services",billing:"One Off",list:118.75,cost:0,threshold:83.13},
+  {id:"S101073",name:"Project Management (IPI) - SDN",cat:"Services",billing:"One Off",list:118.75,cost:0,threshold:83.13},
+  {id:"S101077",name:"ECX CCaaS - T&E Standard 0-50 seats",cat:"Services",billing:"One Off",list:2550,cost:0,threshold:1785},
+  {id:"S101078",name:"ECX CCaaS - T&E Standard 50-100 seats",cat:"Services",billing:"One Off",list:4250,cost:0,threshold:2975},
+  {id:"S101079",name:"ECX CCaaS - T&E Standard 100-200 seats",cat:"Services",billing:"One Off",list:6800,cost:0,threshold:4760},
+  {id:"S101080",name:"ECX CCaaS - T&E Standard 250-400 seats",cat:"Services",billing:"One Off",list:8500,cost:0,threshold:5950},
+  {id:"S101081",name:"ECX CCaaS - T&E Standard 400+ seats",cat:"Services",billing:"One Off",list:12500.0,cost:0,threshold:8750.0},
+  {id:"S101082",name:"ECX CCaaS - T&E Enhanced 0-50 seat",cat:"Services",billing:"One Off",list:3400,cost:0,threshold:2380},
+  {id:"S101083",name:"ECX CCaaS - T&E Enhanced 50-100 seats",cat:"Services",billing:"One Off",list:5950,cost:0,threshold:4165},
+  {id:"S101084",name:"ECX CCaaS - T&E Enhanced 100-200 seats",cat:"Services",billing:"One Off",list:8500,cost:0,threshold:5950},
+  {id:"S101085",name:"ECX CCaaS - T&E Enhanced 250-400 seats",cat:"Services",billing:"One Off",list:10200,cost:0,threshold:7140},
+  {id:"S101086",name:"ECX CCaaS - T&E Enhanced 400+ seats",cat:"Services",billing:"One Off",list:14500.0,cost:0,threshold:10150.0},
+  {id:"S101115",name:"ECX CCaaS PS Package - Rapid 20 Agents",cat:"Services",billing:"One Off",list:4750,cost:0,threshold:3325},
+  {id:"S101116",name:"ECX CCaaS PS Package - Rapid 50 Agents",cat:"Services",billing:"One Off",list:6293.75,cost:0,threshold:4405.63},
+  {id:"S101117",name:"ECX CCaaS PS Package - ECX CCaaS Voice",cat:"Services",billing:"One Off",list:5682.19,cost:0,threshold:3977.54},
+  {id:"S101118",name:"ECX CCaaS PS Package - ECX CCaaS Email",cat:"Services",billing:"One Off",list:2315.63,cost:0,threshold:1620.95},
+  {id:"S101119",name:"ECX CCaaS PS Package - CCaaS Chat",cat:"Services",billing:"One Off",list:1157.82,cost:0,threshold:810.48},
+  {id:"S101120",name:"ECX CCaaS PS Package - CCaaS Dialler",cat:"Services",billing:"One Off",list:2119.69,cost:0,threshold:1483.79},
+  {id:"S101121",name:"ECX CCaaS PS Package - CCaaS Facebook",cat:"Services",billing:"One Off",list:1365.63,cost:0,threshold:955.95},
+  {id:"S101122",name:"ECX CCaaS PS Package - CCaaS SMS Queue",cat:"Services",billing:"One Off",list:1068.75,cost:0,threshold:748.13},
+  {id:"S101123",name:"ECX CCaaS PS Package - Surveys",cat:"Services",billing:"One Off",list:1128.13,cost:0,threshold:789.7},
+  {id:"S101124",name:"ECX CCaaS PS Package - WhatsApp",cat:"Services",billing:"One Off",list:653.13,cost:0,threshold:457.2},
+  {id:"S101125",name:"ECX CCaaS PS Package - Quality",cat:"Services",billing:"One Off",list:1306.25,cost:0,threshold:914.38},
+  {id:"S101126",name:"ECX CCaaS PS Package - Verint WFM",cat:"Services",billing:"One Off",list:10925,cost:0,threshold:7647.5},
+  {id:"S101128",name:"ECX CCaaS PS Package - UAT Support",cat:"Services",billing:"One Off",list:475,cost:0,threshold:332.5},
+  {id:"S101129",name:"ECX CCaaS PS Package - 999 Testing",cat:"Services",billing:"One Off",list:103.91,cost:0,threshold:72.74},
+  {id:"S101130",name:"ECX CCaaS PS Package - Extra Voice Queue",cat:"Services",billing:"One Off",list:248.9,cost:0,threshold:174.23},
+  {id:"S101131",name:"ECX CCaaS PS Package - Extra Email Queue",cat:"Services",billing:"One Off",list:201.88,cost:0,threshold:141.32},
+  {id:"S101132",name:"ECX CCaaS PS Package - Extra Chat Queue",cat:"Services",billing:"One Off",list:240.47,cost:0,threshold:168.33},
+  {id:"S101133",name:"ECX CCaaS PS Package - Extra Dialler",cat:"Services",billing:"One Off",list:590.79,cost:0,threshold:413.56},
+  {id:"S101134",name:"ECX CCaaS PS Package - Extra SMS Queue",cat:"Services",billing:"One Off",list:377.04,cost:0,threshold:263.93},
+  {id:"S101135",name:"ECX CCaaS PS Package - Extra 999 Testing",cat:"Services",billing:"One Off",list:103.91,cost:0,threshold:72.74},
+  {id:"S100935",name:"Consult - Custom Consultancy Services",cat:"Consultancy",billing:"One Off",list:156.25,cost:0,threshold:109.38},
+  {id:"S100936",name:"Consult - WEM Consultancy Services",cat:"Consultancy",billing:"One Off",list:156.25,cost:0,threshold:109.38},
+  {id:"S100973",name:"Consult - ECX CCaaS Consultancy Services",cat:"Consultancy",billing:"One Off",list:156.25,cost:0,threshold:109.38}
+];
+
+// ─── CATEGORY COLOURS ───────────────────────────────────────────────────────
+const CAT_COLOURS = {
+  'CCaaS':            '#A37992',
+  'PCI Cloud':        '#63AB8F',
+  'AI':               '#7c6ea3',
+  'Services':         '#e07b3a',
+  'Inbound Telephony':'#3a8de0',
+  'Networking':       '#2aab7e',
+  'UCaaS':            '#c0592f',
+  'Consultancy':      '#5a6e7a'
+};
+
+const CAT_SLUG = {
+  'CCaaS':'cat-ccaas','PCI Cloud':'cat-pci','AI':'cat-ai',
+  'Services':'cat-services','Inbound Telephony':'cat-telephony',
+  'Networking':'cat-networking','UCaaS':'cat-ucaas','Consultancy':'cat-consultancy'
+};
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let quoteItems       = []; // { product, qty, override }
+let activeCategory   = 'All';
+let quoteCounter     = generateQuoteRef();
+let currentBaseRef   = quoteCounter;   // base ref (without version suffix)
+let currentVersion   = 0;              // 0 = unsaved, 1+ = saved version number
+let currentChangeNote = '';            // brief description of what changed
+
+// ─── PARTNER LEVEL DISCOUNTS ─────────────────────────────────────────────────
+const PARTNER_DISCOUNTS = { accredited: 0.20, silver: 0.30, gold: 0.40 };
+const SERVICES_DISCOUNT = 0.25; // Fixed 25% for Services & Consultancy
+const SERVICES_CATS = ['Services', 'Consultancy'];
+
+function getPartnerDiscount() {
+  const level = document.getElementById('partnerLevel') ? document.getElementById('partnerLevel').value : '';
+  return PARTNER_DISCOUNTS[level] || 0;
+}
+
+function getDiscountedPrice(product) {
+  // Use list price as base; if list=0, use threshold as the base price reference
+  const base = product.list > 0 ? product.list : product.threshold;
+  if (base <= 0) return 0;
+  if (SERVICES_CATS.includes(product.cat)) {
+    return base * (1 - SERVICES_DISCOUNT);
+  }
+  const disc = getPartnerDiscount();
+  // Apply partner level discount directly - no threshold floor capping
+  return disc > 0 ? base * (1 - disc) : base;
+}
+
+// ─── CURRENCY FORMAT ─────────────────────────────────────────────────────────
+function fmtGBP(val) {
+  return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
+}
+
+function generateQuoteRef() {
+  const year  = new Date().getFullYear();
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const seed  = Date.now() + Math.floor(Math.random() * 9999);
+  let suffix  = '';
+  let n = seed;
+  for (let i = 0; i < 6; i++) {
+    suffix += chars[n % chars.length];
+    n = Math.floor(n / chars.length) + Math.floor(Math.random() * 100);
+  }
+  return 'QT-' + year + '-' + suffix;
+}
+
+// ─── AUTO-ASSIGN PARTNER LEVEL ───────────────────────────────────────────────
+const LEVEL_OPTIONS = ['accredited', 'silver', 'gold'];
+const LEVEL_LABELS  = { accredited: 'Accredited', silver: 'Silver', gold: 'Gold' };
+const LEVEL_DISC    = { accredited: '20%', silver: '30%', gold: '40%' };
+const LEVEL_ICONS   = { accredited: '🥉', silver: '🥈', gold: '🥇' };
+
+// Simple deterministic hash of a string → integer
+function strHash(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+function applyPartnerLevel(level) {
+  const hidden = document.getElementById('partnerLevel');
+  const display = document.getElementById('partnerLevelDisplay');
+  const text    = document.getElementById('partnerLevelText');
+
+  hidden.value = level || '';
+  display.className = 'partner-level-display' + (level ? ' ' + level : '');
+  text.className = 'partner-level-text' + (level ? ' ' + level : ' none');
+
+  if (level) {
+    text.innerHTML = `<span class="level-icon">${LEVEL_ICONS[level]}</span> ${LEVEL_LABELS[level]} <span style="opacity:0.6;font-weight:400;font-size:11px">(${LEVEL_DISC[level]} discount)</span>`;
+  } else {
+    text.textContent = '— Enter partner name —';
+  }
+
+  renderQuote();
+  renderProductList();
+}
+
+function autoAssignPartnerLevel() {
+  const name = document.getElementById('partnerName').value.trim();
+  if (!name) {
+    applyPartnerLevel(null);
+    return;
+  }
+  // Deterministically pick a level based on the partner name characters
+  const level = LEVEL_OPTIONS[strHash(name) % LEVEL_OPTIONS.length];
+  applyPartnerLevel(level);
+}
+
+// Keep onPartnerLevelChange as alias (used in clearQuote reset path)
+function onPartnerLevelChange() { autoAssignPartnerLevel(); }
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  currentBaseRef = quoteCounter;
+  document.getElementById('quoteRef').value = quoteCounter;
+  setDefaultValidityDate();
+  renderCategoryTabs();
+  renderProductList();
+  renderTemplatesBody();
+  updateVersionIndicator();
+});
+
+// ─── CATEGORY TABS ───────────────────────────────────────────────────────────
+function renderCategoryTabs() {
+  const cats = ['All', ...Object.keys(CAT_COLOURS)];
+  const container = document.getElementById('categoryTabs');
+  container.innerHTML = cats.map(cat => {
+    const slug = cat === 'All' ? '' : CAT_SLUG[cat] || '';
+    const isActive = activeCategory === cat;
+    return `<div class="cat-tab ${slug} ${isActive ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</div>`;
+  }).join('');
+}
+
+function setCategory(cat) {
+  activeCategory = cat;
+  renderCategoryTabs();
+  renderProductList();
+}
+
+// ─── PRODUCT LIST ─────────────────────────────────────────────────────────────
+function filterProducts() { renderProductList(); }
+
+function renderProductList() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const filtered = PRODUCTS.filter(p => {
+    const matchCat = activeCategory === 'All' || p.cat === activeCategory;
+    const matchSearch = !search || p.name.toLowerCase().includes(search) || p.id.toLowerCase().includes(search);
+    return matchCat && matchSearch;
+  });
+
+  const container = document.getElementById('productList');
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="no-results">No products match your search.</div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(p => {
+    const colour = CAT_COLOURS[p.cat] || '#888';
+    const discounted = getDiscountedPrice(p);
+    const priceDisplay = discounted > 0 ? fmtGBP(discounted) : '—';
+    const listDisplay = p.list > 0 ? `<div class="price-threshold">List: ${fmtGBP(p.list)}</div>` : '';
+    return `
+      <div class="product-item" onclick="addToQuote('${p.id}')">
+        <div class="product-item-info">
+          <div class="product-item-name">
+            <span class="cat-dot" style="background:${colour}"></span>${p.name}
+          </div>
+          <div class="product-item-meta">
+            <span class="tag" style="background:${colour}18;color:${colour}">${p.cat}</span>
+            <span class="tag tag-billing ${p.billing === 'Monthly' ? 'monthly' : ''}">${p.billing}</span>
+            <span style="font-size:10.5px;color:var(--text-muted);font-family:DM Mono,monospace">${p.id}</span>
+          </div>
+        </div>
+        <div class="product-item-price">
+          <div class="price-list">${priceDisplay}</div>
+          ${listDisplay}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+          <button class="add-btn" title="Add to quote" onclick="event.stopPropagation();addToQuote('${p.id}')">+</button>
+          <button class="info-btn" title="View details" onclick="event.stopPropagation();openProductDetail('${p.id}')">i</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ─── ADD TO QUOTE ─────────────────────────────────────────────────────────────
+function addToQuote(id) {
+  const product = PRODUCTS.find(p => p.id === id);
+  if (!product) return;
+
+  const existing = quoteItems.find(i => i.product.id === id);
+  if (existing) {
+    existing.qty++;
+  } else {
+    const defaultPrice = product.threshold > 0 ? product.threshold : (product.list > 0 ? product.list : 0);
+    quoteItems.push({ product, qty: 1, override: null });
+  }
+  renderQuote();
+  showToast(`✓ Added: ${product.name}`);
+}
+
+// ─── RENDER QUOTE ─────────────────────────────────────────────────────────────
+// Category display order
+const CAT_ORDER = ['PCI Cloud','CCaaS','UCaaS','AI','Inbound Telephony','Networking','Services','Consultancy'];
+
+function renderQuote() {
+  const empty = document.getElementById('emptyState');
+  const container = document.getElementById('lineItemsContainer');
+
+  if (quoteItems.length === 0) {
+    empty.style.display = '';
+    container.innerHTML = '';
+    updateTotals();
+    return;
+  }
+  empty.style.display = 'none';
+
+  const monthly = quoteItems.filter(i => i.product.billing === 'Monthly');
+  const oneOff  = quoteItems.filter(i => i.product.billing === 'One Off');
+
+  let html = '';
+
+  // ── Monthly Recurring ──
+  if (monthly.length > 0) {
+    html += renderBillingBlock('Monthly Recurring', monthly);
+  }
+
+  // ── One-Off Charges ──
+  if (oneOff.length > 0) {
+    html += renderBillingBlock('One-Off Charges', oneOff);
+  }
+
+  container.innerHTML = html;
+  updateTotals();
+}
+
+function renderBillingBlock(billingLabel, items) {
+  // Group by category, in defined order
+  const byCat = {};
+  items.forEach(item => {
+    const cat = item.product.cat;
+    if (!byCat[cat]) byCat[cat] = [];
+    byCat[cat].push(item);
+  });
+
+  const orderedCats = CAT_ORDER.filter(c => byCat[c]);
+  // Any cats not in CAT_ORDER append at end
+  Object.keys(byCat).forEach(c => { if (!orderedCats.includes(c)) orderedCats.push(c); });
+
+  const levelLabels = { accredited: 'Accredited (20%)', silver: 'Silver (30%)', gold: 'Gold (40%)' };
+  const levelVal = document.getElementById('partnerLevel').value;
+  const levelBadge = levelVal
+    ? `<span class="level-badge ${levelVal}" style="margin-left:8px">${levelLabels[levelVal]}</span>`
+    : `<span style="margin-left:8px;font-size:11px;color:var(--text-muted)">(select partner level to apply discount)</span>`;
+
+  // Subtotal for this billing block
+  let blockTotal = 0;
+  items.forEach(i => { blockTotal += getEffectivePrice(i) * i.qty; });
+
+  let catSections = orderedCats.map(cat => renderCatGroup(cat, byCat[cat])).join('');
+
+  return `
+    <div class="billing-block">
+      <div class="billing-block-header">
+        <div class="billing-block-title">${billingLabel}</div>
+        ${levelBadge}
+        <div class="section-divider"></div>
+        <div class="billing-block-total">${fmtGBP(blockTotal)}</div>
+      </div>
+      ${catSections}
+    </div>`;
+}
+
+function renderCatGroup(cat, items) {
+  const colour = CAT_COLOURS[cat] || '#888';
+  const subtotal = items.reduce((sum, i) => sum + getEffectivePrice(i) * i.qty, 0);
+
+  const rows = items.map(item => {
+    const p = item.product;
+    const computedPrice = getDiscountedPrice(p);
+    const lineTotal = computedPrice * item.qty;
+    const globalIdx = quoteItems.indexOf(item);
+    const baseForBadge = p.list > 0 ? p.list : p.threshold;
+
+    let discBadge = '';
+    if (baseForBadge > 0 && computedPrice > 0 && computedPrice < baseForBadge) {
+      const pct = ((baseForBadge - computedPrice) / baseForBadge * 100).toFixed(0);
+      discBadge = `<span class="discount-badge">-${pct}%</span>`;
+    }
+
+    return `
+      <tr>
+        <td class="item-name-cell">
+          <div class="item-name">${p.name}</div>
+          <div class="item-sap">${p.id}</div>
+        </td>
+        <td>
+          <input class="qty-input" type="number" min="1" value="${item.qty}"
+            onchange="updateQty(${globalIdx}, this.value)" oninput="updateQty(${globalIdx}, this.value)">
+        </td>
+        <td class="price-cell">${baseForBadge > 0 ? fmtGBP(baseForBadge) : '<span style="color:var(--text-muted)">POA</span>'}</td>
+        <td>
+          <span class="price-display ${computedPrice > 0 && baseForBadge > computedPrice ? 'discounted' : ''}">
+            ${computedPrice > 0 ? fmtGBP(computedPrice) : '<span style="color:var(--text-muted)">POA</span>'}
+          </span>
+          ${discBadge}
+        </td>
+        <td class="line-total">${computedPrice > 0 ? fmtGBP(lineTotal) : '<span style="color:var(--text-muted)">—</span>'}</td>
+        <td>
+          <button class="remove-btn" onclick="removeItem(${globalIdx})" title="Remove">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </td>
+      </tr>`;
+  }).join('');
+
+  return `
+    <div class="cat-group">
+      <div class="cat-group-header">
+        <span class="cat-dot" style="background:${colour};width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:7px"></span>
+        <span class="cat-group-label">${cat}</span>
+        <div class="cat-group-divider"></div>
+        <span class="cat-group-subtotal">${fmtGBP(subtotal)}</span>
+      </div>
+      <table class="line-items-table cat-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>List Price</th>
+            <th>Partner Price</th>
+            <th style="text-align:right">Total</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function renderSection(title, items) {
+  const levelLabels = { accredited: 'Accredited (20%)', silver: 'Silver (30%)', gold: 'Gold (40%)' };
+  const levelVal = document.getElementById('partnerLevel').value;
+  const discPct = levelVal ? PARTNER_DISCOUNTS[levelVal] * 100 : null;
+
+  const rows = items.map((item) => {
+    const p = item.product;
+    const colour = CAT_COLOURS[p.cat] || '#888';
+    const computedPrice = getDiscountedPrice(p);
+    const effectivePrice = computedPrice;
+    const lineTotal = effectivePrice * item.qty;
+    const globalIdx = quoteItems.indexOf(item);
+    const baseForBadge = p.list > 0 ? p.list : p.threshold;
+
+    // Discount badge
+    let discBadge = '';
+    if (baseForBadge > 0 && effectivePrice < baseForBadge) {
+      const pct = ((baseForBadge - effectivePrice) / baseForBadge * 100).toFixed(0);
+      discBadge = `<span class="discount-badge">-${pct}%</span>`;
+    }
+
+    return `
+      <tr>
+        <td class="item-name-cell">
+          <div class="item-name">
+            <span class="cat-dot" style="background:${colour}"></span>${p.name}
+          </div>
+          <div class="item-sap">${p.id}</div>
+        </td>
+        <td><span class="tag" style="background:${colour}18;color:${colour};font-size:10px;">${p.cat}</span></td>
+        <td>
+          <input class="qty-input" type="number" min="1" value="${item.qty}"
+            onchange="updateQty(${globalIdx}, this.value)" oninput="updateQty(${globalIdx}, this.value)">
+        </td>
+        <td class="price-cell">
+          ${baseForBadge > 0 ? fmtGBP(baseForBadge) : '—'}
+        </td>
+        <td>
+          <span class="price-display ${computedPrice > 0 && baseForBadge > computedPrice ? 'discounted' : ''}">
+            ${computedPrice > 0 ? fmtGBP(computedPrice) : '—'}
+          </span>
+          ${discBadge}
+        </td>
+        <td class="line-total">${fmtGBP(lineTotal)}</td>
+        <td>
+          <button class="remove-btn" onclick="removeItem(${globalIdx})" title="Remove">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </td>
+      </tr>`;
+  }).join('');
+
+  const levelBadge = levelVal
+    ? `<span class="level-badge ${levelVal}" style="margin-left:8px">${levelLabels[levelVal]}</span>`
+    : `<span style="margin-left:8px;font-size:11px;color:var(--text-muted)">(no level selected)</span>`;
+
+  return `
+    <div class="quote-section">
+      <div class="section-header">
+        <div class="section-label">${title}</div>
+        ${levelBadge}
+        <div class="section-divider"></div>
+      </div>
+      <table class="line-items-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Category</th>
+            <th>Qty</th>
+            <th>List Price</th>
+            <th>Partner Price</th>
+            <th style="text-align:right">Total</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function updateQty(idx, val) {
+  const qty = Math.max(1, parseInt(val) || 1);
+  quoteItems[idx].qty = qty;
+  renderQuote();
+}
+
+function removeItem(idx) {
+  quoteItems.splice(idx, 1);
+  renderQuote();
+}
+
+// ─── TOTALS ───────────────────────────────────────────────────────────────────
+function getEffectivePrice(item) {
+  return getDiscountedPrice(item.product);
+}
+
+function updateTotals() {
+  let mrc = 0, otc = 0;
+  quoteItems.forEach(item => {
+    const price = getEffectivePrice(item) * item.qty;
+    if (item.product.billing === 'Monthly') mrc += price;
+    else otc += price;
+  });
+  const acv = mrc * 12 + otc;
+  document.getElementById('totalMRC').textContent = fmtGBP(mrc);
+  document.getElementById('totalOTC').textContent = fmtGBP(otc);
+  document.getElementById('totalACV').textContent = fmtGBP(acv);
+  document.getElementById('lineCount').textContent = quoteItems.length;
+}
+
+// ─── CLEAR ────────────────────────────────────────────────────────────────────
+function clearQuote() {
+  if (quoteItems.length > 0) {
+    showConfirmBanner(
+      'Start a new quote? All unsaved items will be lost.',
+      'Start New Quote',
+      function() { resetQuote(); }
+    );
+    return;
+  }
+  resetQuote();
+}
+
+function resetQuote() {
+  quoteItems = []; currentVersion = 0; currentChangeNote = '';
+  currentBaseRef = generateQuoteRef();
+  document.getElementById('partnerName').value = '';
+  document.getElementById('endCustomer').value = '';
+  document.getElementById('quoteRef').value    = currentBaseRef;
+  document.getElementById('quoteNotes').value  = '';
+  setDefaultValidityDate();
+  applyPartnerLevel(null);
+  renderQuote();
+  updateNotesToggle();
+  updateVersionIndicator();
+  showToast('New quote started');
+}
+
+function setDefaultValidityDate() {
+  const d = new Date();
+  d.setDate(d.getDate() + 30);
+  document.getElementById('validUntil').value = d.toISOString().split('T')[0];
+}
+
+// ─── SAVE / LOAD QUOTES ───────────────────────────────────────────────────────
+const STORAGE_KEY = 'ipi_saved_quotes';
+
+function getSavedQuotes() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
+}
+
+// ─── VERSION MANAGEMENT ──────────────────────────────────────────────────────
+function buildQuoteData(baseRef, version, changeNote) {
+  const partner    = document.getElementById('partnerName').value || '';
+  const customer   = document.getElementById('endCustomer').value || '';
+  const level      = document.getElementById('partnerLevel').value || '';
+  const notes      = document.getElementById('quoteNotes').value.trim();
+  const validUntil = document.getElementById('validUntil').value;
+  let mrc = 0, otc = 0;
+  quoteItems.forEach(i => {
+    const p = getEffectivePrice(i) * i.qty;
+    if (i.product.billing === 'Monthly') mrc += p; else otc += p;
+  });
+  return {
+    baseRef, version, ref: baseRef + ' v' + version,
+    partner, customer, level, notes, validUntil,
+    changeNote: changeNote || '', status: 'draft',
+    savedAt: new Date().toISOString(),
+    mrc, otc, acv: mrc * 12 + otc,
+    items: quoteItems.map(i => ({ productId: i.product.id, qty: i.qty }))
+  };
+}
+
+function saveQuote() { promptSaveVersion(); }
+
+function promptSaveVersion() {
+  if (quoteItems.length === 0) { showToast('⚠ Add products before saving'); return; }
+  const baseRef  = currentBaseRef || document.getElementById('quoteRef').value || generateQuoteRef();
+  const existing = getSavedQuotes().filter(q => q.baseRef === baseRef);
+  const nextVer  = existing.length > 0 ? Math.max(...existing.map(q => q.version || 1)) + 1 : 1;
+  document.getElementById('versionNoteTitle').textContent = nextVer === 1 ? 'Save Quote' : 'Save as Version ' + nextVer;
+  document.getElementById('versionNoteSubtitle').textContent = baseRef +
+    (nextVer > 1 ? '  ·  ' + existing.length + ' previous version' + (existing.length > 1 ? 's' : '') : '');
+  document.getElementById('versionNoteInput').value = '';
+  document.getElementById('versionNoteModal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('versionNoteInput').focus(), 120);
+  const btn = document.getElementById('versionNoteConfirmBtn');
+  btn.onclick = function() {
+    const note = document.getElementById('versionNoteInput').value.trim();
+    closeVersionNoteModal();
+    doSaveVersion(baseRef, nextVer, note);
+  };
+  document.getElementById('versionNoteInput').onkeydown = function(e) { if (e.key === 'Enter') btn.click(); };
+}
+
+function doSaveVersion(baseRef, version, changeNote) {
+  const saved     = getSavedQuotes();
+  const quoteData = buildQuoteData(baseRef, version, changeNote);
+  const prev      = saved.filter(q => q.baseRef === baseRef);
+  if (prev.length > 0) quoteData.status = prev[0].status || 'draft';
+  saved.unshift(quoteData);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+  currentBaseRef = baseRef;
+  currentVersion = version;
+  document.getElementById('quoteRef').value = baseRef;
+  updateVersionIndicator();
+  showToast('Saved ' + baseRef + ' v' + version);
+}
+
+function closeVersionNoteModal(e) {
+  if (!e || e.target === document.getElementById('versionNoteModal')) {
+    document.getElementById('versionNoteModal').classList.add('hidden');
+  }
+}
+
+function updateVersionIndicator() {
+  const indicator = document.getElementById('versionIndicator');
+  const btn       = document.getElementById('saveVersionBtnLabel');
+  if (!indicator || !btn) return;
+  const saved    = getSavedQuotes();
+  const base     = currentBaseRef || document.getElementById('quoteRef').value;
+  const versions = saved.filter(q => q.baseRef === base);
+  const latest   = versions.length > 0 ? Math.max(...versions.map(q => q.version || 1)) : 0;
+  const nextVer  = latest + 1;
+  if (currentVersion > 0) {
+    indicator.textContent   = 'v' + currentVersion;
+    indicator.className     = 'version-indicator';
+    indicator.style.display = 'inline-flex';
+  } else {
+    indicator.style.display = 'none';
+  }
+  btn.textContent = nextVer === 1 ? 'Save v1' : 'Save v' + nextVer;
+}
+
+function onQuoteRefChange() {
+  currentBaseRef = document.getElementById('quoteRef').value;
+  currentVersion = 0;
+  updateVersionIndicator();
+}
+
+function loadQuote(ref) {
+  if (quoteItems.length > 0) {
+    closeSavedQuotesModal();
+    showConfirmBanner(
+      'Load saved quote <strong>' + ref + '</strong>? Your current unsaved quote will be replaced.',
+      'Load Quote',
+      function() { doLoadQuote(ref); }
+    );
+    return;
+  }
+  doLoadQuote(ref);
+}
+
+function doLoadQuote(ref) {
+  const saved = getSavedQuotes();
+  const q = saved.find(s => s.ref === ref);
+  if (!q) { showToast('Quote not found'); return; }
+
+  quoteItems = q.items.map(i => {
+    const product = PRODUCTS.find(p => p.id === i.productId);
+    return product ? { product, qty: i.qty, override: null } : null;
+  }).filter(Boolean);
+
+  document.getElementById('partnerName').value = q.partner || '';
+  document.getElementById('endCustomer').value = q.customer || '';
+  document.getElementById('quoteRef').value = q.ref;
+
+  applyPartnerLevel(q.level || null);
+  document.getElementById('quoteNotes').value = q.notes || '';
+  document.getElementById('validUntil').value  = q.validUntil || '';
+  updateNotesToggle();
+  if (q.notes) {
+    document.getElementById('notesBody').style.display = 'block';
+    updateNotesToggle();
+  }
+
+  closeSavedQuotesModal();
+  renderQuote();
+  showToast('Loaded quote ' + ref);
+}
+
+function deleteQuote(ref) {
+  var body = document.getElementById('savedQuotesBody');
+  var existing = body.querySelector('.confirm-banner');
+  if (existing) existing.remove();
+  var banner = document.createElement('div');
+  banner.className = 'confirm-banner';
+  banner.style.margin = '12px 16px 0';
+  banner.innerHTML = '<span class="confirm-msg">Delete quote <strong>' + ref + '</strong>? This cannot be undone.</span><div class="confirm-actions"><button class="btn btn-outline btn-sm confirm-cancel-btn">Cancel</button><button class="btn btn-danger btn-sm confirm-ok-btn">Delete</button></div>';
+  body.insertBefore(banner, body.firstChild);
+  banner.querySelector('.confirm-cancel-btn').addEventListener('click', function() { banner.remove(); });
+  banner.querySelector('.confirm-ok-btn').addEventListener('click', function() {
+    banner.remove();
+    var saved = getSavedQuotes().filter(function(q) { return q.ref !== ref; });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+    if (ref === (currentBaseRef + ' v' + currentVersion)) { currentVersion = 0; updateVersionIndicator(); }
+    openSavedQuotesModal();
+    showToast('Deleted ' + ref);
+  });
+}
+
+const STATUS_META = {
+  draft: { label: 'Draft',  icon: '✏️',  cls: 'draft' },
+  sent:  { label: 'Sent',   icon: '📤', cls: 'sent'  },
+  won:   { label: 'Won',    icon: '✅',  cls: 'won'   },
+  lost:  { label: 'Lost',   icon: '❌',  cls: 'lost'  }
+};
+
+function updateQuoteStatus(baseRef, newStatus) {
+  const saved = getSavedQuotes();
+  saved.forEach(q => { if ((q.baseRef || q.ref) === baseRef) q.status = newStatus; });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+  openSavedQuotesModal();
+}
+
+function duplicateQuote(ref) {
+  const saved = getSavedQuotes();
+  const q = saved.find(s => s.ref === ref);
+  if (!q) return;
+  const newBase = generateQuoteRef();
+  const copy = Object.assign({}, q, { baseRef: newBase, version: 1, ref: newBase + ' v1',
+    status: 'draft', changeNote: 'Duplicated from ' + (q.baseRef || q.ref), savedAt: new Date().toISOString() });
+  saved.unshift(copy);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+  openSavedQuotesModal();
+  showToast('Duplicated as ' + newBase);
+}
+
+function openSavedQuotesModal() {
+  const saved = getSavedQuotes();
+  const levelLabels = { accredited: 'Accredited', silver: 'Silver', gold: 'Gold' };
+  const subtitle = document.getElementById('savedQuotesSubtitle');
+  subtitle.textContent = saved.length === 0 ? 'No saved quotes yet' : saved.length + ' saved quote' + (saved.length !== 1 ? 's' : '');
+
+  // Pipeline summary
+  let pipelineHTML = '';
+  if (saved.length > 0) {
+    const stats = { draft:{count:0,acv:0}, sent:{count:0,acv:0}, won:{count:0,acv:0}, lost:{count:0,acv:0} };
+    saved.forEach(q => {
+      const s = q.status || 'draft';
+      if (stats[s]) { stats[s].count++; stats[s].acv += q.acv || 0; }
+    });
+    pipelineHTML = `<div class="pipeline-bar">
+      <div class="pipeline-cell"><div class="pipeline-label">Draft</div><div class="pipeline-value pv-draft">${fmtGBP(stats.draft.acv)}</div><div class="pipeline-count">${stats.draft.count} quote${stats.draft.count !== 1 ? 's' : ''}</div></div>
+      <div class="pipeline-cell"><div class="pipeline-label">Sent</div><div class="pipeline-value pv-sent">${fmtGBP(stats.sent.acv)}</div><div class="pipeline-count">${stats.sent.count} quote${stats.sent.count !== 1 ? 's' : ''}</div></div>
+      <div class="pipeline-cell"><div class="pipeline-label">Won</div><div class="pipeline-value pv-won">${fmtGBP(stats.won.acv)}</div><div class="pipeline-count">${stats.won.count} quote${stats.won.count !== 1 ? 's' : ''}</div></div>
+      <div class="pipeline-cell"><div class="pipeline-label">Lost</div><div class="pipeline-value pv-lost">${fmtGBP(stats.lost.acv)}</div><div class="pipeline-count">${stats.lost.count} quote${stats.lost.count !== 1 ? 's' : ''}</div></div>
+    </div>`;
+  }
+
+  let listHTML = '';
+  if (saved.length === 0) {
+    listHTML = '<div class="saved-quotes-empty">' +
+      '<div style="font-size:32px;margin-bottom:12px">📂</div>' +
+      '<div style="font-weight:600;margin-bottom:4px">No saved quotes</div>' +
+      '<div>Build a quote and click <strong>Save v1</strong> to store it here.</div>' +
+      '</div>';
+  } else {
+    // Group by baseRef (fall back to ref for legacy quotes without baseRef)
+    const groups = {};
+    const groupOrder = [];
+    saved.forEach(q => {
+      const base = q.baseRef || q.ref;
+      if (!groups[base]) { groups[base] = []; groupOrder.push(base); }
+      groups[base].push(q);
+    });
+
+    listHTML = groupOrder.map(base => {
+      const versions = groups[base].sort((a, b) => (b.version || 1) - (a.version || 1));
+      const latest   = versions[0];
+      const vCount   = versions.length;
+      const status   = latest.status || 'draft';
+      const levelBadge = latest.level
+        ? '<span class="sq-level-badge ' + latest.level + '">' + levelLabels[latest.level] + '</span>' : '';
+      const validStr = latest.validUntil
+        ? ' &nbsp;·&nbsp; Valid to ' + new Date(latest.validUntil).toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'}) : '';
+
+      // Status select — uses data-base so the handler can update ALL versions
+      const statusSelect =
+        '<select class="sq-status-select sq-status-change" data-base="' + base + '" title="Change status">' +
+        '<option value="draft"' + (status === 'draft' ? ' selected' : '') + '>✏️ Draft</option>' +
+        '<option value="sent"'  + (status === 'sent'  ? ' selected' : '') + '>📤 Sent</option>'  +
+        '<option value="won"'   + (status === 'won'   ? ' selected' : '') + '>✅ Won</option>'   +
+        '<option value="lost"'  + (status === 'lost'  ? ' selected' : '') + '>❌ Lost</option>'  +
+        '</select>';
+
+      // Version rows
+      const versionRows = versions.map((v, vi) => {
+        const isLatest = vi === 0;
+        const vDate = new Date(v.savedAt).toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'});
+        const vTime = new Date(v.savedAt).toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
+        return '<div class="sq-version-row' + (isLatest ? ' latest' : '') + '">' +
+          '<span class="sq-version-badge">v' + (v.version || 1) + (isLatest ? ' · Latest' : '') + '</span>' +
+          '<div class="sq-version-info">' +
+            '<div class="sq-version-date">' + vDate + ' at ' + vTime + '</div>' +
+            (v.changeNote ? '<div class="sq-version-change">' + v.changeNote + '</div>' : '') +
+          '</div>' +
+          '<div class="sq-version-totals">' +
+            '<div class="sq-version-mrc">' + fmtGBP(v.mrc) + '<span style="font-size:10px;font-weight:400;color:var(--text-muted)">/mo</span></div>' +
+            '<div class="sq-version-acv">ACV ' + fmtGBP(v.acv) + '</div>' +
+          '</div>' +
+          '<div class="sq-version-actions">' +
+            '<button class="btn btn-outline btn-sm sq-load-btn" data-ref="' + v.ref + '">Load</button>' +
+            '<button class="btn btn-danger btn-sm sq-delete-btn" data-ref="' + v.ref + '" title="Delete version">' +
+              '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+              '<polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14H6L5 6"></path>' +
+              '<path d="M10 11v6"></path><path d="M14 11v6"></path></svg>' +
+            '</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      return '<div class="sq-group" data-base="' + base + '">' +
+        // Group header (click to expand)
+        '<div class="sq-group-header">' +
+          '<div style="flex:1">' +
+            '<div class="sq-group-baseref">' + base + ' ' + levelBadge + '</div>' +
+            '<div class="sq-group-meta">' + (latest.partner || '—') + ' → ' + (latest.customer || '—') + validStr + '</div>' +
+          '</div>' +
+          '<div class="sq-group-summary">' +
+            '<div style="text-align:right;margin-right:4px">' +
+              '<div style="font-family:monospace;font-size:13px;font-weight:700;color:var(--green)">' +
+                fmtGBP(latest.mrc) + '<span style="font-size:10px;font-weight:400;color:var(--text-muted)">/mo</span>' +
+              '</div>' +
+              '<div style="font-size:10.5px;color:var(--text-muted)">ACV ' + fmtGBP(latest.acv) + '</div>' +
+            '</div>' +
+            statusSelect +
+            '<span class="sq-version-count">' + vCount + ' ver' + (vCount > 1 ? 's' : '') + '</span>' +
+            '<button class="btn btn-outline btn-sm sq-duplicate-btn" data-ref="' + latest.ref + '" style="white-space:nowrap">Copy</button>' +
+            '<span class="sq-group-chevron">▶</span>' +
+          '</div>' +
+        '</div>' +
+        // Expandable versions list
+        '<div class="sq-versions-list">' + versionRows + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  document.getElementById('savedQuotesBody').innerHTML = pipelineHTML + listHTML;
+  const body = document.getElementById('savedQuotesBody');
+
+  // Group header: click to expand/collapse (ignore clicks on controls inside)
+  body.querySelectorAll('.sq-group-header').forEach(function(hdr) {
+    hdr.addEventListener('click', function(e) {
+      if (e.target.closest('select') || e.target.closest('button')) return;
+      const group = this.closest('.sq-group');
+      const list  = group.querySelector('.sq-versions-list');
+      const chev  = this.querySelector('.sq-group-chevron');
+      const open  = list.classList.toggle('open');
+      chev.classList.toggle('open', open);
+    });
+    // Auto-expand the currently loaded quote
+    const group = hdr.closest('.sq-group');
+    if (group && group.dataset.base === currentBaseRef) {
+      group.querySelector('.sq-versions-list').classList.add('open');
+      hdr.querySelector('.sq-group-chevron').classList.add('open');
+    }
+  });
+
+  // Load, delete, duplicate buttons
+  body.querySelectorAll('.sq-load-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() { loadQuote(this.dataset.ref); });
+  });
+  body.querySelectorAll('.sq-delete-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() { deleteQuote(this.dataset.ref); });
+  });
+  body.querySelectorAll('.sq-duplicate-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() { duplicateQuote(this.dataset.ref); });
+  });
+
+  // Status dropdown — data-base ensures we update ALL versions of the quote
+  body.querySelectorAll('.sq-status-change').forEach(function(sel) {
+    sel.addEventListener('change', function() {
+      const base   = this.dataset.base;
+      const newVal = this.value;
+      const allSaved = getSavedQuotes();
+      allSaved.forEach(function(q) {
+        if ((q.baseRef || q.ref) === base) q.status = newVal;
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(allSaved));
+      openSavedQuotesModal();
+    });
+  });
+
+  document.getElementById('savedQuotesModal').classList.remove('hidden');
+}
+
+function closeSavedQuotesModal(e) {
+  if (!e || e.target === document.getElementById('savedQuotesModal')) {
+    document.getElementById('savedQuotesModal').classList.add('hidden');
+  }
+}
+
+// ─── TEMPLATES ───────────────────────────────────────────────────────────────
+const TEMPLATES = [
+  {
+    name: '50-Seat CCaaS Voice Starter',
+    desc: 'Named agent voice with MS Teams, CRM, and professional services',
+    icon: '📞',
+    items: [
+      { id: 'S100937', qty: 50 },  // ECX Voice Named Annual PrePay
+      { id: 'S100951', qty: 50 },  // ECX MS Teams Annual Pre-Pay
+      { id: 'S100953', qty: 50 },  // ECX CCaaS CRM Annual Pre Pay
+      { id: 'S101117', qty: 1  },  // PS Package - ECX CCaaS Voice
+      { id: 'S101077', qty: 1  },  // T&E Standard 0-50 seats
+    ]
+  },
+  {
+    name: '100-Seat Omni-Channel CCaaS',
+    desc: 'Full omni-channel with AI Insight, SMS, and training & enablement',
+    icon: '🌐',
+    items: [
+      { id: 'S100941', qty: 100 }, // ECX Omni Named Annual PrePay
+      { id: 'S100955', qty: 100 }, // ECX AI Insight NAMED Ann Pre-Pay
+      { id: 'S100880', qty: 1   }, // SMS Outbound Usage
+      { id: 'S100881', qty: 2   }, // SMS Long Number Rental
+      { id: 'S101079', qty: 1   }, // T&E Standard 100-200 seats
+      { id: 'S101118', qty: 1   }, // PS Package - Email
+      { id: 'S101119', qty: 1   }, // PS Package - Chat
+    ]
+  },
+  {
+    name: '25-Seat CCaaS Max with AI Side-Kick',
+    desc: 'Premium Max tier with AI Side-Kick assistant for agent augmentation',
+    icon: '🤖',
+    items: [
+      { id: 'S100945', qty: 25 },  // ECX Max Named Annual PrePay
+      { id: 'S100984', qty: 25 },  // ECX AI Side-Kick NAMED Pay Mthly
+      { id: 'S100955', qty: 25 },  // ECX AI Insight NAMED Ann Pre-Pay
+      { id: 'S101115', qty: 1  },  // PS Package - Rapid 20 Agents
+    ]
+  },
+  {
+    name: 'PCI Cloud – Named Agent Bundle',
+    desc: 'PCI-compliant cloud with pauseable and premium tiers for payment handling',
+    icon: '🔒',
+    items: [
+      { id: 'S101019', qty: 20 },  // Cloud PCI Premium Named AnPrePay
+      { id: 'S100841', qty: 30 },  // Pauseable Named Ann PrePay
+      { id: 'S101069', qty: 1  },  // PM - PCI
+      { id: 'S101070', qty: 1  },  // PM - Pauseable
+    ]
+  },
+  {
+    name: 'UCaaS + CCaaS Voice Bundle',
+    desc: 'Combined unified comms and contact centre for mid-market customers',
+    icon: '📡',
+    items: [
+      { id: 'S100949', qty: 100 }, // ECX UCX Named Annual PrePay
+      { id: 'S100937', qty: 30  }, // ECX Voice Named Annual PrePay
+      { id: 'S100951', qty: 30  }, // ECX MS Teams Annual Pre-Pay
+      { id: 'S101061', qty: 1   }, // PM - ECX UCaaS
+    ]
+  },
+  {
+    name: 'AI-First Contact Centre',
+    desc: 'Autopilot voice bot, batch transcription, AI Insight and Side-Kick',
+    icon: '✨',
+    items: [
+      { id: 'S100941', qty: 50  }, // ECX Omni Named Annual PrePay
+      { id: 'S100991', qty: 1   }, // ECX Autopilot AI Voice Bot P/Min
+      { id: 'S100976', qty: 1   }, // ECX Real-Time Transcriptions Hrs
+      { id: 'S100970', qty: 1   }, // ECX Batch Transcription Hours
+      { id: 'S100984', qty: 50  }, // ECX AI Side-Kick NAMED Pay Mthly
+      { id: 'S100955', qty: 50  }, // ECX AI Insight NAMED Ann Pre-Pay
+      { id: 'S101116', qty: 1   }, // PS Package - Rapid 50 Agents
+    ]
+  }
+];
+
+function renderTemplatesBody() {
+  const container = document.getElementById('templatesBody');
+  if (!container) return;
+  container.innerHTML = TEMPLATES.map((t, idx) => {
+    // Calculate indicative MRC at no discount
+    let indMRC = 0;
+    t.items.forEach(ti => {
+      const p = PRODUCTS.find(pr => pr.id === ti.id);
+      if (p && p.billing === 'Monthly') {
+        const base = p.list > 0 ? p.list : p.threshold;
+        indMRC += base * ti.qty;
+      }
+    });
+    const mrcStr = indMRC > 0 ? 'From ' + fmtGBP(indMRC) + '/mo (list)' : '';
+    return '<div class="template-item tmpl-apply-btn" data-idx="' + idx + '">' +
+      '<div style="display:flex;align-items:center;gap:10px">' +
+        '<span style="font-size:22px">' + t.icon + '</span>' +
+        '<div>' +
+          '<div class="template-name">' + t.name + '</div>' +
+          '<div class="template-desc">' + t.desc + '</div>' +
+          '<div class="template-meta">' + t.items.length + ' products' + (mrcStr ? ' &nbsp;·&nbsp; ' + mrcStr : '') + '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+  container.querySelectorAll('.tmpl-apply-btn').forEach(el => {
+    el.addEventListener('click', () => applyTemplate(parseInt(el.dataset.idx)));
+  });
+}
+
+function applyTemplate(idx) {
+  const t = TEMPLATES[idx];
+  if (!t) return;
+  const newItems = t.items.map(ti => {
+    const product = PRODUCTS.find(p => p.id === ti.id);
+    return product ? { product, qty: ti.qty, override: null } : null;
+  }).filter(Boolean);
+
+  if (quoteItems.length > 0) {
+    // Merge: add template items, bump qty if already present
+    newItems.forEach(ni => {
+      const existing = quoteItems.find(qi => qi.product.id === ni.product.id);
+      if (existing) { existing.qty += ni.qty; }
+      else { quoteItems.push(ni); }
+    });
+  } else {
+    quoteItems = newItems;
+  }
+  closeTemplatesModal();
+  renderQuote();
+  showToast(t.icon + ' Template applied: ' + t.name);
+}
+
+function openTemplatesModal() {
+  renderTemplatesBody();
+  document.getElementById('templatesModal').classList.remove('hidden');
+}
+
+function closeTemplatesModal(e) {
+  if (!e || e.target === document.getElementById('templatesModal')) {
+    document.getElementById('templatesModal').classList.add('hidden');
+  }
+}
+
+// ─── SHARED GROUPED QUOTE BUILDER ────────────────────────────────────────────
+// Returns { monthly, oneOff, mrc, otc, acv } with items grouped by CAT_ORDER
+function getGroupedQuoteData() {
+  const monthly = quoteItems.filter(i => i.product.billing === 'Monthly');
+  const oneOff  = quoteItems.filter(i => i.product.billing === 'One Off');
+
+  function groupByCat(items) {
+    const map = {};
+    items.forEach(item => {
+      const cat = item.product.cat;
+      if (!map[cat]) map[cat] = [];
+      map[cat].push(item);
+    });
+    const ordered = CAT_ORDER.filter(c => map[c]);
+    Object.keys(map).forEach(c => { if (!ordered.includes(c)) ordered.push(c); });
+    return ordered.map(cat => ({ cat, items: map[cat] }));
+  }
+
+  let mrc = 0, otc = 0;
+  quoteItems.forEach(i => {
+    const p = getEffectivePrice(i) * i.qty;
+    if (i.product.billing === 'Monthly') mrc += p; else otc += p;
+  });
+
+  return {
+    monthlyGroups: groupByCat(monthly),
+    oneOffGroups:  groupByCat(oneOff),
+    mrc, otc, acv: mrc * 12 + otc
+  };
+}
+
+// ─── EXPORT MODAL ─────────────────────────────────────────────────────────────
+function openExportModal() {
+  if (quoteItems.length === 0) { showToast('⚠ Add products to your quote first'); return; }
+
+  const partner  = document.getElementById('partnerName').value || 'Partner';
+  const customer = document.getElementById('endCustomer').value || 'End Customer';
+  const ref      = document.getElementById('quoteRef').value;
+  const date     = new Date().toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'});
+  const levelLabels = { accredited: 'Accredited', silver: 'Silver', gold: 'Gold' };
+  const levelVal = document.getElementById('partnerLevel').value;
+  const levelStr = levelVal ? ` · ${levelLabels[levelVal]}` : '';
+  document.getElementById('modalSubtitle').textContent = `${ref} · ${partner} → ${customer}${levelStr} · ${date}`;
+
+  const { monthlyGroups, oneOffGroups, mrc, otc, acv } = getGroupedQuoteData();
+
+  function renderBillingSection(groups, billingLabel, blockTotal) {
+    if (!groups.length) return '';
+    const catSections = groups.map(({ cat, items }) => {
+      const catTotal = items.reduce((s, i) => s + getEffectivePrice(i) * i.qty, 0);
+      const colour = CAT_COLOURS[cat] || '#888';
+      const rows = items.map(item => {
+        const ep    = getEffectivePrice(item);
+        const base  = item.product.list > 0 ? item.product.list : item.product.threshold;
+        const total = ep * item.qty;
+        const disc  = base > 0 && ep < base ? Math.round((base - ep) / base * 100) : null;
+        return `<tr>
+          <td style="color:#7a8f9a;font-size:10px;white-space:nowrap">${item.product.id}</td>
+          <td>${item.product.name}</td>
+          <td style="text-align:right;color:#888">${item.qty}</td>
+          <td style="text-align:right;color:#888">${base > 0 ? fmtGBP(base) : '—'}</td>
+          <td style="text-align:right;color:#27ae60;font-weight:600">
+            ${ep > 0 ? fmtGBP(ep) : '—'}
+            ${disc !== null ? `<span style="font-size:9px;background:#e8f5f0;color:#1e7a55;padding:1px 4px;border-radius:3px;margin-left:3px">-${disc}%</span>` : ''}
+          </td>
+          <td style="text-align:right;font-weight:700">${ep > 0 ? fmtGBP(total) : '—'}</td>
+        </tr>`;
+      }).join('');
+      return `
+        <tr class="cat-header-row">
+          <td colspan="6" style="padding:6px 8px;background:#f0f4f6;border-top:2px solid #dde4e8">
+            <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${colour};margin-right:6px;vertical-align:middle"></span>
+            <strong style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#36454F">${cat}</strong>
+            <span style="float:right;font-size:11px;font-weight:600;color:#36454F">${fmtGBP(catTotal)}</span>
+          </td>
+        </tr>
+        ${rows}`;
+    }).join('');
+
+    return `
+      <div class="preview-section">
+        <div class="preview-label" style="display:flex;justify-content:space-between;align-items:center">
+          <span>${billingLabel}</span>
+          <span style="font-family:monospace;font-weight:700;color:#36454F">${fmtGBP(blockTotal)}</span>
+        </div>
+        <table class="preview-table">
+          <thead><tr>
+            <th>SKU</th><th>Product</th>
+            <th style="text-align:right">Qty</th>
+            <th style="text-align:right">List Price</th>
+            <th style="text-align:right">Partner Price</th>
+            <th style="text-align:right">Total</th>
+          </tr></thead>
+          <tbody>${catSections}</tbody>
+        </table>
+      </div>`;
+  }
+
+  document.getElementById('modalBody').innerHTML = `
+    ${renderBillingSection(monthlyGroups, 'Monthly Recurring Charges', mrc)}
+    ${renderBillingSection(oneOffGroups,  'One-Off Charges', otc)}
+    <div class="preview-totals">
+      <div class="preview-total-item">
+        <div class="preview-total-label">Monthly Recurring</div>
+        <div class="preview-total-value green">${fmtGBP(mrc)}</div>
+        <div style="font-size:10px;color:var(--text-muted)">per month</div>
+      </div>
+      <div class="preview-total-item">
+        <div class="preview-total-label">One-Off Charges</div>
+        <div class="preview-total-value" style="color:var(--mauve)">${fmtGBP(otc)}</div>
+        <div style="font-size:10px;color:var(--text-muted)">one time</div>
+      </div>
+      <div class="preview-total-item">
+        <div class="preview-total-label">Annual Contract Value</div>
+        <div class="preview-total-value">${fmtGBP(acv)}</div>
+        <div style="font-size:10px;color:var(--text-muted)">MRC×12 + OTC</div>
+      </div>
+    </div>`;
+
+  document.getElementById('exportModal').classList.remove('hidden');
+}
+
+function closeExportModal(e) {
+  if (!e || e.target === document.getElementById('exportModal')) {
+    document.getElementById('exportModal').classList.add('hidden');
+  }
+}
+
+function printQuote() {
+  const partner  = document.getElementById('partnerName').value || 'Partner';
+  const customer = document.getElementById('endCustomer').value || 'End Customer';
+  const ref      = document.getElementById('quoteRef').value;
+  const date     = new Date().toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'});
+  const levelLabels = { accredited: 'Accredited', silver: 'Silver', gold: 'Gold' };
+  const levelVal    = document.getElementById('partnerLevel').value;
+  const levelStr    = levelLabels[levelVal] || 'Not set';
+  const discPctStr  = levelVal ? ` &nbsp;&bull;&nbsp; ${PARTNER_DISCOUNTS[levelVal] * 100}% Partner Discount` : '';
+  const validRaw    = document.getElementById('validUntil').value;
+  const validUntilStr = validRaw ? new Date(validRaw).toLocaleDateString('en-GB', {day:'2-digit',month:'long',year:'numeric'}) : 'Not specified';
+  const quoteNotes  = document.getElementById('quoteNotes').value.trim();
+
+  const { monthlyGroups, oneOffGroups, mrc, otc, acv } = getGroupedQuoteData();
+
+  // Build billing block HTML for the print document
+  function printBillingBlock(groups, billingLabel, blockTotal) {
+    if (!groups.length) return '';
+    const catBlocks = groups.map(({ cat, items }) => {
+      const catTotal = items.reduce((s, i) => s + getEffectivePrice(i) * i.qty, 0);
+      const catColours = {
+        'CCaaS':'#A37992','PCI Cloud':'#63AB8F','AI':'#7c6ea3',
+        'Services':'#e07b3a','Inbound Telephony':'#3a8de0',
+        'Networking':'#2aab7e','UCaaS':'#c0592f','Consultancy':'#5a6e7a'
+      };
+      const colour = catColours[cat] || '#888';
+      const rows = items.map(item => {
+        const ep   = getEffectivePrice(item);
+        const base = item.product.list > 0 ? item.product.list : item.product.threshold;
+        const disc = base > 0 && ep > 0 && ep < base ? Math.round((base - ep) / base * 100) : null;
+        return `<tr>
+          <td class="sku">${item.product.id}</td>
+          <td>${item.product.name}</td>
+          <td class="num">${item.qty}</td>
+          <td class="num muted">${base > 0 ? fmtGBP(base) : '—'}</td>
+          <td class="num grn">${ep > 0 ? fmtGBP(ep) : '—'}${disc !== null ? ` <span class="disc">-${disc}%</span>` : ''}</td>
+          <td class="num bold">${ep > 0 ? fmtGBP(ep * item.qty) : '—'}</td>
+        </tr>`;
+      }).join('');
+      return `
+        <tr class="cat-row">
+          <td colspan="6">
+            <span class="cat-dot" style="background:${colour}"></span>
+            <strong>${cat}</strong>
+            <span class="cat-sub">${fmtGBP(catTotal)}</span>
+          </td>
+        </tr>
+        ${rows}`;
+    }).join('');
+
+    return `
+      <div class="billing-block">
+        <div class="billing-header">
+          <span>${billingLabel}</span>
+          <span>${fmtGBP(blockTotal)}</span>
+        </div>
+        <table>
+          <thead><tr>
+            <th>SKU</th><th>Product</th>
+            <th class="num">Qty</th>
+            <th class="num">List Price</th>
+            <th class="num">Partner Price</th>
+            <th class="num">Total</th>
+          </tr></thead>
+          <tbody>${catBlocks}</tbody>
+        </table>
+      </div>`;
+  }
+
+  const htmlContent = `<!DOCTYPE html><html><head><title>IPI Quote ${ref}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',Arial,sans-serif;font-size:11.5px;color:#263238;background:white;padding:28px 32px}
+    /* Header */
+    .doc-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #263238}
+    .doc-logo{display:flex;align-items:center;gap:10px}
+    .doc-logo-mark{width:36px;height:36px;background:linear-gradient(135deg,#63AB8F,#A37992);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:13px}
+    .doc-logo-name{font-size:16px;font-weight:700;color:#263238}
+    .doc-logo-sub{font-size:11px;color:#63AB8F;font-weight:600}
+    .doc-title-block{text-align:right}
+    .doc-title{font-size:18px;font-weight:700;color:#263238}
+    .doc-confidential{font-size:10px;color:#A37992;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-top:2px}
+    /* Meta grid */
+    .meta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#dde4e8;border:1px solid #dde4e8;border-radius:6px;overflow:hidden;margin-bottom:20px}
+    .meta-cell{background:white;padding:9px 12px}
+    .meta-label{font-size:8.5px;text-transform:uppercase;letter-spacing:0.7px;color:#7a8f9a;margin-bottom:3px;font-weight:600}
+    .meta-value{font-size:12px;font-weight:700;color:#263238}
+    .level-pill{display:inline-block;padding:2px 9px;border-radius:10px;font-size:10.5px;font-weight:700}
+    .accredited{background:#fff3cc;color:#7a5800;border:1px solid #e8c84a}
+    .silver{background:#eef2f5;color:#3d5060;border:1px solid #a0b0bc}
+    .gold{background:#fff7e0;color:#7a5c00;border:1px solid #ddb830}
+    /* Billing blocks */
+    .billing-block{margin-bottom:20px;border:1.5px solid #dde4e8;border-radius:6px;overflow:hidden;page-break-inside:avoid}
+    .billing-header{background:#263238;color:white;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px}
+    table{width:100%;border-collapse:collapse}
+    thead th{background:#3a4f5c;color:rgba(255,255,255,0.8);padding:6px 10px;font-size:9.5px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600}
+    thead th.num{text-align:right}
+    tbody tr:hover{background:#fafcfd}
+    td{padding:6px 10px;border-bottom:1px solid #f0f4f6;font-size:11px;vertical-align:middle}
+    td.num{text-align:right}
+    td.muted{color:#888}
+    td.grn{color:#27ae60;font-weight:600}
+    td.bold{font-weight:700}
+    td.sku{color:#7a8f9a;font-size:9.5px;white-space:nowrap;font-family:monospace}
+    .disc{font-size:8.5px;background:#e8f5f0;color:#1e7a55;padding:1px 4px;border-radius:3px;margin-left:2px;font-weight:700}
+    /* Category sub-header rows */
+    tr.cat-row td{background:#f5f8fa;border-top:1.5px solid #dde4e8;border-bottom:1px solid #dde4e8;padding:5px 10px}
+    .cat-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+    .cat-sub{float:right;font-weight:700;font-size:11px;color:#36454F}
+    /* Totals */
+    .totals-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#dde4e8;border:1.5px solid #dde4e8;border-radius:6px;overflow:hidden;margin-bottom:20px}
+    .total-cell{background:#f5f8fa;padding:12px 16px;text-align:center}
+    .total-label{font-size:8.5px;text-transform:uppercase;letter-spacing:0.7px;color:#7a8f9a;margin-bottom:4px;font-weight:600}
+    .total-value{font-size:17px;font-weight:700}
+    .total-sub{font-size:9px;color:#7a8f9a;margin-top:2px}
+    .t-green{color:#27ae60} .t-mauve{color:#A37992}
+    /* Footer */
+    .doc-footer{border-top:1px solid #dde4e8;padding-top:10px;display:flex;justify-content:space-between;align-items:center}
+    .footer-note{font-size:9px;color:#aaa}
+    .footer-page{font-size:9px;color:#aaa}
+    @media print{
+      body{padding:16px 20px}
+      .billing-block{page-break-inside:avoid}
+      @page{margin:14mm 12mm;size:A4}
+    }
+  </style></head><body>
+
+  <div class="doc-header">
+    <div class="doc-logo">
+      <div class="doc-logo-mark">IPI</div>
+      <div>
+        <div class="doc-logo-name">IP Integration</div>
+        <div class="doc-logo-sub">Partner Quoting Tool</div>
+      </div>
+    </div>
+    <div class="doc-title-block">
+      <div class="doc-title">Partner Quote</div>
+      <div class="doc-confidential">Confidential &mdash; For Partner Use Only</div>
+    </div>
+  </div>
+
+  <div class="meta-grid" style="grid-template-columns:repeat(5,1fr)">
+    <div class="meta-cell"><div class="meta-label">Quote Reference</div><div class="meta-value">${ref}</div></div>
+    <div class="meta-cell"><div class="meta-label">Partner Name</div><div class="meta-value">${partner}</div></div>
+    <div class="meta-cell"><div class="meta-label">End Customer</div><div class="meta-value">${customer}</div></div>
+    <div class="meta-cell"><div class="meta-label">Partner Level</div><div class="meta-value">
+      <span class="level-pill ${levelVal || ''}">${levelStr}</span>${discPctStr}
+    </div></div>
+    <div class="meta-cell"><div class="meta-label">Valid Until</div><div class="meta-value">${validUntilStr}</div></div>
+  </div>
+
+  ${printBillingBlock(monthlyGroups, 'Monthly Recurring Charges', mrc)}
+  ${printBillingBlock(oneOffGroups,  'One-Off Charges', otc)}
+
+  <div class="totals-grid">
+    <div class="total-cell"><div class="total-label">Monthly Recurring</div><div class="total-value t-green">${fmtGBP(mrc)}</div><div class="total-sub">per month</div></div>
+    <div class="total-cell"><div class="total-label">One-Off Charges</div><div class="total-value t-mauve">${fmtGBP(otc)}</div><div class="total-sub">one time</div></div>
+    <div class="total-cell"><div class="total-label">Annual Contract Value</div><div class="total-value">${fmtGBP(acv)}</div><div class="total-sub">MRC &times; 12 + OTC</div></div>
+  </div>
+
+  ${quoteNotes ? `<div style="margin-bottom:20px;border:1.5px solid #dde4e8;border-radius:6px;overflow:hidden"><div style="background:#f5f8fa;padding:7px 14px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#7a8f9a;border-bottom:1px solid #dde4e8">Notes &amp; Terms</div><div style="padding:12px 14px;font-size:11.5px;line-height:1.6;color:#36454F;white-space:pre-wrap">${quoteNotes}</div></div>` : ''}
+  <div class="doc-footer">
+    <div class="footer-note">Generated by IPI Partner Quoting Tool &nbsp;&bull;&nbsp; ${date} &nbsp;&bull;&nbsp; Prices subject to formal agreement and IPI approval</div>
+    <div class="footer-page">IP Integration Ltd</div>
+  </div>
+
+  <script>window.addEventListener('load',function(){window.print();});<\/script>
+  </body></html>`;
+
+  const blob = new Blob([htmlContent], { type: 'text/html' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.target = '_blank';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+function copyCSV() {
+  const ref = document.getElementById('quoteRef').value;
+  const partner = document.getElementById('partnerName').value || '';
+  const customer = document.getElementById('endCustomer').value || '';
+  const date = new Date().toLocaleDateString('en-GB');
+  const levelLabelCSV = { accredited: 'Accredited', silver: 'Silver', gold: 'Gold' };
+  const levelCSV = document.getElementById('partnerLevel').value;
+
+  let csv = `Quote Reference,${ref}\nPartner,${partner}\nEnd Customer,${customer}\nPartner Level,${levelLabelCSV[levelCSV] || 'Not set'}\nDate,${date}\n\n`;
+  csv += `SAP ID,Product Name,Category,Billing Type,Qty,List Price,Partner Price,Total\n`;
+  quoteItems.forEach(item => {
+    const ep = getEffectivePrice(item);
+    const base = item.product.list > 0 ? item.product.list : item.product.threshold;
+    csv += `${item.product.id},"${item.product.name}",${item.product.cat},${item.product.billing},${item.qty},${base.toFixed(2)},${ep.toFixed(2)},${(ep*item.qty).toFixed(2)}\n`;
+  });
+  let mrc = 0, otc = 0;
+  quoteItems.forEach(i => { const p = getEffectivePrice(i)*i.qty; if(i.product.billing==='Monthly') mrc+=p; else otc+=p; });
+  csv += `\n,,,,,,\nMonthly Total,,${mrc.toFixed(2)}\nOne-Off Total,,${otc.toFixed(2)}\nACV,,${(mrc*12+otc).toFixed(2)}\n`;
+
+  navigator.clipboard.writeText(csv).then(() => showToast('✓ CSV copied to clipboard'));
+}
+
+// ─── PRODUCT METADATA ────────────────────────────────────────────────────────
+// desc, agentType (Named/Concurrent/N/A), commitment, related IDs, tip
+const PRODUCT_META = {
+  // PCI Cloud
+  'S100540': { desc: 'Usage-based PCI DSS-compliant cloud payment handling for named agents. Agents are only billed when active, making this ideal for organisations with variable contact volumes. Fully integrates with ECX CCaaS to enable secure card payments mid-call without storing card data in the contact centre environment.', agentType: 'Named', commitment: 'On Demand', related: [['S100841','Annual PrePay version for better rates'],['S100864','Cloud PCI Standard for higher volumes'],['S101069','Project Management for PCI deployments']], tip: 'Best for seasonal or low-volume deployments where predictable monthly costs are not a priority.' },
+  'S100541': { desc: 'Usage-based PCI DSS-compliant cloud payment handling for concurrent agent sessions. Charges apply per active concurrent session rather than per named user, suiting busy contact centres with high agent rotation. Enables pause-and-resume functionality to protect cardholder data during call recordings.', agentType: 'Concurrent', commitment: 'On Demand', related: [['S100842','Annual PrePay concurrent version'],['S100864','Cloud PCI Standard'],['S101069','Project Management - PCI']], tip: 'Concurrent licensing suits environments where agents share workstations or work in shifts.' },
+  'S100841': { desc: 'Annual pre-pay PCI DSS-compliant pauseable payment solution for named agents. Provides a fixed monthly cost with the ability to pause call recordings during payment capture, ensuring no card data is stored. Includes full compliance reporting and audit trail capabilities.', agentType: 'Named', commitment: 'Annual Pre-Pay', related: [['S100864','Cloud PCI Standard for enhanced features'],['S100843','Pay Monthly alternative'],['S101069','Project Management - PCI']], tip: 'Annual pre-pay offers the best per-agent rate for predictable, stable deployments.' },
+  'S100842': { desc: 'Annual pre-pay PCI DSS-compliant pauseable payment solution for concurrent sessions. Optimised for environments where agents handle multiple customer payment interactions across shared sessions. Provides full DTMF masking and screen blank capabilities during payment capture.', agentType: 'Concurrent', commitment: 'Annual Pre-Pay', related: [['S100841','Named agent version'],['S100844','Pay Monthly concurrent'],['S101069','Project Management - PCI']], tip: 'Concurrent licensing gives flexibility for high-utilisation contact centres.' },
+  'S100843': { desc: 'Monthly pay-as-you-go PCI DSS-compliant pauseable solution for named agents. No long-term commitment required, with the same full compliance capabilities as the annual tier. Suitable for organisations still evaluating their long-term contact centre strategy.', agentType: 'Named', commitment: 'Monthly', related: [['S100841','Annual PrePay for better pricing'],['S100864','Cloud PCI Standard']], tip: 'Switch to annual pre-pay once volumes are established to reduce per-agent cost.' },
+  'S100844': { desc: 'Monthly pay-as-you-go PCI DSS-compliant pauseable solution for concurrent sessions. Provides full flexibility with no commitment period while maintaining complete PCI DSS compliance. Ideal for pilot programmes or transitional deployments.', agentType: 'Concurrent', commitment: 'Monthly', related: [['S100842','Annual PrePay concurrent for savings'],['S100841','Named agent equivalent']], tip: 'A good starting point — move to annual pre-pay once volumes stabilise.' },
+  'S100864': { desc: 'Cloud PCI Standard provides full PCI DSS Level 1 compliant payment processing for named agents on an annual pay-monthly basis. Includes enhanced reporting, real-time compliance dashboards, and integration with major payment gateways. Suitable for organisations processing moderate-to-high volumes of card payments.', agentType: 'Named', commitment: 'Annual (Monthly Pay)', related: [['S101019','Cloud PCI Premium for advanced features'],['S100841','Pauseable variant'],['S101069','Project Management - PCI']], tip: 'The standard tier suits most mid-market organisations; upgrade to Premium for multi-site or regulated financial services.' },
+  'S101019': { desc: 'Premium PCI DSS-compliant cloud payment solution for named agents, billed annually in advance. Includes advanced fraud detection, multi-currency support, enhanced SLA and dedicated compliance support. Designed for regulated industries and high-volume payment environments.', agentType: 'Named', commitment: 'Annual Pre-Pay', related: [['S100864','Cloud PCI Standard tier'],['S101020','Pay Monthly equivalent'],['S101069','Project Management - PCI']], tip: 'Pre-pay premium offers maximum value for high-volume, compliance-sensitive environments.' },
+  'S101020': { desc: 'Premium PCI DSS-compliant cloud payment solution for named agents, paid annually but billed monthly. Combines the advanced features of the premium tier with monthly invoicing flexibility, making budgeting easier for finance teams.', agentType: 'Named', commitment: 'Annual (Monthly Pay)', related: [['S101019','Annual pre-pay for cost saving'],['S101023','Concurrent version']], tip: 'Choose annual pay monthly if you need premium features but prefer monthly cash flow management.' },
+  'S101023': { desc: 'Premium PCI DSS-compliant cloud payment solution for concurrent sessions, paid annually on a monthly basis. Supports high-volume concurrent payment sessions with enterprise-grade compliance, suitable for large contact centres with multiple simultaneous payment channels.', agentType: 'Concurrent', commitment: 'Annual (Monthly Pay)', related: [['S101020','Named agent premium'],['S101019','Annual pre-pay version']], tip: 'Concurrent licensing at the premium tier is ideal for large financial services or utilities contact centres.' },
+  // CCaaS
+  'S100937': { desc: 'ECX Voice gives named agents access to inbound and outbound voice capabilities within the ECX contact centre platform. Annual pre-pay provides the most cost-effective per-agent rate. Includes intelligent call routing, IVR integration, real-time supervisor monitoring, and full call recording with compliance controls.', agentType: 'Named', commitment: 'Annual Pre-Pay', related: [['S100951','MS Teams integration add-on'],['S100953','CRM integration'],['S100955','AI Insight for call analysis'],['S101117','Professional Services - Voice']], tip: 'Pair with AI Insight for automatic call transcription and post-call analytics.' },
+  'S100938': { desc: 'ECX Voice named agent licence on a monthly rolling basis. Ideal for organisations not yet ready to commit annually or for temporary capacity expansion. Includes the same full voice feature set as the annual tier with complete routing, recording, and reporting capabilities.', agentType: 'Named', commitment: 'Monthly', related: [['S100937','Annual pre-pay for cost saving'],['S100951','MS Teams add-on'],['S100955','AI Insight']], tip: 'Monthly pricing is 5% higher than annual pre-pay — recommend switching once agent count is stable.' },
+  'S100939': { desc: 'ECX Voice for concurrent sessions, annual pre-pay. Licences are based on the maximum number of simultaneous active calls rather than total agent headcount, making this highly efficient for large teams with predictable peak utilisation. Includes full voice contact centre functionality.', agentType: 'Concurrent', commitment: 'Annual Pre-Pay', related: [['S100940','Monthly concurrent version'],['S100955','AI Insight Concurrent'],['S101117','PS - Voice']], tip: 'Concurrent licensing typically yields 30-40% savings for contact centres where agents are not always active.' },
+  'S100940': { desc: 'ECX Voice concurrent session licence, monthly rolling. Provides maximum flexibility for organisations growing their contact centre or managing seasonal demand. Full voice feature parity with the annual tier.', agentType: 'Concurrent', commitment: 'Monthly', related: [['S100939','Annual concurrent for savings'],['S100955','AI Insight']], tip: 'Model your peak concurrent sessions carefully — concurrent licences should cover your busiest hour.' },
+  'S100941': { desc: 'ECX Omni extends the voice contact centre to include email, web chat, and social messaging channels under a single named agent licence, billed annually in advance. Agents handle all channels from one unified desktop, with full interaction history and omnichannel routing.', agentType: 'Named', commitment: 'Annual Pre-Pay', related: [['S100953','CRM integration'],['S100955','AI Insight NAMED'],['S101118','PS - Email setup'],['S101119','PS - Chat setup']], tip: 'Recommended for customer service teams that need to manage voice, email and chat in a single queue.' },
+  'S100942': { desc: 'ECX Omni named agent licence on monthly rolling terms. Full omnichannel capability across voice, email, web chat, and social channels with no annual commitment. Suitable for organisations piloting omnichannel before a larger rollout.', agentType: 'Named', commitment: 'Monthly', related: [['S100941','Annual pre-pay for savings'],['S100953','CRM add-on']], tip: 'Transition to annual pre-pay after a 3-month pilot to reduce per-agent costs.' },
+  'S100943': { desc: 'ECX Omni concurrent session licence, annual pre-pay. Provides omnichannel handling across voice, email, chat, and social for environments where sessions are measured by simultaneous interactions rather than named agents. Well-suited to large outsourced contact centre operations.', agentType: 'Concurrent', commitment: 'Annual Pre-Pay', related: [['S100944','Monthly concurrent version'],['S100956','AI Insight CONC']], tip: 'Concurrent omni is the most cost-effective option for BPOs handling multiple client programmes.' },
+  'S100944': { desc: 'ECX Omni concurrent session licence, monthly rolling. Combines the flexibility of monthly billing with full omnichannel contact centre capabilities for concurrent session environments.', agentType: 'Concurrent', commitment: 'Monthly', related: [['S100943','Annual concurrent for savings']], tip: 'Ideal for temporary campaign deployments requiring omnichannel capability.' },
+  'S100945': { desc: 'ECX Max is the flagship CCaaS tier, providing named agents with the complete suite of channels — voice, email, chat, social, outbound dialler, and workforce management integration — under a single unified licence, billed annually. Includes advanced analytics, quality management, and AI-ready infrastructure.', agentType: 'Named', commitment: 'Annual Pre-Pay', related: [['S100984','AI Side-Kick add-on'],['S100955','AI Insight'],['S101126','Verint WFM PS'],['S100953','CRM integration']], tip: 'ECX Max is the recommended entry point for enterprise contact centres requiring the full feature breadth.' },
+  'S100946': { desc: 'ECX Max named agent licence on monthly rolling terms. Provides access to the complete ECX contact centre suite without an annual commitment. Ideal for project-based deployments or organisations in the process of procurement sign-off.', agentType: 'Named', commitment: 'Monthly', related: [['S100945','Annual pre-pay for cost savings'],['S100984','AI Side-Kick']], tip: 'If budget is approved, move to annual pre-pay immediately for significant cost reduction.' },
+  'S100947': { desc: 'ECX Max concurrent session licence, annual pre-pay. Delivers enterprise-grade contact centre capabilities — including all channels, WFM, quality management and AI readiness — priced on concurrent sessions for maximum efficiency in large operations.', agentType: 'Concurrent', commitment: 'Annual Pre-Pay', related: [['S100948','Monthly concurrent'],['S100987','AI Side-Kick CONC'],['S100956','AI Insight CONC']], tip: 'For enterprise deployments with 200+ seats, concurrent Max is typically the most cost-effective configuration.' },
+  'S100948': { desc: 'ECX Max concurrent session licence, monthly rolling. Full enterprise contact centre capability billed on actual concurrent sessions with no annual commitment.', agentType: 'Concurrent', commitment: 'Monthly', related: [['S100947','Annual concurrent for savings']], tip: 'Use for rapid deployment where procurement cycles are still in progress.' },
+  // CCaaS Add-ons
+  'S100951': { desc: 'Integrates Microsoft Teams directly into the ECX CCaaS desktop for named agents, annual pre-pay. Agents can transfer calls to Teams users, view Teams presence status, and access the full enterprise directory without leaving the contact centre interface. Requires an active Microsoft Teams licence.', agentType: 'Named', commitment: 'Annual Pre-Pay', related: [['S100937','ECX Voice Named'],['S100941','ECX Omni Named'],['S100953','CRM integration']], tip: 'Essential for organisations using Teams as their internal communications platform.' },
+  'S100952': { desc: 'Microsoft Teams integration for ECX CCaaS named agents, monthly rolling. Same capabilities as the annual tier — Teams transfer, presence sync, and directory access — with no minimum commitment.', agentType: 'Named', commitment: 'Monthly', related: [['S100951','Annual pre-pay version']], tip: 'Monthly billing suits pilots or deployments pending Microsoft licence consolidation.' },
+  'S100953': { desc: 'CRM integration connector for ECX CCaaS named agents, annual pre-pay. Provides screen-pop, click-to-dial, and automatic call logging for major CRM platforms including Salesforce, Dynamics 365, ServiceNow, and Zendesk. Reduces average handling time and improves first-contact resolution rates.', agentType: 'Named', commitment: 'Annual Pre-Pay', related: [['S100937','ECX Voice'],['S100941','ECX Omni'],['S100955','AI Insight for post-call data']], tip: 'CRM integration typically reduces AHT by 20–30 seconds per call through automated screen-pop and logging.' },
+  'S100954': { desc: 'CRM integration connector for ECX CCaaS named agents, monthly rolling. Full CRM screen-pop, automatic activity logging, and click-to-dial across major CRM platforms with monthly billing flexibility.', agentType: 'Named', commitment: 'Monthly', related: [['S100953','Annual pre-pay for savings']], tip: 'Recommend annual pre-pay once the CRM integration is validated in production.' },
+  'S100955': { desc: 'ECX AI Insight provides real-time and post-call AI analytics for named agents, billed annually in advance. Automatically transcribes calls, identifies sentiment, flags compliance keywords, and generates performance coaching insights. Connects agent conversations to business outcomes through advanced NLP and machine learning.', agentType: 'Named', commitment: 'Annual Pre-Pay', related: [['S100984','AI Side-Kick for real-time guidance'],['S100976','Real-Time Transcription Hours'],['S100953','CRM for data sync']], tip: 'AI Insight combined with AI Side-Kick creates a comprehensive AI-augmented agent experience.' },
+  'S100956': { desc: 'ECX AI Insight for concurrent sessions, annual pre-pay. Applies the same AI-driven transcription, sentiment analysis, and compliance monitoring to concurrent session environments, providing analytics at scale across all active interactions.', agentType: 'Concurrent', commitment: 'Annual Pre-Pay', related: [['S100987','AI Side-Kick CONC'],['S100976','Real-Time Transcription']], tip: 'Concurrent AI Insight licences scale efficiently for large contact centre operations.' },
+  'S100957': { desc: 'ECX AI Insight for named agents, monthly rolling. Provides real-time and post-call AI analytics including call transcription, sentiment scoring, and performance insights without a long-term commitment.', agentType: 'Named', commitment: 'Monthly', related: [['S100955','Annual pre-pay version'],['S100984','AI Side-Kick']], tip: 'Start with monthly billing to build the internal AI analytics use case before committing annually.' },
+  'S100958': { desc: 'ECX AI Insight for concurrent sessions, monthly rolling. Full AI-powered call analytics and real-time insight capabilities priced per concurrent session on a monthly basis.', agentType: 'Concurrent', commitment: 'Monthly', related: [['S100956','Annual concurrent pre-pay']], tip: 'Ideal for pilot programmes to demonstrate AI ROI before annual commitment.' },
+  'S100984': { desc: 'ECX AI Side-Kick provides named agents with real-time AI-powered assistance during live customer interactions. Automatically surfaces relevant knowledge articles, suggested responses, and next-best-action guidance based on conversation context. Reduces handling time and improves first-contact resolution without requiring agents to manually search knowledge bases.', agentType: 'Named', commitment: 'Monthly', related: [['S100955','AI Insight for post-call analytics'],['S100953','CRM integration'],['S100991','Autopilot Voice Bot']], tip: 'Side-Kick is most impactful in knowledge-intensive environments such as financial services, insurance, and utilities.' },
+  'S100985': { desc: 'Overage charge for ECX AI Side-Kick named agents when usage exceeds contracted volumes. Ensures uninterrupted AI assistance during peak periods without hard usage caps.', agentType: 'Named', commitment: 'Monthly (Overage)', related: [['S100984','AI Side-Kick standard licence']], tip: 'Monitor Side-Kick usage monthly and upsize the base licence if overage charges are recurring.' },
+  'S100987': { desc: 'ECX AI Side-Kick for concurrent sessions, providing real-time AI guidance across all active interactions simultaneously. Scales dynamically with concurrent session volume, surfacing knowledge and guidance to whichever agents are active at any moment.', agentType: 'Concurrent', commitment: 'Monthly', related: [['S100956','AI Insight CONC'],['S100991','Autopilot Voice Bot']], tip: 'Concurrent AI Side-Kick is highly cost-effective for large teams — one licence covers all active sessions.' },
+  'S100991': { desc: 'ECX Autopilot AI Voice Bot charges are based on conversation minutes. The bot handles routine inbound enquiries — account lookups, appointment scheduling, order status, FAQs — using natural language understanding, deflecting calls from live agents. Integrates with backend systems via APIs for real-time data retrieval.', agentType: 'N/A', commitment: 'Per Minute (Monthly)', related: [['S100955','AI Insight for bot analytics'],['S100937','ECX Voice for escalation handling'],['S101117','PS - Voice implementation']], tip: 'Even a 10% deflection rate on a 50-seat contact centre delivers significant ROI within the first quarter.' },
+  'S100970': { desc: 'Batch transcription converts recorded calls to text for post-call analysis, quality management, and compliance archiving. Charged per hour of audio transcribed. Integrates with AI Insight for automated scoring and keyword analysis across your full call archive.', agentType: 'N/A', commitment: 'Per Hour (Monthly)', related: [['S100955','AI Insight for analysis'],['S100976','Real-Time Transcription']], tip: 'Batch transcription is the most cost-effective way to apply AI analytics across historical call recordings.' },
+  'S100976': { desc: 'Real-time transcription converts live call audio to text as the conversation happens, enabling real-time AI applications such as Side-Kick guidance, live compliance monitoring, and instant supervisor alerts. Charged per transcription hour.', agentType: 'N/A', commitment: 'Per Hour (Monthly)', related: [['S100984','AI Side-Kick (uses real-time transcription)'],['S100955','AI Insight']], tip: 'Required for AI Side-Kick real-time guidance and live compliance keyword alerting.' },
+  // SMS
+  'S100880': { desc: 'Outbound SMS usage charge per message sent from the ECX CCaaS platform. Enables agents and automated workflows to send appointment confirmations, case updates, satisfaction surveys, and proactive notifications directly from the contact centre interface. Pricing is per message sent.', agentType: 'N/A', commitment: 'Per Message (Monthly)', related: [['S100881','Long Number rental for SMS'],['S100883','Shortcode Keyword Rental']], tip: 'Outbound SMS has an average open rate of over 90% — significantly higher than email for customer notifications.' },
+  'S100881': { desc: 'Monthly rental for a dedicated long-format UK mobile number (07xxx) for two-way SMS within ECX CCaaS. Allows customers to reply to outbound messages, creating a conversational SMS channel alongside voice and chat. Each number is exclusively assigned to your contact centre.', agentType: 'N/A', commitment: 'Monthly per Number', related: [['S100880','SMS outbound usage'],['S100882','Short number rental']], tip: 'A long number enables two-way SMS conversations, unlocking richer customer engagement than one-way messaging.' },
+  'S100882': { desc: 'Monthly rental for a short format SMS number (5-digit). Short numbers are typically used for high-volume outbound campaigns, opt-in programmes, and brand recognition. Available as shared or dedicated depending on campaign requirements.', agentType: 'N/A', commitment: 'Monthly per Number', related: [['S100883','Shortcode Keyword Rental'],['S100880','SMS usage']], tip: 'Short numbers are ideal for marketing campaigns where brand recall is important.' },
+  'S100883': { desc: 'Monthly rental for a keyword on a shortcode — for example "Text SUPPORT to 82228". Enables customers to initiate contact or opt-in to services by texting a memorable keyword to a shared short number. Each keyword is exclusive to your organisation on the shared code.', agentType: 'N/A', commitment: 'Monthly per Keyword', related: [['S100882','Short Number Rental'],['S100880','SMS outbound usage']], tip: 'Keyword rentals work well alongside outbound SMS campaigns to create a two-way SMS engagement loop.' },
+  // UCaaS
+  'S100949': { desc: 'ECX UCX (Unified Communications) provides named users with enterprise telephony, presence, messaging, and collaboration tools integrated with the ECX platform. Annual pre-pay pricing. Includes softphone, mobile app, voicemail, and seamless transfer to CCaaS agents for escalation scenarios.', agentType: 'Named', commitment: 'Annual Pre-Pay', related: [['S100937','ECX Voice for contact centre agents'],['S100951','MS Teams integration']], tip: 'UCaaS + CCaaS bundles are a compelling proposition for organisations replacing legacy PBX and contact centre simultaneously.' },
+  'S100950': { desc: 'ECX UCX named user licence on annual commitment with monthly billing. Provides the same full unified communications feature set — softphone, presence, messaging, voicemail — with monthly invoicing for easier budget management.', agentType: 'Named', commitment: 'Annual (Monthly Pay)', related: [['S100949','Annual pre-pay for lower per-user cost'],['S100937','ECX Voice CCaaS']], tip: 'Consider bundling UCaaS with CCaaS Voice for a complete communications estate replacement.' },
+  // AI
+  'S100555': { desc: 'Cloud AI ID Me is a real-time voice biometric identity verification service. Customers authenticate themselves by speaking a passphrase, with the AI comparing their voiceprint against a stored profile. Eliminates the need for knowledge-based authentication questions, reducing AHT and improving security. Charged per verification transaction.', agentType: 'N/A', commitment: 'Per Transaction (Monthly)', related: [['S100557','AI Bot Channel'],['S100937','ECX Voice']], tip: 'Voice biometrics typically reduces average authentication time from 45 seconds to under 10 seconds.' },
+  'S100556': { desc: 'Cloud AI Q4Me is an intelligent pre-call survey and qualification service. Before connecting to a live agent, customers respond to AI-driven questions that capture their intent, account details, and emotional tone. This data is passed to the agent desktop in real time, enabling a faster and more personalised conversation. Charged per qualification session.', agentType: 'N/A', commitment: 'Per Session (Monthly)', related: [['S100937','ECX Voice for agent connection'],['S100955','AI Insight for analytics']], tip: 'Q4Me can reduce AHT by 20+ seconds by eliminating repeated customer identification at the start of each call.' },
+  'S100557': { desc: 'Cloud AI Bot Channel provides a fully managed conversational AI bot capability for digital channels including web chat, WhatsApp, and social messaging. Charged on demand per active bot channel per month, with overage for peak usage. Includes natural language understanding, intent recognition, and seamless human escalation.', agentType: 'N/A', commitment: 'Per Channel (Monthly)', related: [['S100941','ECX Omni for digital agent handling'],['S100991','Autopilot Voice Bot']], tip: 'Deploy a bot on web chat to automate Tier 1 queries before human escalation — typical deflection rates of 25–40%.' },
+  'S100906': { desc: 'ECX CCaaS AI Insight for named agents, annual pre-pay. This AI tier provides purpose-built analytics specifically designed for contact centre operations, including automated QA scoring, agent performance benchmarking, and compliance monitoring. Delivered as a fully managed service within the ECX platform.', agentType: 'Named', commitment: 'Annual Pre-Pay', related: [['S100984','AI Side-Kick real-time guidance'],['S100976','Real-Time Transcription']], tip: 'AI Insight can automate up to 80% of manual quality assurance sampling, freeing QA teams for coaching.' },
+  'S100907': { desc: 'ECX CCaaS AI Insight for concurrent sessions, annual pre-pay. Provides the same AI-powered quality management, compliance monitoring, and agent analytics at scale for concurrent session environments.', agentType: 'Concurrent', commitment: 'Annual Pre-Pay', related: [['S100987','AI Side-Kick CONC'],['S100976','Real-Time Transcription']], tip: 'Concurrent AI Insight is ideal for large operations where not every agent is active simultaneously.' },
+  // Inbound Telephony
+  'S100812': { desc: 'IPI professional services for porting existing NGN or inbound numbers to the VoiceConnect platform. Covers all porting administration, carrier liaison, and number migration planning. Includes post-migration testing and validation to ensure zero customer impact during transition.', agentType: 'N/A', commitment: 'One-Off', related: [['S100813','NGN/Inbound PS'],['S100816','VoiceConnect setup']], tip: 'Allow 10–15 business days for standard porting; complex migrations with multiple carrier relationships may require longer lead times.' },
+  'S100813': { desc: 'IPI professional services day rate for NGN and inbound telephony configuration, routing design, and implementation. Covers IVR design, call flow documentation, and system testing for new inbound telephony deployments or major reconfiguration projects.', agentType: 'N/A', commitment: 'Per Day (Monthly)', related: [['S100812','Porting PS'],['S100816','VoiceConnect Setup']], tip: 'Engage IPI PS early in the project to ensure routing design aligns with both the carrier and contact centre platforms.' },
+  'S100816': { desc: 'One-time setup charge for deploying VoiceConnect without number porting. Covers platform provisioning, number allocation, call flow configuration, and integration testing with the contact centre. Includes a post-deployment health check and documentation pack.', agentType: 'N/A', commitment: 'One-Off', related: [['S100812','Porting PS if migrating numbers'],['S100813','Additional PS days']], tip: 'Budget for 2–3 additional PS days for complex IVR designs or multi-site deployments.' },
+  'S100914': { desc: 'Per-channel encryption for VoiceConnect, charged monthly per encrypted channel. Provides end-to-end SRTP/TLS encryption for voice traffic between the carrier network and the contact centre platform, essential for organisations with data security or regulatory requirements around call confidentiality.', agentType: 'N/A', commitment: 'Monthly per Channel', related: [['S100816','VoiceConnect Setup'],['S100864','PCI Cloud for payment calls']], tip: 'Required for contact centres handling sensitive conversations in regulated industries such as financial services or healthcare.' },
+  // Services
+  'S101061': { desc: 'IPI project management services for ECX UCaaS deployments. A dedicated IPI project manager oversees the full implementation lifecycle — scoping, vendor coordination, testing, and go-live — ensuring on-time, on-budget delivery. Charged per project management day.', agentType: 'N/A', commitment: 'Per Day (One-Off)', related: [['S100949','ECX UCX licences'],['S100937','ECX Voice CCaaS']], tip: 'Dedicated project management reduces implementation risk and accelerates time-to-value for complex deployments.' },
+  'S101069': { desc: 'IPI project management for PCI Cloud deployments. Provides structured programme governance for PCI compliance projects, including pre-implementation readiness assessment, carrier coordination, compliance validation, and go-live support. Per project management day.', agentType: 'N/A', commitment: 'Per Day (One-Off)', related: [['S100864','Cloud PCI Standard'],['S101019','Cloud PCI Premium']], tip: 'PCI projects benefit significantly from dedicated PM — compliance testing alone can require 2–3 days of coordination.' },
+  'S101077': { desc: 'Standard training and enablement package for ECX CCaaS deployments of 0–50 seats. Covers end-user training for agents and supervisors, administrator training, and creation of customer-specific quick reference guides. Delivered over 2–3 days on-site or remotely.', agentType: 'N/A', commitment: 'One-Off', related: [['S101115','Rapid PS Package for 20 agents'],['S101116','Rapid PS for 50 agents']], tip: 'Structured training at go-live typically reduces post-deployment support ticket volumes by 40%.' },
+  'S101115': { desc: 'Rapid professional services deployment package for ECX CCaaS environments of up to 20 agents. Includes core platform configuration, basic IVR build, integration testing, and a half-day admin training session. Designed for fast deployments where simplicity and speed are priorities.', agentType: 'N/A', commitment: 'One-Off', related: [['S101117','PS - Voice channel'],['S101077','T&E Standard training']], tip: 'The Rapid package is ideal for SME customers needing a quick, clean deployment without heavy customisation.' },
+  'S101116': { desc: 'Rapid professional services deployment package for ECX CCaaS environments of up to 50 agents. Builds on the 20-agent package with additional configuration time, a more comprehensive IVR design, and a full-day training programme covering agents, supervisors, and administrators.', agentType: 'N/A', commitment: 'One-Off', related: [['S101117','PS - Voice'],['S101118','PS - Email'],['S101077','T&E Standard']], tip: 'Combine with channel-specific PS packages for organisations requiring multi-channel deployment at go-live.' },
+  'S101117': { desc: 'Professional services package for ECX CCaaS voice channel implementation. Covers call flow design, IVR scripting, skills-based routing configuration, queue management setup, and voice platform integration testing. Delivered by certified ECX implementation engineers.', agentType: 'N/A', commitment: 'One-Off', related: [['S100937','ECX Voice licence'],['S101118','PS - Email'],['S101119','PS - Chat'],['S101077','T&E training']], tip: 'Always pair voice PS with an appropriate training package to ensure agents and supervisors are confident on go-live.' },
+  'S101118': { desc: 'Professional services for ECX CCaaS email channel configuration. Covers email queue setup, routing rules, SLA timer configuration, email template creation, and agent workspace customisation for email handling. Ensures optimal agent workflows from day one.', agentType: 'N/A', commitment: 'One-Off', related: [['S100941','ECX Omni (includes email)'],['S101119','PS - Chat'],['S101117','PS - Voice']], tip: 'Email channel configuration typically takes 1–2 days; allow extra time if migrating from a legacy email platform.' },
+  'S101119': { desc: 'Professional services for ECX CCaaS web chat channel implementation. Includes chat widget deployment, routing configuration, canned response library setup, bot handover configuration, and agent training for chat-specific skills and etiquette.', agentType: 'N/A', commitment: 'One-Off', related: [['S100941','ECX Omni'],['S100557','AI Bot Channel'],['S101118','PS - Email']], tip: 'Web chat deployments benefit from a curated canned response library — allocate time in PS to build this with the customer.' },
+  'S101126': { desc: 'Professional services for Verint Workforce Management integration with ECX CCaaS. Covers data connector setup, historical data import, schedule adherence configuration, and real-time adherence alerting. Enables full WFM-driven scheduling and performance management within the ECX platform.', agentType: 'N/A', commitment: 'One-Off', related: [['S100945','ECX Max (includes WFM integration)'],['S101117','PS - Voice']], tip: 'Verint WFM integration typically delivers ROI within 3 months through improved schedule adherence and reduced overtime.' },
+  'S100935': { desc: 'IPI custom consultancy services, charged at a daily rate. Engages senior IPI consultants for strategic contact centre advice, technology roadmap development, solution architecture, vendor assessment, or bespoke integration design. Scope agreed in advance with a statement of work.', agentType: 'N/A', commitment: 'Per Day (One-Off)', related: [['S101069','PM - PCI'],['S101061','PM - UCaaS']], tip: 'Consultancy engagements are most valuable at the start of a transformation programme to define the right architecture.' },
+};
+
+// Fallback description generator for products without specific metadata
+function getProductMeta(product) {
+  if (PRODUCT_META[product.id]) return PRODUCT_META[product.id];
+  // Generate sensible fallback based on product attributes
+  const isNamed = product.name.toLowerCase().includes('named') || product.name.toLowerCase().includes('nam');
+  const isConc  = product.name.toLowerCase().includes('conc') || product.name.toLowerCase().includes('concurrent');
+  const isOverage = product.name.toLowerCase().includes('overage');
+  const agentType = isNamed ? 'Named' : isConc ? 'Concurrent' : 'N/A';
+  const desc = isOverage
+    ? `Overage charge for ${product.name.replace(/overage/i,'').trim()} when usage exceeds the contracted monthly volume. Ensures uninterrupted service during peak periods without hard caps.`
+    : `${product.name} — part of the IPI ${product.cat} portfolio. ${product.billing === 'One Off' ? 'One-off implementation or professional services charge.' : 'Monthly recurring charge per ' + (agentType !== 'N/A' ? agentType.toLowerCase() + ' agent licence.' : 'unit of usage.')}`;
+  return { desc, agentType, commitment: product.billing === 'One Off' ? 'One-Off' : 'Monthly', related: [], tip: '' };
+}
+
+let currentDetailProductId = null;
+
+function openProductDetail(id) {
+  const product = PRODUCTS.find(p => p.id === id);
+  if (!product) return;
+  currentDetailProductId = id;
+
+  const meta   = getProductMeta(product);
+  const colour = CAT_COLOURS[product.cat] || '#888';
+  const price  = getDiscountedPrice(product);
+  const base   = product.list > 0 ? product.list : product.threshold;
+  const level  = document.getElementById('partnerLevel').value;
+  const levelLabels = { accredited: 'Accredited', silver: 'Silver', gold: 'Gold' };
+
+  document.getElementById('pdCatDot').style.background = colour;
+  document.getElementById('pdTitle').textContent = product.name;
+  document.getElementById('pdSku').textContent = product.id + '  ·  ' + product.cat;
+
+  // Specs grid
+  const specs = [
+    { label: 'Category',    value: product.cat },
+    { label: 'Billing',     value: product.billing },
+    { label: 'Agent Type',  value: meta.agentType },
+    { label: 'Commitment',  value: meta.commitment },
+  ];
+  if (base > 0) specs.push({ label: 'List Price', value: fmtGBP(base) });
+  if (price > 0 && level) specs.push({ label: levelLabels[level] + ' Price', value: fmtGBP(price) });
+
+  const specsHTML = specs.map(s =>
+    '<div class="pd-spec"><div class="pd-spec-label">' + s.label + '</div><div class="pd-spec-value">' + s.value + '</div></div>'
+  ).join('');
+
+  // Price box
+  const priceHTML = price > 0 ? '<div class="pd-price-box">' +
+    '<div><div class="pd-price-label">' + (level ? levelLabels[level] + ' Partner Price' : 'List Price') + '</div>' +
+    '<div class="pd-price-sub">' + product.billing + '</div></div>' +
+    '<div class="pd-price-value">' + fmtGBP(price) + '</div>' +
+    '</div>' : '';
+
+  // Related products — use data-id to avoid single-quote escaping in onclick
+  const relatedItems = meta.related && meta.related.length > 0
+    ? meta.related.map(([relId, why]) => {
+        const rp = PRODUCTS.find(p => p.id === relId);
+        if (!rp) return null;
+        const rprice  = getDiscountedPrice(rp);
+        const rcolour = CAT_COLOURS[rp.cat] || '#888';
+        return { relId, why, rp, rprice, rcolour };
+      }).filter(Boolean)
+    : [];
+
+  const relatedHTML = relatedItems.length > 0
+    ? '<p class="pd-section-title">Often Paired With</p>' +
+      relatedItems.map(({ relId, why, rp, rprice, rcolour }) =>
+        '<div class="pd-related-item" data-related-id="' + relId + '">' +
+          '<span class="cat-dot" style="background:' + rcolour + ';width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0;margin-top:3px"></span>' +
+          '<div style="flex:1"><div class="pd-related-name">' + rp.name + '</div>' +
+          '<div class="pd-related-why">' + why + '</div></div>' +
+          '<div class="pd-related-price">' + (rprice > 0 ? fmtGBP(rprice) : 'POA') + '</div>' +
+        '</div>'
+      ).join('')
+    : '';
+
+  const tipHTML = meta.tip ? '<div style="background:#fffbf0;border:1.5px solid #f0d060;border-radius:8px;padding:10px 12px;margin-bottom:16px">' +
+    '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#8a6000;margin-bottom:4px">💡 Tip</div>' +
+    '<div style="font-size:12.5px;color:#5a4000;line-height:1.5">' + meta.tip + '</div></div>' : '';
+
+  document.getElementById('pdBody').innerHTML =
+    '<p class="pd-section-title">Overview</p>' +
+    '<p class="pd-desc">' + meta.desc + '</p>' +
+    '<p class="pd-section-title">Specifications</p>' +
+    '<div class="pd-specs">' + specsHTML + '</div>' +
+    priceHTML +
+    tipHTML +
+    relatedHTML;
+
+  // Wire related product clicks via event delegation (no inline onclick needed)
+  document.getElementById('pdBody').querySelectorAll('.pd-related-item').forEach(el => {
+    el.addEventListener('click', function() {
+      addToQuote(this.dataset.relatedId);
+      closeProductDetail();
+    });
+  });
+
+  document.getElementById('productDetailOverlay').classList.add('visible');
+}
+
+function closeProductDetail(e) {
+  if (!e || e.target === document.getElementById('productDetailOverlay')) {
+    document.getElementById('productDetailOverlay').classList.remove('visible');
+    currentDetailProductId = null;
+  }
+}
+
+function addFromDetail() {
+  if (currentDetailProductId) {
+    addToQuote(currentDetailProductId);
+    closeProductDetail();
+  }
+}
+
+// ─── NOTES ───────────────────────────────────────────────────────────────────
+function toggleNotes() {
+  const body  = document.getElementById('notesBody');
+  const label = document.getElementById('notesToggleLabel');
+  const open  = body.style.display === 'none';
+  body.style.display = open ? 'block' : 'none';
+  updateNotesToggle();
+}
+
+function updateNotesToggle() {
+  const body   = document.getElementById('notesBody');
+  const label  = document.getElementById('notesToggleLabel');
+  const notes  = document.getElementById('quoteNotes').value.trim();
+  const isOpen = body.style.display !== 'none';
+  if (notes) {
+    label.textContent = isOpen ? '▲ Hide' : '▼ ' + notes.substring(0, 40) + (notes.length > 40 ? '…' : '');
+  } else {
+    label.textContent = isOpen ? '▲ Hide' : '+ Add notes';
+  }
+}
+
+// ─── HELP MODAL ──────────────────────────────────────────────────────────────
+function openHelpModal() {
+  document.getElementById('helpModal').classList.remove('hidden');
+}
+function closeHelpModal(e) {
+  if (!e || e.target === document.getElementById('helpModal')) {
+    document.getElementById('helpModal').classList.add('hidden');
+  }
+}
+
+// ─── EMAIL MODAL ──────────────────────────────────────────────────────────────
+function openEmailModal() {
+  const partner   = document.getElementById('partnerName').value || 'Partner';
+  const customer  = document.getElementById('endCustomer').value || 'End Customer';
+  const ref       = document.getElementById('quoteRef').value;
+  const validRaw  = document.getElementById('validUntil').value;
+  const validStr  = validRaw ? new Date(validRaw).toLocaleDateString('en-GB', {day:'2-digit',month:'long',year:'numeric'}) : '';
+  const levelLabels = { accredited: 'Accredited', silver: 'Silver', gold: 'Gold' };
+  const levelVal  = document.getElementById('partnerLevel').value;
+  const levelStr  = levelLabels[levelVal] || '';
+
+  const { monthlyGroups, oneOffGroups, mrc, otc, acv } = getGroupedQuoteData();
+
+  // Pre-fill fields
+  document.getElementById('emailSubject').value =
+    'IP Integration — Partner Quote ' + ref + (customer !== 'End Customer' ? ' for ' + customer : '');
+  document.getElementById('emailModalSubtitle').textContent = ref + ' · ' + partner + ' → ' + customer;
+
+  // Pre-fill covering message if notes exist
+  const notes = document.getElementById('quoteNotes').value.trim();
+  if (!document.getElementById('emailBody').value) {
+    document.getElementById('emailBody').value =
+      'Please find our commercial proposal for ' + customer + ' outlined below.\n\n' +
+      (notes ? notes + '\n\n' : '') +
+      'This quote is valid until ' + (validStr || '30 days from today') + '. ' +
+      'Please do not hesitate to get in touch if you have any questions or would like to discuss further.\n\n' +
+      'Kind regards,\n' + partner;
+  }
+
+  // Build summary preview
+  let summaryRows = '';
+  function addGroupRows(groups, billingLabel) {
+    if (!groups.length) return;
+    summaryRows += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#7a8f9a;padding:8px 0 4px;border-top:2px solid #dde4e8;margin-top:6px">' + billingLabel + '</div>';
+    groups.forEach(function(g) {
+      summaryRows += '<div style="font-size:11px;font-weight:700;color:#36454F;padding:3px 0 1px">' + g.cat + '</div>';
+      g.items.forEach(function(item) {
+        var ep    = getEffectivePrice(item);
+        var total = ep * item.qty;
+        summaryRows += '<div class="email-summary-row"><span>' + item.product.name + ' <span style="color:#aaa">×' + item.qty + '</span></span><span style="font-family:monospace;font-weight:600">' + fmtGBP(total) + '</span></div>';
+      });
+    });
+  }
+  addGroupRows(monthlyGroups, 'Monthly Recurring');
+  addGroupRows(oneOffGroups,  'One-Off Charges');
+  summaryRows += '<div style="margin-top:10px;padding-top:8px;border-top:2px solid #263238;display:flex;justify-content:space-between;font-weight:700;font-size:13px"><span>Monthly Total</span><span style="color:#27ae60;font-family:monospace">' + fmtGBP(mrc) + '</span></div>';
+  if (otc > 0) summaryRows += '<div style="display:flex;justify-content:space-between;font-size:12px;padding-top:3px"><span style="color:#666">One-Off Charges</span><span style="color:#A37992;font-family:monospace">' + fmtGBP(otc) + '</span></div>';
+  summaryRows += '<div style="display:flex;justify-content:space-between;font-size:12px;padding-top:3px"><span style="color:#666">Annual Contract Value</span><span style="font-family:monospace;font-weight:700">' + fmtGBP(acv) + '</span></div>';
+  if (validStr) summaryRows += '<div style="font-size:11px;color:#888;padding-top:6px">Valid until ' + validStr + (levelStr ? '  ·  ' + levelStr + ' Partner Pricing' : '') + '</div>';
+
+  document.getElementById('emailPreviewBox').innerHTML = summaryRows;
+  document.getElementById('emailModal').classList.remove('hidden');
+
+  // Close export modal if open
+  document.getElementById('exportModal').classList.add('hidden');
+}
+
+function closeEmailModal(e) {
+  if (!e || e.target === document.getElementById('emailModal')) {
+    document.getElementById('emailModal').classList.add('hidden');
+  }
+}
+
+function buildEmailHTML() {
+  const partner   = document.getElementById('partnerName').value || 'Partner';
+  const customer  = document.getElementById('endCustomer').value || 'End Customer';
+  const ref       = document.getElementById('quoteRef').value;
+  const validRaw  = document.getElementById('validUntil').value;
+  const validStr  = validRaw ? new Date(validRaw).toLocaleDateString('en-GB', {day:'2-digit',month:'long',year:'numeric'}) : '';
+  const levelLabels = { accredited: 'Accredited', silver: 'Silver', gold: 'Gold' };
+  const levelVal  = document.getElementById('partnerLevel').value;
+  const levelStr  = levelLabels[levelVal] ? levelLabels[levelVal] + ' Partner Pricing' : '';
+  const bodyText  = document.getElementById('emailBody').value.trim().replace(/\n/g, '<br>');
+  const { monthlyGroups, oneOffGroups, mrc, otc, acv } = getGroupedQuoteData();
+
+  function buildTableSection(groups, label) {
+    if (!groups.length) return '';
+    let html = '<tr><td colspan="3" style="padding:10px 14px 4px;background:#f5f7f8;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;color:#7a8f9a;border-top:2px solid #dde4e8">' + label + '</td></tr>';
+    groups.forEach(function(g) {
+      html += '<tr><td colspan="3" style="padding:4px 14px 2px;font-size:11px;font-weight:700;color:#36454F;background:#fafcfd">' + g.cat + '</td></tr>';
+      g.items.forEach(function(item) {
+        var ep = getEffectivePrice(item);
+        html += '<tr><td style="padding:5px 14px;font-size:12px;color:#36454F">' + item.product.name + '</td>' +
+          '<td style="padding:5px 8px;text-align:center;font-size:12px;color:#888">×' + item.qty + '</td>' +
+          '<td style="padding:5px 14px;text-align:right;font-size:12px;font-weight:600;font-family:monospace">' + fmtGBP(ep * item.qty) + '</td></tr>';
+      });
+    });
+    return html;
+  }
+
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f5f7f8;font-family:Arial,sans-serif">' +
+    '<div style="max-width:600px;margin:24px auto;background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.1)">' +
+    // Header
+    '<div style="background:#263238;padding:20px 24px;display:flex;align-items:center;gap:12px">' +
+      '<div style="width:36px;height:36px;background:linear-gradient(135deg,#63AB8F,#A37992);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:13px;flex-shrink:0">IPI</div>' +
+      '<div><div style="color:white;font-size:15px;font-weight:700">IP Integration</div>' +
+      '<div style="color:#63AB8F;font-size:11px;font-weight:600">Partner Quote — ' + ref + '</div></div>' +
+    '</div>' +
+    // Meta bar
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#dde4e8">' +
+      '<div style="background:white;padding:10px 14px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#7a8f9a;margin-bottom:2px">Partner</div><div style="font-size:12px;font-weight:700;color:#263238">' + partner + '</div></div>' +
+      '<div style="background:white;padding:10px 14px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#7a8f9a;margin-bottom:2px">End Customer</div><div style="font-size:12px;font-weight:700;color:#263238">' + customer + '</div></div>' +
+      '<div style="background:white;padding:10px 14px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#7a8f9a;margin-bottom:2px">' + (levelStr || 'Valid Until') + '</div><div style="font-size:12px;font-weight:700;color:#263238">' + (levelStr ? (validStr || '—') : (validStr || '—')) + '</div></div>' +
+    '</div>' +
+    // Body message
+    '<div style="padding:20px 24px;font-size:13px;line-height:1.7;color:#36454F;border-bottom:1px solid #dde4e8">' + bodyText + '</div>' +
+    // Quote table
+    '<table style="width:100%;border-collapse:collapse">' +
+      '<thead><tr>' +
+        '<th style="padding:8px 14px;background:#263238;color:rgba(255,255,255,0.75);font-size:10px;text-align:left;text-transform:uppercase;letter-spacing:0.5px">Product</th>' +
+        '<th style="padding:8px 8px;background:#263238;color:rgba(255,255,255,0.75);font-size:10px;text-align:center;text-transform:uppercase;letter-spacing:0.5px">Qty</th>' +
+        '<th style="padding:8px 14px;background:#263238;color:rgba(255,255,255,0.75);font-size:10px;text-align:right;text-transform:uppercase;letter-spacing:0.5px">Total</th>' +
+      '</tr></thead><tbody>' +
+      buildTableSection(monthlyGroups, 'Monthly Recurring Charges') +
+      buildTableSection(oneOffGroups,  'One-Off Charges') +
+      '</tbody>' +
+      '<tfoot>' +
+        '<tr><td colspan="2" style="padding:8px 14px;font-size:12px;font-weight:700;background:#f5f7f8">Monthly Recurring</td><td style="padding:8px 14px;text-align:right;font-size:14px;font-weight:700;color:#27ae60;font-family:monospace;background:#f5f7f8">' + fmtGBP(mrc) + '</td></tr>' +
+        (otc > 0 ? '<tr><td colspan="2" style="padding:6px 14px;font-size:12px;color:#666">One-Off Charges</td><td style="padding:6px 14px;text-align:right;font-size:12px;font-weight:600;color:#A37992;font-family:monospace">' + fmtGBP(otc) + '</td></tr>' : '') +
+        '<tr><td colspan="2" style="padding:6px 14px;font-size:12px;color:#666">Annual Contract Value</td><td style="padding:6px 14px;text-align:right;font-size:12px;font-weight:700;font-family:monospace">' + fmtGBP(acv) + '</td></tr>' +
+      '</tfoot>' +
+    '</table>' +
+    // Footer
+    '<div style="padding:14px 24px;background:#f5f7f8;font-size:10px;color:#aaa;border-top:1px solid #dde4e8">' +
+      'This quote was generated by the IPI Partner Quoting Tool' +
+      (validStr ? ' · Valid until ' + validStr : '') +
+      ' · Prices subject to formal agreement and IPI approval' +
+    '</div>' +
+    '</div></body></html>';
+}
+
+function sendEmailViaMailto() {
+  const to      = document.getElementById('emailTo').value.trim();
+  const cc      = document.getElementById('emailCc').value.trim();
+  const subject = document.getElementById('emailSubject').value.trim();
+  const body    = document.getElementById('emailBody').value.trim();
+  const ref     = document.getElementById('quoteRef').value;
+
+  if (!to) { showToast('⚠ Please enter a recipient email address'); return; }
+
+  // Build plain text summary for mailto (HTML not supported in mailto body)
+  const { mrc, otc, acv } = getGroupedQuoteData();
+  const summaryText = [
+    '--- QUOTE SUMMARY ---',
+    'Reference: ' + ref,
+    'Monthly Recurring: ' + fmtGBP(mrc),
+    otc > 0 ? 'One-Off Charges: ' + fmtGBP(otc) : null,
+    'Annual Contract Value: ' + fmtGBP(acv),
+    '',
+    '--- FULL QUOTE ---',
+    'For the full formatted quote, please refer to the attached PDF or HTML version.',
+  ].filter(Boolean).join('\n');
+
+  const fullBody = body + '\n\n' + summaryText;
+  const mailto   = 'mailto:' + encodeURIComponent(to) +
+    '?subject=' + encodeURIComponent(subject) +
+    (cc ? '&cc=' + encodeURIComponent(cc) : '') +
+    '&body=' + encodeURIComponent(fullBody);
+
+  // Open mailto in a temp link
+  const a = document.createElement('a');
+  a.href = mailto;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  // Also offer HTML copy
+  showToast('✓ Opening email client — use "Copy Email Content" for HTML version');
+}
+
+function copyEmailHTML() {
+  const html = buildEmailHTML();
+  navigator.clipboard.writeText(html).then(function() {
+    showToast('✓ HTML email copied — paste into your email client');
+  }).catch(function() {
+    // Fallback: open in new window
+    const win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+    showToast('Opened in new tab — copy from there');
+  });
+}
+
+// ─── CONFIRM BANNER ──────────────────────────────────────────────────────────
+function showConfirmBanner(message, actionLabel, onConfirm) {
+  var existing = document.getElementById('confirmBanner');
+  if (existing) existing.remove();
+  var banner = document.createElement('div');
+  banner.id = 'confirmBanner';
+  banner.className = 'confirm-banner';
+  banner.innerHTML = '<span class="confirm-msg">' + message + '</span><div class="confirm-actions"><button class="btn btn-outline btn-sm confirm-cancel-btn">Cancel</button><button class="btn btn-danger btn-sm confirm-ok-btn">' + actionLabel + '</button></div>';
+  var quoteBody = document.getElementById('quoteBody');
+  quoteBody.insertBefore(banner, quoteBody.firstChild);
+  banner.querySelector('.confirm-cancel-btn').addEventListener('click', function() { banner.remove(); });
+  banner.querySelector('.confirm-ok-btn').addEventListener('click', function() { banner.remove(); onConfirm(); });
+  setTimeout(function() { if (banner.parentNode) banner.remove(); }, 8000);
+}
+
+// ─── PANEL RESIZE ────────────────────────────────────────────────────────────
+(function() {
+  const STORAGE_KEY_WIDTH = 'ipi_panel_width';
+  const MIN_WIDTH = 240;
+  const MAX_WIDTH = 560;
+
+  function getPanelWidth() {
+    const stored = localStorage.getItem(STORAGE_KEY_WIDTH);
+    return stored ? parseInt(stored, 10) : 360;
+  }
+
+  function setPanelWidth(w) {
+    w = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, w));
+    document.documentElement.style.setProperty('--panel-width', w + 'px');
+    localStorage.setItem(STORAGE_KEY_WIDTH, w);
+  }
+
+  // Restore saved width on load
+  document.addEventListener('DOMContentLoaded', function() {
+    setPanelWidth(getPanelWidth());
+
+    const resizer = document.getElementById('panelResizer');
+    if (!resizer) return;
+
+    let dragging   = false;
+    let startX     = 0;
+    let startWidth = 0;
+
+    resizer.addEventListener('pointerdown', function(e) {
+      dragging   = true;
+      startX     = e.clientX;
+      startWidth = getPanelWidth();
+      resizer.classList.add('dragging');
+      document.body.style.cursor    = 'col-resize';
+      document.body.style.userSelect = 'none';
+      e.preventDefault();
+    });
+
+    document.addEventListener('pointermove', function(e) {
+      if (!dragging) return;
+      const delta    = e.clientX - startX;
+      const newWidth = startWidth + delta;
+      setPanelWidth(newWidth);
+    });
+
+    document.addEventListener('pointerup', function() {
+      if (!dragging) return;
+      dragging = false;
+      resizer.classList.remove('dragging');
+      document.body.style.cursor    = '';
+      document.body.style.userSelect = '';
+    });
+
+    // Double-click resets to default width
+    resizer.addEventListener('dblclick', function() {
+      setPanelWidth(360);
+    });
+  });
+})();
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  clearTimeout(toastTimer);
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  toastTimer = setTimeout(() => el.remove(), 2500);
+}
+</script>
+
+<!-- Help Modal -->
+<div class="modal-overlay hidden" id="helpModal" onclick="closeHelpModal(event)">
+  <div class="modal help-modal" onclick="event.stopPropagation()" style="max-height:88vh;overflow-y:auto">
+    <div class="modal-header" style="position:sticky;top:0;background:white;z-index:1;border-bottom:1px solid var(--border)">
+      <div>
+        <div class="modal-title">How to Use the IPI Partner Quoting Tool</div>
+        <div class="modal-subtitle">Everything you need to build and share professional quotes</div>
+      </div>
+      <button class="modal-close" onclick="closeHelpModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:24px">
+
+      <div class="help-section">
+        <div class="help-section-title"><span class="help-section-icon">🚀</span> Getting Started</div>
+        <ul class="help-steps">
+          <li><span class="help-step-num">1</span><span>Enter the <strong>Partner Name</strong> in the top bar — your partner level (<span class="help-badge hb-gold">Gold</span>, <span class="help-badge hb-mauve">Silver</span>, Accredited) is automatically assigned and all prices update instantly.</span></li>
+          <li><span class="help-step-num">2</span><span>Add an <strong>End Customer</strong> name and check or edit the <strong>Quote Reference</strong> and <strong>Valid Until</strong> date (defaults to 30 days).</span></li>
+          <li><span class="help-step-num">3</span><span>Browse the <strong>Product Catalogue</strong> on the left. Use category tabs or the search box to find products. Click <strong>+</strong> to add a product to your quote, or click <strong>ⓘ</strong> to read a full description and see suggested companion products.</span></li>
+          <li><span class="help-step-num">4</span><span>Adjust <strong>quantities</strong> directly in the quote table. Partner prices are calculated automatically — no manual editing needed.</span></li>
+          <li><span class="help-step-num">5</span><span>When ready, click <strong>Save v1</strong> to save your quote. Add a brief note about what the quote covers.</span></li>
+        </ul>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title"><span class="help-section-icon">💰</span> Partner Pricing</div>
+        <div class="help-tips">
+          <div class="help-tip"><strong>Accredited (20%)</strong>Entry-level partner discount — 20% off list price across all product categories.</div>
+          <div class="help-tip"><strong>Silver (30%)</strong>Mid-tier partner discount — 30% off list price. Assigned based on partner name.</div>
+          <div class="help-tip"><strong>Gold (40%)</strong>Premium partner discount — 40% off list price for highest-tier partners.</div>
+          <div class="help-tip"><strong>Services &amp; Consultancy</strong>Always 25% off list price regardless of partner level — this is a fixed margin category.</div>
+        </div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title"><span class="help-section-icon">📋</span> Quote Organisation</div>
+        <ul class="help-steps">
+          <li><span class="help-step-num">1</span><span>Your quote is automatically grouped into <strong>Monthly Recurring</strong> and <strong>One-Off Charges</strong>, then sub-grouped by product family (CCaaS, PCI Cloud, Services etc.).</span></li>
+          <li><span class="help-step-num">2</span><span>Use <strong>Notes &amp; Terms</strong> (below the line items) to add covering text, special terms, or a message that will appear on the printed/emailed quote.</span></li>
+          <li><span class="help-step-num">3</span><span>The footer shows live <strong>MRC</strong> (monthly recurring), <strong>OTC</strong> (one-off), and <strong>ACV</strong> (annual contract value = MRC×12 + OTC) totals.</span></li>
+        </ul>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title"><span class="help-section-icon">⚡</span> Quick-Start Templates</div>
+        <ul class="help-steps">
+          <li><span class="help-step-num">1</span><span>Click <strong>Quick-Start Templates</strong> above the product list to choose a pre-built bundle — e.g. "50-Seat CCaaS Voice Starter" or "AI-First Contact Centre".</span></li>
+          <li><span class="help-step-num">2</span><span>Applying a template to an <em>empty</em> quote loads all products at once. Applying to an <em>existing</em> quote merges the template in, incrementing quantities on any shared products.</span></li>
+        </ul>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title"><span class="help-section-icon">🗂️</span> Saving &amp; Version History</div>
+        <ul class="help-steps">
+          <li><span class="help-step-num">1</span><span>Click <strong>Save v1</strong> to save your first version. A prompt asks for an optional change note — what's in this version?</span></li>
+          <li><span class="help-step-num">2</span><span>After making changes, click <strong>Save v2</strong> (the button label updates automatically) to save a new version without overwriting the previous one.</span></li>
+          <li><span class="help-step-num">3</span><span>Click <strong>Saved Quotes</strong> to see all quotes. Each quote shows its full version history — expand a quote to see v1, v2, v3 etc. Load any version back into the builder.</span></li>
+          <li><span class="help-step-num">4</span><span>Use <strong>Copy</strong> to duplicate a quote under a new reference — useful for creating variants at different seat counts or configurations.</span></li>
+          <li><span class="help-step-num">5</span><span>Track deal progress with the status dropdown: <strong>Draft → Sent → Won / Lost</strong>. The pipeline summary at the top of Saved Quotes shows your total ACV by stage.</span></li>
+        </ul>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title"><span class="help-section-icon">📤</span> Exporting &amp; Sharing</div>
+        <ul class="help-steps">
+          <li><span class="help-step-num">1</span><span>Click <strong>Export Quote</strong> (or <em>Preview &amp; Export</em> in the footer) to open the export panel with a formatted preview matching the quote layout.</span></li>
+          <li><span class="help-step-num">2</span><span><strong>Print / Save PDF</strong> — opens a print-ready document with the full grouped layout, list vs partner prices, discount badges, notes, and validity date. Use your browser's "Save as PDF" option.</span></li>
+          <li><span class="help-step-num">3</span><span><strong>Email Quote</strong> — compose and send a professional HTML email with the quote summary directly from the tool. Opens your default email client pre-populated, or copies the formatted content.</span></li>
+          <li><span class="help-step-num">4</span><span><strong>Copy CSV</strong> — copies a structured spreadsheet-ready version to your clipboard for pasting into Excel or uploading to HubSpot.</span></li>
+        </ul>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title"><span class="help-section-icon">💡</span> Tips &amp; Shortcuts</div>
+        <div class="help-tips">
+          <div class="help-tip"><strong>Resize the catalogue panel</strong>Drag the right edge of the product catalogue to make it wider or narrower. Double-click the edge to reset to default width.</div>
+          <div class="help-tip"><strong>Product detail panel</strong>Click the ⓘ button on any product to see a full description, specs, partner pricing, and "often paired with" suggestions.</div>
+          <div class="help-tip"><strong>Notes appear on exports</strong>Anything you type in Notes &amp; Terms shows as a formatted block at the bottom of the printed PDF and emailed quote.</div>
+          <div class="help-tip"><strong>Data is stored locally</strong>All quotes are saved to your browser's local storage — no account needed. Clear browser data will remove saved quotes.</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer" style="position:sticky;bottom:0;background:white;border-top:1px solid var(--border)">
+      <button class="btn btn-primary" onclick="closeHelpModal()">Got it, let's quote!</button>
+    </div>
+  </div>
+</div>
+
+<!-- Email Modal -->
+<div class="modal-overlay hidden" id="emailModal" onclick="closeEmailModal(event)">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:560px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Email Quote</div>
+        <div class="modal-subtitle" id="emailModalSubtitle">Compose and send this quote by email</div>
+      </div>
+      <button class="modal-close" onclick="closeEmailModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px 24px">
+      <div class="email-field">
+        <label>To — Recipient Email Address</label>
+        <input type="email" id="emailTo" placeholder="contact@customer.com">
+      </div>
+      <div class="email-field">
+        <label>CC — Copy Address <span style="font-weight:400;color:var(--text-muted)">(optional)</span></label>
+        <input type="email" id="emailCc" placeholder="you@yourcompany.com">
+      </div>
+      <div class="email-field">
+        <label>Subject</label>
+        <input type="text" id="emailSubject" placeholder="">
+      </div>
+      <div class="email-field">
+        <label>Covering Message</label>
+        <textarea id="emailBody" placeholder="Please find attached our proposal for your contact centre solution…"></textarea>
+      </div>
+      <div class="email-field">
+        <label>Quote Summary</label>
+        <div class="email-preview-box" id="emailPreviewBox"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeEmailModal()">Cancel</button>
+      <button class="btn btn-outline" onclick="copyEmailHTML()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        Copy Email Content
+      </button>
+      <button class="btn btn-primary" onclick="sendEmailViaMailto()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+        Open in Email Client
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Product Detail Panel -->
+<div class="product-detail-overlay" id="productDetailOverlay" onclick="closeProductDetail(event)">
+  <div class="product-detail-panel" onclick="event.stopPropagation()">
+    <div class="pd-header">
+      <span class="pd-cat-dot" id="pdCatDot"></span>
+      <div style="flex:1">
+        <div class="pd-title" id="pdTitle"></div>
+        <div class="pd-sku" id="pdSku"></div>
+      </div>
+      <button class="pd-close" onclick="closeProductDetail()">✕</button>
+    </div>
+    <div class="pd-body" id="pdBody"></div>
+    <div class="pd-footer">
+      <button class="btn btn-primary" style="flex:1" id="pdAddBtn" onclick="addFromDetail()">
+        + Add to Quote
+      </button>
+      <button class="btn btn-outline" onclick="closeProductDetail()">Close</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
