@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPI Partner Programme — Exceptional Customer Contact</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --charcoal: #36454F;
+    --charcoal-dark: #263337;
+    --charcoal-mid: #4A5B60;
+    --green: #63AB8F;
+    --green-light: #91C4B0;
+    --green-pale: #D0E5DD;
+    --mauve: #A37992;
+    --mauve-dark: #4F3645;
+    --mauve-light: #B8AEB4;
+    --salmon: #C8988C;
+    --sky: #D7F5FF;
+    --sky-pale: #EBFAFF;
+    --white: #ffffff;
+    --off-white: #F5FCFF;
+    --text-body: #36454F;
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--text-body);
+    background: var(--off-white);
+    overflow-x: hidden;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: var(--charcoal-dark);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px;
+    height: 64px;
+  }
+
+  .nav-logo {
+    display: flex; align-items: center; gap: 12px;
+  }
+
+  .logo-mark {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2px;
+    width: 32px; height: 32px;
+  }
+
+  .logo-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--white);
+    opacity: 0.85;
+  }
+
+  .logo-text {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: 0.04em;
+  }
+
+  .logo-sub {
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--green-light);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+
+  .nav-links {
+    display: flex; gap: 32px; list-style: none;
+  }
+
+  .nav-links a {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--green); }
+
+  .nav-cta {
+    background: var(--green);
+    color: var(--white) !important;
+    padding: 8px 20px;
+    border-radius: 4px;
+    font-weight: 600 !important;
+    letter-spacing: 0.04em;
+  }
+
+  .nav-cta:hover { background: var(--green-light); color: var(--charcoal) !important; }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 100vh;
+    background: var(--charcoal-dark);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding-top: 64px;
+  }
+
+  .hero-bg-pattern {
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(circle at 70% 50%, rgba(99,171,143,0.12) 0%, transparent 60%),
+      radial-gradient(circle at 20% 80%, rgba(163,121,146,0.10) 0%, transparent 50%);
+  }
+
+  .hero-dots {
+    position: absolute; right: 0; top: 50%;
+    transform: translateY(-50%);
+    width: 480px; height: 480px;
+    opacity: 0.06;
+    background-image: radial-gradient(circle, #fff 1.5px, transparent 1.5px);
+    background-size: 20px 20px;
+  }
+
+  .hero-inner {
+    position: relative; z-index: 2;
+    max-width: 1200px; margin: 0 auto;
+    padding: 80px 48px;
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 80px;
+    align-items: center;
+    width: 100%;
+  }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(99,171,143,0.15);
+    border: 1px solid rgba(99,171,143,0.3);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--green);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+
+  .hero-badge span { width: 6px; height: 6px; background: var(--green); border-radius: 50%; }
+
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(42px, 5vw, 68px);
+    font-weight: 800;
+    color: var(--white);
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: var(--green);
+  }
+
+  .hero p {
+    font-size: 18px;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.65);
+    max-width: 540px;
+    margin-bottom: 40px;
+  }
+
+  .hero-actions {
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    background: var(--green);
+    color: var(--white);
+    padding: 14px 28px;
+    border-radius: 6px;
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: all 0.2s;
+    border: 2px solid var(--green);
+  }
+
+  .btn-primary:hover { background: #82BBA5; border-color: #82BBA5; }
+
+  .btn-ghost {
+    background: transparent;
+    color: rgba(255,255,255,0.8);
+    padding: 14px 28px;
+    border-radius: 6px;
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    border: 2px solid rgba(255,255,255,0.2);
+    transition: all 0.2s;
+  }
+
+  .btn-ghost:hover { border-color: rgba(255,255,255,0.5); color: #fff; }
+
+  /* Hero card */
+  .hero-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 36px;
+    backdrop-filter: blur(10px);
+  }
+
+  .hero-card-title {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--green);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .hero-stat {
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .hero-stat:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+  .hero-stat-num {
+    font-family: var(--font-display);
+    font-size: 38px;
+    font-weight: 800;
+    color: var(--white);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .hero-stat-num span { color: var(--green); }
+
+  .hero-stat-label {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    font-weight: 400;
+  }
+
+  /* ─── WHY IPI STRIP ─── */
+  .why-strip {
+    background: var(--charcoal);
+    padding: 0;
+  }
+
+  .why-strip-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .why-tile {
+    padding: 32px 28px 28px;
+    border-right: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    transition: background 0.25s;
+    cursor: default;
+  }
+
+  .why-tile:last-child { border-right: none; }
+  .why-tile:hover { background: rgba(99,171,143,0.1); }
+
+  .why-tile::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 28px; right: 28px;
+    height: 3px;
+    background: transparent;
+    transition: background 0.25s;
+    border-radius: 2px 2px 0 0;
+  }
+
+  .why-tile:hover::after { background: var(--green); }
+
+  .why-tile-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .why-icon-box {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .why-icon-box svg { width: 20px; height: 20px; }
+
+  .why-icon-box.c-green { background: rgba(99,171,143,0.18); }
+  .why-icon-box.c-mauve { background: rgba(163,121,146,0.18); }
+  .why-icon-box.c-salmon { background: rgba(200,152,140,0.18); }
+  .why-icon-box.c-sky { background: rgba(215,245,255,0.10); }
+
+  .why-tile-num {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 0.1em;
+  }
+
+  .why-stat {
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .why-tile-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+
+  .why-tile-body {
+    font-size: 12px;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.55;
+  }
+
+  /* ─── SECTION BASE ─── */
+  section {
+    padding: 96px 48px;
+  }
+
+  .section-inner {
+    max-width: 1200px; margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--green);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .section-label::before {
+    content: '';
+    display: block;
+    width: 24px; height: 2px;
+    background: var(--green);
+  }
+
+  .section-heading {
+    font-family: var(--font-display);
+    font-size: clamp(30px, 3.5vw, 44px);
+    font-weight: 800;
+    color: var(--charcoal);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+
+  .section-sub {
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--charcoal-mid);
+    max-width: 560px;
+    margin-bottom: 56px;
+  }
+
+  /* ─── THREE QUESTIONS ─── */
+  .questions-section {
+    background: var(--white);
+  }
+
+  .questions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    border: 2px solid var(--charcoal);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .q-card {
+    padding: 40px 36px;
+    background: var(--white);
+    position: relative;
+    transition: background 0.3s;
+  }
+
+  .q-card:hover { background: var(--off-white); }
+
+  .q-number {
+    font-family: var(--font-display);
+    font-size: 80px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 20px;
+    opacity: 0.07;
+    color: var(--charcoal);
+    position: absolute;
+    top: 16px; right: 24px;
+  }
+
+  .q-icon { font-size: 32px; margin-bottom: 16px; }
+
+  .q-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--charcoal);
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+
+  .q-body {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--charcoal-mid);
+  }
+
+  .q-card-accent { border-top: 4px solid var(--green); }
+  .q-card-accent-2 { border-top: 4px solid var(--mauve); }
+  .q-card-accent-3 { border-top: 4px solid var(--salmon); }
+
+  /* ─── REVENUE JOURNEY ─── */
+  .revenue-section {
+    background: var(--charcoal-dark);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .revenue-section .section-heading { color: var(--white); }
+  .revenue-section .section-sub { color: rgba(255,255,255,0.6); }
+  .revenue-section .section-label { color: var(--green); }
+  .revenue-section .section-label::before { background: var(--green); }
+
+  .revenue-bg {
+    position: absolute; top: 0; right: 0;
+    width: 600px; height: 100%;
+    background: radial-gradient(ellipse at right, rgba(99,171,143,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .revenue-journey {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    position: relative;
+  }
+
+  .revenue-step {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 28px 24px;
+    position: relative;
+    transition: background 0.3s;
+  }
+
+  .revenue-step:hover { background: rgba(99,171,143,0.1); border-color: rgba(99,171,143,0.3); }
+
+  .revenue-arrow {
+    display: flex; align-items: center; padding: 0 8px;
+    color: rgba(255,255,255,0.25);
+    font-size: 20px;
+  }
+
+  .rev-step-num {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--green);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .rev-step-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+
+  .rev-step-title {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .rev-step-body {
+    font-size: 12px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .rev-step-badge {
+    display: inline-block;
+    margin-top: 12px;
+    background: rgba(99,171,143,0.2);
+    border: 1px solid rgba(99,171,143,0.3);
+    color: var(--green);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 100px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ─── PROGRAMME TIERS ─── */
+  .tiers-section {
+    background: var(--off-white);
+  }
+
+  .tiers-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .tier-card {
+    background: var(--white);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(54,69,79,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  .tier-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 48px rgba(54,69,79,0.12);
+  }
+
+  .tier-header {
+    padding: 32px 32px 24px;
+    background: var(--charcoal);
+  }
+
+  .tier-header.gold { background: var(--charcoal-dark); }
+  .tier-header.silver { background: var(--charcoal-mid); }
+  .tier-header.registered { background: var(--charcoal); }
+
+  .tier-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .tier-badge.gold { background: rgba(99,171,143,0.25); color: var(--green); }
+  .tier-badge.silver { background: rgba(163,121,146,0.25); color: #C8B0C0; }
+  .tier-badge.registered { background: rgba(200,152,140,0.25); color: var(--salmon); }
+
+  .tier-name {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+
+  .tier-subtitle {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .tier-body {
+    padding: 28px 32px;
+  }
+
+  .tier-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: var(--charcoal-mid);
+    line-height: 1.4;
+  }
+
+  .tier-feature .check {
+    color: var(--green);
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .tier-cta {
+    margin: 8px 32px 28px;
+    display: block;
+    text-align: center;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: all 0.2s;
+  }
+
+  .tier-cta.green { background: var(--green); color: var(--white); }
+  .tier-cta.green:hover { background: var(--green-light); }
+  .tier-cta.outline { background: transparent; color: var(--charcoal); border: 2px solid var(--charcoal); }
+  .tier-cta.outline:hover { background: var(--charcoal); color: var(--white); }
+
+  /* ─── ENABLEMENT ─── */
+  .enablement-section {
+    background: var(--white);
+  }
+
+  .enablement-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .enable-card {
+    padding: 32px;
+    border-radius: 12px;
+    border: 1px solid rgba(54,69,79,0.1);
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+
+  .enable-card:hover {
+    border-color: var(--green);
+    box-shadow: 0 8px 24px rgba(99,171,143,0.1);
+  }
+
+  .enable-icon {
+    width: 52px; height: 52px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .enable-icon.green { background: var(--green-pale); }
+  .enable-icon.mauve { background: #EBE3E8; }
+  .enable-icon.sky { background: var(--sky); }
+  .enable-icon.salmon { background: #F2E7E5; }
+
+  .enable-title {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--charcoal);
+    margin-bottom: 8px;
+  }
+
+  .enable-body {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--charcoal-mid);
+  }
+
+  /* ─── SOCIAL PROOF ─── */
+  .proof-section {
+    background: var(--green-pale);
+  }
+
+  .proof-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .proof-card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 36px;
+    position: relative;
+  }
+
+  .proof-quote {
+    font-size: 48px;
+    line-height: 1;
+    color: var(--green);
+    font-family: Georgia, serif;
+    margin-bottom: 12px;
+  }
+
+  .proof-text {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--charcoal);
+    margin-bottom: 24px;
+    font-style: italic;
+  }
+
+  .proof-author {
+    display: flex; align-items: center; gap: 12px;
+  }
+
+  .proof-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--charcoal);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--white);
+  }
+
+  .proof-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--charcoal);
+  }
+
+  .proof-role {
+    font-size: 12px;
+    color: var(--charcoal-mid);
+  }
+
+  /* ─── CTA SECTION ─── */
+  .cta-section {
+    background: var(--charcoal-dark);
+    text-align: center;
+    padding: 96px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, rgba(99,171,143,0.12) 0%, transparent 70%);
+  }
+
+  .cta-inner { position: relative; z-index: 2; max-width: 700px; margin: 0 auto; }
+
+  .cta-section h2 {
+    font-family: var(--font-display);
+    font-size: clamp(34px, 4vw, 52px);
+    font-weight: 800;
+    color: var(--white);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+
+  .cta-section p {
+    font-size: 17px;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.7;
+    margin-bottom: 40px;
+  }
+
+  .cta-form {
+    display: flex; gap: 12px; max-width: 480px; margin: 0 auto;
+  }
+
+  .cta-input {
+    flex: 1;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    padding: 14px 18px;
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 15px;
+    outline: none;
+  }
+
+  .cta-input::placeholder { color: rgba(255,255,255,0.35); }
+  .cta-input:focus { border-color: var(--green); }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: #1A2428;
+    padding: 40px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .footer-left {
+    display: flex; align-items: center; gap: 16px;
+  }
+
+  .footer-logo {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: 0.04em;
+  }
+
+  .footer-tagline {
+    font-size: 12px;
+    color: var(--green-light);
+    letter-spacing: 0.06em;
+  }
+
+  .footer-links {
+    display: flex; gap: 24px; list-style: none;
+  }
+
+  .footer-links a {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: rgba(255,255,255,0.7); }
+
+  .footer-copy {
+    font-size: 12px;
+    color: rgba(255,255,255,0.3);
+  }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-content > * {
+    opacity: 0;
+    animation: fadeUp 0.7s ease forwards;
+  }
+
+  .hero-content > *:nth-child(1) { animation-delay: 0.1s; }
+  .hero-content > *:nth-child(2) { animation-delay: 0.25s; }
+  .hero-content > *:nth-child(3) { animation-delay: 0.4s; }
+  .hero-content > *:nth-child(4) { animation-delay: 0.55s; }
+
+  .hero-card {
+    animation: fadeUp 0.7s ease forwards 0.5s;
+    opacity: 0;
+  }
+
+  /* divider */
+  .divider {
+    width: 48px; height: 3px;
+    background: var(--green);
+    margin-bottom: 40px;
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div>
+      <div class="footer-logo">IPI</div>
+      <div class="footer-tagline">Exceptional Customer Contact</div>
+    </div>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#">Why IPI</a></li>
+    <li><a href="#">Revenue Opportunity</a></li>
+    <li><a href="#">Partner Programme</a></li>
+    <li><a href="#">Enablement</a></li>
+    <li><a href="#">Success Stories</a></li>
+    <li><a href="#" class="nav-cta">Become a Partner →</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg-pattern"></div>
+  <div class="hero-dots"></div>
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-badge"><span></span>Partner Programme 2025</div>
+      <h1>Grow Recurring<br><em>CX Revenue</em><br>With IPI</h1>
+      <p>Join the reseller programme that gives you the portfolio breadth, commercial clarity and frictionless enablement to build a profitable customer experience practice.</p>
+      <div class="hero-actions">
+        <a href="#" class="btn-primary">Apply to Partner →</a>
+        <a href="#" class="btn-ghost">Download Partner Guide</a>
+      </div>
+    </div>
+    <div class="hero-card">
+      <div class="hero-card-title">Partner Performance</div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">£<span>2.8M</span></div>
+        <div class="hero-stat-label">Average partner revenue in year 2</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num"><span>94</span>%</div>
+        <div class="hero-stat-label">Partner renewal rate across the programme</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num"><span>6</span> wks</div>
+        <div class="hero-stat-label">Average time to first billable opportunity</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num"><span>3.4×</span></div>
+        <div class="hero-stat-label">Uplift from single product to full CX stack</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY STRIP -->
+<div class="why-strip">
+  <div class="why-strip-inner">
+
+    <div class="why-tile">
+      <div class="why-tile-top">
+        <div class="why-icon-box c-green">
+          <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="10" width="4" height="8" rx="1" fill="#63AB8F"/>
+            <rect x="8" y="6" width="4" height="12" rx="1" fill="#91C4B0"/>
+            <rect x="14" y="2" width="4" height="16" rx="1" fill="#63AB8F"/>
+          </svg>
+        </div>
+        <div class="why-tile-num">01</div>
+      </div>
+      <div class="why-stat" style="color:#63AB8F;">5+</div>
+      <div class="why-tile-title">CX Portfolio Pillars</div>
+      <div class="why-tile-body">SIP, UCaaS, CCaaS, AI &amp; Payments — one vendor, full stack.</div>
+    </div>
+
+    <div class="why-tile">
+      <div class="why-tile-top">
+        <div class="why-icon-box c-mauve">
+          <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="10" cy="10" r="7.5" stroke="#A37992" stroke-width="1.5"/>
+            <path d="M10 6v4l3 2" stroke="#A37992" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="why-tile-num">02</div>
+      </div>
+      <div class="why-stat" style="color:#A37992;">6 wks</div>
+      <div class="why-tile-title">To First Billable Deal</div>
+      <div class="why-tile-body">Rapid onboarding so you start earning revenue fast, not months later.</div>
+    </div>
+
+    <div class="why-tile">
+      <div class="why-tile-top">
+        <div class="why-icon-box c-salmon">
+          <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 2C5.6 2 2 5.6 2 10s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8z" stroke="#C8988C" stroke-width="1.5"/>
+            <path d="M7 10l2 2 4-4" stroke="#C8988C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="why-tile-num">03</div>
+      </div>
+      <div class="why-stat" style="color:#C8988C;">94%</div>
+      <div class="why-tile-title">Partner Renewal Rate</div>
+      <div class="why-tile-body">Partners stay because the commercial model and support genuinely work.</div>
+    </div>
+
+    <div class="why-tile">
+      <div class="why-tile-top">
+        <div class="why-icon-box c-sky">
+          <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="5.5" cy="10" r="2.2" stroke="#D7F5FF" stroke-width="1.4"/>
+            <circle cx="14.5" cy="5.5" r="2.2" stroke="#D7F5FF" stroke-width="1.4"/>
+            <circle cx="14.5" cy="14.5" r="2.2" stroke="#D7F5FF" stroke-width="1.4"/>
+            <line x1="7.5" y1="9" x2="12.5" y2="6.5" stroke="#D7F5FF" stroke-width="1.2"/>
+            <line x1="7.5" y1="11" x2="12.5" y2="13.5" stroke="#D7F5FF" stroke-width="1.2"/>
+          </svg>
+        </div>
+        <div class="why-tile-num">04</div>
+      </div>
+      <div class="why-stat" style="color:#D7F5FF;">3.4×</div>
+      <div class="why-tile-title">Revenue Uplift Potential</div>
+      <div class="why-tile-body">From a single entry point to a full managed CX stack per customer.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- THREE QUESTIONS -->
+<section class="questions-section">
+  <div class="section-inner">
+    <div class="section-label">The Partner Decision</div>
+    <h2 class="section-heading">Three questions every reseller asks</h2>
+    <p class="section-sub">We've built our entire partner programme around the real questions your team will ask before committing.</p>
+
+    <div class="questions-grid">
+      <div class="q-card q-card-accent">
+        <div class="q-number">01</div>
+        <div class="q-icon">🧭</div>
+        <div class="q-title">Why should I partner with you?</div>
+        <div class="q-body">IPI delivers the broadest CX portfolio in the market — from SIP trunking to AI-powered contact centre. Partners grow beyond a single product into a full customer experience practice, backed by 20+ years of enterprise delivery.</div>
+      </div>
+      <div class="q-card q-card-accent-2">
+        <div class="q-number">02</div>
+        <div class="q-icon">📈</div>
+        <div class="q-title">How do I make money?</div>
+        <div class="q-body">Start with any entry point — SIP, UCaaS, CCaaS, AI or Payments — and expand into the full IPI stack. Every customer you land is an opportunity to add managed services, AI capabilities and recurring contract revenue.</div>
+      </div>
+      <div class="q-card q-card-accent-3">
+        <div class="q-number">03</div>
+        <div class="q-icon">⚙️</div>
+        <div class="q-title">How easy are you to work with?</div>
+        <div class="q-body">Dedicated enablement, pre-sales support, certified delivery services and clear commercial frameworks — all available from day one. We remove friction so your team can focus on winning business, not navigating vendor complexity.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REVENUE JOURNEY -->
+<section class="revenue-section">
+  <div class="revenue-bg"></div>
+  <div class="section-inner" style="position:relative;z-index:2;">
+    <div class="section-label">Revenue Opportunity</div>
+    <h2 class="section-heading">Land with one. Expand to many.</h2>
+    <p class="section-sub">Every IPI entry point opens a path to a full recurring CX stack. The wider the footprint, the higher your margins.</p>
+
+    <div class="revenue-journey">
+      <div class="revenue-step">
+        <div class="rev-step-num">Entry</div>
+        <div class="rev-step-title">SIP Trunking &amp; Telephony</div>
+        <div class="rev-step-body">Voice infrastructure that connects every customer deployment.</div>
+        <div class="rev-step-badge">Recurring MRC</div>
+      </div>
+      <div class="revenue-arrow">→</div>
+      <div class="revenue-step">
+        <div class="rev-step-num">Expand</div>
+        <div class="rev-step-title">UCaaS &amp; Microsoft Teams</div>
+        <div class="rev-step-body">Unified comms that pairs naturally with telephony deployments.</div>
+        <div class="rev-step-badge">License Recurring</div>
+      </div>
+      <div class="revenue-arrow">→</div>
+      <div class="revenue-step">
+        <div class="rev-step-num">Grow</div>
+        <div class="rev-step-title">CCaaS &amp; Contact Centre</div>
+        <div class="rev-step-body">Cloud contact centre for enterprise CX transformation projects.</div>
+        <div class="rev-step-badge">High Margin</div>
+      </div>
+      <div class="revenue-arrow">→</div>
+      <div class="revenue-step">
+        <div class="rev-step-num">Optimise</div>
+        <div class="rev-step-title">AI &amp; Automation</div>
+        <div class="rev-step-body">Conversational AI, analytics and workforce optimisation layers.</div>
+        <div class="rev-step-badge">Fast Growing</div>
+      </div>
+      <div class="revenue-arrow">→</div>
+      <div class="revenue-step">
+        <div class="rev-step-num">Retain</div>
+        <div class="rev-step-title">Managed Services</div>
+        <div class="rev-step-body">Long-term managed support contracts that lock in recurring revenue.</div>
+        <div class="rev-step-badge">Sticky Revenue</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PARTNER TIERS -->
+<section class="tiers-section">
+  <div class="section-inner">
+    <div class="section-label">Partner Programme</div>
+    <h2 class="section-heading">A tier for every ambition</h2>
+    <p class="section-sub">From your first deal to a fully embedded CX practice — the IPI programme scales with your business.</p>
+
+    <div class="tiers-grid">
+      <div class="tier-card">
+        <div class="tier-header gold">
+          <div class="tier-badge gold">Gold Partner</div>
+          <div class="tier-name">Strategic</div>
+          <div class="tier-subtitle">Fully embedded CX practice</div>
+        </div>
+        <div class="tier-body">
+          <div class="tier-feature"><span class="check">✓</span> Dedicated Partner Manager + Pre-sales resource</div>
+          <div class="tier-feature"><span class="check">✓</span> Full marketing development fund (MDF) access</div>
+          <div class="tier-feature"><span class="check">✓</span> Priority bid support and deal registration</div>
+          <div class="tier-feature"><span class="check">✓</span> Co-branded go-to-market campaigns</div>
+          <div class="tier-feature"><span class="check">✓</span> Executive business reviews and strategic planning</div>
+          <div class="tier-feature"><span class="check">✓</span> Access to beta AI and product roadmap previews</div>
+        </div>
+        <a href="#" class="tier-cta green">Apply for Gold →</a>
+      </div>
+
+      <div class="tier-card">
+        <div class="tier-header silver">
+          <div class="tier-badge silver">Silver Partner</div>
+          <div class="tier-name">Growth</div>
+          <div class="tier-subtitle">Building a recurring CX portfolio</div>
+        </div>
+        <div class="tier-body">
+          <div class="tier-feature"><span class="check">✓</span> Shared Partner Manager support</div>
+          <div class="tier-feature"><span class="check">✓</span> Partial MDF and campaign support</div>
+          <div class="tier-feature"><span class="check">✓</span> Deal registration with margin protection</div>
+          <div class="tier-feature"><span class="check">✓</span> Sales enablement and training programme</div>
+          <div class="tier-feature"><span class="check">✓</span> Access to partner portal and resources</div>
+          <div class="tier-feature"><span class="check">✓</span> Technical certification pathway</div>
+        </div>
+        <a href="#" class="tier-cta outline">Apply for Silver →</a>
+      </div>
+
+      <div class="tier-card">
+        <div class="tier-header registered">
+          <div class="tier-badge registered">Registered</div>
+          <div class="tier-name">Starter</div>
+          <div class="tier-subtitle">First steps into the IPI ecosystem</div>
+        </div>
+        <div class="tier-body">
+          <div class="tier-feature"><span class="check">✓</span> Self-serve partner portal access</div>
+          <div class="tier-feature"><span class="check">✓</span> Product training and certification materials</div>
+          <div class="tier-feature"><span class="check">✓</span> Deal registration capability</div>
+          <div class="tier-feature"><span class="check">✓</span> Access to sales collateral library</div>
+          <div class="tier-feature"><span class="check">✓</span> Online community and peer network</div>
+          <div class="tier-feature"><span class="check">✓</span> Monthly partner newsletter and roadmap updates</div>
+        </div>
+        <a href="#" class="tier-cta outline">Register Now →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ENABLEMENT -->
+<section class="enablement-section">
+  <div class="section-inner">
+    <div class="section-label">Frictionless Enablement</div>
+    <h2 class="section-heading">Everything you need to win</h2>
+    <p class="section-sub">From your first call to delivery and renewal — IPI provides the support that removes partner friction at every stage.</p>
+
+    <div class="enablement-grid">
+      <div class="enable-card">
+        <div class="enable-icon green">🎯</div>
+        <div>
+          <div class="enable-title">Pre-Sales Support</div>
+          <div class="enable-body">Access IPI's specialist pre-sales team for solution design, pricing support, RFP responses and proof-of-concept engagements. We join your customer calls when it matters.</div>
+        </div>
+      </div>
+      <div class="enable-card">
+        <div class="enable-icon mauve">🏫</div>
+        <div>
+          <div class="enable-title">Sales Training & Certification</div>
+          <div class="enable-body">A structured learning path covering the full IPI portfolio. Online modules, in-person workshops and vendor-certified qualifications that grow your team's credibility.</div>
+        </div>
+      </div>
+      <div class="enable-card">
+        <div class="enable-icon sky">🔧</div>
+        <div>
+          <div class="enable-title">Delivery & Technical Services</div>
+          <div class="enable-body">IPI's managed delivery team can support or lead customer implementations. White-label delivery available for partners building their own technical capability.</div>
+        </div>
+      </div>
+      <div class="enable-card">
+        <div class="enable-icon salmon">📋</div>
+        <div>
+          <div class="enable-title">Governance & Compliance Hub</div>
+          <div class="enable-body">Easy access to legal frameworks, data processing agreements, security documentation, product specifications and compliance certifications — all in one place.</div>
+        </div>
+      </div>
+      <div class="enable-card">
+        <div class="enable-icon green">📣</div>
+        <div>
+          <div class="enable-title">Channel Marketing Engine</div>
+          <div class="enable-body">Co-branded campaign assets, MDF support, event presence, case study development and lead generation tools to help you attract and convert enterprise CX buyers.</div>
+        </div>
+      </div>
+      <div class="enable-card">
+        <div class="enable-icon mauve">📊</div>
+        <div>
+          <div class="enable-title">Revenue Intelligence</div>
+          <div class="enable-body">Pipeline visibility, account health dashboards, renewal alerts and expansion opportunity flags — so your team always knows where to focus next.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL PROOF -->
+<section class="proof-section">
+  <div class="section-inner">
+    <div class="section-label">Partner Success</div>
+    <h2 class="section-heading">Partners who grow with IPI</h2>
+    <p class="section-sub">Hear from resellers who have built successful recurring CX revenue practices with IP Integration.</p>
+
+    <div class="proof-grid">
+      <div class="proof-card">
+        <div class="proof-quote">"</div>
+        <div class="proof-text">Moving from a telephony-only conversation to a full CCaaS and AI proposal doubled our average deal size within 18 months. The IPI pre-sales team made that transition seamless.</div>
+        <div class="proof-author">
+          <div class="proof-avatar" style="background: var(--charcoal);">SL</div>
+          <div>
+            <div class="proof-name">Sarah L.</div>
+            <div class="proof-role">Sales Director, Technology Reseller</div>
+          </div>
+        </div>
+      </div>
+      <div class="proof-card">
+        <div class="proof-quote">"</div>
+        <div class="proof-text">The deal registration process is the most transparent we've seen. We get margin protection and fast turnaround — it genuinely feels like a partnership, not just a vendor agreement.</div>
+        <div class="proof-author">
+          <div class="proof-avatar" style="background: var(--mauve-dark);">MW</div>
+          <div>
+            <div class="proof-name">Mark W.</div>
+            <div class="proof-role">Partner Director, Managed Services Provider</div>
+          </div>
+        </div>
+      </div>
+      <div class="proof-card">
+        <div class="proof-quote">"</div>
+        <div class="proof-text">We went from registered to Gold in 14 months. IPI's structured enablement programme gave our team the confidence to lead complex enterprise CX conversations from day one.</div>
+        <div class="proof-author">
+          <div class="proof-avatar" style="background: var(--green);">JP</div>
+          <div>
+            <div class="proof-name">Joanna P.</div>
+            <div class="proof-role">CEO, CX Consultancy</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-bg"></div>
+  <div class="cta-inner">
+    <div class="section-label" style="color:var(--green);justify-content:center;">Become a Partner</div>
+    <h2>Ready to build your<br>CX revenue practice?</h2>
+    <p>Tell us about your business and a member of our partner team will be in touch within 24 hours to discuss the right programme fit for you.</p>
+    <div class="cta-form">
+      <input class="cta-input" type="email" placeholder="Work email address">
+      <a href="#" class="btn-primary" style="white-space:nowrap;">Apply Now →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">
+    <div>
+      <div class="footer-logo">IP Integration</div>
+      <div class="footer-tagline">Exceptional Customer Contact</div>
+    </div>
+  </div>
+  <ul class="footer-links">
+    <li><a href="#">Privacy Policy</a></li>
+    <li><a href="#">Partner Terms</a></li>
+    <li><a href="#">Compliance Hub</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+  <div class="footer-copy">© IP Integration 2025</div>
+</footer>
+
+</body>
+</html>
