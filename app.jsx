@@ -10762,29 +10762,12 @@ function ChannelMarketingPage() {
               <div className="cm-dots"><span /><span /><span /></div>
               <div className="cm-url">partner.ipintegration.com/channel</div>
             </div>
-            <div className="cm-mock-content">
-              <div className="cm-mock-hero">
-                <h3>Grow recurring CX revenue with IPI</h3>
-                <p>A partner-ready message that pairs commercial outcomes with clear enablement, proof points and simple next steps.</p>
-                <div className="cm-mock-cta">
-                  <span className="channel-chip">🤝 Become a Partner</span>
-                  <span className="channel-chip">📅 Book a Partner Intro</span>
-                </div>
-              </div>
-              <div className="cm-revenue-row">
-                <span>📡 SIP & Connectivity</span>
-                <span>☎️ UC & CCaaS</span>
-                <span>🤖 AI Services</span>
-                <span>💳 Secure Payments</span>
-                <span>🛡️ Managed Support</span>
-              </div>
-              <div className="cm-final-cta">
-                <h4>Make the next action obvious.</h4>
-                <div>
-                  <span className="channel-chip">✅ Download Program Guide</span>
-                  <span className="channel-chip">🚀 Start Application</span>
-                </div>
-              </div>
+            <div className="cm-mock-content cm-mock-content-embed">
+              <iframe
+                className="cm-mock-iframe"
+                src="assets/ipi-partner-website-mockup.html"
+                title="IPI partner website mockup"
+              />
             </div>
           </div>
         </SectionWrapper>
