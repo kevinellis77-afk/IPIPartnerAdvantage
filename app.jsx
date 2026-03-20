@@ -12360,6 +12360,53 @@ function MarketVisionPage({ onNavigate }) {
   );
 }
 
+function PartnerQuoteToolPage() {
+  const containerRef = React.useRef(null);
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement === containerRef.current);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    if (!containerRef.current) return;
+    if (document.fullscreenElement === containerRef.current) {
+      await document.exitFullscreen();
+      return;
+    }
+    await containerRef.current.requestFullscreen();
+  };
+
+  return (
+    <div className="content-shell" style={{ padding: "20px 22px" }}>
+      <PageHeader
+        eyebrow="Tools · Pricing"
+        title="Partner Quote Tool"
+        subtitle="Open the uploaded partner quoting tool directly inside the main workspace so it can be used without leaving the app."
+      />
+      <div className="panel-card" style={{ padding: "12px", marginBottom: "12px" }}>
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <button type="button" className="btn btn-outline" onClick={toggleFullscreen}>
+            {isFullscreen ? "Exit Full Screen" : "Present Full Screen"}
+          </button>
+        </div>
+      </div>
+      <div ref={containerRef} className="panel-card" style={{ padding: 0, overflow: "hidden", minHeight: "calc(100vh - 320px)", background: "#ffffff" }}>
+        <iframe
+          title="Partner Quote Tool"
+          src="assets/ipi-partner-quoting-tool.html"
+          style={{ width: "100%", height: "calc(100vh - 320px)", minHeight: "640px", border: "0", background: "#ffffff" }}
+        />
+      </div>
+    </div>
+  );
+}
+
 function PartnerDeckPage() {
   const containerRef = React.useRef(null);
   const [isFullscreen, setIsFullscreen] = React.useState(false);
@@ -12443,6 +12490,7 @@ const NAV_SECTIONS = [
       { id: "prospect", icon: <NavIcon name="search" />, label: "Prospect Search" },
       { id: "partner-account-plan", icon: <NavIcon name="checklist" />, label: "Account Planning" },
       { id: "cx-discovery", icon: <NavIcon name="lightbulb" />, label: "Customer Discovery" },
+      { id: "partner-quote-tool", icon: <NavIcon name="layers" />, label: "Partner Quote Tool" },
       { id: "competitive-matrix", icon: <NavIcon name="chart" />, label: "Competitive Matrix" },
       { id: "governance", icon: <NavIcon name="badge" />, label: "Governance RACI" },
     ],
@@ -12470,6 +12518,7 @@ const PAGE_PATHS = {
   "channel-dashboard": "/channel-manager-dashboard",
   "partner-account-plan": "/partner-account-plan-tool",
   "competitive-matrix": "/competitive-matrix",
+  "partner-quote-tool": "/partner-quote-tool",
   prospect: "/partner-prospect-tool",
   "sample-customers": "/sample-customers",
   "market-vision": "/market-vision",
@@ -12727,6 +12776,7 @@ function App() {
     if (page === "partner-account-plan") return <PartnerAccountPlanToolPage />;
     if (page === "competitive-matrix") return <CompetitiveMatrixPage />;
     if (page === "cx-discovery") return <CXDiscoveryQuestionnairePage />;
+    if (page === "partner-quote-tool") return <PartnerQuoteToolPage />;
     if (page === "hub")
       return (
         <EnablementHub onBack={() => setPage("main")} onNavigate={setPage} />
