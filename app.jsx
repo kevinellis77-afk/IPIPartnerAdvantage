@@ -8833,7 +8833,585 @@ function CommercialFrameworkPage() {
   );
 }
 
+
+const PARTNER_COMMERCIAL_TRACK_BADGES = {
+  consultant: { label: "Consultant / Advisor", color: "#A37992", glow: "163,121,146" },
+  reseller: { label: "Reseller", color: "#67D8FF", glow: "103,216,255" },
+  msp: { label: "MSP / Service Provider", color: "#D4A843", glow: "212,168,67" },
+};
+
+const PARTNER_TIERS_GOVERNANCE_ROWS = [
+  {
+    partnerType: "Consultant / Advisor",
+    badge: "consultant",
+    tier: "Consultant / Advisor",
+    revenueGuide: "N/A",
+    coreRequirements: [
+      "Influence only",
+      "Advisory-led engagement",
+    ],
+    commercialModel: "20% commission cap",
+    benefits: [
+      "IPI owns customer contract, billing, support, and delivery",
+    ],
+  },
+  {
+    partnerType: "Reseller",
+    badge: "reseller",
+    tier: "Accredited",
+    revenueGuide: "No revenue target",
+    coreRequirements: [
+      "Signed agreement",
+      "Onboarding complete",
+      "Minimum 2 trained individuals",
+      "Time-bound activity / pipeline expectations",
+    ],
+    commercialModel: "25% license margin",
+    benefits: [
+      "Entry state",
+      "Not yet proven at scale",
+      "Access to basic program benefits",
+    ],
+  },
+  {
+    partnerType: "Reseller",
+    badge: "reseller",
+    tier: "Silver",
+    revenueGuide: "£50k–£250k",
+    coreRequirements: [
+      "Minimum 3 closed deals",
+      "Active pipeline of at least 3 qualified opportunities",
+      "2–3 certified staff",
+      "Quarterly shared pipeline reviews",
+      "Annual business review",
+    ],
+    commercialModel: "30% license margin",
+    benefits: [
+      "Proof of traction",
+      "Deal registration access",
+      "Standard partner support",
+    ],
+  },
+  {
+    partnerType: "Reseller",
+    badge: "reseller",
+    tier: "Gold",
+    revenueGuide: "£250k–£500k",
+    coreRequirements: [
+      "8–10 closed deals annually",
+      "Active pipeline of at least 5 qualified opportunities",
+      "3–5 certified staff",
+      "Evidence of multi-product selling",
+      "Monthly shared pipeline reviews",
+      "Bi-annual business reviews",
+    ],
+    commercialModel: "40% license margin",
+    benefits: [
+      "Scaled reseller",
+      "Stronger commercial engagement",
+      "Priority support",
+      "Access to more strategic collaboration",
+    ],
+  },
+  {
+    partnerType: "Reseller",
+    badge: "reseller",
+    tier: "Platinum",
+    revenueGuide: "£500k+",
+    coreRequirements: [
+      "High-performing strategic reseller",
+      "Strong active pipeline",
+      "5+ certified staff",
+      "Executive engagement",
+      "Monthly shared pipeline reviews",
+      "Quarterly business reviews",
+      "Joint planning and alignment",
+    ],
+    commercialModel: "45% base license margin",
+    benefits: [
+      "Top reseller tier",
+      "Can earn more via Deal Registration uplift and strategic deal support",
+      "Priority commercial engagement",
+      "Strategic relationship with IPI",
+    ],
+    highlight: true,
+  },
+  {
+    partnerType: "MSP / Service Provider",
+    badge: "msp",
+    tier: "Accredited",
+    revenueGuide: "No revenue target",
+    coreRequirements: [
+      "Signed agreement",
+      "Onboarding complete",
+      "Support / delivery capability validation",
+      "Minimum 2 trained individuals",
+    ],
+    commercialModel: "40% margin (conditional)",
+    benefits: [
+      "Entry to MSP track",
+      "Margin subject to capability requirements",
+      "No full white-label at this level",
+    ],
+  },
+  {
+    partnerType: "MSP / Service Provider",
+    badge: "msp",
+    tier: "Silver",
+    revenueGuide: "£100k+",
+    coreRequirements: [
+      "Minimum 2 active customers",
+      "Delivers L1 support",
+      "Named service lead",
+      "Defined service wrap",
+      "Quarterly shared pipeline reviews",
+      "Annual business review",
+    ],
+    commercialModel: "40% margin",
+    benefits: [
+      "Proven delivery start",
+      "Active MSP model",
+      "Co-branded managed service positioning possible",
+    ],
+  },
+  {
+    partnerType: "MSP / Service Provider",
+    badge: "msp",
+    tier: "Gold",
+    revenueGuide: "£250k–£500k",
+    coreRequirements: [
+      "Delivers L1 + L2 support",
+      "Documented service wrap",
+      "Customer success ownership",
+      "Evidence of retention / service maturity",
+      "Monthly shared pipeline reviews",
+      "Bi-annual business reviews",
+    ],
+    commercialModel: "50% margin",
+    benefits: [
+      "Scaled MSP",
+      "Greater commercial flexibility",
+      "Partial / controlled white-label options may be available",
+    ],
+  },
+  {
+    partnerType: "MSP / Service Provider",
+    badge: "msp",
+    tier: "Platinum",
+    revenueGuide: "£500k+",
+    coreRequirements: [
+      "Delivers L1–L3 support",
+      "Full service catalogue",
+      "Dedicated service and support capability",
+      "Strong operational maturity",
+      "Monthly shared pipeline reviews",
+      "Quarterly business reviews",
+      "Joint business planning and executive alignment",
+    ],
+    commercialModel: "60% margin",
+    benefits: [
+      "Full service provider model",
+      "Full white-label rights",
+      "Highest operational ownership and commercial flexibility",
+    ],
+    highlight: true,
+  },
+];
+
+function PartnerTiersGovernancePage() {
+  const introCards = [
+    {
+      title: "Why the model is changing",
+      tone: "103,216,255",
+      text: "The legacy structure was simple and margin-safe, but it was too flat to reward the partners who invest in delivery, support, and customer ownership.",
+      bullets: [
+        "Legacy pricing: Base 18%, Accredited 22%, Silver 25%, Gold 30%, Platinum 40%.",
+        "Commercially safe and easy to explain.",
+        "Not differentiated enough for modern partner business models.",
+      ],
+    },
+    {
+      title: "Why the program is split",
+      tone: "212,168,67",
+      text: "Resellers and MSPs do not create the same cost-to-serve or value profile for IPI, so they should not sit on the same margin ladder.",
+      bullets: [
+        "Resellers can use IPI for delivery and support.",
+        "MSPs reduce IPI cost-to-serve by taking operational ownership.",
+        "Higher ownership earns higher economics.",
+      ],
+    },
+    {
+      title: "White-label rules",
+      tone: "163,121,146",
+      text: "White-label is reserved for partners operating a genuine service provider model with proven support, service wrap, and operational maturity.",
+      bullets: [
+        "Available only to MSP / Service Provider partners.",
+        "Never available in the Reseller track.",
+        "Platinum MSP is the full white-label model.",
+      ],
+    },
+    {
+      title: "Deal registration benefits",
+      tone: "123,150,163",
+      text: "Deal Registration rewards partners who create, progress, and maintain credible pipeline. It is designed to protect effort, not to reserve accounts.",
+      bullets: [
+        "Protection is linked to visible progression and review cadence.",
+        "Resellers can earn +3% to +5% uplift where justified.",
+        "MSPs gain protection, flexibility, and solution design support.",
+      ],
+    },
+  ];
+
+  const partnerModels = [
+    {
+      badge: "consultant",
+      title: "Consultant / Advisor",
+      body: "An influence-only route for advisory-led firms that want to recommend IPI without owning resale, support, or service delivery.",
+      bullets: [
+        "Maximum 20% commission.",
+        "IPI owns contract, delivery, billing, and customer service.",
+        "Best suited to consultative or transformation-led partners.",
+      ],
+    },
+    {
+      badge: "reseller",
+      title: "Reseller",
+      body: "For partners that sell and own the commercial relationship, while choosing to use IPI for onboarding, support, and managed services where needed.",
+      bullets: [
+        "Partner owns the customer relationship.",
+        "Earns margin on license revenue.",
+        "Can also earn commission on IPI-delivered services and support.",
+      ],
+    },
+    {
+      badge: "msp",
+      title: "MSP / Service Provider",
+      body: "For partners building their own managed service proposition on IPI and taking service, support, and operational ownership into their own model.",
+      bullets: [
+        "Higher margins reflect lower IPI cost-to-serve.",
+        "Best fit for operationally capable managed service providers.",
+        "White-label is only available in this model.",
+      ],
+    },
+  ];
+
+  const rampChecks = [
+    "Capability",
+    "Certifications",
+    "Pipeline build",
+    "Deal progression",
+    "Support / services capability for MSPs",
+    "Commercial engagement",
+  ];
+
+  const serviceCommissionCards = [
+    {
+      value: "20%",
+      title: "One-off services",
+      text: "Implementation, onboarding, and project services can pay 20% commission once on invoiced value.",
+      tone: "103,216,255",
+    },
+    {
+      value: "10%",
+      title: "Recurring services / support",
+      text: "Recurring services and support can pay 10% commission for the first 12 months only.",
+      tone: "212,168,67",
+    },
+    {
+      value: "10–15% / 0–5%",
+      title: "Complex or low-margin work",
+      text: "Reduced commission may apply on lower-margin service lines, subject to commercial approval.",
+      tone: "163,121,146",
+    },
+  ];
+
+  const dealProgressRules = [
+    "Within 30 days of approval, the partner should show discovery, engagement, or meaningful advancement.",
+    "Every 30–45 days, the opportunity should show forward movement such as a completed meeting, proposal, demo, validation, or advanced commercial discussion.",
+    "Silver partners review registered deals in quarterly pipeline reviews.",
+    "Gold and Platinum partners review registered deals in monthly pipeline reviews.",
+    "Standard protection lasts 90 days, with Platinum extensions only where active progression is evidenced.",
+  ];
+
+  const dealGuardrails = [
+    "Deal Registration is not simply a claim on an account.",
+    "No update in 30 days means the opportunity is at risk.",
+    "No progression in 45 days means protection is at risk.",
+    "Missed review cadence or poor pipeline hygiene can lead to revocation and reopening.",
+    "Benefits are earned through behaviour, not granted automatically.",
+    "IPI retains final decision rights in conflict situations.",
+  ];
+
+  const sharedSectionStyles = {
+    display: "grid",
+    gap: 18,
+    marginBottom: 18,
+  };
+
+  const pillStyle = (badgeKey) => {
+    const badge = PARTNER_COMMERCIAL_TRACK_BADGES[badgeKey];
+    return {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 8,
+      padding: "7px 12px",
+      borderRadius: 999,
+      border: `1px solid rgba(${badge.glow},0.3)`,
+      background: `rgba(${badge.glow},0.12)`,
+      color: badge.color,
+      fontSize: 11,
+      fontWeight: 800,
+      letterSpacing: "0.04em",
+      textTransform: "uppercase",
+    };
+  };
+
+  const listStyle = { margin: 0, paddingLeft: 18, color: "#D9E7F0", lineHeight: 1.7, fontSize: 13 };
+
+  return (
+    <div className="page-shell">
+      <div className="content-shell">
+        <PageHeader
+          eyebrow="Governance"
+          title={<React.Fragment>Partner <span style={{ color: "#67D8FF" }}>Tiers</span> & Commercial Model</React.Fragment>}
+          subtitle="A modern commercial framework for Consultant, Reseller, and MSP / Service Provider partner models — designed to reward the right behaviour, protect margin discipline, and give partners a clearer growth path."
+          right={<span className="pill">Governance section</span>}
+        />
+
+        <SectionCard style={{ padding: 0, overflow: "hidden" }}>
+          <div style={{ padding: "24px clamp(20px,3vw,32px)", display: "grid", gap: 18 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+              {Object.entries(PARTNER_COMMERCIAL_TRACK_BADGES).map(([key, badge]) => (
+                <span key={key} style={pillStyle(key)}>{badge.label}</span>
+              ))}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 14 }}>
+              <div className="panel-card" style={{ background: "linear-gradient(135deg,rgba(103,216,255,0.18),rgba(255,255,255,0.03))", borderColor: "rgba(103,216,255,0.22)" }}>
+                <div className="mini-kicker">Platinum Reseller</div>
+                <h3 style={{ margin: "4px 0 8px", fontSize: 28, color: "#67D8FF", fontFamily: "'Syne',sans-serif" }}>45%</h3>
+                <p style={{ margin: 0, color: "#D7E6EF", lineHeight: 1.65 }}>Top-tier base license margin, with additional upside via Deal Registration uplift and strategic deal support.</p>
+              </div>
+              <div className="panel-card" style={{ background: "linear-gradient(135deg,rgba(212,168,67,0.18),rgba(255,255,255,0.03))", borderColor: "rgba(212,168,67,0.22)" }}>
+                <div className="mini-kicker">Platinum MSP / Service Provider</div>
+                <h3 style={{ margin: "4px 0 8px", fontSize: 28, color: "#D4A843", fontFamily: "'Syne',sans-serif" }}>60%</h3>
+                <p style={{ margin: 0, color: "#D7E6EF", lineHeight: 1.65 }}>Highest-margin model for partners with full service ownership, advanced support capability, and white-label maturity.</p>
+              </div>
+              <div className="panel-card" style={{ background: "linear-gradient(135deg,rgba(163,121,146,0.16),rgba(255,255,255,0.03))", borderColor: "rgba(163,121,146,0.24)" }}>
+                <div className="mini-kicker">White-label</div>
+                <h3 style={{ margin: "4px 0 8px", fontSize: 20, color: "#F6D58B", fontFamily: "'Syne',sans-serif" }}>MSP only</h3>
+                <p style={{ margin: 0, color: "#D7E6EF", lineHeight: 1.65 }}>White-label rights sit only in the MSP / Service Provider track and never in the Reseller model.</p>
+              </div>
+            </div>
+          </div>
+        </SectionCard>
+
+        <section style={sharedSectionStyles}>
+          <div className="bse-section-heading" style={{ marginBottom: 0 }}>
+            <h2>Why We Are Evolving the Partner Model</h2>
+            <p>The previous program protected margin and kept the message simple, but it did not create enough commercial separation between partner motions. The new structure is designed to be more competitive, more strategic, and much more aligned to how partners actually go to market.</p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 14 }}>
+            {introCards.map((card) => (
+              <SectionCard key={card.title} style={{ background: `linear-gradient(135deg,rgba(${card.tone},0.14),rgba(255,255,255,0.03))`, border: `1px solid rgba(${card.tone},0.2)` }}>
+                <div className="mini-kicker">Strategic callout</div>
+                <h3 style={{ margin: 0, color: "#F4FAFF", fontSize: 18 }}>{card.title}</h3>
+                <p style={{ margin: 0, color: "#C9D9E3", lineHeight: 1.7, fontSize: 13 }}>{card.text}</p>
+                <ul style={listStyle}>
+                  {card.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}
+                </ul>
+              </SectionCard>
+            ))}
+          </div>
+          <SectionCard>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 18 }}>
+              <div>
+                <div className="mini-kicker">Market assessment</div>
+                <p style={{ margin: "0 0 10px", color: "#D9E7F0", lineHeight: 1.8 }}>Across the UCaaS / CCaaS market, entry-level reseller economics often sit around 20–30%, mid-tier models typically land around 30–50%, and top-end reseller economics can exceed 50% effective margin once Deal Registration, rebates, and strategic price support are included. MSP, wholesale, and service provider models usually go further because the partner owns more of the delivery, support, and customer relationship.</p>
+                <p style={{ margin: 0, color: "#D9E7F0", lineHeight: 1.8 }}>That means the legacy model was too conservative at the top end and too flat overall. If IPI is not commercially compelling enough, partners have little reason to move away from incumbent vendors. The revised program corrects that by tying reward more closely to partner behaviour and operational ownership.</p>
+              </div>
+              <div className="panel-card" style={{ alignSelf: "stretch" }}>
+                <div className="mini-kicker">Legacy model</div>
+                <ul style={{ ...listStyle, paddingLeft: 18 }}>
+                  {[
+                    "Base — 18%",
+                    "Accredited — 22%",
+                    "Silver — 25%",
+                    "Gold — 30%",
+                    "Platinum — 40%",
+                  ].map((item) => <li key={item}>{item}</li>)}
+                </ul>
+              </div>
+            </div>
+          </SectionCard>
+        </section>
+
+        <section style={sharedSectionStyles}>
+          <div className="bse-section-heading" style={{ marginBottom: 0 }}>
+            <h2>Why We Have Split the Program into Reseller and MSP / Service Provider Tracks</h2>
+            <p>Not all partners operate in the same way. Some partners focus on selling and managing the commercial relationship. Others deliver onboarding, support, managed services, and in some cases want to white-label the platform. Those models create very different cost-to-serve and value-to-IPI outcomes, so one margin ladder no longer reflects the reality of the market.</p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))", gap: 14 }}>
+            {partnerModels.map((model) => (
+              <SectionCard key={model.title}>
+                <span style={pillStyle(model.badge)}>{PARTNER_COMMERCIAL_TRACK_BADGES[model.badge].label}</span>
+                <h3 style={{ margin: 0, color: "#F3FAFF", fontSize: 20 }}>{model.title}</h3>
+                <p style={{ margin: 0, color: "#C9D9E3", lineHeight: 1.72, fontSize: 13 }}>{model.body}</p>
+                <ul style={listStyle}>
+                  {model.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}
+                </ul>
+              </SectionCard>
+            ))}
+          </div>
+          <SectionCard style={{ background: "linear-gradient(135deg,rgba(212,168,67,0.12),rgba(255,255,255,0.03))", borderColor: "rgba(212,168,67,0.22)" }}>
+            <div className="mini-kicker">Commercial position</div>
+            <p style={{ margin: "0 0 8px", color: "#D9E7F0", lineHeight: 1.8 }}>The Reseller track is for partners that sell, own the commercial relationship, and may choose to use IPI to deliver services and support. The MSP / Service Provider track is for partners that take delivery and support into their own model, reduce IPI cost-to-serve, and can therefore earn higher margins as a result.</p>
+            <p style={{ margin: "0 0 8px", color: "#D9E7F0", lineHeight: 1.8 }}>White-label is only available to MSP / Service Provider partners and never to Resellers. Consultant / Advisor remains a separate referral and influence motion, capped at 20% commission because IPI retains customer ownership, contracting, billing, support, and service delivery.</p>
+          </SectionCard>
+        </section>
+
+        <section style={sharedSectionStyles}>
+          <div className="bse-section-heading" style={{ marginBottom: 0 }}>
+            <h2>Onboarding and Ramp Process</h2>
+            <p>New partners can be onboarded into an aspirational level when capability, business plan quality, and growth potential justify it. That level is provisional, time-bound, and reviewed against measurable progress.</p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 14 }}>
+            <SectionCard>
+              <div className="mini-kicker">How ramp works</div>
+              <p style={{ margin: "0 0 10px", color: "#D9E7F0", lineHeight: 1.8 }}>The ramp period will typically run for 6 to 12 months. It gives strong new partners room to build revenue from a standing start, without giving away permanent top-tier economics upfront. This allows IPI to back credible ambition while still protecting margin and tier integrity.</p>
+              <ul style={listStyle}>
+                <li>If milestones are met, the partner is confirmed into tier.</li>
+                <li>If milestones are partially met, a short extension may be approved.</li>
+                <li>If milestones are not met, the partner is reassigned to the appropriate level.</li>
+              </ul>
+            </SectionCard>
+            <SectionCard>
+              <div className="mini-kicker">Reassessment criteria</div>
+              <ul style={listStyle}>
+                {rampChecks.map((item) => <li key={item}>{item}</li>)}
+              </ul>
+            </SectionCard>
+          </div>
+        </section>
+
+        <section style={sharedSectionStyles}>
+          <div className="bse-section-heading" style={{ marginBottom: 0 }}>
+            <h2>Partner Tier Comparison</h2>
+            <p>A clear tier structure makes expectations visible and aligns commercial reward to the level of capability, engagement, and ownership each partner brings to market.</p>
+          </div>
+          <SectionCard style={{ padding: 0, overflow: "hidden" }}>
+            <div style={{ overflowX: "auto" }}>
+              <table className="ds-data-table" style={{ minWidth: 1120 }}>
+                <thead>
+                  <tr>
+                    {[
+                      "Partner Type",
+                      "Tier",
+                      "Revenue Guide",
+                      "Core Requirements",
+                      "Commercial Model",
+                      "Benefits / Notes",
+                    ].map((head) => <th key={head}>{head}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {PARTNER_TIERS_GOVERNANCE_ROWS.map((row) => (
+                    <tr key={`${row.partnerType}-${row.tier}`} style={row.highlight ? { background: "rgba(212,168,67,0.08)" } : undefined}>
+                      <td>
+                        <span style={pillStyle(row.badge)}>{row.partnerType}</span>
+                      </td>
+                      <td style={{ fontWeight: 800, color: row.highlight ? "#F6D58B" : "#F2F7FB" }}>{row.tier}</td>
+                      <td>{row.revenueGuide}</td>
+                      <td>
+                        <ul style={{ ...listStyle, margin: 0 }}>
+                          {row.coreRequirements.map((item) => <li key={item}>{item}</li>)}
+                        </ul>
+                      </td>
+                      <td style={{ fontWeight: 800, color: row.highlight ? "#F6D58B" : "#D9E7F0" }}>{row.commercialModel}</td>
+                      <td>
+                        <ul style={{ ...listStyle, margin: 0 }}>
+                          {row.benefits.map((item) => <li key={item}>{item}</li>)}
+                        </ul>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </SectionCard>
+        </section>
+
+        <section style={sharedSectionStyles}>
+          <div className="bse-section-heading" style={{ marginBottom: 0 }}>
+            <h2>Reseller Earnings on IPI-Delivered Services and Support</h2>
+            <p>Where a Reseller owns the customer relationship but chooses to use IPI for delivery and support, the partner can still participate commercially through a clear services and support commission model.</p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 14 }}>
+            {serviceCommissionCards.map((card) => (
+              <SectionCard key={card.title} style={{ background: `linear-gradient(135deg,rgba(${card.tone},0.14),rgba(255,255,255,0.03))`, borderColor: `rgba(${card.tone},0.22)` }}>
+                <div className="mini-kicker">Commission</div>
+                <h3 style={{ margin: "0 0 4px", fontSize: 28, color: "#F4FAFF", fontFamily: "'Syne',sans-serif" }}>{card.value}</h3>
+                <div style={{ color: "#F4FAFF", fontWeight: 800, fontSize: 16 }}>{card.title}</div>
+                <p style={{ margin: 0, color: "#D9E7F0", lineHeight: 1.72, fontSize: 13 }}>{card.text}</p>
+              </SectionCard>
+            ))}
+          </div>
+          <SectionCard>
+            <div className="mini-kicker">Rules</div>
+            <ul style={listStyle}>
+              <li>Commission only applies while the reseller remains actively engaged and owns the commercial relationship.</li>
+              <li>Recurring commission is time-limited to the first 12 months to protect long-term margin.</li>
+              <li>No double-dipping: if the partner moves into the MSP / Service Provider model and delivers themselves, reseller services commission no longer applies.</li>
+              <li>Complex or low-margin services may attract reduced commission, typically 10–15% on one-off services and 0–5% on recurring services, subject to commercial approval.</li>
+            </ul>
+          </SectionCard>
+        </section>
+
+        <section style={sharedSectionStyles}>
+          <div className="bse-section-heading" style={{ marginBottom: 0 }}>
+            <h2>Deal Registration</h2>
+            <p>Deal Registration exists to protect partner effort, reward active pipeline creation, improve forecast visibility, and support margin discipline. It is built to back credible opportunity development, not account hoarding.</p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 14 }}>
+            <SectionCard>
+              <div className="mini-kicker">What qualifies</div>
+              <ul style={listStyle}>
+                <li>Named customer account.</li>
+                <li>Defined opportunity and use case.</li>
+                <li>Estimated value and expected close timing.</li>
+                <li>Evidence that the deal is active and progressing.</li>
+                <li>Evidence of engagement through the pipeline review process.</li>
+              </ul>
+            </SectionCard>
+            <SectionCard>
+              <div className="mini-kicker">Commercial benefit</div>
+              <ul style={listStyle}>
+                <li><strong>Resellers:</strong> opportunity protection, possible +3% to +5% uplift where justified, and strategic deal or price support on selected opportunities.</li>
+                <li><strong>MSPs:</strong> opportunity protection, pricing flexibility, commercial support, and accelerated solution design engagement where appropriate.</li>
+              </ul>
+            </SectionCard>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 14 }}>
+            <SectionCard>
+              <div className="mini-kicker">Progression and engagement</div>
+              <ul style={listStyle}>
+                {dealProgressRules.map((item) => <li key={item}>{item}</li>)}
+              </ul>
+            </SectionCard>
+            <SectionCard>
+              <div className="mini-kicker">Guardrails</div>
+              <ul style={listStyle}>
+                {dealGuardrails.map((item) => <li key={item}>{item}</li>)}
+              </ul>
+            </SectionCard>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
 function PartnerTrustPage() {
+
   const trustPillars = [
     { icon: "🛡️", label: "Governance-First", tone: "blue" },
     { icon: "📘", label: "Single Source of Truth", tone: "purple" },
@@ -12476,6 +13054,7 @@ const NAV_SECTIONS = [
     title: "Governance",
     items: [
       { id: "program", icon: <NavIcon name="badge" />, label: "Ideal Partner Profile" },
+      { id: "partner-tiers-governance", icon: <NavIcon name="money" />, label: "Partner Tiers" },
       { id: "commercial", icon: <NavIcon name="scale" />, label: "Legal" },
       { id: "partner-trust", icon: <NavIcon name="shield" />, label: "Trust" },
       { id: "partner-operational-support", icon: <NavIcon name="cap" />, label: "Enablement" },
@@ -12510,6 +13089,7 @@ const PAGE_PATHS = {
   bse: "/build-sell-expand",
   hub: "/partner-enablement",
   program: "/partner-program",
+  "partner-tiers-governance": "/partner-tier-model",
   governance: "/governance-raci",
   commercial: "/commercial-framework",
   "channel-marketing": "/channel-marketing",
@@ -12786,6 +13366,7 @@ function App() {
     if (page === "partner-deck") return <PartnerDeckPage />;
     if (page === "bse") return <BuildSellExpand />;
     if (page === "program") return <PartnerProgramPage />;
+    if (page === "partner-tiers-governance") return <PartnerTiersGovernancePage />;
     if (page === "commercial") return <CommercialFrameworkPage />;
     if (page === "channel-marketing") return <ChannelMarketingPage />;
     if (page === "sample-customers") return <SampleCustomersPage />;
