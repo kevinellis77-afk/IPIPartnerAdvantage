@@ -8928,10 +8928,10 @@ const PARTNER_TIERS_GOVERNANCE_ROWS = [
       "Quarterly business reviews",
       "Joint planning and alignment",
     ],
-    commercialModel: "45% base license margin",
+    commercialModel: "45% license margin",
     benefits: [
       "Top reseller tier",
-      "Can earn more via Deal Registration uplift and strategic deal support",
+      "Strategic Deal Support",
       "Priority commercial engagement",
       "Strategic relationship with IPI",
     ],
@@ -9138,6 +9138,7 @@ function PartnerTiersGovernancePage() {
   };
 
   const listStyle = { margin: 0, paddingLeft: 18, color: "#D9E7F0", lineHeight: 1.7, fontSize: 13 };
+  const tierComparisonListStyle = { ...listStyle, margin: 0, color: "inherit", fontSize: "inherit", fontFamily: "inherit", lineHeight: 1.6 };
 
   return (
     <div className="page-shell">
@@ -9299,13 +9300,13 @@ function PartnerTiersGovernancePage() {
                       <td style={{ fontWeight: 800, color: row.highlight ? "#F6D58B" : "#F2F7FB" }}>{row.tier}</td>
                       <td>{row.revenueGuide}</td>
                       <td>
-                        <ul style={{ ...listStyle, margin: 0 }}>
+                        <ul style={tierComparisonListStyle}>
                           {row.coreRequirements.map((item) => <li key={item}>{item}</li>)}
                         </ul>
                       </td>
                       <td style={{ fontWeight: 800, color: row.highlight ? "#F6D58B" : "#D9E7F0" }}>{row.commercialModel}</td>
                       <td>
-                        <ul style={{ ...listStyle, margin: 0 }}>
+                        <ul style={tierComparisonListStyle}>
                           {row.benefits.map((item) => <li key={item}>{item}</li>)}
                         </ul>
                       </td>
