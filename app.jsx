@@ -8852,7 +8852,8 @@ const PARTNER_TIERS_GOVERNANCE_ROWS = [
     ],
     commercialModel: "20% commission cap",
     benefits: [
-      "IPI owns customer contract, billing, support, and delivery",
+      "IPI owns customer, billing, delivery, and support",
+      "No resale, white-label, or MSP rights",
     ],
   },
   {
@@ -8868,8 +8869,8 @@ const PARTNER_TIERS_GOVERNANCE_ROWS = [
     ],
     commercialModel: "25% license margin",
     benefits: [
-      "Entry state",
-      "Not yet proven at scale",
+      "Low-friction commercial entry point",
+      "Enabled state with defined guardrails",
       "Access to basic program benefits",
     ],
   },
@@ -8939,24 +8940,6 @@ const PARTNER_TIERS_GOVERNANCE_ROWS = [
   {
     partnerType: "MSP / Service Provider",
     badge: "msp",
-    tier: "Accredited",
-    revenueGuide: "No revenue target",
-    coreRequirements: [
-      "Signed agreement",
-      "Onboarding complete",
-      "Support / delivery capability validation",
-      "Minimum 2 trained individuals",
-    ],
-    commercialModel: "40% margin (conditional)",
-    benefits: [
-      "Entry to MSP track",
-      "Margin subject to capability requirements",
-      "No full white-label at this level",
-    ],
-  },
-  {
-    partnerType: "MSP / Service Provider",
-    badge: "msp",
     tier: "Silver",
     revenueGuide: "£100k+",
     coreRequirements: [
@@ -8969,8 +8952,8 @@ const PARTNER_TIERS_GOVERNANCE_ROWS = [
     ],
     commercialModel: "40% margin",
     benefits: [
-      "Proven delivery start",
-      "Active MSP model",
+      "Proven MSP starting point",
+      "Active delivery model",
       "Co-branded managed service positioning possible",
     ],
   },
@@ -9033,21 +9016,21 @@ function PartnerTiersGovernancePage() {
     {
       title: "Why the program is split",
       tone: "212,168,67",
-      text: "Resellers and MSPs do not create the same cost-to-serve or value profile for IPI, so they should not sit on the same margin ladder.",
+      text: "Reseller and MSP / Service Provider are different operating models, not just different discount bands, so the program must qualify them differently.",
       bullets: [
-        "Resellers can use IPI for delivery and support.",
-        "MSPs reduce IPI cost-to-serve by taking operational ownership.",
-        "Higher ownership earns higher economics.",
+        "Resellers can enter earlier and grow through accreditation, activity, and revenue.",
+        "MSPs must complete enablement and operational qualification before entering the track.",
+        "Higher MSP economics are earned through capability, ownership, and customer protection.",
       ],
     },
     {
       title: "White-label rules",
       tone: "163,121,146",
-      text: "White-label is reserved for partners operating a genuine service provider model with proven support, service wrap, and operational maturity.",
+      text: "White-label is reserved for validated MSP / Service Provider partners with proven support readiness, service wrap definition, and operational maturity.",
       bullets: [
-        "Available only to MSP / Service Provider partners.",
-        "Never available in the Reseller track.",
-        "Platinum MSP is the full white-label model.",
+        "Never available to Consultant / Advisor partners or Resellers.",
+        "Controlled / partial white-label may be available at Gold MSP where appropriate.",
+        "Full white-label is reserved for Platinum MSP / Service Provider partners.",
       ],
     },
     {
@@ -9066,31 +9049,31 @@ function PartnerTiersGovernancePage() {
     {
       badge: "consultant",
       title: "Consultant / Advisor",
-      body: "An influence-only route for advisory-led firms that want to recommend IPI without owning resale, support, or service delivery.",
+      body: "An influence-only route for advisory-led firms that want to recommend IPI without owning resale, white-label, support, or service delivery.",
       bullets: [
-        "Maximum 20% commission.",
-        "IPI owns contract, delivery, billing, and customer service.",
-        "Best suited to consultative or transformation-led partners.",
+        "Maximum 20% commission cap.",
+        "IPI owns customer, billing, delivery, and support.",
+        "No resale, no white-label, and no MSP rights.",
       ],
     },
     {
       badge: "reseller",
       title: "Reseller",
-      body: "For partners that sell and own the commercial relationship, while choosing to use IPI for onboarding, support, and managed services where needed.",
+      body: "A commercial ownership model for partners that sell and own the customer relationship while using IPI services and support where needed.",
       bullets: [
-        "Partner owns the customer relationship.",
-        "Earns margin on license revenue.",
-        "Can also earn commission on IPI-delivered services and support.",
+        "Partner sells and owns the customer relationship.",
+        "Earns license margin plus reseller services / support commission where applicable.",
+        "IPI may still deliver services and support.",
       ],
     },
     {
       badge: "msp",
       title: "MSP / Service Provider",
-      body: "For partners building their own managed service proposition on IPI and taking service, support, and operational ownership into their own model.",
+      body: "A capability-led operating model for partners that sell, support, and deliver through their own managed service proposition on IPI.",
       bullets: [
-        "Higher margins reflect lower IPI cost-to-serve.",
-        "Best fit for operationally capable managed service providers.",
-        "White-label is only available in this model.",
+        "Higher margins reflect reduced IPI cost-to-serve and greater operational ownership.",
+        "Entry requires successful completion of MSP enablement.",
+        "White-label exists only in this track.",
       ],
     },
   ];
@@ -9199,7 +9182,7 @@ function PartnerTiersGovernancePage() {
               <div className="panel-card" style={{ background: "linear-gradient(135deg,rgba(163,121,146,0.16),rgba(255,255,255,0.03))", borderColor: "rgba(163,121,146,0.24)" }}>
                 <div className="mini-kicker">White-label</div>
                 <h3 style={{ margin: "4px 0 8px", fontSize: 20, color: "#F6D58B", fontFamily: "'Syne',sans-serif" }}>MSP only</h3>
-                <p style={{ margin: 0, color: "#D7E6EF", lineHeight: 1.65 }}>White-label rights sit only in the MSP / Service Provider track and never in the Reseller model.</p>
+                <p style={{ margin: 0, color: "#D7E6EF", lineHeight: 1.65 }}>White-label rights sit only in the MSP / Service Provider track after enablement is validated, with full rights reserved for Platinum MSP.</p>
               </div>
             </div>
           </div>
@@ -9248,7 +9231,7 @@ function PartnerTiersGovernancePage() {
         <section style={sharedSectionStyles}>
           <div className="bse-section-heading" style={{ marginBottom: 0 }}>
             <h2>Why We Have Split the Program into Reseller and MSP / Service Provider Tracks</h2>
-            <p>Not all partners operate in the same way. Some partners focus on selling and managing the commercial relationship. Others deliver onboarding, support, managed services, and in some cases want to white-label the platform. Those models create very different cost-to-serve and value-to-IPI outcomes, so one margin ladder no longer reflects the reality of the market.</p>
+            <p>Not all partners operate in the same way. Some partners focus on selling and managing the commercial relationship. Others deliver onboarding, support, managed services, and in some cases want to white-label the platform. Those are different operating models, not just different discount bands, so one margin ladder no longer reflects the reality of the market.</p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))", gap: 14 }}>
             {partnerModels.map((model) => (
@@ -9264,20 +9247,20 @@ function PartnerTiersGovernancePage() {
           </div>
           <SectionCard style={{ background: "linear-gradient(135deg,rgba(212,168,67,0.12),rgba(255,255,255,0.03))", borderColor: "rgba(212,168,67,0.22)" }}>
             <div className="mini-kicker">Commercial position</div>
-            <p style={{ margin: "0 0 8px", color: "#D9E7F0", lineHeight: 1.8 }}>The Reseller track is for partners that sell, own the commercial relationship, and may choose to use IPI to deliver services and support. The MSP / Service Provider track is for partners that take delivery and support into their own model, reduce IPI cost-to-serve, and can therefore earn higher margins as a result.</p>
-            <p style={{ margin: "0 0 8px", color: "#D9E7F0", lineHeight: 1.8 }}>White-label is only available to MSP / Service Provider partners and never to Resellers. Consultant / Advisor remains a separate referral and influence motion, capped at 20% commission because IPI retains customer ownership, contracting, billing, support, and service delivery.</p>
+            <p style={{ margin: "0 0 8px", color: "#D9E7F0", lineHeight: 1.8 }}>Reseller and MSP / Service Provider are different operating models, not just different discount bands. Resellers can enter the program earlier through Accredited and then grow through accreditation, activity, and revenue. MSP partners must first complete enablement, accreditation, support readiness validation, service wrap definition, and operational readiness before they enter the visible MSP track.</p>
+            <p style={{ margin: "0 0 8px", color: "#D9E7F0", lineHeight: 1.8 }}>That protects delivery quality, customer experience, and program integrity. It also ensures higher MSP economics are earned through capability and operational ownership, not simply selected as a preference. White-label is never available to Consultant / Advisor partners or Resellers, and no partner should access it until MSP enablement and operational readiness have been validated.</p>
           </SectionCard>
         </section>
 
         <section style={sharedSectionStyles}>
           <div className="bse-section-heading" style={{ marginBottom: 0 }}>
             <h2>Onboarding and Ramp Process</h2>
-            <p>New partners can be onboarded into an aspirational level when capability, business plan quality, and growth potential justify it. That level is provisional, time-bound, and reviewed against measurable progress.</p>
+            <p>New partners can still be onboarded into an aspirational level when capability, business plan quality, and growth potential justify it. That level remains provisional, time-bound, and reviewed against measurable progress — but MSP status is only granted once enablement requirements have been met.</p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 14 }}>
             <SectionCard>
               <div className="mini-kicker">How ramp works</div>
-              <p style={{ margin: "0 0 10px", color: "#D9E7F0", lineHeight: 1.8 }}>The ramp period will typically run for 6 to 12 months. It gives strong new partners room to build revenue from a standing start, without giving away permanent top-tier economics upfront. This allows IPI to back credible ambition while still protecting margin and tier integrity.</p>
+              <p style={{ margin: "0 0 10px", color: "#D9E7F0", lineHeight: 1.8 }}>The ramp period will typically run for 6 to 12 months. Resellers can enter at Accredited as a low-friction enabled state with guardrails. MSP partners do not enter at Accredited; they first pass through an MSP Enablement Phase covering onboarding, accreditation, capability validation, support readiness, service wrap definition, and delivery readiness before entering as Silver MSP or, if the ramp model is used, a provisional MSP level.</p>
               <ul style={listStyle}>
                 <li>If milestones are met, the partner is confirmed into tier.</li>
                 <li>If milestones are partially met, a short extension may be approved.</li>
@@ -9296,8 +9279,18 @@ function PartnerTiersGovernancePage() {
         <section style={sharedSectionStyles}>
           <div className="bse-section-heading" style={{ marginBottom: 0 }}>
             <h2>Partner Tier Comparison</h2>
-            <p>A clear tier structure makes expectations visible and aligns commercial reward to the level of capability, engagement, and ownership each partner brings to market.</p>
+            <p>A clear tier structure makes expectations visible and aligns commercial reward to the level of capability, engagement, and ownership each partner brings to market. The MSP Enablement Phase sits before the MSP tiers and is intentionally not shown as a commercial row.</p>
           </div>
+          <SectionCard style={{ background: "linear-gradient(135deg,rgba(212,168,67,0.14),rgba(255,255,255,0.03))", borderColor: "rgba(212,168,67,0.24)" }}>
+            <div className="mini-kicker">MSP Enablement Phase</div>
+            <p style={{ margin: "0 0 10px", color: "#D9E7F0", lineHeight: 1.8 }}>Before a partner is presented as MSP / Service Provider, it must complete the pre-tier enablement phase. This is the point where IPI validates whether the partner is ready to operate as an MSP rather than simply interested in the economics.</p>
+            <ul style={listStyle}>
+              <li>Staff accreditation and enablement.</li>
+              <li>Support readiness validation.</li>
+              <li>Service wrap definition.</li>
+              <li>Operational readiness to deliver as an MSP / Service Provider.</li>
+            </ul>
+          </SectionCard>
           <SectionCard style={{ padding: 0, overflow: "hidden" }}>
             <div style={{ overflowX: "auto" }}>
               <table className="ds-data-table" style={{ minWidth: 1120 }}>
