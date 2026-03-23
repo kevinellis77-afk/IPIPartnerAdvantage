@@ -13027,20 +13027,7 @@ const NAV_SECTIONS = [
   {
     key: "overview",
     title: "Overview",
-    items: [
-      { id: "main", icon: <NavIcon name="sparkles" />, label: "Why IPI" },
-      { id: "market-vision", icon: <NavIcon name="layers" />, label: "Our Vision" },
-      { id: "partner-deck", icon: <NavIcon name="layers" />, label: "Partner Deck" },
-    ],
-  },
-  {
-    key: "proposition",
-    title: "Partners",
-    items: [
-      { id: "bse", icon: <NavIcon name="trending" />, label: "Enable, Land, Expand" },
-      { id: "hub", icon: <NavIcon name="layers" />, label: "Partner Tiers" },
-      { id: "sample-customers", icon: <NavIcon name="users" />, label: "Sample Customers" },
-    ],
+    items: [{ id: "partner-deck", icon: <NavIcon name="layers" />, label: "Partner Deck" }],
   },
   {
     key: "governance",
