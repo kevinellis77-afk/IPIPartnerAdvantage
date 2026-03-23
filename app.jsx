@@ -9004,77 +9004,28 @@ const PARTNER_TIERS_GOVERNANCE_ROWS = [
 function PartnerTiersGovernancePage() {
   const introCards = [
     {
+      icon: "📈",
       title: "Why the model is changing",
       tone: "103,216,255",
       text: "The legacy structure was simple and margin-safe, but it was too flat to reward the partners who invest in delivery, support, and customer ownership.",
-      bullets: [
-        "Legacy pricing: Base 18%, Accredited 22%, Silver 25%, Gold 30%, Platinum 40%.",
-        "Easy to explain, but not differentiated enough for modern partner motions.",
-        "The new model aligns reward to real capability and commitment.",
-      ],
     },
     {
+      icon: "🧭",
       title: "Why the program is split",
       tone: "212,168,67",
       text: "Reseller and MSP / Service Provider are different operating models, not just different discount bands, so the program must qualify them differently.",
-      bullets: [
-        "Resellers can enter earlier and grow through accreditation, activity, and revenue.",
-        "MSPs must complete enablement and operational qualification before entering the track.",
-        "Higher MSP economics are earned through capability, ownership, and customer protection.",
-      ],
     },
     {
+      icon: "🏷️",
       title: "White-label rules",
       tone: "163,121,146",
       text: "White-label is reserved for validated MSP / Service Provider partners with proven support readiness, service wrap definition, and operational maturity.",
-      bullets: [
-        "Never available to Consultant / Advisor partners or Resellers.",
-        "Controlled / partial white-label may be available at Gold MSP where appropriate.",
-        "Full white-label is reserved for Platinum MSP / Service Provider partners.",
-      ],
     },
     {
+      icon: "🛡️",
       title: "Deal registration benefits",
       tone: "123,150,163",
       text: "Deal Registration rewards partners who create, progress, and maintain credible pipeline. It is designed to protect effort, not to reserve accounts.",
-      bullets: [
-        "Protection is linked to visible progression and review cadence.",
-        "Resellers can earn +3% to +5% uplift where justified.",
-        "MSPs gain protection, flexibility, and solution design support.",
-      ],
-    },
-  ];
-
-  const partnerModels = [
-    {
-      badge: "consultant",
-      title: "Consultant / Advisor",
-      body: "An influence-only route for advisory-led firms that want to recommend IPI without owning resale, white-label, support, or service delivery.",
-      bullets: [
-        "Maximum 20% commission cap.",
-        "IPI owns customer, billing, delivery, and support.",
-        "No resale, no white-label, and no MSP rights.",
-      ],
-    },
-    {
-      badge: "reseller",
-      title: "Reseller",
-      body: "A commercial ownership model for partners that sell and own the customer relationship while using IPI services and support where needed.",
-      bullets: [
-        "Partner sells and owns the customer relationship.",
-        "Earns license margin plus reseller services / support commission where applicable.",
-        "IPI may still deliver services and support.",
-      ],
-    },
-    {
-      badge: "msp",
-      title: "MSP / Service Provider",
-      body: "A capability-led operating model for partners that sell, support, and deliver through their own managed service proposition on IPI.",
-      bullets: [
-        "Higher margins reflect reduced IPI cost-to-serve and greater operational ownership.",
-        "Entry requires successful completion of MSP enablement.",
-        "White-label exists only in this track.",
-      ],
     },
   ];
 
@@ -9089,19 +9040,21 @@ function PartnerTiersGovernancePage() {
 
   const serviceCommissionCards = [
     {
+      icon: "🛠️",
       value: "20%",
       title: "One-off services",
-      text: "Implementation, onboarding, and project services can pay 20% commission once on invoiced value.",
+      text: "Implementation, onboarding, and project services can pay 20% once on invoiced value.",
       tone: "103,216,255",
     },
     {
+      icon: "🔁",
       value: "10%",
       title: "Recurring services / support",
-      text: "Recurring services and support can pay 10% commission for the first 12 months only.",
+      text: "Recurring services and support can pay 10% for the first 12 months only.",
       tone: "212,168,67",
     },
     {
-      value: "10–15% / 0–5%",
+      icon: "⚖️",
       title: "Complex or low-margin work",
       text: "Reduced commission may apply on lower-margin service lines, subject to commercial approval.",
       tone: "163,121,146",
@@ -9109,20 +9062,20 @@ function PartnerTiersGovernancePage() {
   ];
 
   const dealProgressRules = [
-    "Within 30 days of approval, the partner should show discovery, engagement, or meaningful advancement.",
-    "Every 30–45 days, the opportunity should show forward movement such as a completed meeting, proposal, demo, validation, or advanced commercial discussion.",
-    "Silver partners review registered deals in quarterly pipeline reviews.",
-    "Gold and Platinum partners review registered deals in monthly pipeline reviews.",
-    "Standard protection lasts 90 days, with Platinum extensions only where active progression is evidenced.",
+    "30 days: discovery or engagement shown.",
+    "30–45 days: clear forward movement.",
+    "Silver: quarterly pipeline review.",
+    "Gold / Platinum: monthly pipeline review.",
+    "90-day protection, with Platinum extension only on active progress.",
   ];
 
   const dealGuardrails = [
-    "Deal Registration is not simply a claim on an account.",
-    "No update in 30 days means the opportunity is at risk.",
-    "No progression in 45 days means protection is at risk.",
-    "Missed review cadence or poor pipeline hygiene can lead to revocation and reopening.",
-    "Benefits are earned through behaviour, not granted automatically.",
-    "IPI retains final decision rights in conflict situations.",
+    "Not a claim on an account.",
+    "No update in 30 days: at risk.",
+    "No progression in 45 days: protection at risk.",
+    "Missed reviews or poor hygiene: revocation risk.",
+    "Benefits earned through behaviour.",
+    "IPI retains final decision rights.",
   ];
 
   const visualHighlights = [
@@ -9254,61 +9207,23 @@ function PartnerTiersGovernancePage() {
         <section style={sharedSectionStyles}>
           <div className="bse-section-heading" style={{ marginBottom: 0 }}>
             <h2>Why the program changes now</h2>
-            <p>Keep the key message, but move it from dense explanation into quicker visual proof points.</p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 14 }}>
             {introCards.map((card) => (
               <SectionCard key={card.title} style={{ background: `linear-gradient(135deg,rgba(${card.tone},0.14),rgba(255,255,255,0.03))`, border: `1px solid rgba(${card.tone},0.2)` }}>
-                <div className="mini-kicker">Strategic callout</div>
-                <h3 style={{ margin: 0, color: "#F4FAFF", fontSize: 18 }}>{card.title}</h3>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 14, background: `rgba(${card.tone},0.16)`, border: `1px solid rgba(${card.tone},0.28)`, display: "grid", placeItems: "center", fontSize: 22 }}>{card.icon}</div>
+                  <h3 style={{ margin: 0, color: "#F4FAFF", fontSize: 18, paddingBottom: 4, borderBottom: `2px solid rgba(${card.tone},0.6)`, display: "inline-block" }}>{card.title}</h3>
+                </div>
                 <p style={{ margin: 0, color: "#C9D9E3", lineHeight: 1.7, fontSize: 13 }}>{card.text}</p>
-                <ul style={listStyle}>
-                  {card.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}
-                </ul>
               </SectionCard>
             ))}
-          </div>
-        </section>
-
-        <section style={sharedSectionStyles}>
-          <div className="bse-section-heading" style={{ marginBottom: 0 }}>
-            <h2>Three partner motions, three commercial stories</h2>
-            <p>The main narrative is simpler when each model is shown as a distinct route rather than described in long-form copy.</p>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))", gap: 14 }}>
-            {partnerModels.map((model) => (
-              <SectionCard key={model.title}>
-                <span style={pillStyle(model.badge)}>{PARTNER_COMMERCIAL_TRACK_BADGES[model.badge].label}</span>
-                <h3 style={{ margin: 0, color: "#F3FAFF", fontSize: 20 }}>{model.title}</h3>
-                <p style={{ margin: 0, color: "#C9D9E3", lineHeight: 1.72, fontSize: 13 }}>{model.body}</p>
-                <ul style={listStyle}>
-                  {model.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}
-                </ul>
-              </SectionCard>
-            ))}
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 14 }}>
-            <SectionCard style={{ background: "linear-gradient(135deg,rgba(212,168,67,0.12),rgba(255,255,255,0.03))", borderColor: "rgba(212,168,67,0.22)" }}>
-              <div className="mini-kicker">Commercial position</div>
-              <p style={{ margin: "0 0 8px", color: "#D9E7F0", lineHeight: 1.8 }}>Reseller and MSP / Service Provider are different operating models, not just different discount bands. Resellers can enter earlier through Accredited and then grow through accreditation, activity, and revenue.</p>
-              <p style={{ margin: 0, color: "#D9E7F0", lineHeight: 1.8 }}>MSP partners must complete enablement, accreditation, support readiness validation, service wrap definition, and operational readiness before they enter the visible MSP track. That protects delivery quality and ensures higher MSP economics are earned, not simply selected.</p>
-            </SectionCard>
-            <SectionCard>
-              <div className="mini-kicker">White-label boundary</div>
-              <div style={{ display: "grid", gap: 10 }}>
-                <div style={{ padding: 12, borderRadius: 14, background: "rgba(163,121,146,0.14)", border: "1px solid rgba(163,121,146,0.2)", color: "#F4FAFF", fontWeight: 700 }}>Consultant / Advisor → never</div>
-                <div style={{ padding: 12, borderRadius: 14, background: "rgba(103,216,255,0.12)", border: "1px solid rgba(103,216,255,0.2)", color: "#F4FAFF", fontWeight: 700 }}>Reseller → never</div>
-                <div style={{ padding: 12, borderRadius: 14, background: "rgba(212,168,67,0.14)", border: "1px solid rgba(212,168,67,0.22)", color: "#F4FAFF", fontWeight: 700 }}>Gold MSP → controlled / partial where appropriate</div>
-                <div style={{ padding: 12, borderRadius: 14, background: "rgba(212,168,67,0.22)", border: "1px solid rgba(212,168,67,0.28)", color: "#F6D58B", fontWeight: 800 }}>Platinum MSP → full white-label rights</div>
-              </div>
-            </SectionCard>
           </div>
         </section>
 
         <section style={sharedSectionStyles}>
           <div className="bse-section-heading" style={{ marginBottom: 0 }}>
             <h2>Onboarding and ramp process</h2>
-            <p>Show the path visually so partners can see how ambition, enablement, and proof of progress fit together.</p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 14 }}>
             {rampJourney.map((step) => (
@@ -9322,7 +9237,7 @@ function PartnerTiersGovernancePage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 14 }}>
             <SectionCard>
               <div className="mini-kicker">How ramp works</div>
-              <p style={{ margin: "0 0 10px", color: "#D9E7F0", lineHeight: 1.8 }}>The ramp period typically runs for 6 to 12 months. Resellers can enter at Accredited as a low-friction enabled state with guardrails. MSP partners first pass through an MSP Enablement Phase before entering the visible MSP track.</p>
+              <p style={{ margin: "0 0 10px", color: "#D9E7F0", lineHeight: 1.8 }}>This allows partners to enter the tiering at the appropriate level from Day 1. A 6 or 12 month Ramp period enables them time to meet the criteria to stay in the Tier.</p>
               <ul style={listStyle}>
                 <li>If milestones are met, the partner is confirmed into tier.</li>
                 <li>If milestones are partially met, a short extension may be approved.</li>
@@ -9343,7 +9258,6 @@ function PartnerTiersGovernancePage() {
         <section style={sharedSectionStyles}>
           <div className="bse-section-heading" style={{ marginBottom: 0 }}>
             <h2>Partner tier comparison</h2>
-            <p>The table remains for detail, but the lead-in now makes the hierarchy and MSP gate much easier to understand.</p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 14 }}>
             <SectionCard style={{ background: "linear-gradient(135deg,rgba(103,216,255,0.14),rgba(255,255,255,0.03))", borderColor: "rgba(103,216,255,0.22)" }}>
@@ -9406,25 +9320,29 @@ function PartnerTiersGovernancePage() {
         <section style={sharedSectionStyles}>
           <div className="bse-section-heading" style={{ marginBottom: 0 }}>
             <h2>Reseller earnings on IPI-delivered services and support</h2>
-            <p>This section now surfaces the commission story first, then keeps the rules concise underneath.</p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 14 }}>
             {serviceCommissionCards.map((card) => (
-              <SectionCard key={card.title} style={{ background: `linear-gradient(135deg,rgba(${card.tone},0.14),rgba(255,255,255,0.03))`, borderColor: `rgba(${card.tone},0.22)` }}>
-                <div className="mini-kicker">Commission</div>
-                <h3 style={{ margin: "0 0 4px", fontSize: 28, color: "#F4FAFF", fontFamily: "'Syne',sans-serif" }}>{card.value}</h3>
-                <div style={{ color: "#F4FAFF", fontWeight: 800, fontSize: 16 }}>{card.title}</div>
+              <SectionCard key={card.title} style={{ background: `linear-gradient(145deg,rgba(${card.tone},0.28),rgba(15,22,38,0.72))`, borderColor: `rgba(${card.tone},0.3)`, boxShadow: `0 20px 45px rgba(${card.tone},0.12)` }}>
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+                  <div style={{ width: 42, height: 42, borderRadius: 14, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.14)", display: "grid", placeItems: "center", fontSize: 20 }}>{card.icon}</div>
+                  {card.value ? <h3 style={{ margin: 0, fontSize: 40, color: "#F4FAFF", fontFamily: "'Syne',sans-serif", lineHeight: 0.95 }}>{card.value}</h3> : null}
+                </div>
+                <div style={{ color: "#F4FAFF", fontWeight: 800, fontSize: 18 }}>{card.title}</div>
                 <p style={{ margin: 0, color: "#D9E7F0", lineHeight: 1.72, fontSize: 13 }}>{card.text}</p>
               </SectionCard>
             ))}
           </div>
-          <SectionCard>
-            <div className="mini-kicker">Rules</div>
+          <SectionCard style={{ background: "linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 12, background: "rgba(212,168,67,0.16)", border: "1px solid rgba(212,168,67,0.26)", display: "grid", placeItems: "center", fontSize: 18 }}>📘</div>
+              <div style={{ color: "#F6D58B", fontWeight: 900, fontSize: 18, letterSpacing: "0.02em", textTransform: "uppercase" }}>Rules</div>
+            </div>
             <ul style={listStyle}>
-              <li>Commission only applies while the reseller remains actively engaged and owns the commercial relationship.</li>
-              <li>Recurring commission is time-limited to the first 12 months to protect long-term margin.</li>
-              <li>No double-dipping: if the partner moves into the MSP / Service Provider model and delivers themselves, reseller services commission no longer applies.</li>
-              <li>Complex or low-margin services may attract reduced commission, typically 10–15% on one-off services and 0–5% on recurring services, subject to commercial approval.</li>
+              <li>Applies only while the reseller remains actively engaged and owns the commercial relationship.</li>
+              <li>Recurring earnings are time-limited to the first 12 months to protect long-term margin.</li>
+              <li>No double-dipping: if the partner moves into the MSP / Service Provider model and delivers themselves, reseller services earnings no longer apply.</li>
+              <li>Complex or low-margin services may attract reduced earnings, subject to commercial approval.</li>
             </ul>
           </SectionCard>
         </section>
@@ -9432,36 +9350,47 @@ function PartnerTiersGovernancePage() {
         <section style={sharedSectionStyles}>
           <div className="bse-section-heading" style={{ marginBottom: 0 }}>
             <h2>Deal registration</h2>
-            <p>The detail remains intact, but the layout is now broken into smaller visual blocks for faster scanning.</p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 14 }}>
-            <SectionCard>
-              <div className="mini-kicker">What qualifies</div>
+            <SectionCard style={{ background: "linear-gradient(145deg,rgba(103,216,255,0.2),rgba(15,22,38,0.7))", borderColor: "rgba(103,216,255,0.24)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "grid", placeItems: "center", fontSize: 18 }}>🎯</div>
+                <div style={{ color: "#F4FAFF", fontWeight: 800, fontSize: 17 }}>What qualifies</div>
+              </div>
               <ul style={listStyle}>
                 <li>Named customer account.</li>
-                <li>Defined opportunity and use case.</li>
-                <li>Estimated value and expected close timing.</li>
-                <li>Evidence that the deal is active and progressing.</li>
-                <li>Evidence of engagement through the pipeline review process.</li>
+                <li>Defined use case.</li>
+                <li>Value and close timing.</li>
+                <li>Active progression.</li>
+                <li>Pipeline review evidence.</li>
               </ul>
             </SectionCard>
-            <SectionCard>
-              <div className="mini-kicker">Commercial benefit</div>
+            <SectionCard style={{ background: "linear-gradient(145deg,rgba(212,168,67,0.2),rgba(15,22,38,0.7))", borderColor: "rgba(212,168,67,0.28)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "grid", placeItems: "center", fontSize: 18 }}>💷</div>
+                <div style={{ color: "#F4FAFF", fontWeight: 800, fontSize: 17 }}>Commercial benefit</div>
+              </div>
               <ul style={listStyle}>
-                <li><strong>Resellers:</strong> opportunity protection, possible +3% to +5% uplift where justified, and strategic deal or price support on selected opportunities.</li>
-                <li><strong>MSPs:</strong> opportunity protection, pricing flexibility, commercial support, and accelerated solution design engagement where appropriate.</li>
+                <li><strong>Resellers:</strong> protection, +3% to +5% uplift, deal support.</li>
+                <li><strong>MSPs:</strong> protection, pricing flexibility, design support.</li>
               </ul>
             </SectionCard>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 14 }}>
-            <SectionCard>
-              <div className="mini-kicker">Progression cadence</div>
+            <SectionCard style={{ background: "linear-gradient(145deg,rgba(163,121,146,0.2),rgba(15,22,38,0.7))", borderColor: "rgba(163,121,146,0.28)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "grid", placeItems: "center", fontSize: 18 }}>⏱️</div>
+                <div style={{ color: "#F4FAFF", fontWeight: 800, fontSize: 17 }}>Progression cadence</div>
+              </div>
               <ul style={listStyle}>
                 {dealProgressRules.map((item) => <li key={item}>{item}</li>)}
               </ul>
             </SectionCard>
-            <SectionCard>
-              <div className="mini-kicker">Guardrails</div>
+            <SectionCard style={{ background: "linear-gradient(145deg,rgba(123,150,163,0.22),rgba(15,22,38,0.7))", borderColor: "rgba(123,150,163,0.28)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 12, background: "rgba(255,255,255,0.12)", display: "grid", placeItems: "center", fontSize: 18 }}>🧱</div>
+                <div style={{ color: "#F4FAFF", fontWeight: 800, fontSize: 17 }}>Guardrails</div>
+              </div>
               <ul style={listStyle}>
                 {dealGuardrails.map((item) => <li key={item}>{item}</li>)}
               </ul>
