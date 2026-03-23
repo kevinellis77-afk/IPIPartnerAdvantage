@@ -799,6 +799,7 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: nowrap;
   gap: 10px;
   padding: 8px 10px;
   border-radius: 10px;
@@ -808,6 +809,8 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
 .settings-menu__item-label {
   display: inline-flex;
   align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
   gap: 8px;
   color: var(--text-primary);
   font-size: 13px;
@@ -1029,8 +1032,12 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
 
 .settings-drawer__switch-input {
   appearance: none;
+  display: inline-block;
+  flex: 0 0 auto;
+  min-width: 42px;
   width: 42px;
   height: 24px;
+  margin: 0;
   border-radius: 999px;
   background: color-mix(in srgb, var(--text-secondary) 35%, transparent);
   border: 1px solid color-mix(in srgb, var(--text-secondary) 40%, transparent);
