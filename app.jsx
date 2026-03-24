@@ -13573,7 +13573,8 @@ function App() {
   });
   const [page, setPage] = React.useState(() => {
     const relativePath = toBaseRelativePath(window.location.pathname);
-    return PATH_TO_PAGE[relativePath] || "main";
+    if (relativePath === "/") return "partner-deck";
+    return PATH_TO_PAGE[relativePath] || "partner-deck";
   });
   const [sidebarLayout, setSidebarLayout] = React.useState({
     isMobile: false,
@@ -13965,7 +13966,7 @@ function App() {
   React.useEffect(() => {
     const onPopState = () => {
       const relativePath = toBaseRelativePath(window.location.pathname);
-      setPage(PATH_TO_PAGE[relativePath] || "main");
+      setPage(relativePath === "/" ? "partner-deck" : (PATH_TO_PAGE[relativePath] || "partner-deck"));
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
