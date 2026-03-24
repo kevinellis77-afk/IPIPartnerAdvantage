@@ -6925,39 +6925,6 @@ const PARTNER_ACQUISITION_TARGETS = [
   },
 ];
 
-const IPP_CRITERIA = [
-  {
-    icon: "🏢",
-    label: "Company Size",
-    desc: "Typically 5–200 employees with a dedicated sales team and existing customer base in technology or CX.",
-  },
-  {
-    icon: "💼",
-    label: "Sales Capability",
-    desc: "Has a structured sales process, pre-sales capability or willingness to develop one, with quota-carrying reps.",
-  },
-  {
-    icon: "👥",
-    label: "Target Customers",
-    desc: "Serves mid-market to enterprise customers (50+ seats) in sectors such as financial services, retail, utilities or healthcare.",
-  },
-  {
-    icon: "🌍",
-    label: "Geographic Reach",
-    desc: "Operates primarily in the UK & Ireland, with appetite to expand into European markets alongside IPI.",
-  },
-  {
-    icon: "🔗",
-    label: "Technology Alignment",
-    desc: "Currently sells or supports Genesys, Five9, NICE, Microsoft Teams, or complementary CX/UC platforms.",
-  },
-  {
-    icon: "📈",
-    label: "Growth Mindset",
-    desc: "Actively investing in expanding their portfolio into cloud CX, AI automation, or managed services.",
-  },
-];
-
 const IPP_SCORING_STORAGE_KEY = "ipi_partner_profile_scoring_evaluations";
 const IPP_SCORING_LEGACY_STORAGE_KEYS = [
   "ipi_partner_profile_scoring_evaluations_v1",
@@ -7345,6 +7312,213 @@ function PartnerProgramPage() {
             width: "100%",
           }}
         >
+          <section
+            style={{
+              background: "linear-gradient(140deg, rgba(7,18,34,0.9), rgba(5,13,25,0.86))",
+              border: "1px solid rgba(54,198,255,0.22)",
+              borderRadius: 18,
+              padding: "24px",
+              marginBottom: 28,
+              boxShadow: "0 18px 40px rgba(1,8,16,0.45)",
+              display: "grid",
+              gap: 16,
+            }}
+          >
+            <div style={{ display: "grid", gap: 10 }}>
+              <div
+                style={{
+                  fontSize: 10.5,
+                  fontWeight: 800,
+                  color: "rgba(108,220,255,0.78)",
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Ideal Partner Profile (IPP)
+              </div>
+              <h2
+                style={{
+                  margin: 0,
+                  fontSize: "clamp(24px, 3.1vw, 30px)",
+                  color: "#E8F7FF",
+                  fontFamily: "'Syne',sans-serif",
+                  lineHeight: 1.15,
+                }}
+              >
+                Ideal Partner Prospecting Model
+              </h2>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 13,
+                  lineHeight: 1.75,
+                  color: "#A2BDD5",
+                  maxWidth: 980,
+                }}
+              >
+                This pre-engagement scoring model helps IPI identify and prioritise partner prospects most likely to generate revenue. It is built for commercial fit and route-to-revenue quality, not surface-level company attributes.
+              </p>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gap: 12,
+                gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))",
+              }}
+            >
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(54,198,255,0.2)",
+                  borderRadius: 14,
+                  padding: "14px 15px",
+                  display: "grid",
+                  gap: 8,
+                }}
+              >
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#67D8FF", fontFamily: "'Syne',sans-serif" }}>
+                  What this model is designed to do
+                </div>
+                <div style={{ fontSize: 12, color: "#9AB3CB", lineHeight: 1.68 }}>
+                  Improve prospecting focus and consistency by ranking which partners to pursue first, based only on externally available evidence.
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(54,198,255,0.2)",
+                  borderRadius: 14,
+                  padding: "14px 15px",
+                  display: "grid",
+                  gap: 8,
+                }}
+              >
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#67D8FF", fontFamily: "'Syne',sans-serif" }}>
+                  How the model works
+                </div>
+                <div style={{ fontSize: 12, color: "#9AB3CB", lineHeight: 1.68 }}>
+                  Prospects are scored 1–5 across six categories: Route-to-Revenue Fit, Vendor Displacement Opportunity, Customer &amp; Use Case Fit, Sales Motion Maturity, Scale Fit, and Geographic Fit. Scores are weighted by revenue importance, then combined into a prospect tier.
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(54,198,255,0.2)",
+                  borderRadius: 14,
+                  padding: "14px 15px",
+                  display: "grid",
+                  gap: 8,
+                }}
+              >
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#67D8FF", fontFamily: "'Syne',sans-serif" }}>
+                  What IPI values
+                </div>
+                <ul style={{ margin: 0, paddingLeft: 16, display: "grid", gap: 6, color: "#9AB3CB", fontSize: 12, lineHeight: 1.58 }}>
+                  <li>Existing CX / UC capability</li>
+                  <li>Ability to sell and position solutions</li>
+                  <li>Evidence of a credible sales motion</li>
+                  <li>Opportunity to displace legacy vendors or expand account value</li>
+                  <li>Proof they already serve relevant customer environments</li>
+                </ul>
+              </div>
+
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(54,198,255,0.2)",
+                  borderRadius: 14,
+                  padding: "14px 15px",
+                  display: "grid",
+                  gap: 8,
+                }}
+              >
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#67D8FF", fontFamily: "'Syne',sans-serif" }}>
+                  What this model does not overvalue
+                </div>
+                <ul style={{ margin: 0, paddingLeft: 16, display: "grid", gap: 6, color: "#9AB3CB", fontSize: 12, lineHeight: 1.58 }}>
+                  <li>Company size on its own</li>
+                  <li>Brand perception</li>
+                  <li>Generic industry labels without CX relevance</li>
+                  <li>Surface-level positioning not backed by evidence of execution</li>
+                </ul>
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: "linear-gradient(135deg, rgba(54,198,255,0.16), rgba(34,144,214,0.08))",
+                border: "1px solid rgba(95,218,255,0.38)",
+                borderRadius: 14,
+                padding: "14px 15px",
+                display: "grid",
+                gap: 8,
+              }}
+            >
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "#7EE5FF" }}>
+                Example
+              </div>
+              <div style={{ fontSize: 13, color: "#D6F4FF", lineHeight: 1.65 }}>
+                A smaller telecoms or UC-focused partner with no CCaaS offer may be a stronger prospect than a large, established reseller already committed to one of our competitors.
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gap: 12,
+                gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
+              }}
+            >
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.025)",
+                  border: "1px solid rgba(54,198,255,0.2)",
+                  borderRadius: 14,
+                  padding: "14px 15px",
+                  display: "grid",
+                  gap: 8,
+                }}
+              >
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#67D8FF", fontFamily: "'Syne',sans-serif" }}>
+                  How to interpret the output
+                </div>
+                <ul style={{ margin: 0, paddingLeft: 16, display: "grid", gap: 6, color: "#9AB3CB", fontSize: 12, lineHeight: 1.58 }}>
+                  <li><strong style={{ color: "#DDF6FF" }}>Tier 1 – Strategic Targets:</strong> high-priority prospects with strong alignment and clear revenue potential.</li>
+                  <li><strong style={{ color: "#DDF6FF" }}>Tier 2 – Strong Prospects:</strong> good fit but require validation through engagement.</li>
+                  <li><strong style={{ color: "#DDF6FF" }}>Tier 3 – Opportunistic:</strong> lower priority, engage reactively.</li>
+                  <li><strong style={{ color: "#DDF6FF" }}>Tier 4 – Low Priority:</strong> do not actively pursue.</li>
+                </ul>
+              </div>
+
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.025)",
+                  border: "1px solid rgba(255,176,111,0.32)",
+                  borderRadius: 14,
+                  padding: "14px 15px",
+                  display: "grid",
+                  gap: 8,
+                }}
+              >
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#FFC47A", fontFamily: "'Syne',sans-serif" }}>
+                  Important notes
+                </div>
+                <ul style={{ margin: 0, paddingLeft: 16, display: "grid", gap: 6, color: "#BFD2E5", fontSize: 12, lineHeight: 1.58 }}>
+                  <li>This model is for prospecting, not final partner selection.</li>
+                  <li>Scores are based on best available external data (websites, LinkedIn, service listings, market positioning and public vendor relationships), not confirmed facts.</li>
+                  <li>Do not score using assumptions from conversations; re-evaluate after engagement using a separate activation or validation model.</li>
+                </ul>
+              </div>
+            </div>
+
+            <p style={{ margin: 0, fontSize: 12, color: "#88A8C6", lineHeight: 1.65 }}>
+              Traditional profiling often overweights size, logo value or stated ambition. In practice, route-to-revenue quality, commercial whitespace and execution capability are stronger predictors of partner success.
+            </p>
+          </section>
+
           <div
             style={{
               display: "flex",
@@ -8017,112 +8191,6 @@ function PartnerProgramPage() {
               ))}
             </div>
           </section>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-              marginBottom: 10,
-            }}
-          >
-            <div
-              style={{
-                height: 1,
-                flex: 1,
-                background:
-                  "linear-gradient(90deg,transparent,rgba(54,198,255,0.3))",
-              }}
-            />
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: 800,
-                color: "rgba(54,198,255,0.6)",
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                whiteSpace: "normal",
-              }}
-            >
-              Ideal Partner Profile (IPP)
-            </span>
-            <div
-              style={{
-                height: 1,
-                flex: 1,
-                background:
-                  "linear-gradient(90deg,rgba(54,198,255,0.3),transparent)",
-              }}
-            />
-          </div>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
-              gap: 14,
-            }}
-          >
-            {IPP_CRITERIA.map((c, i) => (
-              <div
-                key={i}
-                style={{
-                  background: "rgba(255,255,255,0.025)",
-                  border: "1px solid rgba(54,198,255,0.18)",
-                  borderRadius: 14,
-                  padding: "20px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 12,
-                  transition: "all 0.25s",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "rgba(54,198,255,0.06)";
-                  e.currentTarget.style.borderColor = "rgba(54,198,255,0.35)";
-                  e.currentTarget.style.transform = "translateY(-3px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "rgba(255,255,255,0.025)";
-                  e.currentTarget.style.borderColor = "rgba(54,198,255,0.18)";
-                  e.currentTarget.style.transform = "translateY(0)";
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 11,
-                      background: "rgba(54,198,255,0.12)",
-                      border: "1px solid rgba(54,198,255,0.25)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 20,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {c.icon}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 800,
-                      color: "#67D8FF",
-                      fontFamily: "'Syne',sans-serif",
-                    }}
-                  >
-                    {c.label}
-                  </div>
-                </div>
-                <div
-                  style={{ fontSize: 12, color: "#7E97B4", lineHeight: 1.72 }}
-                >
-                  {c.desc}
-                </div>
-              </div>
-            ))}
-          </div>
-
 
           <div className="brand-line" style={{ margin: "44px 0 0" }} />
 
