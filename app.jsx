@@ -4894,6 +4894,8 @@ function ProspectToolPage() {
   const [saveViewForm, setSaveViewForm] = React.useState({ name: '', description: '', setDefault: false, overwrite: false, error: '' });
   const [feedback, setFeedback] = React.useState(null);
   const [activePriorityViewKey, setActivePriorityViewKey] = React.useState('');
+  const [inlineNextActionRowId, setInlineNextActionRowId] = React.useState('');
+  const [inlineNextActionDraft, setInlineNextActionDraft] = React.useState('');
   const [bulkReviewOpen, setBulkReviewOpen] = React.useState(false);
   const [bulkReviewQueueIds, setBulkReviewQueueIds] = React.useState([]);
   const [bulkReviewQueueName, setBulkReviewQueueName] = React.useState('');
@@ -4914,6 +4916,10 @@ function ProspectToolPage() {
   const stageOneCategoryKeys = window.ProspectToolUtils.STAGE_ONE_CATEGORY_KEYS || [];
   const freshnessLabels = window.ProspectToolUtils.REVIEW_FRESHNESS_LABELS || ['Fresh', 'Aging', 'Stale', 'Not Reviewed'];
   const builtInPriorityViews = window.ProspectToolUtils.getBuiltInPriorityViews ? window.ProspectToolUtils.getBuiltInPriorityViews() : [];
+  const activePriorityView = React.useMemo(
+    () => builtInPriorityViews.find((viewItem) => viewItem.key === activePriorityViewKey) || null,
+    [builtInPriorityViews, activePriorityViewKey],
+  );
   const stageOneCategoryEntries = stageOneCategoryKeys.map((key) => ({ key, ...stageOneConfig.categories[key] }));
   const stageOneGuidance = {
     routeToRevenue: 'Score 5 only where clear UCaaS and CX positioning is visible in website messaging, service pages, or case studies.',
@@ -4984,6 +4990,18 @@ function ProspectToolPage() {
     const timer = window.setTimeout(() => setFeedback(null), 3200);
     return () => window.clearTimeout(timer);
   }, [feedback]);
+
+  React.useEffect(() => {
+    if (!inlineNextActionRowId) return undefined;
+    const handleClickAway = (event) => {
+      if (!event.target.closest('[data-inline-next-action-editor]')) {
+        setInlineNextActionRowId('');
+        setInlineNextActionDraft('');
+      }
+    };
+    document.addEventListener('mousedown', handleClickAway);
+    return () => document.removeEventListener('mousedown', handleClickAway);
+  }, [inlineNextActionRowId]);
 
   const loadData = React.useCallback(async () => {
     setLoading(true); setError('');
@@ -5087,6 +5105,10 @@ function ProspectToolPage() {
 
   const sorted = React.useMemo(() => {
     const list = [...filtered];
+    if (sort === 'workingqueue_default') {
+      list.sort(window.ProspectToolUtils.getWorkingQueueSortComparator());
+      return top50 ? list.slice(0, 50) : list;
+    }
     const [field, dir] = sort.split('_');
     list.sort((a, b) => {
       const av = field === 'score' ? a.idealPartnerScore
@@ -5174,6 +5196,15 @@ function ProspectToolPage() {
     if (!selectedRowId) return;
     if (selectedIndex === -1) setSelectedRowId(null);
   }, [selectedRowId, selectedIndex]);
+
+  React.useEffect(() => {
+    if (!inlineNextActionRowId) return;
+    const existsInView = sorted.some((row) => row.id === inlineNextActionRowId);
+    if (!existsInView) {
+      setInlineNextActionRowId('');
+      setInlineNextActionDraft('');
+    }
+  }, [inlineNextActionRowId, sorted]);
 
   React.useEffect(() => {
     if (!bulkReviewOpen) return;
@@ -5403,8 +5434,20 @@ function ProspectToolPage() {
     }));
   };
 
+  const persistScoringForRow = React.useCallback((rowId, scoring) => {
+    try {
+      const existing = readStoredStage1Scoring();
+      existing[rowId] = scoring;
+      localStorage.setItem(STORAGE_STAGE1_SCORING_KEY, JSON.stringify(existing));
+      return true;
+    } catch (_err) {
+      setFeedback({ tone: 'warning', message: 'Saved in current session, but unable to persist scoring locally.' });
+      return false;
+    }
+  }, [readStoredStage1Scoring]);
+
   const saveStage1Scoring = React.useCallback(() => {
-    if (!selected) return;
+    if (!selected) return false;
     const normalized = window.ProspectToolUtils.normalizeProspectScoring({
       ...editableScoring,
       lastReviewed: new Date().toISOString(),
@@ -5413,17 +5456,32 @@ function ProspectToolPage() {
       if (row.id !== selected.id) return row;
       return applyScoringToRow(row, normalized);
     }));
-    try {
-      const existing = readStoredStage1Scoring();
-      existing[selected.id] = normalized;
-      localStorage.setItem(STORAGE_STAGE1_SCORING_KEY, JSON.stringify(existing));
-    } catch (_err) {
-      setFeedback({ tone: 'warning', message: 'Saved in current session, but unable to persist scoring locally.' });
-      return false;
-    }
+    if (!persistScoringForRow(selected.id, normalized)) return false;
     setFeedback({ tone: 'success', message: `Saved Stage 1 scoring for ${selected.displayName}.` });
     return true;
-  }, [selected, editableScoring, applyScoringToRow, readStoredStage1Scoring]);
+  }, [selected, editableScoring, applyScoringToRow, persistScoringForRow]);
+
+  const updateProspectNextAction = React.useCallback((rowId, nextAction) => {
+    let updatedRow = null;
+    setRows((current) => current.map((row) => {
+      if (row.id !== rowId) return row;
+      const rowWithUpdatedAction = window.ProspectToolUtils.updateProspectNextAction(row, nextAction);
+      const merged = applyScoringToRow(row, rowWithUpdatedAction.scoring);
+      updatedRow = merged;
+      return merged;
+    }));
+    if (!updatedRow) return;
+    persistScoringForRow(rowId, updatedRow.scoring);
+    setInlineNextActionRowId('');
+    setInlineNextActionDraft('');
+    const remainsInView = window.ProspectToolUtils.shouldProspectRemainInCurrentView(updatedRow, activePriorityViewKey, filters);
+    setFeedback({
+      tone: remainsInView ? 'success' : 'info',
+      message: remainsInView
+        ? `Updated Next Action for ${updatedRow.displayName}.`
+        : `${updatedRow.displayName} no longer matches the active view and was removed from the list.`,
+    });
+  }, [applyScoringToRow, persistScoringForRow, activePriorityViewKey, filters]);
 
   const attemptQueueNavigation = React.useCallback((direction = 'next') => {
     if (!bulkReviewOpen) return;
@@ -5470,13 +5528,84 @@ function ProspectToolPage() {
     setBulkReviewQueueName('');
   }, [isScoringDirty]);
 
+  const getRowsForPriorityView = React.useCallback((priorityViewKey) => {
+    const matchedRows = window.ProspectToolUtils.applyPriorityViewFilter(priorityViewKey, rows);
+    if (priorityViewKey === 'my_working_queue') {
+      return [...matchedRows].sort(window.ProspectToolUtils.getWorkingQueueSortComparator());
+    }
+    return matchedRows;
+  }, [rows]);
+
+  const applyPriorityView = React.useCallback((priorityViewKey, isActive) => {
+    if (isActive) {
+      setActivePriorityViewKey('');
+      if (sort === 'workingqueue_default') setSort('score_desc');
+      return;
+    }
+    setActivePriorityViewKey(priorityViewKey);
+    if (priorityViewKey === 'my_working_queue') {
+      setSort('workingqueue_default');
+    }
+  }, [sort]);
+
   const renderCell = (record, key, rowIndex) => {
     const descriptor = [record.industry, record.channel_segment || record.channel_role].filter(Boolean).join(' • ') || 'Profile details in drawer';
     if (key === 'rank') return <td className="cell-number" data-col={key}>{(page - 1) * pageSize + rowIndex + 1}</td>;
     if (key === 'displayName') return <td className="cell-company" data-col={key}><strong>{record.displayName}</strong><span className="cell-company__meta" title={descriptor}>{descriptor}</span></td>;
     if (key === 'stage1WeightedScore') return <td className="cell-number" data-col={key}><span className="score-value">{formatStage1ScoreCell(record.stage1WeightedScore, record.stage1ScoreStatus)}</span></td>;
     if (key === 'stage1Tier') return <td data-col={key}><span className={getStage1TierClass(record)}>{record.stage1TierBadge || (record.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</span></td>;
-    if (key === 'stage1NextAction') return <td data-col={key}>{record.stage1NextAction ? <span className={getNextActionClass(record.stage1NextAction)}>{record.stage1NextAction}</span> : <span className={getNextActionClass('none')}>Not set</span>}</td>;
+    if (key === 'stage1NextAction') {
+      const isEditing = inlineNextActionRowId === record.id;
+      return <td data-col={key}>
+        <div className="inline-next-action" data-inline-next-action-editor>
+          {isEditing ? <select
+            className="ui-search inline-next-action__select"
+            value={inlineNextActionDraft}
+            onClick={(event) => event.stopPropagation()}
+            onChange={(event) => {
+              event.stopPropagation();
+              const value = event.target.value;
+              setInlineNextActionDraft(value);
+              updateProspectNextAction(record.id, value);
+            }}
+            onKeyDown={(event) => {
+              event.stopPropagation();
+              if (event.key === 'Escape') {
+                setInlineNextActionRowId('');
+                setInlineNextActionDraft('');
+              }
+              if (event.key === 'Enter') {
+                updateProspectNextAction(record.id, inlineNextActionDraft);
+              }
+            }}
+            autoFocus
+          >
+            {(stageOneConfig.nextActionOptions || []).map((option) => <option key={option} value={option}>{option}</option>)}
+          </select> : <button
+            type="button"
+            className="inline-next-action__trigger"
+            onClick={(event) => {
+              event.stopPropagation();
+              setInlineNextActionRowId(record.id);
+              setInlineNextActionDraft(record.stage1NextAction || stageOneConfig.nextActionOptions?.[0] || '');
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                event.stopPropagation();
+                setInlineNextActionRowId(record.id);
+                setInlineNextActionDraft(record.stage1NextAction || stageOneConfig.nextActionOptions?.[0] || '');
+              }
+            }}
+            aria-label={`Update next action for ${record.displayName}`}
+            title="Update Next Action"
+          >
+            <span className={getNextActionClass(record.stage1NextAction || 'none')}>{record.stage1NextAction || 'Not set'}</span>
+            <span className="inline-next-action__chevron" aria-hidden="true">▾</span>
+          </button>}
+        </div>
+      </td>;
+    }
     if (key === 'stage1LastReviewed') return <td data-col={key}>{window.ProspectToolUtils.formatLastReviewed(record.stage1LastReviewed)}</td>;
     if (key === 'stage1Freshness') return <td data-col={key}><span className={`review-freshness review-freshness--${window.ProspectToolUtils.getReviewFreshnessStatus(record.stage1LastReviewed).toLowerCase().replace(/\s+/g, '-')}`}>{window.ProspectToolUtils.getReviewFreshnessStatus(record.stage1LastReviewed)}</span></td>;
     if (key === 'stage1Status') return <td data-col={key}><span className={getStage1StatusClass(record.stage1ScoreStatus || 'Unscored')}>{record.stage1ScoreStatus || 'Unscored'}</span></td>;
@@ -5518,6 +5647,7 @@ function ProspectToolPage() {
       <div className="prospect-toolbar" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
         <input className="ui-search" placeholder="Search company, role, market, technology…" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
         <select className="ui-search prospect-sort-select" value={sort} onChange={(e) => setSort(e.target.value)}>
+          {activePriorityViewKey === 'my_working_queue' && <option value="workingqueue_default">Working Queue priority order</option>}
           <option value="score_desc">Score ↓</option><option value="score_asc">Score ↑</option><option value="stage1score_desc">Stage 1 score ↓</option><option value="stage1score_asc">Stage 1 score ↑</option><option value="stage1tier_desc">Stage 1 tier ↓</option><option value="stage1tier_asc">Stage 1 tier ↑</option><option value="lastreviewed_desc">Last reviewed ↓</option><option value="lastreviewed_asc">Last reviewed ↑</option><option value="freshness_asc">Freshness (Fresh → Not Reviewed)</option><option value="freshness_desc">Freshness (Not Reviewed → Fresh)</option><option value="revenue_desc">Revenue ↓</option><option value="revenue_asc">Revenue ↑</option><option value="employees_desc">Employees ↓</option><option value="employees_asc">Employees ↑</option><option value="name_asc">Name A→Z</option><option value="name_desc">Name Z→A</option>
         </select>
         <IconButton icon="clear" label="Clear search" onClick={() => setSearchInput('')} disabled={!searchInput} />
@@ -5525,7 +5655,7 @@ function ProspectToolPage() {
         <IconButton icon="filter" label={showAdvancedFilters ? 'Hide advanced filters' : 'Show advanced filters'} onClick={() => setShowAdvancedFilters((v) => !v)} className={showAdvancedFilters ? 'is-active' : ''} />
         <IconButton icon="columns" label="Manage columns" onClick={() => setShowColumnMenu((v) => !v)} className={showColumnMenu ? 'is-active' : ''} />
         <IconButton icon="save" label="Save view" onClick={() => setSaveViewOpen(true)} />
-        <button className="ui-btn ui-btn--secondary" type="button" onClick={() => startBulkReview(activePriorityViewKey ? `Priority View: ${builtInPriorityViews.find((viewItem) => viewItem.key === activePriorityViewKey)?.label || 'Current Results'}` : 'Current Results')}>Bulk Review Current Results</button>
+        <button className="ui-btn ui-btn--secondary" type="button" onClick={() => startBulkReview(activePriorityView ? `Priority View: ${activePriorityView.label}` : 'Current Results')}>Bulk Review Current Results</button>
         <IconButton icon="export" label="Export filtered CSV" onClick={() => exportRows(sorted, 'prospects-filtered.csv')} />
         <label className="prospect-toggle"><input type="checkbox" checked={top50} onChange={(e) => setTop50(e.target.checked)} /> Top 50 only</label>
         <div style={{ marginLeft: 'auto', display: 'inline-flex', gap: 6 }}>
@@ -5584,21 +5714,25 @@ function ProspectToolPage() {
       <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>Priority Views provide fast access to the most operationally useful prospect cohorts.</p>
       <div className="saved-views-grid">
         {builtInPriorityViews.map((priorityView) => {
-          const matchedRows = window.ProspectToolUtils.applyPriorityViewFilter(priorityView.key, rows);
+          const matchedRows = getRowsForPriorityView(priorityView.key);
           const isActive = activePriorityViewKey === priorityView.key;
-          return <div key={priorityView.key} className={`saved-view-card priority-view-card ${priorityView.key === 'tier1_high_confidence' ? 'priority-view-card--featured' : ''}`.trim()}>
+          return <div key={priorityView.key} className={`saved-view-card priority-view-card ${priorityView.key === 'my_working_queue' ? 'priority-view-card--featured' : ''}`.trim()}>
             <div className="saved-view-head">
               <strong>{priorityView.label}</strong>
               {isActive && <span className="top50-badge">Active</span>}
             </div>
             <p>{priorityView.description}</p>
+            {priorityView.key === 'my_working_queue' && <p className="priority-view-card__helper">My Working Queue brings together active Tier 1 and Tier 2 prospects that are ready for current attention.</p>}
             <div className="saved-view-meta">
               <span className="priority-view-card__count">{matchedRows.length}</span>
               <span>matching prospects</span>
             </div>
             <div className="saved-view-actions">
-              <button className="ui-btn ui-btn--primary" type="button" onClick={() => startBulkReview(`Priority View: ${priorityView.label}`, window.ProspectToolUtils.applyPriorityViewFilter(priorityView.key, sorted))}>Review</button>
-              <button className="ui-btn ui-btn--secondary" type="button" onClick={() => setActivePriorityViewKey(isActive ? '' : priorityView.key)}>{isActive ? 'Clear view' : 'Apply view'}</button>
+              <button className="ui-btn ui-btn--primary" type="button" onClick={() => {
+                if (priorityView.key === 'my_working_queue') setSort('workingqueue_default');
+                startBulkReview(`Priority View: ${priorityView.label}`, getRowsForPriorityView(priorityView.key));
+              }}>Review</button>
+              <button className="ui-btn ui-btn--secondary" type="button" onClick={() => applyPriorityView(priorityView.key, isActive)}>{isActive ? 'Clear view' : 'Apply view'}</button>
             </div>
           </div>;
         })}
@@ -5625,6 +5759,8 @@ function ProspectToolPage() {
         ))}
       </div>
     </div>}
+
+    <p className="prospect-inline-help">Click Next Action to update it directly from the table.</p>
 
     {sorted.length === 0 ? <div className="ds-card prospect-state prospect-state--empty" role="status" aria-live="polite"><strong>No results found</strong><p>Try broadening filters or clearing search terms to discover more partners.</p><IconButton icon="reset" label="Reset filters to show more results" onClick={resetFilters} /></div> : view === 'table' ? <div className="prospect-table-wrap"><table className="prospect-table prospect-table--search"><thead><tr>{visibleColumnDefs.map((h) => <th key={h.key} data-col={h.key} className={h.key === 'actions' ? 'cell-actions-head' : ''} title={h.key === 'stage1WeightedScore' ? 'Stage 1 Score is calculated out of 5.00' : undefined}>{h.label}</th>)}</tr></thead><tbody>{pageRows.map((r, i) => <tr key={r.id} data-prospect-row-id={r.id} className={selectedRowId === r.id ? 'prospect-row-selected' : ''} onClick={() => setSelectedRowId(r.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedRowId(r.id); } }} tabIndex={0} style={{ cursor: 'pointer' }} aria-selected={selectedRowId === r.id}>{visibleColumnDefs.map((col) => <React.Fragment key={`${r.id}-${col.key}`}>{renderCell(r, col.key, i)}</React.Fragment>)}</tr>)}</tbody></table></div> : <div className="prospect-cards">{pageRows.map((r) => <div className={`prospect-card ${selectedRowId === r.id ? 'prospect-card-selected' : ''}`.trim()} key={r.id} onClick={() => setSelectedRowId(r.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedRowId(r.id); } }} tabIndex={0}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}><strong>{r.displayName}</strong><div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}><span className="score-badge score-badge--stage1">{formatStage1ScoreCell(r.stage1WeightedScore, r.stage1ScoreStatus)}</span><span className={getStage1TierClass(r)}>{r.stage1TierBadge || (r.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</span>{r.stage1NextAction ? <span className={getNextActionClass(r.stage1NextAction)}>{r.stage1NextAction}</span> : null}</div></div><div>{r.industry || '—'}</div><div>{r.channel_role || '—'} / {r.channel_segment || '—'}</div><div>{r.companyClassification || 'Unclassified'} · {r.city || '—'}, {r.country || '—'}</div><div>{r.displayRevenue} · {r.displayEmployees}</div><div className="prospect-card-secondary">{r.keywords || '—'}</div><div style={{ display: 'flex', gap: 8 }}>{r.website && <a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>}{r.linkedin && <a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}</div></div>)}</div>}
 
