@@ -4847,24 +4847,23 @@ function ProspectToolPage() {
   const ALL_COLUMNS = [
     { key: 'rank', label: '#', essential: true },
     { key: 'displayName', label: 'Company', essential: true },
-    { key: 'idealPartnerScore', label: 'Score', essential: true },
-    { key: 'partnerTierName', label: 'Tier', essential: true },
     { key: 'stage1WeightedScore', label: 'Stage 1 Score', essential: true },
     { key: 'stage1Tier', label: 'Stage 1 Tier', essential: true },
-    { key: 'stage1NextAction', label: 'Next Action' },
-    { key: 'stage1LastReviewed', label: 'Last Reviewed', hiddenByDefault: true },
-    { key: 'stage1Freshness', label: 'Review Freshness', hiddenByDefault: true },
+    { key: 'stage1NextAction', label: 'Next Action', essential: true },
+    { key: 'stage1Freshness', label: 'Review Freshness', essential: true },
+    { key: 'stage1Status', label: 'Stage 1 Status', essential: true },
     { key: 'stage1Confidence', label: 'Stage 1 Confidence', hiddenByDefault: true },
-    { key: 'companyClassification', label: 'Company Class' },
-    { key: 'channel_role', label: 'Role', essential: true },
-    { key: 'channel_segment', label: 'Segment', essential: true },
+    { key: 'stage1LastReviewed', label: 'Last Reviewed', hiddenByDefault: true },
+    { key: 'companyClassification', label: 'Company Class', hiddenByDefault: true },
+    { key: 'channel_role', label: 'Role', hiddenByDefault: true },
+    { key: 'channel_segment', label: 'Segment', hiddenByDefault: true },
     { key: 'industry', label: 'Industry' },
     { key: 'category', label: 'Category', hiddenByDefault: true },
-    { key: 'displayRevenue', label: '£' },
+    { key: 'displayRevenue', label: '£', hiddenByDefault: true },
     { key: 'displayEmployees', label: 'Employees', hiddenByDefault: true },
     { key: 'city', label: 'City', hiddenByDefault: true },
     { key: 'country', label: 'Country', hiddenByDefault: true },
-    { key: 'website', label: 'Web' },
+    { key: 'website', label: 'Web', hiddenByDefault: true },
     { key: 'linkedin', label: 'LinkedIn', hiddenByDefault: true },
     { key: 'contactCount', label: 'Contacts', hiddenByDefault: true },
     { key: 'trading_status', label: 'Trading Status', hiddenByDefault: true },
@@ -4937,6 +4936,15 @@ function ProspectToolPage() {
     if (badge === 'Tier 2') return 'tier-badge tier-blue';
     if (badge === 'Tier 3') return 'tier-badge tier-amber';
     return 'tier-badge tier-gray';
+  }, []);
+
+  const getStage1StatusClass = React.useCallback((status) => `prospect-pill prospect-pill--status prospect-pill--${String(status || 'unscored').toLowerCase().replace(/\s+/g, '-')}`, []);
+  const getNextActionClass = React.useCallback((action) => `prospect-pill prospect-pill--next prospect-pill--${String(action || 'none').toLowerCase().replace(/\s+/g, '-')}`, []);
+  const getConfidenceClass = React.useCallback((confidence) => `prospect-pill prospect-pill--confidence prospect-pill--${String(confidence || 'not-set').toLowerCase().replace(/\s+/g, '-')}`, []);
+
+  const formatStage1ScoreCell = React.useCallback((score, status) => {
+    if (typeof score === 'number' && Number.isFinite(score)) return window.ProspectToolUtils.formatProspectScore(score);
+    return status === 'Partial' ? 'Partial' : 'Unscored';
   }, []);
 
   const applyScoringToRow = React.useCallback((row, scoring) => ({
@@ -5463,16 +5471,16 @@ function ProspectToolPage() {
   }, [isScoringDirty]);
 
   const renderCell = (record, key, rowIndex) => {
+    const descriptor = [record.industry, record.channel_segment || record.channel_role].filter(Boolean).join(' • ') || 'Profile details in drawer';
     if (key === 'rank') return <td className="cell-number" data-col={key}>{(page - 1) * pageSize + rowIndex + 1}</td>;
-    if (key === 'displayName') return <td className="cell-company" data-col={key}><strong>{record.displayName}</strong>{record.ch_link && <div><a href={window.ProspectToolUtils.normalizeUrl(record.ch_link)} target="_blank" rel="noreferrer">Companies House</a></div>}</td>;
-    if (key === 'idealPartnerScore') return <td className="cell-number" data-col={key}><span className="score-badge">{record.idealPartnerScore}</span></td>;
-    if (key === 'partnerTierName') return <td data-col={key}><span className={getTierClass(record)}>{record.partnerTierName || 'Low Priority'}</span></td>;
-    if (key === 'stage1WeightedScore') return <td className="cell-number" data-col={key}><span className="score-badge score-badge--stage1">{record.stage1WeightedScore ? window.ProspectToolUtils.formatProspectScore(record.stage1WeightedScore) : (record.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</span></td>;
+    if (key === 'displayName') return <td className="cell-company" data-col={key}><strong>{record.displayName}</strong><span className="cell-company__meta" title={descriptor}>{descriptor}</span></td>;
+    if (key === 'stage1WeightedScore') return <td className="cell-number" data-col={key}><span className="score-value">{formatStage1ScoreCell(record.stage1WeightedScore, record.stage1ScoreStatus)}</span></td>;
     if (key === 'stage1Tier') return <td data-col={key}><span className={getStage1TierClass(record)}>{record.stage1TierBadge || (record.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</span></td>;
-    if (key === 'stage1NextAction') return <td data-col={key}>{record.stage1NextAction ? <span className="stage1-next-action-pill">{record.stage1NextAction}</span> : '—'}</td>;
+    if (key === 'stage1NextAction') return <td data-col={key}>{record.stage1NextAction ? <span className={getNextActionClass(record.stage1NextAction)}>{record.stage1NextAction}</span> : <span className={getNextActionClass('none')}>Not set</span>}</td>;
     if (key === 'stage1LastReviewed') return <td data-col={key}>{window.ProspectToolUtils.formatLastReviewed(record.stage1LastReviewed)}</td>;
     if (key === 'stage1Freshness') return <td data-col={key}><span className={`review-freshness review-freshness--${window.ProspectToolUtils.getReviewFreshnessStatus(record.stage1LastReviewed).toLowerCase().replace(/\s+/g, '-')}`}>{window.ProspectToolUtils.getReviewFreshnessStatus(record.stage1LastReviewed)}</span></td>;
-    if (key === 'stage1Confidence') return <td data-col={key}>{record.stage1Confidence || '—'}</td>;
+    if (key === 'stage1Status') return <td data-col={key}><span className={getStage1StatusClass(record.stage1ScoreStatus || 'Unscored')}>{record.stage1ScoreStatus || 'Unscored'}</span></td>;
+    if (key === 'stage1Confidence') return <td data-col={key}>{record.stage1Confidence ? <span className={getConfidenceClass(record.stage1Confidence)}>{record.stage1Confidence}</span> : '—'}</td>;
     if (key === 'displayRevenue' || key === 'displayEmployees' || key === 'contactCount') return <td className="cell-number" data-col={key}>{record[key] || '—'}</td>;
     if (key === 'website') return <td className="cell-icon" data-col={key}>{record.website ? <a className="prospect-inline-icon" href={window.ProspectToolUtils.normalizeUrl(record.website)} target="_blank" rel="noreferrer" aria-label="Open Website" title="Open Website">🌐</a> : '—'}</td>;
     if (key === 'linkedin') return <td className="cell-icon" data-col={key}>{record.linkedin ? <a className="prospect-inline-icon" href={window.ProspectToolUtils.normalizeUrl(record.linkedin)} target="_blank" rel="noreferrer" aria-label="Open LinkedIn" title="Open LinkedIn">in</a> : '—'}</td>;
@@ -5509,6 +5517,9 @@ function ProspectToolPage() {
       {feedback && <div className={`prospect-feedback prospect-feedback--${feedback.tone}`} role="status" aria-live="polite">{feedback.message}</div>}
       <div className="prospect-toolbar" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
         <input className="ui-search" placeholder="Search company, role, market, technology…" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
+        <select className="ui-search prospect-sort-select" value={sort} onChange={(e) => setSort(e.target.value)}>
+          <option value="score_desc">Score ↓</option><option value="score_asc">Score ↑</option><option value="stage1score_desc">Stage 1 score ↓</option><option value="stage1score_asc">Stage 1 score ↑</option><option value="stage1tier_desc">Stage 1 tier ↓</option><option value="stage1tier_asc">Stage 1 tier ↑</option><option value="lastreviewed_desc">Last reviewed ↓</option><option value="lastreviewed_asc">Last reviewed ↑</option><option value="freshness_asc">Freshness (Fresh → Not Reviewed)</option><option value="freshness_desc">Freshness (Not Reviewed → Fresh)</option><option value="revenue_desc">Revenue ↓</option><option value="revenue_asc">Revenue ↑</option><option value="employees_desc">Employees ↓</option><option value="employees_asc">Employees ↑</option><option value="name_asc">Name A→Z</option><option value="name_desc">Name Z→A</option>
+        </select>
         <IconButton icon="clear" label="Clear search" onClick={() => setSearchInput('')} disabled={!searchInput} />
         <IconButton icon="reset" label="Reset filters" onClick={resetFilters} />
         <IconButton icon="filter" label={showAdvancedFilters ? 'Hide advanced filters' : 'Show advanced filters'} onClick={() => setShowAdvancedFilters((v) => !v)} className={showAdvancedFilters ? 'is-active' : ''} />
@@ -5530,34 +5541,36 @@ function ProspectToolPage() {
         }} /> {column.label}{column.essential ? ' (always visible)' : ''}</label>)}
       </div>}
 
-      <div className="filter-grid prospect-filter-grid--primary">
-        {['industry', 'category', 'channel_role', 'channel_segment', 'country', 'city', 'trading_status', 'adopter_profile'].map((k) => (
-          <select className="ui-search" key={k} value={filters[k]} onChange={(e) => setFilters((f) => ({ ...f, [k]: e.target.value }))}>
-            <option value="">{k.replace(/_/g, ' ')}</option>
-            {options[k].map((v) => <option key={v} value={v}>{v}</option>)}
-          </select>
-        ))}
-        <select className="ui-search" value={filters.partnerTierName} onChange={(e) => setFilters((f) => ({ ...f, partnerTierName: e.target.value }))}><option value="">Partner tier</option>{['Strategic - Tier 1', 'Growth - Tier 2', 'Select - Tier 3', 'Low Priority'].map((v) => <option key={v}>{v}</option>)}</select>
-        <select className="ui-search" value={filters.stage1Tier} onChange={(e) => setFilters((f) => ({ ...f, stage1Tier: e.target.value }))}><option value="">Stage 1 tier</option>{stageOneConfig.tierBands.map((band) => <option key={band.tier} value={band.tier}>{band.tier}</option>)}</select>
-        <select className="ui-search" value={filters.stage1NextAction} onChange={(e) => setFilters((f) => ({ ...f, stage1NextAction: e.target.value }))}><option value="">Next action</option>{(stageOneConfig.nextActionOptions || []).map((v) => <option key={v} value={v}>{v}</option>)}</select>
-        <select className="ui-search" value={filters.stage1Status} onChange={(e) => setFilters((f) => ({ ...f, stage1Status: e.target.value }))}><option value="">Stage 1 status</option>{['Complete', 'Partial', 'Unscored'].map((v) => <option key={v} value={v}>{v}</option>)}</select>
-        <select className="ui-search" value={filters.stage1Confidence} onChange={(e) => setFilters((f) => ({ ...f, stage1Confidence: e.target.value }))}><option value="">Stage 1 confidence</option>{(stageOneConfig.confidenceOptions || []).map((v) => <option key={v} value={v}>{v}</option>)}</select>
-        <select className="ui-search" value={filters.stage1Freshness} onChange={(e) => setFilters((f) => ({ ...f, stage1Freshness: e.target.value }))}><option value="">Review freshness</option>{freshnessLabels.map((v) => <option key={v} value={v}>{v}</option>)}</select>
+      <div className="prospect-filter-group">
+        <div className="prospect-filter-group__title">Primary filters</div>
+        <div className="filter-grid prospect-filter-grid--primary">
+          <select className="ui-search" value={filters.stage1Tier} onChange={(e) => setFilters((f) => ({ ...f, stage1Tier: e.target.value }))}><option value="">Stage 1 tier</option>{stageOneConfig.tierBands.map((band) => <option key={band.tier} value={band.tier}>{band.tier}</option>)}</select>
+          <select className="ui-search" value={filters.stage1NextAction} onChange={(e) => setFilters((f) => ({ ...f, stage1NextAction: e.target.value }))}><option value="">Next action</option>{(stageOneConfig.nextActionOptions || []).map((v) => <option key={v} value={v}>{v}</option>)}</select>
+          <select className="ui-search" value={filters.stage1Status} onChange={(e) => setFilters((f) => ({ ...f, stage1Status: e.target.value }))}><option value="">Stage 1 status</option>{['Complete', 'Partial', 'Unscored'].map((v) => <option key={v} value={v}>{v}</option>)}</select>
+          <select className="ui-search" value={filters.stage1Confidence} onChange={(e) => setFilters((f) => ({ ...f, stage1Confidence: e.target.value }))}><option value="">Stage 1 confidence</option>{(stageOneConfig.confidenceOptions || []).map((v) => <option key={v} value={v}>{v}</option>)}</select>
+          <select className="ui-search" value={filters.stage1Freshness} onChange={(e) => setFilters((f) => ({ ...f, stage1Freshness: e.target.value }))}><option value="">Review freshness</option>{freshnessLabels.map((v) => <option key={v} value={v}>{v}</option>)}</select>
+        </div>
       </div>
-      {showAdvancedFilters && <div className="filter-grid prospect-filter-grid--advanced">
+      {showAdvancedFilters && <div className="prospect-filter-group">
+        <div className="prospect-filter-group__title">Advanced filters</div>
+        <div className="filter-grid prospect-filter-grid--advanced">
+          {['industry', 'category', 'channel_role', 'channel_segment', 'country', 'city', 'trading_status', 'adopter_profile'].map((k) => (
+            <select className="ui-search" key={k} value={filters[k]} onChange={(e) => setFilters((f) => ({ ...f, [k]: e.target.value }))}>
+              <option value="">{k.replace(/_/g, ' ')}</option>
+              {options[k].map((v) => <option key={v} value={v}>{v}</option>)}
+            </select>
+          ))}
+        <select className="ui-search" value={filters.partnerTierName} onChange={(e) => setFilters((f) => ({ ...f, partnerTierName: e.target.value }))}><option value="">Partner tier</option>{['Strategic - Tier 1', 'Growth - Tier 2', 'Select - Tier 3', 'Low Priority'].map((v) => <option key={v}>{v}</option>)}</select>
         <input className="ui-search" placeholder="Min employees" type="number" value={filters.minEmployees} onChange={(e) => setFilters((f) => ({ ...f, minEmployees: e.target.value }))} />
         <input className="ui-search" placeholder="Max employees" type="number" value={filters.maxEmployees} onChange={(e) => setFilters((f) => ({ ...f, maxEmployees: e.target.value }))} />
         <input className="ui-search" placeholder="Min revenue" type="number" value={filters.minRevenue} onChange={(e) => setFilters((f) => ({ ...f, minRevenue: e.target.value }))} />
         <input className="ui-search" placeholder="Max revenue" type="number" value={filters.maxRevenue} onChange={(e) => setFilters((f) => ({ ...f, maxRevenue: e.target.value }))} />
         <input className="ui-search" placeholder="Min score" type="number" min="0" max="100" value={filters.minScore} onChange={(e) => setFilters((f) => ({ ...f, minScore: e.target.value }))} />
         <input className="ui-search" placeholder="Min Stage 1 score" type="number" min="1" max="5" step="0.01" value={filters.minStage1Score} onChange={(e) => setFilters((f) => ({ ...f, minStage1Score: e.target.value }))} />
-        <select className="ui-search" value={sort} onChange={(e) => setSort(e.target.value)}>
-          <option value="score_desc">Score ↓</option><option value="score_asc">Score ↑</option><option value="stage1score_desc">Stage 1 score ↓</option><option value="stage1score_asc">Stage 1 score ↑</option><option value="stage1tier_desc">Stage 1 tier ↓</option><option value="stage1tier_asc">Stage 1 tier ↑</option><option value="lastreviewed_desc">Last reviewed ↓</option><option value="lastreviewed_asc">Last reviewed ↑</option><option value="freshness_asc">Freshness (Fresh → Not Reviewed)</option><option value="freshness_desc">Freshness (Not Reviewed → Fresh)</option><option value="revenue_desc">Revenue ↓</option><option value="revenue_asc">Revenue ↑</option><option value="employees_desc">Employees ↓</option><option value="employees_asc">Employees ↑</option><option value="name_asc">Name A→Z</option><option value="name_desc">Name Z→A</option>
-        </select>
         <label><input type="checkbox" checked={filters.hasWebsite} onChange={(e) => setFilters((f) => ({ ...f, hasWebsite: e.target.checked }))} /> Has website</label>
         <label><input type="checkbox" checked={filters.hasLinkedIn} onChange={(e) => setFilters((f) => ({ ...f, hasLinkedIn: e.target.checked }))} /> Has LinkedIn</label>
         <label><input type="checkbox" checked={filters.hasEmail} onChange={(e) => setFilters((f) => ({ ...f, hasEmail: e.target.checked }))} /> Has email</label>
-      </div>}
+      </div></div>}
       <div className="chip-row">{activeChips.map((c) => {
         const [rawKey, value] = c.split(': ');
         const label = rawKey === 'Search' ? rawKey : (filterLabels[rawKey] || rawKey);
@@ -5573,18 +5586,19 @@ function ProspectToolPage() {
         {builtInPriorityViews.map((priorityView) => {
           const matchedRows = window.ProspectToolUtils.applyPriorityViewFilter(priorityView.key, rows);
           const isActive = activePriorityViewKey === priorityView.key;
-          return <div key={priorityView.key} className="saved-view-card">
+          return <div key={priorityView.key} className={`saved-view-card priority-view-card ${priorityView.key === 'tier1_high_confidence' ? 'priority-view-card--featured' : ''}`.trim()}>
             <div className="saved-view-head">
               <strong>{priorityView.label}</strong>
               {isActive && <span className="top50-badge">Active</span>}
             </div>
             <p>{priorityView.description}</p>
             <div className="saved-view-meta">
-              <span><b>Matches:</b> {matchedRows.length} prospects</span>
+              <span className="priority-view-card__count">{matchedRows.length}</span>
+              <span>matching prospects</span>
             </div>
             <div className="saved-view-actions">
+              <button className="ui-btn ui-btn--primary" type="button" onClick={() => startBulkReview(`Priority View: ${priorityView.label}`, window.ProspectToolUtils.applyPriorityViewFilter(priorityView.key, sorted))}>Review</button>
               <button className="ui-btn ui-btn--secondary" type="button" onClick={() => setActivePriorityViewKey(isActive ? '' : priorityView.key)}>{isActive ? 'Clear view' : 'Apply view'}</button>
-              <button className="ui-btn ui-btn--secondary" type="button" onClick={() => startBulkReview(`Priority View: ${priorityView.label}`, window.ProspectToolUtils.applyPriorityViewFilter(priorityView.key, sorted))}>Review This Priority View</button>
             </div>
           </div>;
         })}
@@ -5612,7 +5626,7 @@ function ProspectToolPage() {
       </div>
     </div>}
 
-    {sorted.length === 0 ? <div className="ds-card prospect-state prospect-state--empty" role="status" aria-live="polite"><strong>No results found</strong><p>Try broadening filters or clearing search terms to discover more partners.</p><IconButton icon="reset" label="Reset filters to show more results" onClick={resetFilters} /></div> : view === 'table' ? <div className="prospect-table-wrap"><table className="prospect-table prospect-table--search"><thead><tr>{visibleColumnDefs.map((h) => <th key={h.key} data-col={h.key} className={h.key === 'actions' ? 'cell-actions-head' : ''}>{h.label}</th>)}</tr></thead><tbody>{pageRows.map((r, i) => <tr key={r.id} data-prospect-row-id={r.id} className={selectedRowId === r.id ? 'prospect-row-selected' : ''} onClick={() => setSelectedRowId(r.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedRowId(r.id); } }} tabIndex={0} style={{ cursor: 'pointer' }} aria-selected={selectedRowId === r.id}>{visibleColumnDefs.map((col) => <React.Fragment key={`${r.id}-${col.key}`}>{renderCell(r, col.key, i)}</React.Fragment>)}</tr>)}</tbody></table></div> : <div className="prospect-cards">{pageRows.map((r) => <div className={`prospect-card ${selectedRowId === r.id ? 'prospect-card-selected' : ''}`.trim()} key={r.id} onClick={() => setSelectedRowId(r.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedRowId(r.id); } }} tabIndex={0}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}><strong>{r.displayName}</strong><div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}><span className="score-badge">{r.idealPartnerScore}</span><span className={getTierClass(r)}>{r.partnerTierName || 'Low Priority'}</span><span className="score-badge score-badge--stage1">{r.stage1WeightedScore ? window.ProspectToolUtils.formatProspectScore(r.stage1WeightedScore) : (r.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</span><span className={getStage1TierClass(r)}>{r.stage1TierBadge || (r.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</span>{r.stage1NextAction ? <span className="stage1-next-action-pill">{r.stage1NextAction}</span> : null}</div></div><div>{r.industry || '—'}</div><div>{r.channel_role || '—'} / {r.channel_segment || '—'}</div><div>{r.companyClassification || 'Unclassified'} · {r.city || '—'}, {r.country || '—'}</div><div>{r.displayRevenue} · {r.displayEmployees}</div><div className="prospect-card-secondary">{r.keywords || '—'}</div><div style={{ display: 'flex', gap: 8 }}>{r.website && <a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>}{r.linkedin && <a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}</div></div>)}</div>}
+    {sorted.length === 0 ? <div className="ds-card prospect-state prospect-state--empty" role="status" aria-live="polite"><strong>No results found</strong><p>Try broadening filters or clearing search terms to discover more partners.</p><IconButton icon="reset" label="Reset filters to show more results" onClick={resetFilters} /></div> : view === 'table' ? <div className="prospect-table-wrap"><table className="prospect-table prospect-table--search"><thead><tr>{visibleColumnDefs.map((h) => <th key={h.key} data-col={h.key} className={h.key === 'actions' ? 'cell-actions-head' : ''} title={h.key === 'stage1WeightedScore' ? 'Stage 1 Score is calculated out of 5.00' : undefined}>{h.label}</th>)}</tr></thead><tbody>{pageRows.map((r, i) => <tr key={r.id} data-prospect-row-id={r.id} className={selectedRowId === r.id ? 'prospect-row-selected' : ''} onClick={() => setSelectedRowId(r.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedRowId(r.id); } }} tabIndex={0} style={{ cursor: 'pointer' }} aria-selected={selectedRowId === r.id}>{visibleColumnDefs.map((col) => <React.Fragment key={`${r.id}-${col.key}`}>{renderCell(r, col.key, i)}</React.Fragment>)}</tr>)}</tbody></table></div> : <div className="prospect-cards">{pageRows.map((r) => <div className={`prospect-card ${selectedRowId === r.id ? 'prospect-card-selected' : ''}`.trim()} key={r.id} onClick={() => setSelectedRowId(r.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedRowId(r.id); } }} tabIndex={0}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}><strong>{r.displayName}</strong><div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}><span className="score-badge score-badge--stage1">{formatStage1ScoreCell(r.stage1WeightedScore, r.stage1ScoreStatus)}</span><span className={getStage1TierClass(r)}>{r.stage1TierBadge || (r.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</span>{r.stage1NextAction ? <span className={getNextActionClass(r.stage1NextAction)}>{r.stage1NextAction}</span> : null}</div></div><div>{r.industry || '—'}</div><div>{r.channel_role || '—'} / {r.channel_segment || '—'}</div><div>{r.companyClassification || 'Unclassified'} · {r.city || '—'}, {r.country || '—'}</div><div>{r.displayRevenue} · {r.displayEmployees}</div><div className="prospect-card-secondary">{r.keywords || '—'}</div><div style={{ display: 'flex', gap: 8 }}>{r.website && <a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>}{r.linkedin && <a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}</div></div>)}</div>}
 
     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
       <IconButton icon="prev" label="Previous page" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} />
@@ -5708,11 +5722,13 @@ function ProspectToolPage() {
             const value = editableScoring[category.key] || { label: '', score: 0 };
             return <label key={`bulk-${category.key}`} className="stage1-field">
               <span>{category.label} <em>({Math.round(category.weight * 100)}%)</em></span>
-              <select className="ui-search" value={value.label || ''} onChange={(event) => updateScoringCategory(category.key, event.target.value)}>
-                <option value="">Select {category.label}</option>
-                {category.options.map((option) => <option key={option.label} value={option.label}>{option.label}</option>)}
-              </select>
-              <small>Score: {value.score || 0}</small>
+              <div className="stage1-input-row">
+                <select className="ui-search" value={value.label || ''} onChange={(event) => updateScoringCategory(category.key, event.target.value)}>
+                  <option value="">Select {category.label}</option>
+                  {category.options.map((option) => <option key={option.label} value={option.label}>{option.label}</option>)}
+                </select>
+                <strong className="stage1-inline-score">{value.score || 0}</strong>
+              </div>
             </label>;
           })}
         </div>
@@ -5746,16 +5762,19 @@ function ProspectToolPage() {
           <div className="prospect-drawer-title">
             <span className="prospect-drawer-kicker">Partner detail</span>
             <h3>{selected.displayName}</h3>
+            <p className="prospect-drawer-descriptor">{[selected.industry, selected.channel_segment || selected.channel_role].filter(Boolean).join(' • ') || 'Prospect profile'}</p>
             <div className="prospect-drawer-subtitle">
-              <span className={getTierClass(selected)}>{selected.partnerTierName || 'Low Priority'}</span>
-              <span className="score-badge">Score {selected.idealPartnerScore}</span>
-              <span className="score-badge score-badge--stage1">Stage 1 {selected.stage1WeightedScore ? `${window.ProspectToolUtils.formatProspectScore(selected.stage1WeightedScore)} / 5.00` : (selected.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</span>
               <span className={getStage1TierClass(selected)}>{selected.stage1TierBadge || (selected.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</span>
+              <span className="score-badge score-badge--stage1">Score {formatStage1ScoreCell(selected.stage1WeightedScore, selected.stage1ScoreStatus)}</span>
+              <span className={getNextActionClass(selected.stage1NextAction || 'none')}>{selected.stage1NextAction || 'No next action'}</span>
+              <span className={`review-freshness review-freshness--${window.ProspectToolUtils.getReviewFreshnessStatus(selected.stage1LastReviewed).toLowerCase().replace(/\s+/g, '-')}`}>{window.ProspectToolUtils.getReviewFreshnessStatus(selected.stage1LastReviewed)}</span>
               <span className="prospect-drawer-position">{selectedIndex + 1} of {sorted.length}</span>
             </div>
           </div>
           <div className="prospect-drawer-actions">
-            <button type="button" className="prospect-icon-link" aria-label={selected.website ? 'Open Website' : 'Website unavailable'} title={selected.website ? 'Open Website' : 'Website unavailable'} disabled={!selected.website} onClick={() => selected.website && window.open(window.ProspectToolUtils.normalizeUrl(selected.website), '_blank', 'noopener,noreferrer')}>🌐</button>
+            <button type="button" className="prospect-link-chip" aria-label={selected.website ? 'Open Website' : 'Website unavailable'} title={selected.website ? 'Open Website' : 'Website unavailable'} disabled={!selected.website} onClick={() => selected.website && window.open(window.ProspectToolUtils.normalizeUrl(selected.website), '_blank', 'noopener,noreferrer')}>Website</button>
+            <button type="button" className="prospect-link-chip" aria-label={selected.linkedin ? 'Open LinkedIn' : 'LinkedIn unavailable'} title={selected.linkedin ? 'Open LinkedIn' : 'LinkedIn unavailable'} disabled={!selected.linkedin} onClick={() => selected.linkedin && window.open(window.ProspectToolUtils.normalizeUrl(selected.linkedin), '_blank', 'noopener,noreferrer')}>LinkedIn</button>
+            <button type="button" className="prospect-link-chip" aria-label={selected.ch_link ? 'Open Companies House' : 'Companies House unavailable'} title={selected.ch_link ? 'Open Companies House' : 'Companies House unavailable'} disabled={!selected.ch_link} onClick={() => selected.ch_link && window.open(window.ProspectToolUtils.normalizeUrl(selected.ch_link), '_blank', 'noopener,noreferrer')}>Companies House</button>
             <button type="button" className="prospect-icon-link" aria-label="Research Company" title="Research Company" onClick={() => runCompanyResearch(selected)}>✦</button>
             <button type="button" className="prospect-icon-link" aria-label="Download to CSV" title="Download to CSV" onClick={() => exportRows([selected], `${selected.id}-prospect.csv`)}>📤</button>
             <IconButton icon="prev" label="Previous record" disabled={selectedIndex <= 0} onClick={() => setSelectedRowId(sorted[selectedIndex - 1].id)} />
@@ -5772,18 +5791,15 @@ function ProspectToolPage() {
 
           {drawerTab === 'details' && <>
             <div className="prospect-summary-strip">
-              <div><span>Tier</span><strong>{selected.partnerTierName || 'Low Priority'}</strong></div>
-              <div><span>Stage 1 Score</span><strong>{selected.stage1WeightedScore ? `${window.ProspectToolUtils.formatProspectScore(selected.stage1WeightedScore)} / 5.00` : (selected.stage1ScoreStatus || 'Unscored')}</strong></div>
+              <div><span>Stage 1 Score</span><strong>{formatStage1ScoreCell(selected.stage1WeightedScore, selected.stage1ScoreStatus)}</strong></div>
               <div><span>Stage 1 Tier</span><strong>{selected.stage1Tier || (selected.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</strong></div>
               <div><span>Stage 1 Completeness</span><strong>{selected.stage1ScoreStatus || 'Unscored'}</strong></div>
               <div><span>Stage 1 Confidence</span><strong>{selected.stage1Confidence || '—'}</strong></div>
               <div><span>Next Action</span><strong>{selected.stage1NextAction || '—'}</strong></div>
+              <div><span>Weakest Factor</span><strong>{selected.stage1WeakestFactor || '—'}</strong></div>
+              <div><span>Percentage</span><strong>{selected.stage1WeightedPercent ? `${selected.stage1WeightedPercent.toFixed(2)}%` : '—'}</strong></div>
               <div><span>Last Reviewed</span><strong>{window.ProspectToolUtils.formatLastReviewed(selected.stage1LastReviewed)}</strong></div>
               <div><span>Review Freshness</span><strong><span className={`review-freshness review-freshness--${window.ProspectToolUtils.getReviewFreshnessStatus(selected.stage1LastReviewed).toLowerCase().replace(/\s+/g, '-')}`}>{window.ProspectToolUtils.getReviewFreshnessStatus(selected.stage1LastReviewed)}</span></strong></div>
-              <div><span>Company Class</span><strong>{selected.companyClassification || 'Unclassified'}</strong></div>
-              <div><span>Status</span><strong>{selected.trading_status || '—'}</strong></div>
-              <div><span>Region</span><strong>{selected.country || '—'}</strong></div>
-              <div><span>Type</span><strong>{selected.channel_role || '—'}</strong></div>
             </div>
 
             <div className="panel-card stage1-scoring-panel">
@@ -5817,12 +5833,14 @@ function ProspectToolPage() {
                   const value = editableScoring[category.key] || { label: '', score: 0 };
                   return <label key={category.key} className="stage1-field">
                     <span>{category.label} <em>({Math.round(category.weight * 100)}%)</em></span>
-                    <select className="ui-search" value={value.label || ''} onChange={(event) => updateScoringCategory(category.key, event.target.value)}>
-                      <option value="">Select {category.label}</option>
-                      {category.options.map((option) => <option key={option.label} value={option.label}>{option.label}</option>)}
-                    </select>
+                    <div className="stage1-input-row">
+                      <select className="ui-search" value={value.label || ''} onChange={(event) => updateScoringCategory(category.key, event.target.value)}>
+                        <option value="">Select {category.label}</option>
+                        {category.options.map((option) => <option key={option.label} value={option.label}>{option.label}</option>)}
+                      </select>
+                      <strong className="stage1-inline-score">{value.score || 0}</strong>
+                    </div>
                     <small className="stage1-guidance">{stageOneGuidance[category.key] || ''}</small>
-                    <small>Score: {value.score || 0}</small>
                   </label>;
                 })}
               </div>
@@ -5845,9 +5863,9 @@ function ProspectToolPage() {
 
             <div className="panel-card stage1-scoring-panel">
               <div className="stage1-scoring-panel__head">
-                <h4>Prospect Decisioning</h4>
+                <h4>Evidence &amp; Review Notes</h4>
               </div>
-              <p className="stage1-helper-text stage1-helper-text--muted">Next Action helps convert prospect scoring into a clear operational decision. Last Reviewed shows when the Stage 1 score was last updated.</p>
+              <p className="stage1-helper-text stage1-helper-text--muted">Capture operational context: next step, confidence and observable evidence.</p>
               <div className="stage1-grid stage1-grid--meta">
                 <label className="stage1-field">
                   <span>Next Action</span>
@@ -5869,8 +5887,27 @@ function ProspectToolPage() {
               </div>
             </div>
 
-            <div className="panel-card"><h4>Company details</h4><p>Industry: {selected.industry || '—'}</p><p>Company Type: {selected.category || '—'}</p><p>Company Classification: {selected.companyClassification || 'Unclassified'}</p><p>Employees: {selected.displayEmployees}</p><p>Revenue: {selected.displayRevenue}</p><p>Location: {selected.displayLocation} {selected.postcode}</p></div>
-            <div className="panel-card"><h4>Commercial profile</h4><p>Channel Role: {selected.channel_role || '—'}</p><p>Channel Segment: {selected.channel_segment || '—'}</p><p>Adopter Profile: {selected.adopter_profile || '—'}</p><p>Keywords: {selected.keywords || '—'}</p></div>
+            <div className="panel-card">
+              <h4>Company details</h4>
+              <div className="prospect-metadata-grid">
+                <p><span>Company Class</span>{selected.companyClassification || 'Unclassified'}</p>
+                <p><span>Type</span>{selected.category || '—'}</p>
+                <p><span>Region</span>{selected.country || '—'}</p>
+                <p><span>Industry</span>{selected.industry || '—'}</p>
+                <p><span>Status</span>{selected.trading_status || '—'}</p>
+                <p><span>Channel Role</span>{selected.channel_role || '—'}</p>
+                <p><span>Channel Segment</span>{selected.channel_segment || '—'}</p>
+                <p><span>Adopter Profile</span>{selected.adopter_profile || '—'}</p>
+                <p><span>Employees</span>{selected.displayEmployees}</p>
+                <p><span>Revenue</span>{selected.displayRevenue}</p>
+                <p><span>Location</span>{selected.displayLocation} {selected.postcode}</p>
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
+                {selected.website && <a className="prospect-link-chip" href={window.ProspectToolUtils.normalizeUrl(selected.website)} target="_blank" rel="noreferrer">Website</a>}
+                {selected.linkedin && <a className="prospect-link-chip" href={window.ProspectToolUtils.normalizeUrl(selected.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}
+                {selected.ch_link && <a className="prospect-link-chip" href={window.ProspectToolUtils.normalizeUrl(selected.ch_link)} target="_blank" rel="noreferrer">Companies House</a>}
+              </div>
+            </div>
 
             <div className="panel-card"><h4>Technology signals</h4><div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{(selected.tech_stack || '').split(/[,;|]/).map((t) => t.trim()).filter(Boolean).map((tech) => <span key={tech} className="tech-tag">{tech}</span>)}{!selected.tech_stack && <span className="tech-tag">No data</span>}</div><p style={{ marginTop: 10 }}>Matched vendors: {selected.matchedVendors?.join(', ') || 'None detected'}</p></div>
 
