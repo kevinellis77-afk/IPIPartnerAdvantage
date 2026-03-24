@@ -7,11 +7,14 @@
 .prospect-toolbar .ui-search{min-width:min(360px,100%);flex:1 1 340px}
 .prospect-sort-select{max-width:210px;flex:0 0 210px!important}
 .prospect-toggle{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#b8d5cf}
+.prospect-section-toggle{white-space:nowrap}
+.prospect-section-toggle.is-active{border-color:rgba(103,216,255,.45);background:rgba(103,216,255,.16)}
 .filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
 .prospect-filter-group{display:grid;gap:6px}
 .prospect-filter-group__title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-secondary);font-weight:700}
 .prospect-filter-grid--advanced{padding-top:6px;border-top:1px dashed rgba(145,196,176,.24)}
 .prospect-filter-summary{font-size:12px;color:var(--text-secondary)}
+.prospect-filter-summary--collapsed{padding:2px 0}
 .prospect-table-wrap{overflow:auto;border:1px solid var(--border-soft);border-radius:var(--radius-lg);background:var(--card-bg-strong)}
 .prospect-table{width:100%;border-collapse:collapse;min-width:1080px;table-layout:fixed}
 .prospect-table th,.prospect-table td{overflow-wrap:anywhere;word-break:break-word}
@@ -94,6 +97,7 @@
 .column-menu label{font-size:12px;color:var(--text-primary);display:flex;gap:8px;align-items:center}
 .saved-views-section{display:grid;gap:10px;margin-top:4px}
 .saved-views-header{display:flex;justify-content:space-between;align-items:center;gap:8px;color:var(--text-secondary);font-size:12px}
+.saved-views-header__actions{display:inline-flex;align-items:center;gap:8px}
 .saved-views-section h3{margin:0;color:#d9ece8;font-size:16px}
 .saved-views-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
 .saved-view-card{display:grid;gap:8px;padding:12px;border:1px solid var(--border-soft);border-radius:var(--radius-md);background:var(--card-bg)}
