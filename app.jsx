@@ -4890,6 +4890,8 @@ function ProspectToolPage() {
   const [columnOrder] = React.useState(DEFAULT_COLUMN_ORDER);
   const [showColumnMenu, setShowColumnMenu] = React.useState(false);
   const [showAdvancedFilters, setShowAdvancedFilters] = React.useState(false);
+  const [showPrimaryFilters, setShowPrimaryFilters] = React.useState(false);
+  const [showPriorityViews, setShowPriorityViews] = React.useState(false);
   const [saveViewOpen, setSaveViewOpen] = React.useState(false);
   const [saveViewForm, setSaveViewForm] = React.useState({ name: '', description: '', setDefault: false, overwrite: false, error: '' });
   const [feedback, setFeedback] = React.useState(null);
@@ -5652,7 +5654,22 @@ function ProspectToolPage() {
         </select>
         <IconButton icon="clear" label="Clear search" onClick={() => setSearchInput('')} disabled={!searchInput} />
         <IconButton icon="reset" label="Reset filters" onClick={resetFilters} />
-        <IconButton icon="filter" label={showAdvancedFilters ? 'Hide advanced filters' : 'Show advanced filters'} onClick={() => setShowAdvancedFilters((v) => !v)} className={showAdvancedFilters ? 'is-active' : ''} />
+        <button
+          className={`ui-btn ui-btn--secondary prospect-section-toggle ${showPrimaryFilters ? 'is-active' : ''}`.trim()}
+          type="button"
+          onClick={() => setShowPrimaryFilters((v) => !v)}
+        >
+          {showPrimaryFilters ? 'Hide filters' : 'Show filters'}
+          {activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+        </button>
+        {showPrimaryFilters && <IconButton icon="filter" label={showAdvancedFilters ? 'Hide advanced filters' : 'Show advanced filters'} onClick={() => setShowAdvancedFilters((v) => !v)} className={showAdvancedFilters ? 'is-active' : ''} />}
+        <button
+          className={`ui-btn ui-btn--secondary prospect-section-toggle ${showPriorityViews ? 'is-active' : ''}`.trim()}
+          type="button"
+          onClick={() => setShowPriorityViews((v) => !v)}
+        >
+          {showPriorityViews ? 'Hide priority views' : 'Show priority views'}
+        </button>
         <IconButton icon="columns" label="Manage columns" onClick={() => setShowColumnMenu((v) => !v)} className={showColumnMenu ? 'is-active' : ''} />
         <IconButton icon="save" label="Save view" onClick={() => setSaveViewOpen(true)} />
         <button className="ui-btn ui-btn--secondary" type="button" onClick={() => startBulkReview(activePriorityView ? `Priority View: ${activePriorityView.label}` : 'Current Results')}>Bulk Review Current Results</button>
@@ -5671,7 +5688,7 @@ function ProspectToolPage() {
         }} /> {column.label}{column.essential ? ' (always visible)' : ''}</label>)}
       </div>}
 
-      <div className="prospect-filter-group">
+      {showPrimaryFilters ? <div className="prospect-filter-group">
         <div className="prospect-filter-group__title">Primary filters</div>
         <div className="filter-grid prospect-filter-grid--primary">
           <select className="ui-search" value={filters.stage1Tier} onChange={(e) => setFilters((f) => ({ ...f, stage1Tier: e.target.value }))}><option value="">Stage 1 tier</option>{stageOneConfig.tierBands.map((band) => <option key={band.tier} value={band.tier}>{band.tier}</option>)}</select>
@@ -5680,8 +5697,8 @@ function ProspectToolPage() {
           <select className="ui-search" value={filters.stage1Confidence} onChange={(e) => setFilters((f) => ({ ...f, stage1Confidence: e.target.value }))}><option value="">Stage 1 confidence</option>{(stageOneConfig.confidenceOptions || []).map((v) => <option key={v} value={v}>{v}</option>)}</select>
           <select className="ui-search" value={filters.stage1Freshness} onChange={(e) => setFilters((f) => ({ ...f, stage1Freshness: e.target.value }))}><option value="">Review freshness</option>{freshnessLabels.map((v) => <option key={v} value={v}>{v}</option>)}</select>
         </div>
-      </div>
-      {showAdvancedFilters && <div className="prospect-filter-group">
+      </div> : <div className="prospect-filter-summary prospect-filter-summary--collapsed">{activeFilterCount} active filters · {sorted.length} matching rows</div>}
+      {showPrimaryFilters && showAdvancedFilters && <div className="prospect-filter-group">
         <div className="prospect-filter-group__title">Advanced filters</div>
         <div className="filter-grid prospect-filter-grid--advanced">
           {['industry', 'category', 'channel_role', 'channel_segment', 'country', 'city', 'trading_status', 'adopter_profile'].map((k) => (
@@ -5701,18 +5718,26 @@ function ProspectToolPage() {
         <label><input type="checkbox" checked={filters.hasLinkedIn} onChange={(e) => setFilters((f) => ({ ...f, hasLinkedIn: e.target.checked }))} /> Has LinkedIn</label>
         <label><input type="checkbox" checked={filters.hasEmail} onChange={(e) => setFilters((f) => ({ ...f, hasEmail: e.target.checked }))} /> Has email</label>
       </div></div>}
-      <div className="chip-row">{activeChips.map((c) => {
+      {showPrimaryFilters && <div className="chip-row">{activeChips.map((c) => {
         const [rawKey, value] = c.split(': ');
         const label = rawKey === 'Search' ? rawKey : (filterLabels[rawKey] || rawKey);
         return <span className="chip" key={c}>{label}: {value}</span>;
       })}{activeChips.length === 0 && <span className="chip">No active filters</span>}</div>
-      <div className="prospect-filter-summary">{activeFilterCount} active filters · {sorted.length} matching rows</div>
+      <div className="prospect-filter-summary">{activeFilterCount} active filters · {sorted.length} matching rows</div>}
     </div>
 
     <div className="saved-views-section ds-card">
-      <div className="saved-views-header"><h3>Priority Views</h3><span>Built-in operational shortcuts</span></div>
-      <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>Priority Views provide fast access to the most operationally useful prospect cohorts.</p>
-      <div className="saved-views-grid">
+      <div className="saved-views-header">
+        <h3>Priority Views</h3>
+        <div className="saved-views-header__actions">
+          <span>Built-in operational shortcuts</span>
+          <button className={`ui-btn ui-btn--secondary prospect-section-toggle ${showPriorityViews ? 'is-active' : ''}`.trim()} type="button" onClick={() => setShowPriorityViews((v) => !v)}>
+            {showPriorityViews ? 'Hide' : 'Show'}
+          </button>
+        </div>
+      </div>
+      {showPriorityViews && <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>Priority Views provide fast access to the most operationally useful prospect cohorts.</p>}
+      {showPriorityViews && <div className="saved-views-grid">
         {builtInPriorityViews.map((priorityView) => {
           const matchedRows = getRowsForPriorityView(priorityView.key);
           const isActive = activePriorityViewKey === priorityView.key;
@@ -5736,7 +5761,7 @@ function ProspectToolPage() {
             </div>
           </div>;
         })}
-      </div>
+      </div>}
     </div>
 
     {top50 && <div className="top50-summary-panel ds-card">
