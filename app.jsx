@@ -4938,15 +4938,21 @@ function ProspectToolPage() {
 
   const getStage1TierClass = React.useCallback((record) => {
     const badge = record?.stage1TierBadge || '';
-    if (badge === 'Tier 1') return 'tier-badge tier-emerald';
-    if (badge === 'Tier 2') return 'tier-badge tier-blue';
-    if (badge === 'Tier 3') return 'tier-badge tier-amber';
+    if (['Tier 1', 'Tier 2', 'Tier 3'].includes(badge)) return 'tier-badge tier-emerald';
+    if (['Tier 4', 'Tier 5'].includes(badge)) return 'tier-badge tier-amber';
     return 'tier-badge tier-gray';
   }, []);
 
   const getStage1StatusClass = React.useCallback((status) => `prospect-pill prospect-pill--status prospect-pill--${String(status || 'unscored').toLowerCase().replace(/\s+/g, '-')}`, []);
   const getNextActionClass = React.useCallback((action) => `prospect-pill prospect-pill--next prospect-pill--${String(action || 'none').toLowerCase().replace(/\s+/g, '-')}`, []);
   const getConfidenceClass = React.useCallback((confidence) => `prospect-pill prospect-pill--confidence prospect-pill--${String(confidence || 'not-set').toLowerCase().replace(/\s+/g, '-')}`, []);
+  const getStage1ScoreClass = React.useCallback((score, status) => {
+    if (status === 'Unscored' || status === 'Partial' || !Number.isFinite(Number(score))) return 'prospect-pill prospect-pill--status prospect-pill--unscored';
+    const numericScore = Number(score);
+    if (numericScore < 2.5) return 'prospect-pill prospect-pill--score-band prospect-pill--low';
+    if (numericScore < 4) return 'prospect-pill prospect-pill--score-band prospect-pill--medium';
+    return 'prospect-pill prospect-pill--score-band prospect-pill--high';
+  }, []);
 
   const formatStage1ScoreCell = React.useCallback((score, status) => {
     if (typeof score === 'number' && Number.isFinite(score)) return window.ProspectToolUtils.formatProspectScore(score);
@@ -5446,7 +5452,8 @@ function ProspectToolPage() {
     }
   }, [readStoredStage1Scoring]);
 
-  const saveStage1Scoring = React.useCallback(() => {
+  const saveStage1Scoring = React.useCallback((options = {}) => {
+    const closeToMainView = Boolean(options.closeToMainView);
     if (!selected) return false;
     const normalized = window.ProspectToolUtils.normalizeProspectScoring({
       ...editableScoring,
@@ -5458,6 +5465,11 @@ function ProspectToolPage() {
     }));
     if (!persistScoringForRow(selected.id, normalized)) return false;
     setFeedback({ tone: 'success', message: `Saved Stage 1 scoring for ${selected.displayName}.` });
+    if (closeToMainView) {
+      setDrawerTab('details');
+      setView('table');
+      setSelectedRowId(null);
+    }
     return true;
   }, [selected, editableScoring, applyScoringToRow, persistScoringForRow]);
 
@@ -5526,6 +5538,9 @@ function ProspectToolPage() {
     setBulkReviewOpen(false);
     setBulkReviewQueueIds([]);
     setBulkReviewQueueName('');
+    setSelectedRowId(null);
+    setDrawerTab('details');
+    setView('table');
   }, [isScoringDirty]);
 
   const getRowsForPriorityView = React.useCallback((priorityViewKey) => {
@@ -5552,7 +5567,7 @@ function ProspectToolPage() {
     const descriptor = [record.industry, record.channel_segment || record.channel_role].filter(Boolean).join(' • ') || 'Profile details in drawer';
     if (key === 'rank') return <td className="cell-number" data-col={key}>{(page - 1) * pageSize + rowIndex + 1}</td>;
     if (key === 'displayName') return <td className="cell-company" data-col={key}><strong>{record.displayName}</strong><span className="cell-company__meta" title={descriptor}>{descriptor}</span></td>;
-    if (key === 'stage1WeightedScore') return <td className="cell-number" data-col={key}><span className="score-value">{formatStage1ScoreCell(record.stage1WeightedScore, record.stage1ScoreStatus)}</span></td>;
+    if (key === 'stage1WeightedScore') return <td className="cell-number" data-col={key}><span className={getStage1ScoreClass(record.stage1WeightedScore, record.stage1ScoreStatus)}>{formatStage1ScoreCell(record.stage1WeightedScore, record.stage1ScoreStatus)}</span></td>;
     if (key === 'stage1Tier') return <td data-col={key}><span className={getStage1TierClass(record)}>{record.stage1TierBadge || (record.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</span></td>;
     if (key === 'stage1NextAction') {
       const isEditing = inlineNextActionRowId === record.id;
@@ -5762,7 +5777,7 @@ function ProspectToolPage() {
 
     <p className="prospect-inline-help">Click Next Action to update it directly from the table.</p>
 
-    {sorted.length === 0 ? <div className="ds-card prospect-state prospect-state--empty" role="status" aria-live="polite"><strong>No results found</strong><p>Try broadening filters or clearing search terms to discover more partners.</p><IconButton icon="reset" label="Reset filters to show more results" onClick={resetFilters} /></div> : view === 'table' ? <div className="prospect-table-wrap"><table className="prospect-table prospect-table--search"><thead><tr>{visibleColumnDefs.map((h) => <th key={h.key} data-col={h.key} className={h.key === 'actions' ? 'cell-actions-head' : ''} title={h.key === 'stage1WeightedScore' ? 'Stage 1 Score is calculated out of 5.00' : undefined}>{h.label}</th>)}</tr></thead><tbody>{pageRows.map((r, i) => <tr key={r.id} data-prospect-row-id={r.id} className={selectedRowId === r.id ? 'prospect-row-selected' : ''} onClick={() => setSelectedRowId(r.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedRowId(r.id); } }} tabIndex={0} style={{ cursor: 'pointer' }} aria-selected={selectedRowId === r.id}>{visibleColumnDefs.map((col) => <React.Fragment key={`${r.id}-${col.key}`}>{renderCell(r, col.key, i)}</React.Fragment>)}</tr>)}</tbody></table></div> : <div className="prospect-cards">{pageRows.map((r) => <div className={`prospect-card ${selectedRowId === r.id ? 'prospect-card-selected' : ''}`.trim()} key={r.id} onClick={() => setSelectedRowId(r.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedRowId(r.id); } }} tabIndex={0}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}><strong>{r.displayName}</strong><div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}><span className="score-badge score-badge--stage1">{formatStage1ScoreCell(r.stage1WeightedScore, r.stage1ScoreStatus)}</span><span className={getStage1TierClass(r)}>{r.stage1TierBadge || (r.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</span>{r.stage1NextAction ? <span className={getNextActionClass(r.stage1NextAction)}>{r.stage1NextAction}</span> : null}</div></div><div>{r.industry || '—'}</div><div>{r.channel_role || '—'} / {r.channel_segment || '—'}</div><div>{r.companyClassification || 'Unclassified'} · {r.city || '—'}, {r.country || '—'}</div><div>{r.displayRevenue} · {r.displayEmployees}</div><div className="prospect-card-secondary">{r.keywords || '—'}</div><div style={{ display: 'flex', gap: 8 }}>{r.website && <a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>}{r.linkedin && <a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}</div></div>)}</div>}
+    {sorted.length === 0 ? <div className="ds-card prospect-state prospect-state--empty" role="status" aria-live="polite"><strong>No results found</strong><p>Try broadening filters or clearing search terms to discover more partners.</p><IconButton icon="reset" label="Reset filters to show more results" onClick={resetFilters} /></div> : view === 'table' ? <div className="prospect-table-wrap"><table className="prospect-table prospect-table--search"><thead><tr>{visibleColumnDefs.map((h) => <th key={h.key} data-col={h.key} className={h.key === 'actions' ? 'cell-actions-head' : ''} title={h.key === 'stage1WeightedScore' ? 'Stage 1 Score is calculated out of 5.00' : undefined}>{h.label}</th>)}</tr></thead><tbody>{pageRows.map((r, i) => <tr key={r.id} data-prospect-row-id={r.id} className={selectedRowId === r.id ? 'prospect-row-selected' : ''} onClick={() => setSelectedRowId(r.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedRowId(r.id); } }} tabIndex={0} style={{ cursor: 'pointer' }} aria-selected={selectedRowId === r.id}>{visibleColumnDefs.map((col) => <React.Fragment key={`${r.id}-${col.key}`}>{renderCell(r, col.key, i)}</React.Fragment>)}</tr>)}</tbody></table></div> : <div className="prospect-cards">{pageRows.map((r) => <div className={`prospect-card ${selectedRowId === r.id ? 'prospect-card-selected' : ''}`.trim()} key={r.id} onClick={() => setSelectedRowId(r.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedRowId(r.id); } }} tabIndex={0}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}><strong>{r.displayName}</strong><div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}><span className={getStage1ScoreClass(r.stage1WeightedScore, r.stage1ScoreStatus)}>{formatStage1ScoreCell(r.stage1WeightedScore, r.stage1ScoreStatus)}</span><span className={getStage1TierClass(r)}>{r.stage1TierBadge || (r.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</span>{r.stage1NextAction ? <span className={getNextActionClass(r.stage1NextAction)}>{r.stage1NextAction}</span> : null}</div></div><div>{r.industry || '—'}</div><div>{r.channel_role || '—'} / {r.channel_segment || '—'}</div><div>{r.companyClassification || 'Unclassified'} · {r.city || '—'}, {r.country || '—'}</div><div>{r.displayRevenue} · {r.displayEmployees}</div><div className="prospect-card-secondary">{r.keywords || '—'}</div><div style={{ display: 'flex', gap: 8 }}>{r.website && <a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>}{r.linkedin && <a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}</div></div>)}</div>}
 
     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
       <IconButton icon="prev" label="Previous page" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} />
@@ -5927,10 +5942,10 @@ function ProspectToolPage() {
 
           {drawerTab === 'details' && <>
             <div className="prospect-summary-strip">
-              <div><span>Stage 1 Score</span><strong>{formatStage1ScoreCell(selected.stage1WeightedScore, selected.stage1ScoreStatus)}</strong></div>
+              <div><span>Stage 1 Score</span><strong><span className={getStage1ScoreClass(selected.stage1WeightedScore, selected.stage1ScoreStatus)}>{formatStage1ScoreCell(selected.stage1WeightedScore, selected.stage1ScoreStatus)}</span></strong></div>
               <div><span>Stage 1 Tier</span><strong>{selected.stage1Tier || (selected.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</strong></div>
               <div><span>Stage 1 Completeness</span><strong>{selected.stage1ScoreStatus || 'Unscored'}</strong></div>
-              <div><span>Stage 1 Confidence</span><strong>{selected.stage1Confidence || '—'}</strong></div>
+              <div><span>Stage 1 Confidence</span><strong>{selected.stage1Confidence ? <span className={getConfidenceClass(selected.stage1Confidence)}>{selected.stage1Confidence}</span> : '—'}</strong></div>
               <div><span>Next Action</span><strong>{selected.stage1NextAction || '—'}</strong></div>
               <div><span>Weakest Factor</span><strong>{selected.stage1WeakestFactor || '—'}</strong></div>
               <div><span>Percentage</span><strong>{selected.stage1WeightedPercent ? `${selected.stage1WeightedPercent.toFixed(2)}%` : '—'}</strong></div>
@@ -5941,7 +5956,7 @@ function ProspectToolPage() {
             <div className="panel-card stage1-scoring-panel">
               <div className="stage1-scoring-panel__head">
                 <h4>Stage 1 Prospect Scoring</h4>
-                <button className="ui-btn ui-btn--secondary" type="button" onClick={saveStage1Scoring}>Save scoring</button>
+                <button className="ui-btn ui-btn--primary stage1-save-btn" type="button" onClick={() => saveStage1Scoring({ closeToMainView: true })}>Save scoring</button>
               </div>
               <p className="stage1-helper-text">Stage 1 Prospect Scoring is a pre-engagement model designed to prioritise new partner prospects using externally observable signals such as service focus, customer profile, vendor alignment, sales maturity, scale, and geographic fit.</p>
               <p className="stage1-helper-text stage1-helper-text--muted">This model helps identify which prospects are most likely to justify outreach and qualification effort.</p>
@@ -5956,9 +5971,9 @@ function ProspectToolPage() {
                     <em>{editableScoring.tier || (editableScoring.completenessStatus === 'Partial' ? 'Partial scoring in progress' : 'No final tier')}</em>
                   </strong>
                 </div>
-                <div><span>Weighted Score</span><strong>{editableScoring.weightedScore ? `${window.ProspectToolUtils.formatProspectScore(editableScoring.weightedScore)} / 5.00` : (editableScoring.completenessStatus || 'Unscored')}</strong></div>
+                <div><span>Weighted Score</span><strong><span className={getStage1ScoreClass(editableScoring.weightedScore, editableScoring.completenessStatus)}>{editableScoring.weightedScore ? `${window.ProspectToolUtils.formatProspectScore(editableScoring.weightedScore)} / 5.00` : (editableScoring.completenessStatus || 'Unscored')}</span></strong></div>
                 <div><span>Percentage</span><strong>{editableScoring.weightedScore ? `${editableScoring.weightedPercent.toFixed(2)}%` : '—'}</strong></div>
-                <div><span>Confidence</span><strong className="stage1-confidence">{editableScoring.confidence || 'Not set'}</strong></div>
+                <div><span>Confidence</span><strong className="stage1-confidence">{editableScoring.confidence ? <span className={getConfidenceClass(editableScoring.confidence)}>{editableScoring.confidence}</span> : 'Not set'}</strong></div>
                 <div><span>Completeness</span><strong>{editableScoring.completenessStatus || 'Unscored'}</strong></div>
                 <div><span>Weakest Factor</span><strong>{editableScoring.weakestFactor || '—'}</strong></div>
               </div>
@@ -6013,8 +6028,8 @@ function ProspectToolPage() {
                 </label>
               </div>
               <div className="stage1-summary-grid">
-                <div><span>Final Tier</span><strong>{editableScoring.tier || (editableScoring.completenessStatus === 'Partial' ? 'Partial' : 'Unscored')}</strong></div>
-                <div><span>Confidence</span><strong>{editableScoring.confidence || 'Not set'}</strong></div>
+                <div><span>Final Tier</span><strong><span className={getStage1TierClass({ stage1TierBadge: editableScoring.tierBadge })}>{editableScoring.tier || (editableScoring.completenessStatus === 'Partial' ? 'Partial' : 'Unscored')}</span></strong></div>
+                <div><span>Confidence</span><strong>{editableScoring.confidence ? <span className={getConfidenceClass(editableScoring.confidence)}>{editableScoring.confidence}</span> : 'Not set'}</strong></div>
                 <div><span>Completeness</span><strong>{editableScoring.completenessStatus || 'Unscored'}</strong></div>
                 <div><span>Last Reviewed</span><strong>{window.ProspectToolUtils.formatLastReviewed(editableScoring.lastReviewed)}</strong></div>
                 <div><span>Review Freshness</span><strong><span className={`review-freshness review-freshness--${window.ProspectToolUtils.getReviewFreshnessStatus(editableScoring.lastReviewed).toLowerCase().replace(/\s+/g, '-')}`}>{window.ProspectToolUtils.getReviewFreshnessStatus(editableScoring.lastReviewed)}</span></strong></div>
