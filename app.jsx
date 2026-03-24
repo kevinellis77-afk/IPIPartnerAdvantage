@@ -4847,7 +4847,7 @@ function ProspectToolPage() {
   const ALL_COLUMNS = [
     { key: 'rank', label: '#', essential: true },
     { key: 'displayName', label: 'Company', essential: true },
-    { key: 'stage1WeightedScore', label: 'Stage 1 Score', essential: true },
+    { key: 'stage1WeightedScore', label: 'Score', essential: true },
     { key: 'stage1Tier', label: 'Stage 1 Tier', essential: true },
     { key: 'stage1NextAction', label: 'Next Action', essential: true },
     { key: 'stage1Freshness', label: 'Review Freshness', essential: true },
