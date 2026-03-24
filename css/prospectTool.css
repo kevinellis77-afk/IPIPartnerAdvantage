@@ -224,10 +224,16 @@
 .stage1-summary-grid>div{border:1px solid var(--border-soft);border-radius:10px;padding:8px;background:color-mix(in srgb,var(--card-bg) 86%,transparent);display:grid;gap:3px}
 .stage1-summary-grid span{font-size:11px;color:var(--text-secondary)}
 .stage1-summary-grid strong{font-size:12px;color:var(--text-primary)}
+.stage1-summary-grid__tier strong{display:grid;gap:6px}
+.stage1-summary-grid__tier em{font-size:11px;font-style:normal;color:var(--text-secondary);font-weight:600}
 .stage1-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.stage1-grid--meta{grid-template-columns:1fr}
 .stage1-field{display:grid;gap:5px}
 .stage1-field span{font-size:11px;color:var(--text-secondary);font-weight:700}
 .stage1-field em{font-style:normal;opacity:.85}
-.stage1-field small{font-size:11px;color:#9fdfff}
+.stage1-field small{font-size:11px;color:var(--text-secondary)}
+.stage1-guidance{opacity:.9}
 .stage1-confidence{color:var(--text-secondary)!important;font-weight:600}
+.stage1-cap-note{margin:0;font-size:11px;color:#ffdca7}
+.stage1-field--full{grid-column:1 / -1}
 @media (max-width:860px){.stage1-grid,.stage1-summary-grid{grid-template-columns:1fr}}

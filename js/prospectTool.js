@@ -59,6 +59,7 @@
   const IPP_VENDOR_OPTIONS = IPP_VENDOR_SCORES.map((vendor) => vendor.label);
 
   const STAGE_ONE_SCORING_CONFIG = {
+    confidenceOptions: ['Low', 'Medium', 'High'],
     categories: {
       routeToRevenue: {
         label: 'Route-to-Revenue Fit',
@@ -171,8 +172,15 @@
       weightedPercent: 0,
       tier: '',
       tierBadge: '',
+      completenessStatus: 'Unscored',
       status: 'Unscored',
       confidence: '',
+      evidence: '',
+      weakestFactor: '',
+      tierCapApplied: false,
+      tierCapReason: '',
+      calculatedTier: '',
+      calculatedTierBadge: '',
     };
   }
 
@@ -181,16 +189,67 @@
     return score.toFixed(2);
   }
 
-  function getProspectTier(weightedScore) {
-    if (!Number.isFinite(weightedScore) || weightedScore <= 0) return '';
-    const band = STAGE_ONE_SCORING_CONFIG.tierBands.find((item) => weightedScore >= item.min && weightedScore <= item.max);
-    return band ? band.tier : '';
+  function getProspectCompletenessStatus(scoring) {
+    if (!scoring || typeof scoring !== 'object') return 'Unscored';
+    let scoredCount = 0;
+    STAGE_ONE_CATEGORY_KEYS.forEach((key) => {
+      const row = scoring[key] || {};
+      const score = Number(row.score);
+      if (row.label || (Number.isFinite(score) && score > 0)) scoredCount += 1;
+    });
+    if (!scoredCount) return 'Unscored';
+    if (scoredCount < STAGE_ONE_CATEGORY_KEYS.length) return 'Partial';
+    return 'Complete';
   }
 
-  function getTierBadge(weightedScore) {
+  function getWeakestScoringFactor(scoring) {
+    if (!scoring || typeof scoring !== 'object') return '';
+    let weakest = null;
+    STAGE_ONE_CATEGORY_KEYS.forEach((key) => {
+      const row = scoring[key] || {};
+      const score = Number(row.score);
+      const valid = Number.isFinite(score) ? score : 0;
+      if (valid <= 0) return;
+      if (!weakest || valid < weakest.score) {
+        weakest = { key, score: valid };
+      }
+    });
+    if (!weakest) return '';
+    const label = STAGE_ONE_SCORING_CONFIG.categories[weakest.key]?.label || weakest.key;
+    return `${label} (${weakest.score}/5)`;
+  }
+
+  function getProspectTier(weightedScore, scoring) {
     if (!Number.isFinite(weightedScore) || weightedScore <= 0) return '';
     const band = STAGE_ONE_SCORING_CONFIG.tierBands.find((item) => weightedScore >= item.min && weightedScore <= item.max);
+    const calculatedTier = band ? band.tier : '';
+    if (!calculatedTier) return '';
+
+    const vendorScore = Number(scoring?.vendorOpportunity?.score || 0);
+    const tier2Band = STAGE_ONE_SCORING_CONFIG.tierBands.find((item) => item.badge === 'Tier 2');
+    if (vendorScore > 0 && vendorScore <= 2 && tier2Band) {
+      const calculatedTierRank = STAGE_ONE_SCORING_CONFIG.tierBands.findIndex((item) => item.tier === calculatedTier);
+      const tier2Rank = STAGE_ONE_SCORING_CONFIG.tierBands.findIndex((item) => item.tier === tier2Band.tier);
+      if (calculatedTierRank > -1 && tier2Rank > -1 && calculatedTierRank < tier2Rank) {
+        return tier2Band.tier;
+      }
+    }
+    return calculatedTier;
+  }
+
+  function getTierBadge(finalTier) {
+    if (!finalTier) return '';
+    const band = STAGE_ONE_SCORING_CONFIG.tierBands.find((item) => item.tier === finalTier);
     return band ? band.badge : '';
+  }
+
+  function getTierCapReason(scoring, weightedScore, calculatedTier) {
+    const vendorScore = Number(scoring?.vendorOpportunity?.score || 0);
+    if (!Number.isFinite(weightedScore) || weightedScore <= 0 || !calculatedTier) return '';
+    if (!(vendorScore > 0 && vendorScore <= 2)) return '';
+    const finalTier = getProspectTier(weightedScore, scoring);
+    if (!finalTier || finalTier === calculatedTier) return '';
+    return 'Tier capped at Tier 2 due to current alignment with modern CCaaS vendors.';
   }
 
   function calculateProspectWeightedScore(scoring) {
@@ -214,19 +273,28 @@
       }
     });
 
-    const hasAny = completedCount > 0;
-    const complete = completedCount === STAGE_ONE_CATEGORY_KEYS.length;
-    if (!hasAny) return next;
+    next.confidence = STAGE_ONE_SCORING_CONFIG.confidenceOptions.includes(scoring.confidence) ? scoring.confidence : '';
+    next.evidence = typeof scoring.evidence === 'string' ? scoring.evidence : '';
+    next.completenessStatus = getProspectCompletenessStatus(next);
+    next.status = next.completenessStatus;
+    next.weakestFactor = getWeakestScoringFactor(next);
 
-    next.status = complete ? 'Complete' : 'Partial';
-    if (!complete) return next;
+    if (next.completenessStatus === 'Unscored') return next;
+    if (next.completenessStatus !== 'Complete') return next;
 
     const weightedScore = Number(Math.max(1, Math.min(5, weightedTotal)).toFixed(2));
     const weightedPercent = Number(((weightedScore / 5) * 100).toFixed(2));
+    const calculatedTier = getProspectTier(weightedScore, { vendorOpportunity: { score: 5 } });
+    const finalTier = getProspectTier(weightedScore, next);
+    const tierCapReason = getTierCapReason(next, weightedScore, calculatedTier);
     next.weightedScore = weightedScore;
     next.weightedPercent = weightedPercent;
-    next.tier = getProspectTier(weightedScore);
-    next.tierBadge = getTierBadge(weightedScore);
+    next.calculatedTier = calculatedTier;
+    next.calculatedTierBadge = getTierBadge(calculatedTier);
+    next.tier = finalTier;
+    next.tierBadge = getTierBadge(finalTier);
+    next.tierCapApplied = Boolean(tierCapReason);
+    next.tierCapReason = tierCapReason;
     return next;
   }
 
@@ -389,7 +457,11 @@
     mapped.stage1WeightedPercent = mapped.scoring.weightedPercent || null;
     mapped.stage1Tier = mapped.scoring.tier || '';
     mapped.stage1TierBadge = mapped.scoring.tierBadge || '';
-    mapped.stage1ScoreStatus = mapped.scoring.status || 'Unscored';
+    mapped.stage1ScoreStatus = mapped.scoring.completenessStatus || mapped.scoring.status || 'Unscored';
+    mapped.stage1Confidence = mapped.scoring.confidence || '';
+    mapped.stage1WeakestFactor = mapped.scoring.weakestFactor || '';
+    mapped.stage1TierCapApplied = Boolean(mapped.scoring.tierCapApplied);
+    mapped.stage1TierCapReason = mapped.scoring.tierCapReason || '';
 
     mapped.searchHaystack = [
       mapped.name, mapped.industry, mapped.category, mapped.channel_role, mapped.channel_segment,
@@ -425,7 +497,11 @@
       stage1WeightedPercent: r.stage1WeightedPercent || '',
       stage1Tier: r.stage1Tier || '',
       stage1TierBadge: r.stage1TierBadge || '',
-      stage1ScoreStatus: r.stage1ScoreStatus || ''
+      stage1ScoreStatus: r.stage1ScoreStatus || '',
+      stage1Confidence: r.stage1Confidence || '',
+      stage1WeakestFactor: r.stage1WeakestFactor || '',
+      stage1TierCapApplied: r.stage1TierCapApplied ? 'Yes' : 'No',
+      stage1TierCapReason: r.stage1TierCapReason || ''
     })));
   }
 
@@ -443,8 +519,11 @@
     normalizeProspectScoring,
     getOptionScore,
     calculateProspectWeightedScore,
+    getProspectCompletenessStatus,
+    getWeakestScoringFactor,
     getProspectTier,
     getTierBadge,
+    getTierCapReason,
     formatProspectScore,
   };
 })();
