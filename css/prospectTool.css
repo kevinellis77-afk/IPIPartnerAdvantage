@@ -47,6 +47,12 @@
 .prospect-table--search th[data-col="displayName"],
 .prospect-table--search td[data-col="displayName"]{text-align:left}
 
+.prospect-table--search th[data-col="displayName"],
+.prospect-table--search td[data-col="displayName"]{width:300px;min-width:300px}
+
+.prospect-table--search th[data-col="stage1WeightedScore"],
+.prospect-table--search td[data-col="stage1WeightedScore"]{width:88px;min-width:88px;max-width:88px;text-align:center}
+
 .prospect-row-selected td{background:rgba(103,216,255,.12)!important;box-shadow:inset 3px 0 0 #36c6ff}
 .chip-row{display:flex;flex-wrap:wrap;gap:8px}
 .chip{font-size:11px;background:rgba(103,216,255,.14);padding:4px 8px;border-radius:999px;color:#a9d7e7}
