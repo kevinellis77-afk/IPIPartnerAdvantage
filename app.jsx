@@ -4841,7 +4841,7 @@ function ProspectToolPage() {
   const STORAGE_STAGE1_SCORING_KEY = 'partnerProspectStage1ScoringById';
   const DEFAULT_FILTERS = {
     name: '', industry: '', category: '', channel_role: '', channel_segment: '', country: '', city: '',
-    trading_status: '', adopter_profile: '', partnerTierName: '', stage1Tier: '', stage1Status: '', stage1Confidence: '', stage1NextAction: '', minEmployees: '', maxEmployees: '', minRevenue: '',
+    trading_status: '', adopter_profile: '', partnerTierName: '', stage1Tier: '', stage1Status: '', stage1Confidence: '', stage1NextAction: '', stage1Freshness: '', minEmployees: '', maxEmployees: '', minRevenue: '',
     maxRevenue: '', hasWebsite: false, hasLinkedIn: false, hasEmail: false, minScore: 0, minStage1Score: ''
   };
   const ALL_COLUMNS = [
@@ -4853,6 +4853,7 @@ function ProspectToolPage() {
     { key: 'stage1Tier', label: 'Stage 1 Tier', essential: true },
     { key: 'stage1NextAction', label: 'Next Action' },
     { key: 'stage1LastReviewed', label: 'Last Reviewed', hiddenByDefault: true },
+    { key: 'stage1Freshness', label: 'Review Freshness', hiddenByDefault: true },
     { key: 'stage1Confidence', label: 'Stage 1 Confidence', hiddenByDefault: true },
     { key: 'companyClassification', label: 'Company Class' },
     { key: 'channel_role', label: 'Role', essential: true },
@@ -4893,6 +4894,10 @@ function ProspectToolPage() {
   const [saveViewOpen, setSaveViewOpen] = React.useState(false);
   const [saveViewForm, setSaveViewForm] = React.useState({ name: '', description: '', setDefault: false, overwrite: false, error: '' });
   const [feedback, setFeedback] = React.useState(null);
+  const [activePriorityViewKey, setActivePriorityViewKey] = React.useState('');
+  const [bulkReviewOpen, setBulkReviewOpen] = React.useState(false);
+  const [bulkReviewQueueIds, setBulkReviewQueueIds] = React.useState([]);
+  const [bulkReviewQueueName, setBulkReviewQueueName] = React.useState('');
   const [drawerTab, setDrawerTab] = React.useState('details');
   const [researchLoading, setResearchLoading] = React.useState(false);
   const [researchError, setResearchError] = React.useState('');
@@ -4908,6 +4913,8 @@ function ProspectToolPage() {
   };
   const stageOneConfig = window.ProspectToolUtils.STAGE_ONE_SCORING_CONFIG;
   const stageOneCategoryKeys = window.ProspectToolUtils.STAGE_ONE_CATEGORY_KEYS || [];
+  const freshnessLabels = window.ProspectToolUtils.REVIEW_FRESHNESS_LABELS || ['Fresh', 'Aging', 'Stale', 'Not Reviewed'];
+  const builtInPriorityViews = window.ProspectToolUtils.getBuiltInPriorityViews ? window.ProspectToolUtils.getBuiltInPriorityViews() : [];
   const stageOneCategoryEntries = stageOneCategoryKeys.map((key) => ({ key, ...stageOneConfig.categories[key] }));
   const stageOneGuidance = {
     routeToRevenue: 'Score 5 only where clear UCaaS and CX positioning is visible in website messaging, service pages, or case studies.',
@@ -4946,6 +4953,7 @@ function ProspectToolPage() {
     stage1TierCapReason: scoring.tierCapReason || '',
     stage1NextAction: scoring.nextAction || '',
     stage1LastReviewed: scoring.lastReviewed || '',
+    stage1Freshness: window.ProspectToolUtils.getReviewFreshnessStatus(scoring.lastReviewed),
   }), []);
 
   const readStoredStage1Scoring = React.useCallback(() => {
@@ -4994,8 +5002,9 @@ function ProspectToolPage() {
     view,
     top50,
     visibleColumns,
-    columnOrder
-  }), [searchInput, filters, sort, page, pageSize, view, top50, visibleColumns, columnOrder]);
+    columnOrder,
+    activePriorityViewKey
+  }), [searchInput, filters, sort, page, pageSize, view, top50, visibleColumns, columnOrder, activePriorityViewKey]);
 
   const applyTableState = React.useCallback((tableState = {}) => {
     setSearchInput(tableState.searchTerm || '');
@@ -5006,6 +5015,7 @@ function ProspectToolPage() {
     setView(tableState.view || 'table');
     setTop50(Boolean(tableState.top50));
     setVisibleColumns((tableState.visibleColumns || DEFAULT_VISIBLE_COLUMNS).filter((key) => DEFAULT_COLUMN_ORDER.includes(key)));
+    setActivePriorityViewKey(tableState.activePriorityViewKey || '');
   }, []);
 
   React.useEffect(() => { loadData(); }, [loadData]);
@@ -5053,6 +5063,7 @@ function ProspectToolPage() {
     if (filters.stage1Status && (r.stage1ScoreStatus || 'Unscored') !== filters.stage1Status) return false;
     if (filters.stage1Confidence && (r.stage1Confidence || '') !== filters.stage1Confidence) return false;
     if (filters.stage1NextAction && (r.stage1NextAction || '') !== filters.stage1NextAction) return false;
+    if (filters.stage1Freshness && window.ProspectToolUtils.getReviewFreshnessStatus(r.stage1LastReviewed) !== filters.stage1Freshness) return false;
     if (filters.minEmployees && (r.numericEmployees === null || r.numericEmployees < Number(filters.minEmployees))) return false;
     if (filters.maxEmployees && (r.numericEmployees === null || r.numericEmployees > Number(filters.maxEmployees))) return false;
     if (filters.minRevenue && (r.numericRevenue === null || r.numericRevenue < Number(filters.minRevenue))) return false;
@@ -5062,8 +5073,9 @@ function ProspectToolPage() {
     if (filters.hasEmail && !r.hasEmail) return false;
     if (r.idealPartnerScore < Number(filters.minScore || 0)) return false;
     if (filters.minStage1Score && ((r.stage1WeightedScore || 0) < Number(filters.minStage1Score))) return false;
+    if (activePriorityViewKey && window.ProspectToolUtils.applyPriorityViewFilter(activePriorityViewKey, [r]).length === 0) return false;
     return true;
-  }), [rows, keyword, filters]);
+  }), [rows, keyword, filters, activePriorityViewKey]);
 
   const sorted = React.useMemo(() => {
     const list = [...filtered];
@@ -5072,12 +5084,14 @@ function ProspectToolPage() {
       const av = field === 'score' ? a.idealPartnerScore
         : field === 'stage1score' ? (a.stage1WeightedScore || 0)
           : field === 'stage1tier' ? getStage1TierRank(a)
+            : field === 'freshness' ? freshnessLabels.indexOf(window.ProspectToolUtils.getReviewFreshnessStatus(a.stage1LastReviewed))
             : field === 'lastreviewed' ? (new Date(a.stage1LastReviewed || 0).getTime() || 0)
             : field === 'revenue' ? a.numericRevenue || 0
               : field === 'employees' ? a.numericEmployees || 0 : (a.name || '');
       const bv = field === 'score' ? b.idealPartnerScore
         : field === 'stage1score' ? (b.stage1WeightedScore || 0)
           : field === 'stage1tier' ? getStage1TierRank(b)
+            : field === 'freshness' ? freshnessLabels.indexOf(window.ProspectToolUtils.getReviewFreshnessStatus(b.stage1LastReviewed))
             : field === 'lastreviewed' ? (new Date(b.stage1LastReviewed || 0).getTime() || 0)
             : field === 'revenue' ? b.numericRevenue || 0
               : field === 'employees' ? b.numericEmployees || 0 : (b.name || '');
@@ -5085,7 +5099,7 @@ function ProspectToolPage() {
       return dir === 'asc' ? av - bv : bv - av;
     });
     return top50 ? list.slice(0, 50) : list;
-  }, [filtered, sort, top50, getStage1TierRank]);
+  }, [filtered, sort, top50, getStage1TierRank, freshnessLabels]);
 
   const pageCount = Math.max(1, Math.ceil(sorted.length / pageSize));
   const pageRows = sorted.slice((page - 1) * pageSize, (page - 1) * pageSize + pageSize);
@@ -5139,6 +5153,14 @@ function ProspectToolPage() {
 
   const selectedIndex = React.useMemo(() => sorted.findIndex((r) => r.id === selectedRowId), [sorted, selectedRowId]);
   const selected = selectedIndex >= 0 ? sorted[selectedIndex] : null;
+  const bulkReviewQueue = React.useMemo(() => bulkReviewQueueIds.map((id) => sorted.find((row) => row.id === id)).filter(Boolean), [bulkReviewQueueIds, sorted]);
+  const bulkReviewCurrentIndex = React.useMemo(() => bulkReviewQueue.findIndex((row) => row.id === selectedRowId), [bulkReviewQueue, selectedRowId]);
+  const bulkReviewCurrent = bulkReviewCurrentIndex >= 0 ? bulkReviewQueue[bulkReviewCurrentIndex] : null;
+  const isScoringDirty = React.useMemo(() => {
+    if (!selected) return false;
+    const baseline = window.ProspectToolUtils.normalizeProspectScoring(selected.scoring);
+    return JSON.stringify(baseline) !== JSON.stringify(editableScoring);
+  }, [selected, editableScoring]);
 
   React.useEffect(() => {
     if (!selectedRowId) return;
@@ -5146,7 +5168,20 @@ function ProspectToolPage() {
   }, [selectedRowId, selectedIndex]);
 
   React.useEffect(() => {
-    if (!selected) return undefined;
+    if (!bulkReviewOpen) return;
+    const queueIds = window.ProspectToolUtils.getBulkReviewQueue(sorted, filters, sort, activePriorityViewKey).filter((id) => bulkReviewQueueIds.includes(id));
+    setBulkReviewQueueIds(queueIds);
+    if (queueIds.length && !queueIds.includes(selectedRowId)) {
+      setSelectedRowId(queueIds[0]);
+    }
+    if (!queueIds.length) {
+      setBulkReviewOpen(false);
+      setFeedback({ tone: 'info', message: 'Bulk review queue is empty for the current context.' });
+    }
+  }, [bulkReviewOpen, sorted, filters, sort, activePriorityViewKey]);
+
+  React.useEffect(() => {
+    if (!selected || bulkReviewOpen) return undefined;
     document.body.classList.add('prospect-drawer-open');
     const lastActive = document.activeElement;
     drawerBodyRef.current?.focus();
@@ -5154,10 +5189,10 @@ function ProspectToolPage() {
       document.body.classList.remove('prospect-drawer-open');
       if (lastActive && typeof lastActive.focus === 'function') lastActive.focus();
     };
-  }, [selected]);
+  }, [selected, bulkReviewOpen]);
 
   React.useEffect(() => {
-    if (!selected) return undefined;
+    if (!selected || bulkReviewOpen) return undefined;
     const handleKeydown = (event) => {
       if (event.key === 'Escape') setSelectedRowId(null);
       if (event.key === 'ArrowLeft' && selectedIndex > 0) {
@@ -5171,14 +5206,14 @@ function ProspectToolPage() {
     };
     window.addEventListener('keydown', handleKeydown);
     return () => window.removeEventListener('keydown', handleKeydown);
-  }, [selected, selectedIndex, sorted]);
+  }, [selected, selectedIndex, sorted, bulkReviewOpen]);
 
   React.useEffect(() => {
-    if (!selected || !drawerBodyRef.current) return;
+    if (!selected || bulkReviewOpen || !drawerBodyRef.current) return;
     drawerBodyRef.current.scrollTo({ top: 0, behavior: 'auto' });
     const rowEl = document.querySelector(`[data-prospect-row-id="${selected.id}"]`);
     rowEl?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  }, [selected?.id]);
+  }, [selected?.id, bulkReviewOpen]);
 
   React.useEffect(() => {
     if (!selected) {
@@ -5203,12 +5238,13 @@ function ProspectToolPage() {
   };
 
   const getTierClass = (record) => `tier-badge tier-${record.partnerTier?.color || 'gray'}`;
-  const activeChips = [keyword && `Search: ${keyword}`, ...Object.entries(filters).filter(([k, v]) => v && v !== 0).map(([k, v]) => `${k}: ${v}`)].filter(Boolean);
+  const activePriorityLabel = builtInPriorityViews.find((viewItem) => viewItem.key === activePriorityViewKey)?.label || '';
+  const activeChips = [keyword && `Search: ${keyword}`, activePriorityLabel && `Priority view: ${activePriorityLabel}`, ...Object.entries(filters).filter(([k, v]) => v && v !== 0).map(([k, v]) => `${k}: ${v}`)].filter(Boolean);
   const filterLabels = {
     industry: 'Industry', category: 'Category', channel_role: 'Role', channel_segment: 'Segment', country: 'Country', city: 'City',
     trading_status: 'Trading', adopter_profile: 'Adopter profile', partnerTierName: 'Tier', minEmployees: 'Min employees',
     maxEmployees: 'Max employees', minRevenue: 'Min revenue', maxRevenue: 'Max revenue', hasWebsite: 'Website only',
-    hasLinkedIn: 'LinkedIn only', hasEmail: 'Email only', minScore: 'Min score', stage1Tier: 'Stage 1 tier', stage1Status: 'Stage 1 status', stage1Confidence: 'Stage 1 confidence', stage1NextAction: 'Next action',
+    hasLinkedIn: 'LinkedIn only', hasEmail: 'Email only', minScore: 'Min score', stage1Tier: 'Stage 1 tier', stage1Status: 'Stage 1 status', stage1Confidence: 'Stage 1 confidence', stage1NextAction: 'Next action', stage1Freshness: 'Review freshness', 'Priority view': 'Priority view',
     minStage1Score: 'Min Stage 1 score'
   };
   const activeFilterCount = Object.entries(filters).filter(([_, v]) => v && v !== 0).length;
@@ -5217,6 +5253,7 @@ function ProspectToolPage() {
     setSearchInput('');
     setTop50(false);
     setSort('score_desc');
+    setActivePriorityViewKey('');
     setVisibleColumns(DEFAULT_VISIBLE_COLUMNS);
     setFeedback({ tone: 'info', message: 'Filters, search, and columns reset to defaults.' });
   };
@@ -5358,7 +5395,7 @@ function ProspectToolPage() {
     }));
   };
 
-  const saveStage1Scoring = () => {
+  const saveStage1Scoring = React.useCallback(() => {
     if (!selected) return;
     const normalized = window.ProspectToolUtils.normalizeProspectScoring({
       ...editableScoring,
@@ -5374,10 +5411,56 @@ function ProspectToolPage() {
       localStorage.setItem(STORAGE_STAGE1_SCORING_KEY, JSON.stringify(existing));
     } catch (_err) {
       setFeedback({ tone: 'warning', message: 'Saved in current session, but unable to persist scoring locally.' });
-      return;
+      return false;
     }
     setFeedback({ tone: 'success', message: `Saved Stage 1 scoring for ${selected.displayName}.` });
+    return true;
+  }, [selected, editableScoring, applyScoringToRow, readStoredStage1Scoring]);
+
+  const attemptQueueNavigation = React.useCallback((direction = 'next') => {
+    if (!bulkReviewOpen) return;
+    if (isScoringDirty && !window.confirm('You have unsaved scoring changes. Continue without saving?')) return;
+    const targetId = direction === 'next'
+      ? window.ProspectToolUtils.getNextProspectInQueue(bulkReviewQueueIds, selectedRowId)
+      : window.ProspectToolUtils.getPreviousProspectInQueue(bulkReviewQueueIds, selectedRowId);
+    if (!targetId) {
+      if (direction === 'next') setFeedback({ tone: 'info', message: 'Reached the end of the bulk review queue.' });
+      return;
+    }
+    setSelectedRowId(targetId);
+  }, [bulkReviewOpen, isScoringDirty, bulkReviewQueueIds, selectedRowId]);
+
+  const handleSaveAndNext = () => {
+    const didSave = saveStage1Scoring();
+    if (!didSave) return;
+    const nextId = window.ProspectToolUtils.getNextProspectInQueue(bulkReviewQueueIds, selectedRowId);
+    if (nextId) {
+      setSelectedRowId(nextId);
+    } else {
+      setFeedback({ tone: 'info', message: 'Saved. You have reached the end of this review queue.' });
+    }
   };
+
+  const startBulkReview = React.useCallback((queueName = 'Current Results', customRows = null) => {
+    const sourceRows = Array.isArray(customRows) ? customRows : sorted;
+    const queueIds = window.ProspectToolUtils.getBulkReviewQueue(sourceRows, filters, sort, activePriorityViewKey);
+    if (!queueIds.length) {
+      setFeedback({ tone: 'warning', message: 'No prospects available for bulk review in the current result set.' });
+      return;
+    }
+    setBulkReviewQueueName(queueName);
+    setBulkReviewQueueIds(queueIds);
+    setSelectedRowId(queueIds[0]);
+    setBulkReviewOpen(true);
+    setFeedback({ tone: 'info', message: `Bulk Review started: ${queueIds.length} prospect${queueIds.length === 1 ? '' : 's'} in queue.` });
+  }, [sorted, filters, sort, activePriorityViewKey]);
+
+  const closeBulkReview = React.useCallback(() => {
+    if (isScoringDirty && !window.confirm('Exit bulk review and discard unsaved changes?')) return;
+    setBulkReviewOpen(false);
+    setBulkReviewQueueIds([]);
+    setBulkReviewQueueName('');
+  }, [isScoringDirty]);
 
   const renderCell = (record, key, rowIndex) => {
     if (key === 'rank') return <td className="cell-number" data-col={key}>{(page - 1) * pageSize + rowIndex + 1}</td>;
@@ -5388,6 +5471,7 @@ function ProspectToolPage() {
     if (key === 'stage1Tier') return <td data-col={key}><span className={getStage1TierClass(record)}>{record.stage1TierBadge || (record.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</span></td>;
     if (key === 'stage1NextAction') return <td data-col={key}>{record.stage1NextAction ? <span className="stage1-next-action-pill">{record.stage1NextAction}</span> : '—'}</td>;
     if (key === 'stage1LastReviewed') return <td data-col={key}>{window.ProspectToolUtils.formatLastReviewed(record.stage1LastReviewed)}</td>;
+    if (key === 'stage1Freshness') return <td data-col={key}><span className={`review-freshness review-freshness--${window.ProspectToolUtils.getReviewFreshnessStatus(record.stage1LastReviewed).toLowerCase().replace(/\s+/g, '-')}`}>{window.ProspectToolUtils.getReviewFreshnessStatus(record.stage1LastReviewed)}</span></td>;
     if (key === 'stage1Confidence') return <td data-col={key}>{record.stage1Confidence || '—'}</td>;
     if (key === 'displayRevenue' || key === 'displayEmployees' || key === 'contactCount') return <td className="cell-number" data-col={key}>{record[key] || '—'}</td>;
     if (key === 'website') return <td className="cell-icon" data-col={key}>{record.website ? <a className="prospect-inline-icon" href={window.ProspectToolUtils.normalizeUrl(record.website)} target="_blank" rel="noreferrer" aria-label="Open Website" title="Open Website">🌐</a> : '—'}</td>;
@@ -5430,6 +5514,7 @@ function ProspectToolPage() {
         <IconButton icon="filter" label={showAdvancedFilters ? 'Hide advanced filters' : 'Show advanced filters'} onClick={() => setShowAdvancedFilters((v) => !v)} className={showAdvancedFilters ? 'is-active' : ''} />
         <IconButton icon="columns" label="Manage columns" onClick={() => setShowColumnMenu((v) => !v)} className={showColumnMenu ? 'is-active' : ''} />
         <IconButton icon="save" label="Save view" onClick={() => setSaveViewOpen(true)} />
+        <button className="ui-btn ui-btn--secondary" type="button" onClick={() => startBulkReview(activePriorityViewKey ? `Priority View: ${builtInPriorityViews.find((viewItem) => viewItem.key === activePriorityViewKey)?.label || 'Current Results'}` : 'Current Results')}>Bulk Review Current Results</button>
         <IconButton icon="export" label="Export filtered CSV" onClick={() => exportRows(sorted, 'prospects-filtered.csv')} />
         <label className="prospect-toggle"><input type="checkbox" checked={top50} onChange={(e) => setTop50(e.target.checked)} /> Top 50 only</label>
         <div style={{ marginLeft: 'auto', display: 'inline-flex', gap: 6 }}>
@@ -5457,6 +5542,7 @@ function ProspectToolPage() {
         <select className="ui-search" value={filters.stage1NextAction} onChange={(e) => setFilters((f) => ({ ...f, stage1NextAction: e.target.value }))}><option value="">Next action</option>{(stageOneConfig.nextActionOptions || []).map((v) => <option key={v} value={v}>{v}</option>)}</select>
         <select className="ui-search" value={filters.stage1Status} onChange={(e) => setFilters((f) => ({ ...f, stage1Status: e.target.value }))}><option value="">Stage 1 status</option>{['Complete', 'Partial', 'Unscored'].map((v) => <option key={v} value={v}>{v}</option>)}</select>
         <select className="ui-search" value={filters.stage1Confidence} onChange={(e) => setFilters((f) => ({ ...f, stage1Confidence: e.target.value }))}><option value="">Stage 1 confidence</option>{(stageOneConfig.confidenceOptions || []).map((v) => <option key={v} value={v}>{v}</option>)}</select>
+        <select className="ui-search" value={filters.stage1Freshness} onChange={(e) => setFilters((f) => ({ ...f, stage1Freshness: e.target.value }))}><option value="">Review freshness</option>{freshnessLabels.map((v) => <option key={v} value={v}>{v}</option>)}</select>
       </div>
       {showAdvancedFilters && <div className="filter-grid prospect-filter-grid--advanced">
         <input className="ui-search" placeholder="Min employees" type="number" value={filters.minEmployees} onChange={(e) => setFilters((f) => ({ ...f, minEmployees: e.target.value }))} />
@@ -5466,7 +5552,7 @@ function ProspectToolPage() {
         <input className="ui-search" placeholder="Min score" type="number" min="0" max="100" value={filters.minScore} onChange={(e) => setFilters((f) => ({ ...f, minScore: e.target.value }))} />
         <input className="ui-search" placeholder="Min Stage 1 score" type="number" min="1" max="5" step="0.01" value={filters.minStage1Score} onChange={(e) => setFilters((f) => ({ ...f, minStage1Score: e.target.value }))} />
         <select className="ui-search" value={sort} onChange={(e) => setSort(e.target.value)}>
-          <option value="score_desc">Score ↓</option><option value="score_asc">Score ↑</option><option value="stage1score_desc">Stage 1 score ↓</option><option value="stage1score_asc">Stage 1 score ↑</option><option value="stage1tier_desc">Stage 1 tier ↓</option><option value="stage1tier_asc">Stage 1 tier ↑</option><option value="lastreviewed_desc">Last reviewed ↓</option><option value="lastreviewed_asc">Last reviewed ↑</option><option value="revenue_desc">Revenue ↓</option><option value="revenue_asc">Revenue ↑</option><option value="employees_desc">Employees ↓</option><option value="employees_asc">Employees ↑</option><option value="name_asc">Name A→Z</option><option value="name_desc">Name Z→A</option>
+          <option value="score_desc">Score ↓</option><option value="score_asc">Score ↑</option><option value="stage1score_desc">Stage 1 score ↓</option><option value="stage1score_asc">Stage 1 score ↑</option><option value="stage1tier_desc">Stage 1 tier ↓</option><option value="stage1tier_asc">Stage 1 tier ↑</option><option value="lastreviewed_desc">Last reviewed ↓</option><option value="lastreviewed_asc">Last reviewed ↑</option><option value="freshness_asc">Freshness (Fresh → Not Reviewed)</option><option value="freshness_desc">Freshness (Not Reviewed → Fresh)</option><option value="revenue_desc">Revenue ↓</option><option value="revenue_asc">Revenue ↑</option><option value="employees_desc">Employees ↓</option><option value="employees_asc">Employees ↑</option><option value="name_asc">Name A→Z</option><option value="name_desc">Name Z→A</option>
         </select>
         <label><input type="checkbox" checked={filters.hasWebsite} onChange={(e) => setFilters((f) => ({ ...f, hasWebsite: e.target.checked }))} /> Has website</label>
         <label><input type="checkbox" checked={filters.hasLinkedIn} onChange={(e) => setFilters((f) => ({ ...f, hasLinkedIn: e.target.checked }))} /> Has LinkedIn</label>
@@ -5478,6 +5564,31 @@ function ProspectToolPage() {
         return <span className="chip" key={c}>{label}: {value}</span>;
       })}{activeChips.length === 0 && <span className="chip">No active filters</span>}</div>
       <div className="prospect-filter-summary">{activeFilterCount} active filters · {sorted.length} matching rows</div>
+    </div>
+
+    <div className="saved-views-section ds-card">
+      <div className="saved-views-header"><h3>Priority Views</h3><span>Built-in operational shortcuts</span></div>
+      <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>Priority Views provide fast access to the most operationally useful prospect cohorts.</p>
+      <div className="saved-views-grid">
+        {builtInPriorityViews.map((priorityView) => {
+          const matchedRows = window.ProspectToolUtils.applyPriorityViewFilter(priorityView.key, rows);
+          const isActive = activePriorityViewKey === priorityView.key;
+          return <div key={priorityView.key} className="saved-view-card">
+            <div className="saved-view-head">
+              <strong>{priorityView.label}</strong>
+              {isActive && <span className="top50-badge">Active</span>}
+            </div>
+            <p>{priorityView.description}</p>
+            <div className="saved-view-meta">
+              <span><b>Matches:</b> {matchedRows.length} prospects</span>
+            </div>
+            <div className="saved-view-actions">
+              <button className="ui-btn ui-btn--secondary" type="button" onClick={() => setActivePriorityViewKey(isActive ? '' : priorityView.key)}>{isActive ? 'Clear view' : 'Apply view'}</button>
+              <button className="ui-btn ui-btn--secondary" type="button" onClick={() => startBulkReview(`Priority View: ${priorityView.label}`, window.ProspectToolUtils.applyPriorityViewFilter(priorityView.key, sorted))}>Review This Priority View</button>
+            </div>
+          </div>;
+        })}
+      </div>
     </div>
 
     {top50 && <div className="top50-summary-panel ds-card">
@@ -5563,7 +5674,72 @@ function ProspectToolPage() {
       </div>
     </div>}
 
-    {selected && <div className="prospect-drawer-layer" role="presentation">
+    {bulkReviewOpen && bulkReviewCurrent && <div className="bulk-review-layer" role="presentation">
+      <div className="bulk-review-backdrop" onClick={closeBulkReview} />
+      <aside className="bulk-review-panel ds-card" role="dialog" aria-modal="true" aria-label={`Bulk review for ${bulkReviewCurrent.displayName}`}>
+        <div className="bulk-review-head">
+          <div>
+            <span className="prospect-drawer-kicker">Bulk Review Mode</span>
+            <h3 style={{ margin: '4px 0 6px' }}>{bulkReviewCurrent.displayName}</h3>
+            <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>
+              Reviewing: {bulkReviewQueueName || 'Current Results'} · Item {bulkReviewCurrentIndex + 1} of {bulkReviewQueue.length}
+            </p>
+          </div>
+          <div className="bulk-review-actions">
+            <button className="ui-btn ui-btn--secondary" type="button" onClick={() => attemptQueueNavigation('prev')} disabled={bulkReviewCurrentIndex <= 0}>Previous</button>
+            <button className="ui-btn ui-btn--secondary" type="button" onClick={() => attemptQueueNavigation('next')} disabled={bulkReviewCurrentIndex >= bulkReviewQueue.length - 1}>Next</button>
+            <button className="ui-btn ui-btn--primary" type="button" onClick={saveStage1Scoring}>Save</button>
+            <button className="ui-btn ui-btn--primary" type="button" onClick={handleSaveAndNext} disabled={bulkReviewCurrentIndex >= bulkReviewQueue.length - 1}>Save &amp; Next</button>
+            <button className="ui-btn ui-btn--ghost" type="button" onClick={closeBulkReview}>Exit Bulk Review</button>
+          </div>
+        </div>
+        <div className="bulk-review-progress"><div style={{ width: `${((bulkReviewCurrentIndex + 1) / Math.max(1, bulkReviewQueue.length)) * 100}%` }} /></div>
+        <div className="stage1-summary-grid">
+          <div><span>Final Tier</span><strong>{editableScoring.tier || (editableScoring.completenessStatus === 'Partial' ? 'Partial' : 'Unscored')}</strong></div>
+          <div><span>Weighted Score</span><strong>{editableScoring.weightedScore ? `${window.ProspectToolUtils.formatProspectScore(editableScoring.weightedScore)} / 5.00` : (editableScoring.completenessStatus || 'Unscored')}</strong></div>
+          <div><span>Confidence</span><strong>{editableScoring.confidence || 'Not set'}</strong></div>
+          <div><span>Completeness</span><strong>{editableScoring.completenessStatus || 'Unscored'}</strong></div>
+          <div><span>Weakest Factor</span><strong>{editableScoring.weakestFactor || '—'}</strong></div>
+          <div><span>Last Reviewed</span><strong>{window.ProspectToolUtils.formatLastReviewed(editableScoring.lastReviewed)}</strong></div>
+          <div><span>Review Freshness</span><strong><span className={`review-freshness review-freshness--${window.ProspectToolUtils.getReviewFreshnessStatus(editableScoring.lastReviewed).toLowerCase().replace(/\s+/g, '-')}`}>{window.ProspectToolUtils.getReviewFreshnessStatus(editableScoring.lastReviewed)}</span></strong></div>
+        </div>
+        <div className="stage1-grid">
+          {stageOneCategoryEntries.map((category) => {
+            const value = editableScoring[category.key] || { label: '', score: 0 };
+            return <label key={`bulk-${category.key}`} className="stage1-field">
+              <span>{category.label} <em>({Math.round(category.weight * 100)}%)</em></span>
+              <select className="ui-search" value={value.label || ''} onChange={(event) => updateScoringCategory(category.key, event.target.value)}>
+                <option value="">Select {category.label}</option>
+                {category.options.map((option) => <option key={option.label} value={option.label}>{option.label}</option>)}
+              </select>
+              <small>Score: {value.score || 0}</small>
+            </label>;
+          })}
+        </div>
+        <div className="stage1-grid stage1-grid--meta">
+          <label className="stage1-field">
+            <span>Next Action</span>
+            <select className="ui-search" value={editableScoring.nextAction || ''} onChange={(event) => updateScoringMeta('nextAction', event.target.value)}>
+              <option value="">No action selected</option>
+              {(stageOneConfig.nextActionOptions || []).map((option) => <option key={option} value={option}>{option}</option>)}
+            </select>
+          </label>
+          <label className="stage1-field">
+            <span>Confidence</span>
+            <select className="ui-search" value={editableScoring.confidence || ''} onChange={(event) => updateScoringMeta('confidence', event.target.value)}>
+              <option value="">Select confidence</option>
+              {(stageOneConfig.confidenceOptions || []).map((option) => <option key={option} value={option}>{option}</option>)}
+            </select>
+          </label>
+          <label className="stage1-field stage1-field--full">
+            <span>Evidence / Rationale</span>
+            <textarea className="ui-search" rows={3} value={editableScoring.evidence || ''} onChange={(event) => updateScoringMeta('evidence', event.target.value)} placeholder="Capture observable evidence used for Stage 1 scoring." />
+          </label>
+        </div>
+      </aside>
+    </div>}
+
+    {selected && !bulkReviewOpen && <div className="prospect-drawer-layer" role="presentation">
       <button type="button" className="prospect-drawer-backdrop" aria-label="Close details drawer" onClick={() => setSelectedRowId(null)} />
       <aside className="prospect-drawer" role="dialog" aria-modal="true" aria-label={`Partner details for ${selected.displayName}`}>
         <div className="prospect-drawer-header">
@@ -5603,6 +5779,7 @@ function ProspectToolPage() {
               <div><span>Stage 1 Confidence</span><strong>{selected.stage1Confidence || '—'}</strong></div>
               <div><span>Next Action</span><strong>{selected.stage1NextAction || '—'}</strong></div>
               <div><span>Last Reviewed</span><strong>{window.ProspectToolUtils.formatLastReviewed(selected.stage1LastReviewed)}</strong></div>
+              <div><span>Review Freshness</span><strong><span className={`review-freshness review-freshness--${window.ProspectToolUtils.getReviewFreshnessStatus(selected.stage1LastReviewed).toLowerCase().replace(/\s+/g, '-')}`}>{window.ProspectToolUtils.getReviewFreshnessStatus(selected.stage1LastReviewed)}</span></strong></div>
               <div><span>Company Class</span><strong>{selected.companyClassification || 'Unclassified'}</strong></div>
               <div><span>Status</span><strong>{selected.trading_status || '—'}</strong></div>
               <div><span>Region</span><strong>{selected.country || '—'}</strong></div>
@@ -5686,6 +5863,7 @@ function ProspectToolPage() {
                 <div><span>Confidence</span><strong>{editableScoring.confidence || 'Not set'}</strong></div>
                 <div><span>Completeness</span><strong>{editableScoring.completenessStatus || 'Unscored'}</strong></div>
                 <div><span>Last Reviewed</span><strong>{window.ProspectToolUtils.formatLastReviewed(editableScoring.lastReviewed)}</strong></div>
+                <div><span>Review Freshness</span><strong><span className={`review-freshness review-freshness--${window.ProspectToolUtils.getReviewFreshnessStatus(editableScoring.lastReviewed).toLowerCase().replace(/\s+/g, '-')}`}>{window.ProspectToolUtils.getReviewFreshnessStatus(editableScoring.lastReviewed)}</span></strong></div>
                 <div><span>Days Since Review</span><strong>{window.ProspectToolUtils.getDaysSinceReview(editableScoring.lastReviewed) ?? '—'}</strong></div>
                 <div><span>Next Action</span><strong>{editableScoring.nextAction || 'Not set'}</strong></div>
               </div>

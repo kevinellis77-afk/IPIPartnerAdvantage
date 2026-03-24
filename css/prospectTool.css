@@ -237,4 +237,17 @@
 .stage1-cap-note{margin:0;font-size:11px;color:#ffdca7}
 .stage1-field--full{grid-column:1 / -1}
 .stage1-next-action-pill{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:700;background:rgba(103,216,255,.16);border:1px solid rgba(103,216,255,.35);color:#d8f4ff;max-width:100%}
+.review-freshness{display:inline-flex;align-items:center;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700;border:1px solid transparent}
+.review-freshness--fresh{background:rgba(54,198,131,.16);border-color:rgba(54,198,131,.34);color:#baf5d7}
+.review-freshness--aging{background:rgba(255,190,97,.14);border-color:rgba(255,190,97,.34);color:#ffe2b4}
+.review-freshness--stale{background:rgba(173,156,255,.14);border-color:rgba(173,156,255,.34);color:#ddd2ff}
+.review-freshness--not-reviewed{background:rgba(148,163,184,.2);border-color:rgba(148,163,184,.35);color:#dde5f2}
+
+.bulk-review-layer{position:fixed;inset:0;z-index:1850;display:flex;align-items:center;justify-content:center;padding:18px}
+.bulk-review-backdrop{position:absolute;inset:0;background:rgba(6,12,18,.56)}
+.bulk-review-panel{position:relative;z-index:2;width:min(1100px,96vw);max-height:92vh;overflow:auto;display:grid;gap:12px;padding:16px}
+.bulk-review-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.bulk-review-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.bulk-review-progress{height:6px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+.bulk-review-progress>div{height:100%;background:linear-gradient(90deg,#36c6ff,#6be2c3)}
 @media (max-width:860px){.stage1-grid,.stage1-summary-grid{grid-template-columns:1fr}}
