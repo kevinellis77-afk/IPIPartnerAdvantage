@@ -55,6 +55,8 @@
 
 .prospect-table--search th[data-col="stage1WeightedScore"],
 .prospect-table--search td[data-col="stage1WeightedScore"]{width:88px;min-width:88px;max-width:88px;text-align:center}
+.prospect-table--search th[data-col="stage1Outcome"],
+.prospect-table--search td[data-col="stage1Outcome"]{width:150px;min-width:150px;max-width:150px;text-align:center}
 
 .prospect-row-selected td{background:rgba(103,216,255,.12)!important;box-shadow:inset 3px 0 0 #36c6ff}
 .chip-row{display:flex;flex-wrap:wrap;gap:8px}
@@ -265,6 +267,11 @@
 .prospect-pill--low{background:rgba(255,126,126,.16);border-color:rgba(255,126,126,.38);color:#ffd2d2}
 .prospect-pill--score-band{min-width:72px;justify-content:center}
 .prospect-pill--next{background:rgba(103,216,255,.16);border-color:rgba(103,216,255,.35);color:#d8f4ff}
+.prospect-pill--outcome{background:rgba(148,163,184,.18);border-color:rgba(148,163,184,.32);color:#e3ebf5}
+.prospect-pill--contacted,.prospect-pill--discovery-completed,.prospect-pill--opportunity-created{background:rgba(103,216,255,.16);border-color:rgba(103,216,255,.35);color:#d8f4ff}
+.prospect-pill--closed-won,.prospect-pill--good-target{background:rgba(54,198,131,.16);border-color:rgba(54,198,131,.35);color:#c5f5dc}
+.prospect-pill--closed-lost,.prospect-pill--poor-target,.prospect-pill--no-response{background:rgba(255,126,126,.16);border-color:rgba(255,126,126,.38);color:#ffd2d2}
+.prospect-pill--not-contacted{background:rgba(148,163,184,.2);border-color:rgba(148,163,184,.35);color:#dde5f2}
 .prospect-pill--prioritise-outreach{background:rgba(54,198,131,.16);border-color:rgba(54,198,131,.35);color:#bff4d9}
 .prospect-pill--qualify-further{background:rgba(103,216,255,.16);border-color:rgba(103,216,255,.35);color:#d9f1ff}
 .prospect-pill--nurture{background:rgba(255,190,97,.15);border-color:rgba(255,190,97,.36);color:#ffe2b4}

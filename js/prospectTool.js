@@ -160,6 +160,25 @@
     Stale: 3,
     'Not Reviewed': 4,
   };
+  const OUTCOME_OPTIONS = [
+    'Not Contacted',
+    'Contacted',
+    'Discovery Completed',
+    'Opportunity Created',
+    'Closed Won',
+    'Closed Lost',
+    'No Response',
+  ];
+  const TARGET_QUALITY_OPTIONS = ['Good Target', 'Poor Target'];
+  const OUTCOME_SORT_PRIORITY = {
+    'Opportunity Created': 1,
+    'Discovery Completed': 2,
+    Contacted: 3,
+    'Closed Won': 4,
+    'Closed Lost': 5,
+    'No Response': 6,
+    'Not Contacted': 7,
+  };
 
   function getTierPriorityValue(tierBadge) {
     return STAGE_ONE_TIER_PRIORITY[tierBadge] || 99;
@@ -171,6 +190,28 @@
 
   function getReviewFreshnessPriorityValue(freshness) {
     return REVIEW_FRESHNESS_PRIORITY[freshness] || 99;
+  }
+
+  function getOutcomePriorityValue(outcome) {
+    return OUTCOME_SORT_PRIORITY[outcome] || 99;
+  }
+
+  function formatFirstContactDate(dateValue) {
+    const parsed = parseReviewDate(dateValue);
+    if (!parsed) return '—';
+    return parsed.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  }
+
+  function shouldAutoSuggestFirstContactDate(previousOutcome, nextOutcome, firstContactDate) {
+    if (firstContactDate) return false;
+    const previous = String(previousOutcome || '').trim();
+    const next = String(nextOutcome || '').trim();
+    if (!next || next === 'Not Contacted') return false;
+    return previous === '' || previous === 'Not Contacted';
   }
 
   function getWorkingQueueDefinition() {
@@ -307,6 +348,9 @@
       calculatedTierBadge: '',
       nextAction: '',
       lastReviewed: '',
+      outcome: '',
+      firstContactDate: '',
+      targetQuality: '',
     };
   }
 
@@ -453,6 +497,9 @@
     next.evidence = typeof scoring.evidence === 'string' ? scoring.evidence : '';
     next.nextAction = STAGE_ONE_SCORING_CONFIG.nextActionOptions.includes(scoring.nextAction) ? scoring.nextAction : '';
     next.lastReviewed = parseReviewDate(scoring.lastReviewed)?.toISOString() || '';
+    next.outcome = OUTCOME_OPTIONS.includes(scoring.outcome) ? scoring.outcome : '';
+    next.firstContactDate = parseReviewDate(scoring.firstContactDate)?.toISOString() || '';
+    next.targetQuality = TARGET_QUALITY_OPTIONS.includes(scoring.targetQuality) ? scoring.targetQuality : '';
     next.completenessStatus = getProspectCompletenessStatus(next);
     next.status = next.completenessStatus;
     next.weakestFactor = getWeakestScoringFactor(next);
@@ -489,6 +536,16 @@
     });
   }
 
+  function sortProspectsByOutcome(records, direction = 'asc') {
+    const multiplier = direction === 'desc' ? -1 : 1;
+    return [...(records || [])].sort((a, b) => {
+      const aPriority = getOutcomePriorityValue(a?.scoring?.outcome || a?.stage1Outcome || '');
+      const bPriority = getOutcomePriorityValue(b?.scoring?.outcome || b?.stage1Outcome || '');
+      if (aPriority !== bPriority) return (aPriority - bPriority) * multiplier;
+      return String(a?.name || '').localeCompare(String(b?.name || ''));
+    });
+  }
+
   function filterProspectsByNextAction(records, nextAction) {
     if (!nextAction) return [...(records || [])];
     return (records || []).filter((record) => (record?.scoring?.nextAction || '') === nextAction);
@@ -505,6 +562,41 @@
       label: view.label,
       description: view.description,
     }));
+  }
+
+  function getBuiltInLearningViews() {
+    return [
+      {
+        key: 'recently_contacted',
+        label: 'Recently Contacted',
+        description: 'Prospects in Contacted or Discovery Completed, most recent first contact first.',
+      },
+      {
+        key: 'opportunities_created',
+        label: 'Opportunities Created',
+        description: 'Prospects that reached Opportunity Created or Closed Won.',
+      },
+      {
+        key: 'no_response_or_poor_targets',
+        label: 'No Response / Poor Targets',
+        description: 'Prospects with no response or flagged as poor targets.',
+      },
+      {
+        key: 'good_targets',
+        label: 'Good Targets',
+        description: 'Prospects marked as good targets during outreach/discovery.',
+      },
+    ];
+  }
+
+  function isProspectInLearningView(viewKey, prospect) {
+    const outcome = (prospect?.stage1Outcome || prospect?.scoring?.outcome || '').trim();
+    const targetQuality = (prospect?.stage1TargetQuality || prospect?.scoring?.targetQuality || '').trim();
+    if (viewKey === 'recently_contacted') return ['Contacted', 'Discovery Completed'].includes(outcome);
+    if (viewKey === 'opportunities_created') return ['Opportunity Created', 'Closed Won'].includes(outcome);
+    if (viewKey === 'no_response_or_poor_targets') return outcome === 'No Response' || targetQuality === 'Poor Target';
+    if (viewKey === 'good_targets') return targetQuality === 'Good Target';
+    return false;
   }
 
   function applyPriorityViewFilter(viewKey, prospects) {
@@ -532,6 +624,8 @@
     if (activeFilters.stage1Status && (record?.stage1ScoreStatus || 'Unscored') !== activeFilters.stage1Status) return false;
     if (activeFilters.stage1Confidence && (record?.stage1Confidence || '') !== activeFilters.stage1Confidence) return false;
     if (activeFilters.stage1Freshness && freshness !== activeFilters.stage1Freshness) return false;
+    if (activeFilters.stage1Outcome && (record?.stage1Outcome || '') !== activeFilters.stage1Outcome) return false;
+    if (activeFilters.stage1TargetQuality && (record?.stage1TargetQuality || '') !== activeFilters.stage1TargetQuality) return false;
     return true;
   }
 
@@ -546,6 +640,9 @@
       scoring,
       stage1NextAction: scoring.nextAction || '',
       stage1Freshness: getReviewFreshnessStatus(scoring.lastReviewed),
+      stage1Outcome: scoring.outcome || '',
+      stage1FirstContactDate: scoring.firstContactDate || '',
+      stage1TargetQuality: scoring.targetQuality || '',
     };
   }
 
@@ -726,6 +823,9 @@
     mapped.stage1NextAction = mapped.scoring.nextAction || '';
     mapped.stage1LastReviewed = mapped.scoring.lastReviewed || '';
     mapped.stage1ReviewFreshness = getReviewFreshnessStatus(mapped.stage1LastReviewed);
+    mapped.stage1Outcome = mapped.scoring.outcome || '';
+    mapped.stage1FirstContactDate = mapped.scoring.firstContactDate || '';
+    mapped.stage1TargetQuality = mapped.scoring.targetQuality || '';
 
     mapped.searchHaystack = [
       mapped.name, mapped.industry, mapped.category, mapped.channel_role, mapped.channel_segment,
@@ -767,7 +867,10 @@
       stage1TierCapApplied: r.stage1TierCapApplied ? 'Yes' : 'No',
       stage1TierCapReason: r.stage1TierCapReason || '',
       stage1NextAction: r.stage1NextAction || '',
-      stage1LastReviewed: r.stage1LastReviewed || ''
+      stage1LastReviewed: r.stage1LastReviewed || '',
+      stage1Outcome: r.stage1Outcome || '',
+      stage1FirstContactDate: r.stage1FirstContactDate || '',
+      stage1TargetQuality: r.stage1TargetQuality || ''
     })));
   }
 
@@ -786,9 +889,15 @@
     STAGE_ONE_TIER_PRIORITY,
     NEXT_ACTION_PRIORITY,
     REVIEW_FRESHNESS_PRIORITY,
+    OUTCOME_OPTIONS,
+    TARGET_QUALITY_OPTIONS,
+    OUTCOME_SORT_PRIORITY,
     getTierPriorityValue,
     getNextActionPriorityValue,
     getReviewFreshnessPriorityValue,
+    getOutcomePriorityValue,
+    formatFirstContactDate,
+    shouldAutoSuggestFirstContactDate,
     getWorkingQueueDefinition,
     isProspectInWorkingQueue,
     getWorkingQueueSortComparator,
@@ -807,9 +916,12 @@
     getDaysSinceReview,
     getReviewFreshnessStatus,
     sortProspectsByLastReviewed,
+    sortProspectsByOutcome,
     filterProspectsByNextAction,
     filterProspectsByReviewFreshness,
     getBuiltInPriorityViews,
+    getBuiltInLearningViews,
+    isProspectInLearningView,
     applyPriorityViewFilter,
     shouldProspectRemainInCurrentView,
     updateProspectNextAction,
