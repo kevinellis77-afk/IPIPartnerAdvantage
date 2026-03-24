@@ -4838,6 +4838,7 @@ function EnablementHub({ onBack, onNavigate }) {
 function ProspectToolPage() {
   const STORAGE_VIEWS_KEY = 'partnerProspectSavedViews';
   const STORAGE_DEFAULT_KEY = 'partnerProspectDefaultViewId';
+  const STORAGE_STAGE1_SCORING_KEY = 'partnerProspectStage1ScoringById';
   const DEFAULT_FILTERS = {
     name: '', industry: '', category: '', channel_role: '', channel_segment: '', country: '', city: '',
     trading_status: '', adopter_profile: '', partnerTierName: '', stage1Tier: '', stage1Status: '', stage1Confidence: '', minEmployees: '', maxEmployees: '', minRevenue: '',
@@ -4929,6 +4930,29 @@ function ProspectToolPage() {
     return 'tier-badge tier-gray';
   }, []);
 
+  const applyScoringToRow = React.useCallback((row, scoring) => ({
+    ...row,
+    scoring,
+    stage1WeightedScore: scoring.weightedScore || null,
+    stage1WeightedPercent: scoring.weightedPercent || null,
+    stage1Tier: scoring.tier || '',
+    stage1TierBadge: scoring.tierBadge || '',
+    stage1ScoreStatus: scoring.completenessStatus || scoring.status || 'Unscored',
+    stage1Confidence: scoring.confidence || '',
+    stage1WeakestFactor: scoring.weakestFactor || '',
+    stage1TierCapApplied: Boolean(scoring.tierCapApplied),
+    stage1TierCapReason: scoring.tierCapReason || '',
+  }), []);
+
+  const readStoredStage1Scoring = React.useCallback(() => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(STORAGE_STAGE1_SCORING_KEY) || '{}');
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (_err) {
+      return {};
+    }
+  }, []);
+
   const IconButton = ({ icon, label, onClick, className = '', disabled = false, type = 'button', tone = 'default' }) => (
     <button type={type} className={`ui-btn ui-btn--secondary prospect-icon-btn prospect-icon-btn--${tone} ${className}`.trim()} aria-label={label} title={label} data-tooltip={label} onClick={onClick} disabled={disabled}>
       <span aria-hidden="true">{iconMap[icon] || icon}</span>
@@ -4943,10 +4967,20 @@ function ProspectToolPage() {
 
   const loadData = React.useCallback(async () => {
     setLoading(true); setError('');
-    try { setRows(await window.ProspectToolUtils.loadProspectsCsv()); }
+    try {
+      const loadedRows = await window.ProspectToolUtils.loadProspectsCsv();
+      const storedStage1Scoring = readStoredStage1Scoring();
+      const mergedRows = loadedRows.map((row) => {
+        const storedScoring = storedStage1Scoring[row.id];
+        if (!storedScoring || typeof storedScoring !== 'object') return row;
+        const normalized = window.ProspectToolUtils.normalizeProspectScoring(storedScoring);
+        return applyScoringToRow(row, normalized);
+      });
+      setRows(mergedRows);
+    }
     catch (e) { setError(e.message || 'Failed to load CSV'); }
     finally { setLoading(false); }
-  }, []);
+  }, [applyScoringToRow, readStoredStage1Scoring]);
 
   const getCurrentTableState = React.useCallback(() => ({
     searchTerm: searchInput,
@@ -5322,20 +5356,16 @@ function ProspectToolPage() {
     const normalized = window.ProspectToolUtils.normalizeProspectScoring(editableScoring);
     setRows((current) => current.map((row) => {
       if (row.id !== selected.id) return row;
-      return {
-        ...row,
-        scoring: normalized,
-        stage1WeightedScore: normalized.weightedScore || null,
-        stage1WeightedPercent: normalized.weightedPercent || null,
-        stage1Tier: normalized.tier || '',
-        stage1TierBadge: normalized.tierBadge || '',
-        stage1ScoreStatus: normalized.completenessStatus || normalized.status || 'Unscored',
-        stage1Confidence: normalized.confidence || '',
-        stage1WeakestFactor: normalized.weakestFactor || '',
-        stage1TierCapApplied: Boolean(normalized.tierCapApplied),
-        stage1TierCapReason: normalized.tierCapReason || '',
-      };
+      return applyScoringToRow(row, normalized);
     }));
+    try {
+      const existing = readStoredStage1Scoring();
+      existing[selected.id] = normalized;
+      localStorage.setItem(STORAGE_STAGE1_SCORING_KEY, JSON.stringify(existing));
+    } catch (_err) {
+      setFeedback({ tone: 'warning', message: 'Saved in current session, but unable to persist scoring locally.' });
+      return;
+    }
     setFeedback({ tone: 'success', message: `Saved Stage 1 scoring for ${selected.displayName}.` });
   };
 
