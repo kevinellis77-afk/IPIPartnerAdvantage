@@ -4841,7 +4841,7 @@ function ProspectToolPage() {
   const STORAGE_STAGE1_SCORING_KEY = 'partnerProspectStage1ScoringById';
   const DEFAULT_FILTERS = {
     name: '', industry: '', category: '', channel_role: '', channel_segment: '', country: '', city: '',
-    trading_status: '', adopter_profile: '', partnerTierName: '', stage1Tier: '', stage1Status: '', stage1Confidence: '', minEmployees: '', maxEmployees: '', minRevenue: '',
+    trading_status: '', adopter_profile: '', partnerTierName: '', stage1Tier: '', stage1Status: '', stage1Confidence: '', stage1NextAction: '', minEmployees: '', maxEmployees: '', minRevenue: '',
     maxRevenue: '', hasWebsite: false, hasLinkedIn: false, hasEmail: false, minScore: 0, minStage1Score: ''
   };
   const ALL_COLUMNS = [
@@ -4851,6 +4851,8 @@ function ProspectToolPage() {
     { key: 'partnerTierName', label: 'Tier', essential: true },
     { key: 'stage1WeightedScore', label: 'Stage 1 Score', essential: true },
     { key: 'stage1Tier', label: 'Stage 1 Tier', essential: true },
+    { key: 'stage1NextAction', label: 'Next Action' },
+    { key: 'stage1LastReviewed', label: 'Last Reviewed', hiddenByDefault: true },
     { key: 'stage1Confidence', label: 'Stage 1 Confidence', hiddenByDefault: true },
     { key: 'companyClassification', label: 'Company Class' },
     { key: 'channel_role', label: 'Role', essential: true },
@@ -4942,6 +4944,8 @@ function ProspectToolPage() {
     stage1WeakestFactor: scoring.weakestFactor || '',
     stage1TierCapApplied: Boolean(scoring.tierCapApplied),
     stage1TierCapReason: scoring.tierCapReason || '',
+    stage1NextAction: scoring.nextAction || '',
+    stage1LastReviewed: scoring.lastReviewed || '',
   }), []);
 
   const readStoredStage1Scoring = React.useCallback(() => {
@@ -5048,6 +5052,7 @@ function ProspectToolPage() {
     if (filters.stage1Tier && (r.stage1Tier || '') !== filters.stage1Tier) return false;
     if (filters.stage1Status && (r.stage1ScoreStatus || 'Unscored') !== filters.stage1Status) return false;
     if (filters.stage1Confidence && (r.stage1Confidence || '') !== filters.stage1Confidence) return false;
+    if (filters.stage1NextAction && (r.stage1NextAction || '') !== filters.stage1NextAction) return false;
     if (filters.minEmployees && (r.numericEmployees === null || r.numericEmployees < Number(filters.minEmployees))) return false;
     if (filters.maxEmployees && (r.numericEmployees === null || r.numericEmployees > Number(filters.maxEmployees))) return false;
     if (filters.minRevenue && (r.numericRevenue === null || r.numericRevenue < Number(filters.minRevenue))) return false;
@@ -5067,11 +5072,13 @@ function ProspectToolPage() {
       const av = field === 'score' ? a.idealPartnerScore
         : field === 'stage1score' ? (a.stage1WeightedScore || 0)
           : field === 'stage1tier' ? getStage1TierRank(a)
+            : field === 'lastreviewed' ? (new Date(a.stage1LastReviewed || 0).getTime() || 0)
             : field === 'revenue' ? a.numericRevenue || 0
               : field === 'employees' ? a.numericEmployees || 0 : (a.name || '');
       const bv = field === 'score' ? b.idealPartnerScore
         : field === 'stage1score' ? (b.stage1WeightedScore || 0)
           : field === 'stage1tier' ? getStage1TierRank(b)
+            : field === 'lastreviewed' ? (new Date(b.stage1LastReviewed || 0).getTime() || 0)
             : field === 'revenue' ? b.numericRevenue || 0
               : field === 'employees' ? b.numericEmployees || 0 : (b.name || '');
       if (typeof av === 'string') return dir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
@@ -5201,7 +5208,7 @@ function ProspectToolPage() {
     industry: 'Industry', category: 'Category', channel_role: 'Role', channel_segment: 'Segment', country: 'Country', city: 'City',
     trading_status: 'Trading', adopter_profile: 'Adopter profile', partnerTierName: 'Tier', minEmployees: 'Min employees',
     maxEmployees: 'Max employees', minRevenue: 'Min revenue', maxRevenue: 'Max revenue', hasWebsite: 'Website only',
-    hasLinkedIn: 'LinkedIn only', hasEmail: 'Email only', minScore: 'Min score', stage1Tier: 'Stage 1 tier', stage1Status: 'Stage 1 status', stage1Confidence: 'Stage 1 confidence',
+    hasLinkedIn: 'LinkedIn only', hasEmail: 'Email only', minScore: 'Min score', stage1Tier: 'Stage 1 tier', stage1Status: 'Stage 1 status', stage1Confidence: 'Stage 1 confidence', stage1NextAction: 'Next action',
     minStage1Score: 'Min Stage 1 score'
   };
   const activeFilterCount = Object.entries(filters).filter(([_, v]) => v && v !== 0).length;
@@ -5353,7 +5360,10 @@ function ProspectToolPage() {
 
   const saveStage1Scoring = () => {
     if (!selected) return;
-    const normalized = window.ProspectToolUtils.normalizeProspectScoring(editableScoring);
+    const normalized = window.ProspectToolUtils.normalizeProspectScoring({
+      ...editableScoring,
+      lastReviewed: new Date().toISOString(),
+    });
     setRows((current) => current.map((row) => {
       if (row.id !== selected.id) return row;
       return applyScoringToRow(row, normalized);
@@ -5376,6 +5386,8 @@ function ProspectToolPage() {
     if (key === 'partnerTierName') return <td data-col={key}><span className={getTierClass(record)}>{record.partnerTierName || 'Low Priority'}</span></td>;
     if (key === 'stage1WeightedScore') return <td className="cell-number" data-col={key}><span className="score-badge score-badge--stage1">{record.stage1WeightedScore ? window.ProspectToolUtils.formatProspectScore(record.stage1WeightedScore) : (record.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</span></td>;
     if (key === 'stage1Tier') return <td data-col={key}><span className={getStage1TierClass(record)}>{record.stage1TierBadge || (record.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</span></td>;
+    if (key === 'stage1NextAction') return <td data-col={key}>{record.stage1NextAction ? <span className="stage1-next-action-pill">{record.stage1NextAction}</span> : '—'}</td>;
+    if (key === 'stage1LastReviewed') return <td data-col={key}>{window.ProspectToolUtils.formatLastReviewed(record.stage1LastReviewed)}</td>;
     if (key === 'stage1Confidence') return <td data-col={key}>{record.stage1Confidence || '—'}</td>;
     if (key === 'displayRevenue' || key === 'displayEmployees' || key === 'contactCount') return <td className="cell-number" data-col={key}>{record[key] || '—'}</td>;
     if (key === 'website') return <td className="cell-icon" data-col={key}>{record.website ? <a className="prospect-inline-icon" href={window.ProspectToolUtils.normalizeUrl(record.website)} target="_blank" rel="noreferrer" aria-label="Open Website" title="Open Website">🌐</a> : '—'}</td>;
@@ -5442,6 +5454,7 @@ function ProspectToolPage() {
         ))}
         <select className="ui-search" value={filters.partnerTierName} onChange={(e) => setFilters((f) => ({ ...f, partnerTierName: e.target.value }))}><option value="">Partner tier</option>{['Strategic - Tier 1', 'Growth - Tier 2', 'Select - Tier 3', 'Low Priority'].map((v) => <option key={v}>{v}</option>)}</select>
         <select className="ui-search" value={filters.stage1Tier} onChange={(e) => setFilters((f) => ({ ...f, stage1Tier: e.target.value }))}><option value="">Stage 1 tier</option>{stageOneConfig.tierBands.map((band) => <option key={band.tier} value={band.tier}>{band.tier}</option>)}</select>
+        <select className="ui-search" value={filters.stage1NextAction} onChange={(e) => setFilters((f) => ({ ...f, stage1NextAction: e.target.value }))}><option value="">Next action</option>{(stageOneConfig.nextActionOptions || []).map((v) => <option key={v} value={v}>{v}</option>)}</select>
         <select className="ui-search" value={filters.stage1Status} onChange={(e) => setFilters((f) => ({ ...f, stage1Status: e.target.value }))}><option value="">Stage 1 status</option>{['Complete', 'Partial', 'Unscored'].map((v) => <option key={v} value={v}>{v}</option>)}</select>
         <select className="ui-search" value={filters.stage1Confidence} onChange={(e) => setFilters((f) => ({ ...f, stage1Confidence: e.target.value }))}><option value="">Stage 1 confidence</option>{(stageOneConfig.confidenceOptions || []).map((v) => <option key={v} value={v}>{v}</option>)}</select>
       </div>
@@ -5453,7 +5466,7 @@ function ProspectToolPage() {
         <input className="ui-search" placeholder="Min score" type="number" min="0" max="100" value={filters.minScore} onChange={(e) => setFilters((f) => ({ ...f, minScore: e.target.value }))} />
         <input className="ui-search" placeholder="Min Stage 1 score" type="number" min="1" max="5" step="0.01" value={filters.minStage1Score} onChange={(e) => setFilters((f) => ({ ...f, minStage1Score: e.target.value }))} />
         <select className="ui-search" value={sort} onChange={(e) => setSort(e.target.value)}>
-          <option value="score_desc">Score ↓</option><option value="score_asc">Score ↑</option><option value="stage1score_desc">Stage 1 score ↓</option><option value="stage1score_asc">Stage 1 score ↑</option><option value="stage1tier_desc">Stage 1 tier ↓</option><option value="stage1tier_asc">Stage 1 tier ↑</option><option value="revenue_desc">Revenue ↓</option><option value="revenue_asc">Revenue ↑</option><option value="employees_desc">Employees ↓</option><option value="employees_asc">Employees ↑</option><option value="name_asc">Name A→Z</option><option value="name_desc">Name Z→A</option>
+          <option value="score_desc">Score ↓</option><option value="score_asc">Score ↑</option><option value="stage1score_desc">Stage 1 score ↓</option><option value="stage1score_asc">Stage 1 score ↑</option><option value="stage1tier_desc">Stage 1 tier ↓</option><option value="stage1tier_asc">Stage 1 tier ↑</option><option value="lastreviewed_desc">Last reviewed ↓</option><option value="lastreviewed_asc">Last reviewed ↑</option><option value="revenue_desc">Revenue ↓</option><option value="revenue_asc">Revenue ↑</option><option value="employees_desc">Employees ↓</option><option value="employees_asc">Employees ↑</option><option value="name_asc">Name A→Z</option><option value="name_desc">Name Z→A</option>
         </select>
         <label><input type="checkbox" checked={filters.hasWebsite} onChange={(e) => setFilters((f) => ({ ...f, hasWebsite: e.target.checked }))} /> Has website</label>
         <label><input type="checkbox" checked={filters.hasLinkedIn} onChange={(e) => setFilters((f) => ({ ...f, hasLinkedIn: e.target.checked }))} /> Has LinkedIn</label>
@@ -5488,7 +5501,7 @@ function ProspectToolPage() {
       </div>
     </div>}
 
-    {sorted.length === 0 ? <div className="ds-card prospect-state prospect-state--empty" role="status" aria-live="polite"><strong>No results found</strong><p>Try broadening filters or clearing search terms to discover more partners.</p><IconButton icon="reset" label="Reset filters to show more results" onClick={resetFilters} /></div> : view === 'table' ? <div className="prospect-table-wrap"><table className="prospect-table prospect-table--search"><thead><tr>{visibleColumnDefs.map((h) => <th key={h.key} data-col={h.key} className={h.key === 'actions' ? 'cell-actions-head' : ''}>{h.label}</th>)}</tr></thead><tbody>{pageRows.map((r, i) => <tr key={r.id} data-prospect-row-id={r.id} className={selectedRowId === r.id ? 'prospect-row-selected' : ''} onClick={() => setSelectedRowId(r.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedRowId(r.id); } }} tabIndex={0} style={{ cursor: 'pointer' }} aria-selected={selectedRowId === r.id}>{visibleColumnDefs.map((col) => <React.Fragment key={`${r.id}-${col.key}`}>{renderCell(r, col.key, i)}</React.Fragment>)}</tr>)}</tbody></table></div> : <div className="prospect-cards">{pageRows.map((r) => <div className={`prospect-card ${selectedRowId === r.id ? 'prospect-card-selected' : ''}`.trim()} key={r.id} onClick={() => setSelectedRowId(r.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedRowId(r.id); } }} tabIndex={0}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}><strong>{r.displayName}</strong><div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}><span className="score-badge">{r.idealPartnerScore}</span><span className={getTierClass(r)}>{r.partnerTierName || 'Low Priority'}</span><span className="score-badge score-badge--stage1">{r.stage1WeightedScore ? window.ProspectToolUtils.formatProspectScore(r.stage1WeightedScore) : (r.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</span><span className={getStage1TierClass(r)}>{r.stage1TierBadge || (r.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</span></div></div><div>{r.industry || '—'}</div><div>{r.channel_role || '—'} / {r.channel_segment || '—'}</div><div>{r.companyClassification || 'Unclassified'} · {r.city || '—'}, {r.country || '—'}</div><div>{r.displayRevenue} · {r.displayEmployees}</div><div className="prospect-card-secondary">{r.keywords || '—'}</div><div style={{ display: 'flex', gap: 8 }}>{r.website && <a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>}{r.linkedin && <a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}</div></div>)}</div>}
+    {sorted.length === 0 ? <div className="ds-card prospect-state prospect-state--empty" role="status" aria-live="polite"><strong>No results found</strong><p>Try broadening filters or clearing search terms to discover more partners.</p><IconButton icon="reset" label="Reset filters to show more results" onClick={resetFilters} /></div> : view === 'table' ? <div className="prospect-table-wrap"><table className="prospect-table prospect-table--search"><thead><tr>{visibleColumnDefs.map((h) => <th key={h.key} data-col={h.key} className={h.key === 'actions' ? 'cell-actions-head' : ''}>{h.label}</th>)}</tr></thead><tbody>{pageRows.map((r, i) => <tr key={r.id} data-prospect-row-id={r.id} className={selectedRowId === r.id ? 'prospect-row-selected' : ''} onClick={() => setSelectedRowId(r.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedRowId(r.id); } }} tabIndex={0} style={{ cursor: 'pointer' }} aria-selected={selectedRowId === r.id}>{visibleColumnDefs.map((col) => <React.Fragment key={`${r.id}-${col.key}`}>{renderCell(r, col.key, i)}</React.Fragment>)}</tr>)}</tbody></table></div> : <div className="prospect-cards">{pageRows.map((r) => <div className={`prospect-card ${selectedRowId === r.id ? 'prospect-card-selected' : ''}`.trim()} key={r.id} onClick={() => setSelectedRowId(r.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedRowId(r.id); } }} tabIndex={0}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}><strong>{r.displayName}</strong><div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}><span className="score-badge">{r.idealPartnerScore}</span><span className={getTierClass(r)}>{r.partnerTierName || 'Low Priority'}</span><span className="score-badge score-badge--stage1">{r.stage1WeightedScore ? window.ProspectToolUtils.formatProspectScore(r.stage1WeightedScore) : (r.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</span><span className={getStage1TierClass(r)}>{r.stage1TierBadge || (r.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</span>{r.stage1NextAction ? <span className="stage1-next-action-pill">{r.stage1NextAction}</span> : null}</div></div><div>{r.industry || '—'}</div><div>{r.channel_role || '—'} / {r.channel_segment || '—'}</div><div>{r.companyClassification || 'Unclassified'} · {r.city || '—'}, {r.country || '—'}</div><div>{r.displayRevenue} · {r.displayEmployees}</div><div className="prospect-card-secondary">{r.keywords || '—'}</div><div style={{ display: 'flex', gap: 8 }}>{r.website && <a href={window.ProspectToolUtils.normalizeUrl(r.website)} target="_blank" rel="noreferrer">Website</a>}{r.linkedin && <a href={window.ProspectToolUtils.normalizeUrl(r.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}</div></div>)}</div>}
 
     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
       <IconButton icon="prev" label="Previous page" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} />
@@ -5588,6 +5601,8 @@ function ProspectToolPage() {
               <div><span>Stage 1 Tier</span><strong>{selected.stage1Tier || (selected.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</strong></div>
               <div><span>Stage 1 Completeness</span><strong>{selected.stage1ScoreStatus || 'Unscored'}</strong></div>
               <div><span>Stage 1 Confidence</span><strong>{selected.stage1Confidence || '—'}</strong></div>
+              <div><span>Next Action</span><strong>{selected.stage1NextAction || '—'}</strong></div>
+              <div><span>Last Reviewed</span><strong>{window.ProspectToolUtils.formatLastReviewed(selected.stage1LastReviewed)}</strong></div>
               <div><span>Company Class</span><strong>{selected.companyClassification || 'Unclassified'}</strong></div>
               <div><span>Status</span><strong>{selected.trading_status || '—'}</strong></div>
               <div><span>Region</span><strong>{selected.country || '—'}</strong></div>
@@ -5648,6 +5663,31 @@ function ProspectToolPage() {
                   <span>Evidence / Rationale</span>
                   <textarea className="ui-search" rows={3} value={editableScoring.evidence || ''} onChange={(event) => updateScoringMeta('evidence', event.target.value)} placeholder="e.g. Website shows UCaaS + contact centre services, Microsoft partnership page, strong retail case studies" />
                 </label>
+              </div>
+            </div>
+
+            <div className="panel-card stage1-scoring-panel">
+              <div className="stage1-scoring-panel__head">
+                <h4>Prospect Decisioning</h4>
+              </div>
+              <p className="stage1-helper-text stage1-helper-text--muted">Next Action helps convert prospect scoring into a clear operational decision. Last Reviewed shows when the Stage 1 score was last updated.</p>
+              <div className="stage1-grid stage1-grid--meta">
+                <label className="stage1-field">
+                  <span>Next Action</span>
+                  <select className="ui-search" value={editableScoring.nextAction || ''} onChange={(event) => updateScoringMeta('nextAction', event.target.value)}>
+                    <option value="">No action selected</option>
+                    {(stageOneConfig.nextActionOptions || []).map((option) => <option key={option} value={option}>{option}</option>)}
+                  </select>
+                  {!editableScoring.nextAction && window.ProspectToolUtils.getRecommendedNextAction(editableScoring) && <small>Recommended (editable): {window.ProspectToolUtils.getRecommendedNextAction(editableScoring)}</small>}
+                </label>
+              </div>
+              <div className="stage1-summary-grid">
+                <div><span>Final Tier</span><strong>{editableScoring.tier || (editableScoring.completenessStatus === 'Partial' ? 'Partial' : 'Unscored')}</strong></div>
+                <div><span>Confidence</span><strong>{editableScoring.confidence || 'Not set'}</strong></div>
+                <div><span>Completeness</span><strong>{editableScoring.completenessStatus || 'Unscored'}</strong></div>
+                <div><span>Last Reviewed</span><strong>{window.ProspectToolUtils.formatLastReviewed(editableScoring.lastReviewed)}</strong></div>
+                <div><span>Days Since Review</span><strong>{window.ProspectToolUtils.getDaysSinceReview(editableScoring.lastReviewed) ?? '—'}</strong></div>
+                <div><span>Next Action</span><strong>{editableScoring.nextAction || 'Not set'}</strong></div>
               </div>
             </div>
 

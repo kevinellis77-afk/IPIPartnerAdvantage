@@ -60,6 +60,7 @@
 
   const STAGE_ONE_SCORING_CONFIG = {
     confidenceOptions: ['Low', 'Medium', 'High'],
+    nextActionOptions: ['Prioritise Outreach', 'Qualify Further', 'Nurture', 'Ignore'],
     categories: {
       routeToRevenue: {
         label: 'Route-to-Revenue Fit',
@@ -181,7 +182,51 @@
       tierCapReason: '',
       calculatedTier: '',
       calculatedTierBadge: '',
+      nextAction: '',
+      lastReviewed: '',
     };
+  }
+
+  function parseReviewDate(value) {
+    if (!value) return null;
+    const parsed = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(parsed.getTime())) return null;
+    return parsed;
+  }
+
+  function formatLastReviewed(dateValue) {
+    const parsed = parseReviewDate(dateValue);
+    if (!parsed) return 'Not reviewed';
+    return parsed.toLocaleString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
+  function getDaysSinceReview(dateValue) {
+    const parsed = parseReviewDate(dateValue);
+    if (!parsed) return null;
+    const diff = Date.now() - parsed.getTime();
+    if (!Number.isFinite(diff) || diff < 0) return 0;
+    return Math.floor(diff / (24 * 60 * 60 * 1000));
+  }
+
+  function getRecommendedNextAction(scoring) {
+    if (!scoring || typeof scoring !== 'object') return '';
+    const completeness = scoring.completenessStatus || getProspectCompletenessStatus(scoring);
+    if (completeness === 'Partial') return 'Qualify Further';
+    const tierBadge = scoring.tierBadge || getTierBadge(scoring.tier || '');
+    const confidence = (scoring.confidence || '').toLowerCase();
+
+    if (tierBadge === 'Tier 1' && completeness === 'Complete') return 'Prioritise Outreach';
+    if (tierBadge === 'Tier 2' && completeness === 'Complete') return 'Qualify Further';
+    if (tierBadge === 'Tier 3') return 'Nurture';
+    if (tierBadge === 'Tier 4') return 'Ignore';
+    if (confidence === 'low') return 'Qualify Further';
+    return '';
   }
 
   function formatProspectScore(score) {
@@ -275,6 +320,8 @@
 
     next.confidence = STAGE_ONE_SCORING_CONFIG.confidenceOptions.includes(scoring.confidence) ? scoring.confidence : '';
     next.evidence = typeof scoring.evidence === 'string' ? scoring.evidence : '';
+    next.nextAction = STAGE_ONE_SCORING_CONFIG.nextActionOptions.includes(scoring.nextAction) ? scoring.nextAction : '';
+    next.lastReviewed = parseReviewDate(scoring.lastReviewed)?.toISOString() || '';
     next.completenessStatus = getProspectCompletenessStatus(next);
     next.status = next.completenessStatus;
     next.weakestFactor = getWeakestScoringFactor(next);
@@ -300,6 +347,20 @@
 
   function normalizeProspectScoring(rawScoring) {
     return calculateProspectWeightedScore(rawScoring || createEmptyScoring());
+  }
+
+  function sortProspectsByLastReviewed(records, direction = 'desc') {
+    const multiplier = direction === 'asc' ? 1 : -1;
+    return [...(records || [])].sort((a, b) => {
+      const aTime = parseReviewDate(a?.scoring?.lastReviewed)?.getTime() || 0;
+      const bTime = parseReviewDate(b?.scoring?.lastReviewed)?.getTime() || 0;
+      return (aTime - bTime) * multiplier;
+    });
+  }
+
+  function filterProspectsByNextAction(records, nextAction) {
+    if (!nextAction) return [...(records || [])];
+    return (records || []).filter((record) => (record?.scoring?.nextAction || '') === nextAction);
   }
 
   function formatCurrency(value) {
@@ -462,6 +523,8 @@
     mapped.stage1WeakestFactor = mapped.scoring.weakestFactor || '';
     mapped.stage1TierCapApplied = Boolean(mapped.scoring.tierCapApplied);
     mapped.stage1TierCapReason = mapped.scoring.tierCapReason || '';
+    mapped.stage1NextAction = mapped.scoring.nextAction || '';
+    mapped.stage1LastReviewed = mapped.scoring.lastReviewed || '';
 
     mapped.searchHaystack = [
       mapped.name, mapped.industry, mapped.category, mapped.channel_role, mapped.channel_segment,
@@ -501,7 +564,9 @@
       stage1Confidence: r.stage1Confidence || '',
       stage1WeakestFactor: r.stage1WeakestFactor || '',
       stage1TierCapApplied: r.stage1TierCapApplied ? 'Yes' : 'No',
-      stage1TierCapReason: r.stage1TierCapReason || ''
+      stage1TierCapReason: r.stage1TierCapReason || '',
+      stage1NextAction: r.stage1NextAction || '',
+      stage1LastReviewed: r.stage1LastReviewed || ''
     })));
   }
 
@@ -525,5 +590,10 @@
     getTierBadge,
     getTierCapReason,
     formatProspectScore,
+    getRecommendedNextAction,
+    formatLastReviewed,
+    getDaysSinceReview,
+    sortProspectsByLastReviewed,
+    filterProspectsByNextAction,
   };
 })();

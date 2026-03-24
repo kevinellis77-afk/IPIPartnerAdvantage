@@ -236,4 +236,5 @@
 .stage1-confidence{color:var(--text-secondary)!important;font-weight:600}
 .stage1-cap-note{margin:0;font-size:11px;color:#ffdca7}
 .stage1-field--full{grid-column:1 / -1}
+.stage1-next-action-pill{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:700;background:rgba(103,216,255,.16);border:1px solid rgba(103,216,255,.35);color:#d8f4ff;max-width:100%}
 @media (max-width:860px){.stage1-grid,.stage1-summary-grid{grid-template-columns:1fr}}
