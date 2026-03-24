@@ -103,6 +103,7 @@
 .priority-view-card{gap:6px}
 .priority-view-card--featured{border-color:rgba(54,198,131,.45);box-shadow:0 0 0 1px rgba(54,198,131,.2)}
 .priority-view-card__count{font-size:26px;line-height:1;color:#e9f9f3;font-weight:800}
+.priority-view-card__helper{font-size:11px!important;color:#bfe6d8!important}
 .saved-view-actions{display:flex;gap:6px}
 
 .saved-view-modal{max-width:min(720px,calc(100vw - 32px));display:flex;flex-direction:column;max-height:min(84vh,820px);overflow:hidden}
@@ -260,6 +261,14 @@
 .prospect-pill--qualify-further{background:rgba(103,216,255,.16);border-color:rgba(103,216,255,.35);color:#d9f1ff}
 .prospect-pill--nurture{background:rgba(255,190,97,.15);border-color:rgba(255,190,97,.36);color:#ffe2b4}
 .prospect-pill--ignore,.prospect-pill--none{background:rgba(148,163,184,.2);border-color:rgba(148,163,184,.35);color:#dde5f2}
+.prospect-inline-help{margin:0 2px 8px;font-size:12px;color:var(--text-secondary)}
+.inline-next-action{display:flex;justify-content:center}
+.inline-next-action__trigger{display:inline-flex;align-items:center;gap:4px;padding:0;border:none;background:transparent;color:inherit;cursor:pointer;max-width:100%}
+.inline-next-action__trigger .prospect-pill{transition:border-color .14s ease,box-shadow .14s ease}
+.inline-next-action__trigger:hover .prospect-pill,.inline-next-action__trigger:focus-visible .prospect-pill{border-color:rgba(103,216,255,.64);box-shadow:0 0 0 1px rgba(103,216,255,.28)}
+.inline-next-action__trigger:focus-visible{outline:none}
+.inline-next-action__chevron{font-size:10px;color:var(--text-secondary);margin-top:1px}
+.inline-next-action__select{max-width:170px!important;min-width:150px!important;padding:3px 8px!important;font-size:11px!important;line-height:1.2!important}
 .review-freshness{display:inline-flex;align-items:center;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700;border:1px solid transparent;background:transparent}
 .review-freshness--fresh{border-color:rgba(54,198,131,.44);color:#baf5d7}
 .review-freshness--aging{border-color:rgba(255,190,97,.42);color:#ffe2b4}

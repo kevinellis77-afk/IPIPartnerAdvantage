@@ -142,7 +142,90 @@
     agingDays: 30,
   };
   const REVIEW_FRESHNESS_LABELS = ['Fresh', 'Aging', 'Stale', 'Not Reviewed'];
+  const STAGE_ONE_TIER_PRIORITY = {
+    'Tier 1': 1,
+    'Tier 2': 2,
+    'Tier 3': 3,
+    'Tier 4': 4,
+  };
+  const NEXT_ACTION_PRIORITY = {
+    'Prioritise Outreach': 1,
+    'Qualify Further': 2,
+    Nurture: 3,
+    Ignore: 4,
+  };
+  const REVIEW_FRESHNESS_PRIORITY = {
+    Fresh: 1,
+    Aging: 2,
+    Stale: 3,
+    'Not Reviewed': 4,
+  };
+
+  function getTierPriorityValue(tierBadge) {
+    return STAGE_ONE_TIER_PRIORITY[tierBadge] || 99;
+  }
+
+  function getNextActionPriorityValue(nextAction) {
+    return NEXT_ACTION_PRIORITY[nextAction] || 99;
+  }
+
+  function getReviewFreshnessPriorityValue(freshness) {
+    return REVIEW_FRESHNESS_PRIORITY[freshness] || 99;
+  }
+
+  function getWorkingQueueDefinition() {
+    return {
+      label: 'My Working Queue',
+      description: 'Active Tier 1 and Tier 2 prospects ready for current attention',
+      matches: (record) => {
+        const tier = (record?.stage1TierBadge || '').trim();
+        const nextAction = (record?.stage1NextAction || '').trim();
+        const completeness = (record?.stage1ScoreStatus || '').trim();
+        const freshness = getReviewFreshnessStatus(record?.stage1LastReviewed);
+        const hasScore = Number.isFinite(Number(record?.stage1WeightedScore)) && Number(record?.stage1WeightedScore) > 0;
+        if (!hasScore) return false;
+        if (!['Tier 1', 'Tier 2'].includes(tier)) return false;
+        if (!nextAction || nextAction === 'Ignore') return false;
+        if (!['Fresh', 'Aging'].includes(freshness)) return false;
+        if (!['Complete', 'Partial'].includes(completeness)) return false;
+        return true;
+      },
+    };
+  }
+
+  function isProspectInWorkingQueue(record) {
+    return getWorkingQueueDefinition().matches(record);
+  }
+
+  function getWorkingQueueSortComparator() {
+    return (a, b) => {
+      const tierDiff = getTierPriorityValue(a?.stage1TierBadge) - getTierPriorityValue(b?.stage1TierBadge);
+      if (tierDiff !== 0) return tierDiff;
+
+      const nextActionDiff = getNextActionPriorityValue(a?.stage1NextAction) - getNextActionPriorityValue(b?.stage1NextAction);
+      if (nextActionDiff !== 0) return nextActionDiff;
+
+      const scoreDiff = Number(b?.stage1WeightedScore || 0) - Number(a?.stage1WeightedScore || 0);
+      if (scoreDiff !== 0) return scoreDiff;
+
+      const aFreshness = getReviewFreshnessStatus(a?.stage1LastReviewed);
+      const bFreshness = getReviewFreshnessStatus(b?.stage1LastReviewed);
+      const freshnessDiff = getReviewFreshnessPriorityValue(aFreshness) - getReviewFreshnessPriorityValue(bFreshness);
+      if (freshnessDiff !== 0) return freshnessDiff;
+
+      const aReviewed = parseReviewDate(a?.stage1LastReviewed)?.getTime() || Number.POSITIVE_INFINITY;
+      const bReviewed = parseReviewDate(b?.stage1LastReviewed)?.getTime() || Number.POSITIVE_INFINITY;
+      return aReviewed - bReviewed;
+    };
+  }
+
   const PRIORITY_VIEW_DEFINITIONS = [
+    {
+      key: 'my_working_queue',
+      label: getWorkingQueueDefinition().label,
+      description: getWorkingQueueDefinition().description,
+      matches: (record) => isProspectInWorkingQueue(record),
+    },
     {
       key: 'tier1_priority_outreach',
       label: 'Tier 1 – Priority Outreach',
@@ -432,7 +515,38 @@
   }
 
   function getBulkReviewQueue(prospects, _currentFilters, _currentSort, _currentView) {
-    return [...(prospects || [])].map((record) => record.id).filter(Boolean);
+    const rows = [...(prospects || [])];
+    if (_currentView === 'my_working_queue') {
+      rows.sort(getWorkingQueueSortComparator());
+    }
+    return rows.map((record) => record.id).filter(Boolean);
+  }
+
+  function shouldProspectRemainInCurrentView(record, activeViewKey, activeFilters = {}) {
+    if (!record) return false;
+    const passesPriorityView = !activeViewKey || applyPriorityViewFilter(activeViewKey, [record]).length > 0;
+    if (!passesPriorityView) return false;
+    const freshness = getReviewFreshnessStatus(record?.stage1LastReviewed);
+    if (activeFilters.stage1NextAction && (record?.stage1NextAction || '') !== activeFilters.stage1NextAction) return false;
+    if (activeFilters.stage1Tier && (record?.stage1Tier || '') !== activeFilters.stage1Tier) return false;
+    if (activeFilters.stage1Status && (record?.stage1ScoreStatus || 'Unscored') !== activeFilters.stage1Status) return false;
+    if (activeFilters.stage1Confidence && (record?.stage1Confidence || '') !== activeFilters.stage1Confidence) return false;
+    if (activeFilters.stage1Freshness && freshness !== activeFilters.stage1Freshness) return false;
+    return true;
+  }
+
+  function updateProspectNextAction(record, nextAction) {
+    const scoring = calculateProspectWeightedScore({
+      ...(record?.scoring || createEmptyScoring()),
+      nextAction,
+      lastReviewed: record?.scoring?.lastReviewed || '',
+    });
+    return {
+      ...(record || {}),
+      scoring,
+      stage1NextAction: scoring.nextAction || '',
+      stage1Freshness: getReviewFreshnessStatus(scoring.lastReviewed),
+    };
   }
 
   function getNextProspectInQueue(queueIds, currentId) {
@@ -669,6 +783,15 @@
     STAGE_ONE_CATEGORY_KEYS,
     REVIEW_FRESHNESS_CONFIG,
     REVIEW_FRESHNESS_LABELS,
+    STAGE_ONE_TIER_PRIORITY,
+    NEXT_ACTION_PRIORITY,
+    REVIEW_FRESHNESS_PRIORITY,
+    getTierPriorityValue,
+    getNextActionPriorityValue,
+    getReviewFreshnessPriorityValue,
+    getWorkingQueueDefinition,
+    isProspectInWorkingQueue,
+    getWorkingQueueSortComparator,
     createEmptyScoring,
     normalizeProspectScoring,
     getOptionScore,
@@ -688,6 +811,8 @@
     filterProspectsByReviewFreshness,
     getBuiltInPriorityViews,
     applyPriorityViewFilter,
+    shouldProspectRemainInCurrentView,
+    updateProspectNextAction,
     getBulkReviewQueue,
     getNextProspectInQueue,
     getPreviousProspectInQueue,
