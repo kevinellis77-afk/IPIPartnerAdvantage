@@ -5733,12 +5733,14 @@ function ProspectToolPage() {
         <label><input type="checkbox" checked={filters.hasLinkedIn} onChange={(e) => setFilters((f) => ({ ...f, hasLinkedIn: e.target.checked }))} /> Has LinkedIn</label>
         <label><input type="checkbox" checked={filters.hasEmail} onChange={(e) => setFilters((f) => ({ ...f, hasEmail: e.target.checked }))} /> Has email</label>
       </div></div>}
-      {showPrimaryFilters && <div className="chip-row">{activeChips.map((c) => {
-        const [rawKey, value] = c.split(': ');
-        const label = rawKey === 'Search' ? rawKey : (filterLabels[rawKey] || rawKey);
-        return <span className="chip" key={c}>{label}: {value}</span>;
-      })}{activeChips.length === 0 && <span className="chip">No active filters</span>}</div>
-      <div className="prospect-filter-summary">{activeFilterCount} active filters · {sorted.length} matching rows</div>}
+      {showPrimaryFilters && <>
+        <div className="chip-row">{activeChips.map((c) => {
+          const [rawKey, value] = c.split(': ');
+          const label = rawKey === 'Search' ? rawKey : (filterLabels[rawKey] || rawKey);
+          return <span className="chip" key={c}>{label}: {value}</span>;
+        })}{activeChips.length === 0 && <span className="chip">No active filters</span>}</div>
+        <div className="prospect-filter-summary">{activeFilterCount} active filters · {sorted.length} matching rows</div>
+      </>}
     </div>
 
     <div className="saved-views-section ds-card">
