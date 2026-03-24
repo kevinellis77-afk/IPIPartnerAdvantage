@@ -6664,38 +6664,6 @@ const PARTNER_TIERS_DATA = [
   {
     num: "1",
     priority: "Highest Strategic Priority",
-    label: "CCaaS Resellers",
-    icon: "🎯",
-    color: "#36C6FF",
-    glow: "54,198,255",
-    vendors: ["Genesys", "Five9", "Talkdesk"],
-    whyMatter: [
-      "Sell contact centre solutions",
-      "Have CX decision-maker relationships",
-      "Understand customer engagement transformation",
-    ],
-    opportunity: [
-      "AI automation",
-      "Secure payments",
-      "Flexible telephony",
-      "Consultancy expertise",
-    ],
-    challenges: [
-      "They are likely already selling at least one UCaaS or CCaaS vendor. Will they want to engage with another platform?",
-      "We must clearly demonstrate what differentiation IPI brings compared with their existing vendor relationships.",
-      "Gaining mindshare alongside their current vendors may require strong commercial or solution advantages.",
-    ],
-    winStrategies: [
-      "Lead with differentiation, showing where IPI adds value beyond their incumbent vendor relationships.",
-      "Position IPI as complementary where appropriate, rather than forcing a full vendor replacement conversation too early.",
-      "Use strong commercial messaging and targeted enablement to show why it is worth their time to engage.",
-    ],
-    summary:
-      "These partners already sell CCaaS — making them the fastest path to platform revenue. IPI lets them differentiate from single-platform vendors by delivering a complete CX ecosystem.",
-  },
-  {
-    num: "2",
-    priority: "Large Installed Base Opportunity",
     label: "Telecom & UC Resellers",
     icon: "📡",
     color: "#67D8FF",
@@ -6724,6 +6692,74 @@ const PARTNER_TIERS_DATA = [
     ],
     summary:
       "Strong mid-market voice bases but limited CCaaS capability. IPI transforms them from telecom providers into full CX solution providers.",
+  },
+  {
+    num: "2",
+    priority: "Primary Focus (Tier 2)",
+    label: "Managed Service Providers",
+    icon: "⚙️",
+    color: "#7B96A3",
+    glow: "123,150,163",
+    vendors: [
+      "Cloud infrastructure",
+      "Networking",
+      "Communications management",
+    ],
+    whyMatter: [
+      "Manage long-term customer environments",
+      "Embed CX within managed services",
+      "High customer retention and lifecycle value",
+    ],
+    opportunity: [
+      "UCaaS & CCaaS",
+      "Network infrastructure",
+      "AI automation",
+      "Ongoing platform management",
+    ],
+    challenges: [
+      "They often have large customer estates but limited in-house voice and CX specialist capability.",
+      "They will expect strong revenue potential and attractive margins before prioritising a new motion.",
+      "They will want confidence that IPI can support pipeline growth and multiple deployments.",
+    ],
+    winStrategies: [
+      "Lead with revenue opportunity, partner economics, and growth potential.",
+      "Package enablement around voice/CX upskilling with practical onboarding support.",
+      "Create joint planning conversations that show commitment to shared growth rather than one-off wins.",
+    ],
+    summary:
+      "MSPs can bundle IPI solutions into fully managed CX environments, creating high-value recurring revenue with long customer lifecycles.",
+  },
+  {
+    num: "2",
+    priority: "Primary Focus (Tier 2)",
+    label: "CCaaS Resellers",
+    icon: "🎯",
+    color: "#36C6FF",
+    glow: "54,198,255",
+    vendors: ["Genesys", "Five9", "Talkdesk"],
+    whyMatter: [
+      "Sell contact centre solutions",
+      "Have CX decision-maker relationships",
+      "Understand customer engagement transformation",
+    ],
+    opportunity: [
+      "AI automation",
+      "Secure payments",
+      "Flexible telephony",
+      "Consultancy expertise",
+    ],
+    challenges: [
+      "They are likely already selling at least one UCaaS or CCaaS vendor. Will they want to engage with another platform?",
+      "We must clearly demonstrate what differentiation IPI brings compared with their existing vendor relationships.",
+      "Gaining mindshare alongside their current vendors may require strong commercial or solution advantages.",
+    ],
+    winStrategies: [
+      "Lead with differentiation, showing where IPI adds value beyond their incumbent vendor relationships.",
+      "Position IPI as complementary where appropriate, rather than forcing a full vendor replacement conversation too early.",
+      "Use strong commercial messaging and targeted enablement to show why it is worth their time to engage.",
+    ],
+    summary:
+      "These partners already sell CCaaS and have the skills and customer base, but may already represent a competitive platform. IPI must win on clear differentiation.",
   },
   {
     num: "3",
@@ -6763,42 +6799,6 @@ const PARTNER_TIERS_DATA = [
   },
   {
     num: "4",
-    priority: "Long-Term Recurring Revenue Partners",
-    label: "Managed Service Providers",
-    icon: "⚙️",
-    color: "#7B96A3",
-    glow: "123,150,163",
-    vendors: [
-      "Cloud infrastructure",
-      "Networking",
-      "Communications management",
-    ],
-    whyMatter: [
-      "Manage long-term customer environments",
-      "Embed CX within managed services",
-      "High customer retention and lifecycle value",
-    ],
-    opportunity: [
-      "UCaaS & CCaaS",
-      "Network infrastructure",
-      "AI automation",
-      "Ongoing platform management",
-    ],
-    challenges: [
-      "They will expect strong revenue potential and attractive margins.",
-      "They may already have preferred strategic vendors in place.",
-      "They will want confidence that we can support pipeline growth and multiple deployments.",
-    ],
-    winStrategies: [
-      "Lead with revenue opportunity, partner economics, and growth potential.",
-      "Demonstrate that IPI can support scale through strong presales, delivery, and support capability.",
-      "Create joint planning conversations that show commitment to shared growth rather than one-off wins.",
-    ],
-    summary:
-      "MSPs can bundle IPI solutions into fully managed CX environments, creating high-value recurring revenue with long customer lifecycles.",
-  },
-  {
-    num: "5",
     priority: "Strategic Influencers",
     label: "CX & Digital Transformation Consultancies",
     icon: "💡",
@@ -7718,18 +7718,23 @@ function PartnerProgramPage() {
                   marginBottom: 14,
                 }}
               >
-                Primary Focus — Fastest Path to Revenue
+                Primary Focus
               </div>
               <div
                 style={{ display: "flex", flexDirection: "column", gap: 10 }}
               >
                 {[
-                  { num: "1️⃣", label: "CCaaS Resellers", color: "#36C6FF" },
                   {
-                    num: "2️⃣",
+                    num: "1️⃣",
                     label: "Telecom & UC Resellers",
                     color: "#67D8FF",
                   },
+                  {
+                    num: "2️⃣",
+                    label: "Managed Service Providers",
+                    color: "#7B96A3",
+                  },
+                  { num: "2️⃣", label: "CCaaS Resellers", color: "#36C6FF" },
                 ].map((r, i) => (
                   <div
                     key={i}
@@ -7765,9 +7770,9 @@ function PartnerProgramPage() {
                   marginBottom: 0,
                 }}
               >
-                These partners offer the fastest path to scalable recurring
-                revenue through their existing CX and telecom customer
-                relationships.
+                Prioritise channel recruitment where early-stage uplift is
+                strongest: telecom and UC resellers first, then MSPs and CCaaS
+                resellers as parallel Tier 2 priorities.
               </p>
             </div>
 
@@ -7790,7 +7795,7 @@ function PartnerProgramPage() {
                   marginBottom: 14,
                 }}
               >
-                Secondary Focus — Diverse Ecosystem
+                Secondary Focus
               </div>
               <div
                 style={{ display: "flex", flexDirection: "column", gap: 10 }}
@@ -7803,11 +7808,6 @@ function PartnerProgramPage() {
                   },
                   {
                     num: "4️⃣",
-                    label: "Managed Service Providers",
-                    color: "#7B96A3",
-                  },
-                  {
-                    num: "5️⃣",
                     label: "CX & Digital Transformation Consultancies",
                     color: "#C0887B",
                   },
@@ -7846,8 +7846,8 @@ function PartnerProgramPage() {
                   marginBottom: 0,
                 }}
               >
-                This tiered approach ensures IPI focuses on high-impact partners
-                while building a diverse, resilient ecosystem.
+                Secondary recruitment builds depth through specialist providers
+                and consultancy-led influence in larger strategic programmes.
               </p>
             </div>
           </div>
