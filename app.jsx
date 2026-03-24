@@ -6012,7 +6012,7 @@ function ProspectToolPage() {
       </aside>
     </div>}
 
-    {selected && !bulkReviewOpen && <div className="prospect-drawer-layer" role="presentation">
+    {selected && !bulkReviewOpen && ReactDOM.createPortal(<div className="prospect-drawer-layer" role="presentation">
       <button type="button" className="prospect-drawer-backdrop" aria-label="Close details drawer" onClick={() => setSelectedRowId(null)} />
       <aside className="prospect-drawer" role="dialog" aria-modal="true" aria-label={`Partner details for ${selected.displayName}`}>
         <div className="prospect-drawer-header">
@@ -6252,7 +6252,7 @@ function ProspectToolPage() {
           </div>}
         </div>
       </aside>
-    </div>}
+    </div>, document.body)}
   </div>;
 }
 

@@ -128,7 +128,7 @@
 .prospect-drawer-open{overflow:hidden}
 .prospect-drawer-layer{position:fixed;inset:0;z-index:1700;display:flex;justify-content:flex-end;align-items:stretch}
 .prospect-drawer-backdrop{position:absolute;inset:0;border:0;background:rgba(6,12,18,.48);opacity:0;animation:prospectFade .2s ease forwards;cursor:pointer}
-.prospect-drawer{position:fixed;top:0;right:0;height:100dvh;max-height:100dvh;width:min(72vw,1200px);min-width:520px;max-width:100%;background:var(--bg-surface);border-left:1px solid var(--border-soft);display:flex;flex-direction:column;box-shadow:-24px 0 48px rgba(2,8,14,.45);animation:prospectSlide .22s ease-out forwards}
+.prospect-drawer{position:fixed;top:0;right:0;bottom:0;height:100vh;max-height:100vh;width:min(72vw,1200px);min-width:520px;max-width:100%;background:var(--bg-surface);border-left:1px solid var(--border-soft);border-radius:0;display:flex;flex-direction:column;box-shadow:-24px 0 48px rgba(2,8,14,.45);animation:prospectSlide .22s ease-out forwards}
 .prospect-drawer-header{position:sticky;top:0;z-index:4;padding:18px;border-bottom:1px solid rgba(145,196,176,.22);background:rgba(20,36,45,.94);backdrop-filter:blur(8px);display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
 .prospect-drawer-kicker{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#90c4b0;font-weight:800}
 .prospect-drawer-title h3{margin:0;font-size:22px;color:var(--heading-primary)}
