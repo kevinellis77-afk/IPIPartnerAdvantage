@@ -58,6 +58,85 @@
   ];
   const IPP_VENDOR_OPTIONS = IPP_VENDOR_SCORES.map((vendor) => vendor.label);
 
+  const STAGE_ONE_SCORING_CONFIG = {
+    categories: {
+      routeToRevenue: {
+        label: 'Route-to-Revenue Fit',
+        weight: 0.40,
+        options: [
+          { label: 'UCaaS + CX Focus', score: 5 },
+          { label: 'WEM / Analytics (No CCaaS)', score: 5 },
+          { label: 'UCaaS Only', score: 4 },
+          { label: 'CCaaS Reseller', score: 3 },
+          { label: 'General IT Services', score: 2 },
+          { label: 'Cyber / Infra Only', score: 1 },
+        ],
+      },
+      vendorOpportunity: {
+        label: 'Vendor Displacement Opportunity',
+        weight: 0.20,
+        options: [
+          { label: 'Legacy (Avaya / Mitel / Cisco)', score: 5 },
+          { label: 'Adjacent (Microsoft / Gamma / 3CX)', score: 4 },
+          { label: 'Mixed Stack', score: 3 },
+          { label: 'Modern CCaaS (Genesys / NICE / Talkdesk / 8x8 / Zoom)', score: 2 },
+          { label: 'Deeply Embedded CCaaS', score: 1 },
+        ],
+      },
+      customerFit: {
+        label: 'Customer & Use Case Fit',
+        weight: 0.15,
+        options: [
+          { label: 'Strong CX Focus', score: 5 },
+          { label: 'CX-Relevant Industries', score: 4 },
+          { label: 'General B2B Mid-Market', score: 3 },
+          { label: 'Low CX Relevance', score: 2 },
+          { label: 'No CX Alignment', score: 1 },
+        ],
+      },
+      salesMotion: {
+        label: 'Sales Motion Maturity',
+        weight: 0.15,
+        options: [
+          { label: 'Structured Sales Team (New Business Focus)', score: 5 },
+          { label: 'Sales + Account Management', score: 4 },
+          { label: 'Hybrid (Tech-Led Selling)', score: 3 },
+          { label: 'Founder / Reactive Sales', score: 2 },
+          { label: 'No Clear Sales Motion', score: 1 },
+        ],
+      },
+      scaleFit: {
+        label: 'Scale Fit',
+        weight: 0.05,
+        options: [
+          { label: 'Ideal (10–50m / 50–500)', score: 5 },
+          { label: 'Near Ideal', score: 4 },
+          { label: 'Sub-Scale Growth', score: 3 },
+          { label: 'Small / Niche', score: 2 },
+          { label: 'Enterprise / Complex', score: 1 },
+        ],
+      },
+      geoFit: {
+        label: 'Geographic Fit',
+        weight: 0.05,
+        options: [
+          { label: 'UK HQ', score: 5 },
+          { label: 'UK Presence', score: 4 },
+          { label: 'EMEA with UK Coverage', score: 3 },
+          { label: 'Limited UK', score: 2 },
+          { label: 'Non-UK Focus', score: 1 },
+        ],
+      },
+    },
+    tierBands: [
+      { min: 4.0, max: 5.0, tier: 'Tier 1 – Strategic Target', badge: 'Tier 1' },
+      { min: 3.2, max: 3.9, tier: 'Tier 2 – Strong Prospect', badge: 'Tier 2' },
+      { min: 2.5, max: 3.1, tier: 'Tier 3 – Opportunistic', badge: 'Tier 3' },
+      { min: 0, max: 2.49, tier: 'Tier 4 – Low Priority', badge: 'Tier 4' },
+    ],
+  };
+  const STAGE_ONE_CATEGORY_KEYS = Object.keys(STAGE_ONE_SCORING_CONFIG.categories);
+
   function parseNumber(value) {
     if (value === null || value === undefined) return null;
     const cleaned = String(value).replace(/[,£$\s]/g, '').trim();
@@ -72,6 +151,87 @@
     if (!trimmed) return '';
     if (/^https?:\/\//i.test(trimmed)) return trimmed;
     return `https://${trimmed}`;
+  }
+
+  function getOptionScore(categoryKey, label) {
+    const category = STAGE_ONE_SCORING_CONFIG.categories[categoryKey];
+    if (!category || !label) return 0;
+    const option = category.options.find((item) => item.label === label);
+    return option ? option.score : 0;
+  }
+
+  function createEmptyScoring() {
+    const empty = {};
+    STAGE_ONE_CATEGORY_KEYS.forEach((key) => {
+      empty[key] = { label: '', score: 0 };
+    });
+    return {
+      ...empty,
+      weightedScore: 0,
+      weightedPercent: 0,
+      tier: '',
+      tierBadge: '',
+      status: 'Unscored',
+      confidence: '',
+    };
+  }
+
+  function formatProspectScore(score) {
+    if (!Number.isFinite(score) || score <= 0) return 'Unscored';
+    return score.toFixed(2);
+  }
+
+  function getProspectTier(weightedScore) {
+    if (!Number.isFinite(weightedScore) || weightedScore <= 0) return '';
+    const band = STAGE_ONE_SCORING_CONFIG.tierBands.find((item) => weightedScore >= item.min && weightedScore <= item.max);
+    return band ? band.tier : '';
+  }
+
+  function getTierBadge(weightedScore) {
+    if (!Number.isFinite(weightedScore) || weightedScore <= 0) return '';
+    const band = STAGE_ONE_SCORING_CONFIG.tierBands.find((item) => weightedScore >= item.min && weightedScore <= item.max);
+    return band ? band.badge : '';
+  }
+
+  function calculateProspectWeightedScore(scoring) {
+    const next = createEmptyScoring();
+    if (!scoring || typeof scoring !== 'object') return next;
+
+    let weightedTotal = 0;
+    let completedCount = 0;
+
+    STAGE_ONE_CATEGORY_KEYS.forEach((key) => {
+      const category = STAGE_ONE_SCORING_CONFIG.categories[key];
+      const raw = scoring[key] || {};
+      const label = raw.label || '';
+      const explicitScore = Number(raw.score);
+      const resolvedScore = label ? getOptionScore(key, label) : (Number.isFinite(explicitScore) && explicitScore > 0 ? explicitScore : 0);
+      const score = Math.max(0, Math.min(5, resolvedScore));
+      next[key] = { label, score };
+      if (score > 0) {
+        completedCount += 1;
+        weightedTotal += score * category.weight;
+      }
+    });
+
+    const hasAny = completedCount > 0;
+    const complete = completedCount === STAGE_ONE_CATEGORY_KEYS.length;
+    if (!hasAny) return next;
+
+    next.status = complete ? 'Complete' : 'Partial';
+    if (!complete) return next;
+
+    const weightedScore = Number(Math.max(1, Math.min(5, weightedTotal)).toFixed(2));
+    const weightedPercent = Number(((weightedScore / 5) * 100).toFixed(2));
+    next.weightedScore = weightedScore;
+    next.weightedPercent = weightedPercent;
+    next.tier = getProspectTier(weightedScore);
+    next.tierBadge = getTierBadge(weightedScore);
+    return next;
+  }
+
+  function normalizeProspectScoring(rawScoring) {
+    return calculateProspectWeightedScore(rawScoring || createEmptyScoring());
   }
 
   function formatCurrency(value) {
@@ -224,6 +384,12 @@
     mapped.matchedIndustries = scoreData.matchedIndustries;
     mapped.matchedVendors = scoreData.matchedVendors;
     mapped.scoreItems = scoreData.scoreItems;
+    mapped.scoring = normalizeProspectScoring(raw.scoring);
+    mapped.stage1WeightedScore = mapped.scoring.weightedScore || null;
+    mapped.stage1WeightedPercent = mapped.scoring.weightedPercent || null;
+    mapped.stage1Tier = mapped.scoring.tier || '';
+    mapped.stage1TierBadge = mapped.scoring.tierBadge || '';
+    mapped.stage1ScoreStatus = mapped.scoring.status || 'Unscored';
 
     mapped.searchHaystack = [
       mapped.name, mapped.industry, mapped.category, mapped.channel_role, mapped.channel_segment,
@@ -254,7 +420,12 @@
       category: r.category, channel_role: r.channel_role, channel_segment: r.channel_segment,
       employees: r.employees, revenue: r.revenue, city: r.city, country: r.country,
       website: r.website, linkedin: r.linkedin, email: r.email, trading_status: r.trading_status,
-      partners: r.partners, tech_stack: r.tech_stack, keywords: r.keywords, companyClassification: r.companyClassification
+      partners: r.partners, tech_stack: r.tech_stack, keywords: r.keywords, companyClassification: r.companyClassification,
+      stage1WeightedScore: r.stage1WeightedScore || '',
+      stage1WeightedPercent: r.stage1WeightedPercent || '',
+      stage1Tier: r.stage1Tier || '',
+      stage1TierBadge: r.stage1TierBadge || '',
+      stage1ScoreStatus: r.stage1ScoreStatus || ''
     })));
   }
 
@@ -266,5 +437,14 @@
     parseNumber,
     getPartnerTier,
     getCompanyClassification,
+    STAGE_ONE_SCORING_CONFIG,
+    STAGE_ONE_CATEGORY_KEYS,
+    createEmptyScoring,
+    normalizeProspectScoring,
+    getOptionScore,
+    calculateProspectWeightedScore,
+    getProspectTier,
+    getTierBadge,
+    formatProspectScore,
   };
 })();
