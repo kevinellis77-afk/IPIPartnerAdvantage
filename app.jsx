@@ -4840,7 +4840,7 @@ function ProspectToolPage() {
   const STORAGE_DEFAULT_KEY = 'partnerProspectDefaultViewId';
   const DEFAULT_FILTERS = {
     name: '', industry: '', category: '', channel_role: '', channel_segment: '', country: '', city: '',
-    trading_status: '', adopter_profile: '', partnerTierName: '', stage1Tier: '', stage1Status: '', minEmployees: '', maxEmployees: '', minRevenue: '',
+    trading_status: '', adopter_profile: '', partnerTierName: '', stage1Tier: '', stage1Status: '', stage1Confidence: '', minEmployees: '', maxEmployees: '', minRevenue: '',
     maxRevenue: '', hasWebsite: false, hasLinkedIn: false, hasEmail: false, minScore: 0, minStage1Score: ''
   };
   const ALL_COLUMNS = [
@@ -4850,6 +4850,7 @@ function ProspectToolPage() {
     { key: 'partnerTierName', label: 'Tier', essential: true },
     { key: 'stage1WeightedScore', label: 'Stage 1 Score', essential: true },
     { key: 'stage1Tier', label: 'Stage 1 Tier', essential: true },
+    { key: 'stage1Confidence', label: 'Stage 1 Confidence', hiddenByDefault: true },
     { key: 'companyClassification', label: 'Company Class' },
     { key: 'channel_role', label: 'Role', essential: true },
     { key: 'channel_segment', label: 'Segment', essential: true },
@@ -4905,6 +4906,29 @@ function ProspectToolPage() {
   const stageOneConfig = window.ProspectToolUtils.STAGE_ONE_SCORING_CONFIG;
   const stageOneCategoryKeys = window.ProspectToolUtils.STAGE_ONE_CATEGORY_KEYS || [];
   const stageOneCategoryEntries = stageOneCategoryKeys.map((key) => ({ key, ...stageOneConfig.categories[key] }));
+  const stageOneGuidance = {
+    routeToRevenue: 'Score 5 only where clear UCaaS and CX positioning is visible in website messaging, service pages, or case studies.',
+    vendorOpportunity: 'Lower scores indicate harder-to-win prospects already aligned to modern CCaaS vendors.',
+    customerFit: 'Use visible evidence of CX-heavy environments, contact centre relevance, or service-led industries.',
+    salesMotion: 'Base this on observable signs of structured selling such as new business roles, account directors, or solution-led messaging.',
+    scaleFit: 'Use this as a fit check only, not a primary driver.',
+    geoFit: 'Prioritise UK market coverage over simple HQ location where appropriate.',
+  };
+  const getStage1TierRank = React.useCallback((record) => {
+    const tier = record?.stage1Tier || '';
+    if (!tier) return -1;
+    const rank = stageOneConfig.tierBands.findIndex((band) => band.tier === tier);
+    return rank > -1 ? (stageOneConfig.tierBands.length - rank) : -1;
+  }, [stageOneConfig]);
+
+  const getStage1TierClass = React.useCallback((record) => {
+    const badge = record?.stage1TierBadge || '';
+    if (badge === 'Tier 1') return 'tier-badge tier-emerald';
+    if (badge === 'Tier 2') return 'tier-badge tier-blue';
+    if (badge === 'Tier 3') return 'tier-badge tier-amber';
+    return 'tier-badge tier-gray';
+  }, []);
+
   const IconButton = ({ icon, label, onClick, className = '', disabled = false, type = 'button', tone = 'default' }) => (
     <button type={type} className={`ui-btn ui-btn--secondary prospect-icon-btn prospect-icon-btn--${tone} ${className}`.trim()} aria-label={label} title={label} data-tooltip={label} onClick={onClick} disabled={disabled}>
       <span aria-hidden="true">{iconMap[icon] || icon}</span>
@@ -4989,6 +5013,7 @@ function ProspectToolPage() {
     if (filters.partnerTierName && (r.partnerTierName || '') !== filters.partnerTierName) return false;
     if (filters.stage1Tier && (r.stage1Tier || '') !== filters.stage1Tier) return false;
     if (filters.stage1Status && (r.stage1ScoreStatus || 'Unscored') !== filters.stage1Status) return false;
+    if (filters.stage1Confidence && (r.stage1Confidence || '') !== filters.stage1Confidence) return false;
     if (filters.minEmployees && (r.numericEmployees === null || r.numericEmployees < Number(filters.minEmployees))) return false;
     if (filters.maxEmployees && (r.numericEmployees === null || r.numericEmployees > Number(filters.maxEmployees))) return false;
     if (filters.minRevenue && (r.numericRevenue === null || r.numericRevenue < Number(filters.minRevenue))) return false;
@@ -5007,19 +5032,19 @@ function ProspectToolPage() {
     list.sort((a, b) => {
       const av = field === 'score' ? a.idealPartnerScore
         : field === 'stage1score' ? (a.stage1WeightedScore || 0)
-          : field === 'stage1tier' ? (a.stage1WeightedScore || 0)
+          : field === 'stage1tier' ? getStage1TierRank(a)
             : field === 'revenue' ? a.numericRevenue || 0
               : field === 'employees' ? a.numericEmployees || 0 : (a.name || '');
       const bv = field === 'score' ? b.idealPartnerScore
         : field === 'stage1score' ? (b.stage1WeightedScore || 0)
-          : field === 'stage1tier' ? (b.stage1WeightedScore || 0)
+          : field === 'stage1tier' ? getStage1TierRank(b)
             : field === 'revenue' ? b.numericRevenue || 0
               : field === 'employees' ? b.numericEmployees || 0 : (b.name || '');
       if (typeof av === 'string') return dir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
       return dir === 'asc' ? av - bv : bv - av;
     });
     return top50 ? list.slice(0, 50) : list;
-  }, [filtered, sort, top50]);
+  }, [filtered, sort, top50, getStage1TierRank]);
 
   const pageCount = Math.max(1, Math.ceil(sorted.length / pageSize));
   const pageRows = sorted.slice((page - 1) * pageSize, (page - 1) * pageSize + pageSize);
@@ -5137,20 +5162,12 @@ function ProspectToolPage() {
   };
 
   const getTierClass = (record) => `tier-badge tier-${record.partnerTier?.color || 'gray'}`;
-  const getStage1TierClass = (record) => {
-    const score = record?.stage1WeightedScore || 0;
-    if (!score) return 'tier-badge tier-gray';
-    if (score >= 4) return 'tier-badge tier-emerald';
-    if (score >= 3.2) return 'tier-badge tier-blue';
-    if (score >= 2.5) return 'tier-badge tier-amber';
-    return 'tier-badge tier-gray';
-  };
   const activeChips = [keyword && `Search: ${keyword}`, ...Object.entries(filters).filter(([k, v]) => v && v !== 0).map(([k, v]) => `${k}: ${v}`)].filter(Boolean);
   const filterLabels = {
     industry: 'Industry', category: 'Category', channel_role: 'Role', channel_segment: 'Segment', country: 'Country', city: 'City',
     trading_status: 'Trading', adopter_profile: 'Adopter profile', partnerTierName: 'Tier', minEmployees: 'Min employees',
     maxEmployees: 'Max employees', minRevenue: 'Min revenue', maxRevenue: 'Max revenue', hasWebsite: 'Website only',
-    hasLinkedIn: 'LinkedIn only', hasEmail: 'Email only', minScore: 'Min score', stage1Tier: 'Stage 1 tier', stage1Status: 'Stage 1 status',
+    hasLinkedIn: 'LinkedIn only', hasEmail: 'Email only', minScore: 'Min score', stage1Tier: 'Stage 1 tier', stage1Status: 'Stage 1 status', stage1Confidence: 'Stage 1 confidence',
     minStage1Score: 'Min Stage 1 score'
   };
   const activeFilterCount = Object.entries(filters).filter(([_, v]) => v && v !== 0).length;
@@ -5293,6 +5310,13 @@ function ProspectToolPage() {
     });
   };
 
+  const updateScoringMeta = (key, value) => {
+    setEditableScoring((current) => window.ProspectToolUtils.calculateProspectWeightedScore({
+      ...current,
+      [key]: value,
+    }));
+  };
+
   const saveStage1Scoring = () => {
     if (!selected) return;
     const normalized = window.ProspectToolUtils.normalizeProspectScoring(editableScoring);
@@ -5305,7 +5329,11 @@ function ProspectToolPage() {
         stage1WeightedPercent: normalized.weightedPercent || null,
         stage1Tier: normalized.tier || '',
         stage1TierBadge: normalized.tierBadge || '',
-        stage1ScoreStatus: normalized.status || 'Unscored',
+        stage1ScoreStatus: normalized.completenessStatus || normalized.status || 'Unscored',
+        stage1Confidence: normalized.confidence || '',
+        stage1WeakestFactor: normalized.weakestFactor || '',
+        stage1TierCapApplied: Boolean(normalized.tierCapApplied),
+        stage1TierCapReason: normalized.tierCapReason || '',
       };
     }));
     setFeedback({ tone: 'success', message: `Saved Stage 1 scoring for ${selected.displayName}.` });
@@ -5318,6 +5346,7 @@ function ProspectToolPage() {
     if (key === 'partnerTierName') return <td data-col={key}><span className={getTierClass(record)}>{record.partnerTierName || 'Low Priority'}</span></td>;
     if (key === 'stage1WeightedScore') return <td className="cell-number" data-col={key}><span className="score-badge score-badge--stage1">{record.stage1WeightedScore ? window.ProspectToolUtils.formatProspectScore(record.stage1WeightedScore) : (record.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</span></td>;
     if (key === 'stage1Tier') return <td data-col={key}><span className={getStage1TierClass(record)}>{record.stage1TierBadge || (record.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</span></td>;
+    if (key === 'stage1Confidence') return <td data-col={key}>{record.stage1Confidence || '—'}</td>;
     if (key === 'displayRevenue' || key === 'displayEmployees' || key === 'contactCount') return <td className="cell-number" data-col={key}>{record[key] || '—'}</td>;
     if (key === 'website') return <td className="cell-icon" data-col={key}>{record.website ? <a className="prospect-inline-icon" href={window.ProspectToolUtils.normalizeUrl(record.website)} target="_blank" rel="noreferrer" aria-label="Open Website" title="Open Website">🌐</a> : '—'}</td>;
     if (key === 'linkedin') return <td className="cell-icon" data-col={key}>{record.linkedin ? <a className="prospect-inline-icon" href={window.ProspectToolUtils.normalizeUrl(record.linkedin)} target="_blank" rel="noreferrer" aria-label="Open LinkedIn" title="Open LinkedIn">in</a> : '—'}</td>;
@@ -5384,6 +5413,7 @@ function ProspectToolPage() {
         <select className="ui-search" value={filters.partnerTierName} onChange={(e) => setFilters((f) => ({ ...f, partnerTierName: e.target.value }))}><option value="">Partner tier</option>{['Strategic - Tier 1', 'Growth - Tier 2', 'Select - Tier 3', 'Low Priority'].map((v) => <option key={v}>{v}</option>)}</select>
         <select className="ui-search" value={filters.stage1Tier} onChange={(e) => setFilters((f) => ({ ...f, stage1Tier: e.target.value }))}><option value="">Stage 1 tier</option>{stageOneConfig.tierBands.map((band) => <option key={band.tier} value={band.tier}>{band.tier}</option>)}</select>
         <select className="ui-search" value={filters.stage1Status} onChange={(e) => setFilters((f) => ({ ...f, stage1Status: e.target.value }))}><option value="">Stage 1 status</option>{['Complete', 'Partial', 'Unscored'].map((v) => <option key={v} value={v}>{v}</option>)}</select>
+        <select className="ui-search" value={filters.stage1Confidence} onChange={(e) => setFilters((f) => ({ ...f, stage1Confidence: e.target.value }))}><option value="">Stage 1 confidence</option>{(stageOneConfig.confidenceOptions || []).map((v) => <option key={v} value={v}>{v}</option>)}</select>
       </div>
       {showAdvancedFilters && <div className="filter-grid prospect-filter-grid--advanced">
         <input className="ui-search" placeholder="Min employees" type="number" value={filters.minEmployees} onChange={(e) => setFilters((f) => ({ ...f, minEmployees: e.target.value }))} />
@@ -5526,6 +5556,8 @@ function ProspectToolPage() {
               <div><span>Tier</span><strong>{selected.partnerTierName || 'Low Priority'}</strong></div>
               <div><span>Stage 1 Score</span><strong>{selected.stage1WeightedScore ? `${window.ProspectToolUtils.formatProspectScore(selected.stage1WeightedScore)} / 5.00` : (selected.stage1ScoreStatus || 'Unscored')}</strong></div>
               <div><span>Stage 1 Tier</span><strong>{selected.stage1Tier || (selected.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</strong></div>
+              <div><span>Stage 1 Completeness</span><strong>{selected.stage1ScoreStatus || 'Unscored'}</strong></div>
+              <div><span>Stage 1 Confidence</span><strong>{selected.stage1Confidence || '—'}</strong></div>
               <div><span>Company Class</span><strong>{selected.companyClassification || 'Unclassified'}</strong></div>
               <div><span>Status</span><strong>{selected.trading_status || '—'}</strong></div>
               <div><span>Region</span><strong>{selected.country || '—'}</strong></div>
@@ -5541,12 +5573,22 @@ function ProspectToolPage() {
               <p className="stage1-helper-text stage1-helper-text--muted">This model helps identify which prospects are most likely to justify outreach and qualification effort.</p>
 
               <div className="stage1-summary-grid">
-                <div><span>Weighted Score</span><strong>{editableScoring.weightedScore ? `${window.ProspectToolUtils.formatProspectScore(editableScoring.weightedScore)} / 5.00` : (editableScoring.status || 'Unscored')}</strong></div>
+                <div className="stage1-summary-grid__tier">
+                  <span>Prospect Tier</span>
+                  <strong>
+                    <span className={getStage1TierClass({ stage1TierBadge: editableScoring.tierBadge })}>
+                      {editableScoring.tierBadge || (editableScoring.completenessStatus === 'Partial' ? 'Partial' : 'Unscored')}
+                    </span>
+                    <em>{editableScoring.tier || (editableScoring.completenessStatus === 'Partial' ? 'Partial scoring in progress' : 'No final tier')}</em>
+                  </strong>
+                </div>
+                <div><span>Weighted Score</span><strong>{editableScoring.weightedScore ? `${window.ProspectToolUtils.formatProspectScore(editableScoring.weightedScore)} / 5.00` : (editableScoring.completenessStatus || 'Unscored')}</strong></div>
                 <div><span>Percentage</span><strong>{editableScoring.weightedScore ? `${editableScoring.weightedPercent.toFixed(2)}%` : '—'}</strong></div>
-                <div><span>Prospect Tier</span><strong>{editableScoring.tier || (editableScoring.status === 'Partial' ? 'Partial' : 'Unscored')}</strong></div>
-                <div><span>Tier Badge</span><strong><span className={getStage1TierClass({ stage1WeightedScore: editableScoring.weightedScore })}>{editableScoring.tierBadge || (editableScoring.status === 'Partial' ? 'Partial' : 'Unscored')}</span></strong></div>
-                <div><span>Confidence (placeholder)</span><strong className="stage1-confidence">{editableScoring.confidence || 'Not set'}</strong></div>
+                <div><span>Confidence</span><strong className="stage1-confidence">{editableScoring.confidence || 'Not set'}</strong></div>
+                <div><span>Completeness</span><strong>{editableScoring.completenessStatus || 'Unscored'}</strong></div>
+                <div><span>Weakest Factor</span><strong>{editableScoring.weakestFactor || '—'}</strong></div>
               </div>
+              {editableScoring.tierCapApplied && editableScoring.tierCapReason && <p className="stage1-cap-note">{editableScoring.tierCapReason}</p>}
 
               <div className="stage1-grid">
                 {stageOneCategoryEntries.map((category) => {
@@ -5557,9 +5599,25 @@ function ProspectToolPage() {
                       <option value="">Select {category.label}</option>
                       {category.options.map((option) => <option key={option.label} value={option.label}>{option.label}</option>)}
                     </select>
+                    <small className="stage1-guidance">{stageOneGuidance[category.key] || ''}</small>
                     <small>Score: {value.score || 0}</small>
                   </label>;
                 })}
+              </div>
+
+              <div className="stage1-grid stage1-grid--meta">
+                <label className="stage1-field">
+                  <span>Confidence</span>
+                  <select className="ui-search" value={editableScoring.confidence || ''} onChange={(event) => updateScoringMeta('confidence', event.target.value)}>
+                    <option value="">Select confidence</option>
+                    {(stageOneConfig.confidenceOptions || []).map((option) => <option key={option} value={option}>{option}</option>)}
+                  </select>
+                  <small>Low = website only · Medium = multiple public sources · High = multi-source or direct validation.</small>
+                </label>
+                <label className="stage1-field stage1-field--full">
+                  <span>Evidence / Rationale</span>
+                  <textarea className="ui-search" rows={3} value={editableScoring.evidence || ''} onChange={(event) => updateScoringMeta('evidence', event.target.value)} placeholder="e.g. Website shows UCaaS + contact centre services, Microsoft partnership page, strong retail case studies" />
+                </label>
               </div>
             </div>
 
