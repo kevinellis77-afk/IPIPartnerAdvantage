@@ -7242,7 +7242,7 @@ const PARTNER_TIERS_DATA = [
   },
   {
     num: "2",
-    priority: "Primary Focus (Tier 2)",
+    priority: "Primary Focus (Priority 2)",
     label: "Managed Service Providers",
     icon: "⚙️",
     color: "#7B96A3",
@@ -7278,7 +7278,7 @@ const PARTNER_TIERS_DATA = [
   },
   {
     num: "2",
-    priority: "Primary Focus (Tier 2)",
+    priority: "Primary Focus (Priority 2)",
     label: "CCaaS Resellers",
     icon: "🎯",
     color: "#36C6FF",
@@ -8074,11 +8074,11 @@ function PartnerProgramPage() {
             }}
           >
             Partner recruitment focuses on specific categories based on
-            strategic value, speed to revenue and market influence. The tiers
+            strategic value, speed to revenue and market influence. The priorities
             below represent the priority order for recruitment.
           </p>
 
-          {/* Tier selector tabs */}
+          {/* Priority selector tabs */}
           <div
             style={{
               display: "flex",
@@ -8128,7 +8128,7 @@ function PartnerProgramPage() {
                 }}
               >
                 <span style={{ fontSize: 16 }}>{pt.icon}</span>
-                <span>Tier {pt.num}</span>
+                <span>Priority {pt.num}.</span>
                 <span
                   style={{
                     fontWeight: 600,
@@ -8143,7 +8143,7 @@ function PartnerProgramPage() {
             ))}
           </div>
 
-          {/* Active tier detail panel */}
+          {/* Active priority detail panel */}
           <div
             key={activeT}
             style={{
@@ -8193,7 +8193,7 @@ function PartnerProgramPage() {
                       textTransform: "uppercase",
                     }}
                   >
-                    Tier {t.num}
+                    Priority {t.num}.
                   </div>
                   <div
                     style={{
