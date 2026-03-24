@@ -137,6 +137,46 @@
       { min: 0, max: 2.49, tier: 'Tier 4 – Low Priority', badge: 'Tier 4' },
     ],
   };
+  const REVIEW_FRESHNESS_CONFIG = {
+    freshDays: 14,
+    agingDays: 30,
+  };
+  const REVIEW_FRESHNESS_LABELS = ['Fresh', 'Aging', 'Stale', 'Not Reviewed'];
+  const PRIORITY_VIEW_DEFINITIONS = [
+    {
+      key: 'tier1_priority_outreach',
+      label: 'Tier 1 – Priority Outreach',
+      description: 'Tier 1 prospects with immediate outreach recommendation.',
+      matches: (record) => (record?.stage1TierBadge || '') === 'Tier 1' && (record?.stage1NextAction || '') === 'Prioritise Outreach',
+    },
+    {
+      key: 'tier2_qualify_further',
+      label: 'Tier 2 – Qualify Further',
+      description: 'Tier 2 prospects that should move into qualification.',
+      matches: (record) => (record?.stage1TierBadge || '') === 'Tier 2' && (record?.stage1NextAction || '') === 'Qualify Further',
+    },
+    {
+      key: 'partial_unscored',
+      label: 'Partial / Unscored',
+      description: 'Prospects needing completion of Stage 1 scoring.',
+      matches: (record) => ['Partial', 'Unscored'].includes(record?.stage1ScoreStatus || 'Unscored'),
+    },
+    {
+      key: 'stale_reviews',
+      label: 'Stale Reviews',
+      description: 'Prospects that are stale or never reviewed.',
+      matches: (record) => {
+        const freshness = getReviewFreshnessStatus(record?.stage1LastReviewed, REVIEW_FRESHNESS_CONFIG);
+        return freshness === 'Stale' || freshness === 'Not Reviewed';
+      },
+    },
+    {
+      key: 'high_confidence_targets',
+      label: 'High Confidence Targets',
+      description: 'High-confidence Tier 1 and Tier 2 prospects.',
+      matches: (record) => (record?.stage1Confidence || '') === 'High' && ['Tier 1', 'Tier 2'].includes(record?.stage1TierBadge || ''),
+    },
+  ];
   const STAGE_ONE_CATEGORY_KEYS = Object.keys(STAGE_ONE_SCORING_CONFIG.categories);
 
   function parseNumber(value) {
@@ -212,6 +252,14 @@
     const diff = Date.now() - parsed.getTime();
     if (!Number.isFinite(diff) || diff < 0) return 0;
     return Math.floor(diff / (24 * 60 * 60 * 1000));
+  }
+
+  function getReviewFreshnessStatus(dateValue, config = REVIEW_FRESHNESS_CONFIG) {
+    const days = getDaysSinceReview(dateValue);
+    if (days === null) return 'Not Reviewed';
+    if (days <= Number(config.freshDays || 14)) return 'Fresh';
+    if (days <= Number(config.agingDays || 30)) return 'Aging';
+    return 'Stale';
   }
 
   function getRecommendedNextAction(scoring) {
@@ -361,6 +409,44 @@
   function filterProspectsByNextAction(records, nextAction) {
     if (!nextAction) return [...(records || [])];
     return (records || []).filter((record) => (record?.scoring?.nextAction || '') === nextAction);
+  }
+
+  function filterProspectsByReviewFreshness(records, freshness, config = REVIEW_FRESHNESS_CONFIG) {
+    if (!freshness) return [...(records || [])];
+    return (records || []).filter((record) => getReviewFreshnessStatus(record?.stage1LastReviewed || record?.scoring?.lastReviewed, config) === freshness);
+  }
+
+  function getBuiltInPriorityViews() {
+    return PRIORITY_VIEW_DEFINITIONS.map((view) => ({
+      key: view.key,
+      label: view.label,
+      description: view.description,
+    }));
+  }
+
+  function applyPriorityViewFilter(viewKey, prospects) {
+    if (!viewKey) return [...(prospects || [])];
+    const view = PRIORITY_VIEW_DEFINITIONS.find((item) => item.key === viewKey);
+    if (!view) return [...(prospects || [])];
+    return (prospects || []).filter((record) => view.matches(record));
+  }
+
+  function getBulkReviewQueue(prospects, _currentFilters, _currentSort, _currentView) {
+    return [...(prospects || [])].map((record) => record.id).filter(Boolean);
+  }
+
+  function getNextProspectInQueue(queueIds, currentId) {
+    const queue = Array.isArray(queueIds) ? queueIds : [];
+    const index = queue.findIndex((id) => id === currentId);
+    if (index < 0 || index >= queue.length - 1) return null;
+    return queue[index + 1];
+  }
+
+  function getPreviousProspectInQueue(queueIds, currentId) {
+    const queue = Array.isArray(queueIds) ? queueIds : [];
+    const index = queue.findIndex((id) => id === currentId);
+    if (index <= 0) return null;
+    return queue[index - 1];
   }
 
   function formatCurrency(value) {
@@ -525,6 +611,7 @@
     mapped.stage1TierCapReason = mapped.scoring.tierCapReason || '';
     mapped.stage1NextAction = mapped.scoring.nextAction || '';
     mapped.stage1LastReviewed = mapped.scoring.lastReviewed || '';
+    mapped.stage1ReviewFreshness = getReviewFreshnessStatus(mapped.stage1LastReviewed);
 
     mapped.searchHaystack = [
       mapped.name, mapped.industry, mapped.category, mapped.channel_role, mapped.channel_segment,
@@ -580,6 +667,8 @@
     getCompanyClassification,
     STAGE_ONE_SCORING_CONFIG,
     STAGE_ONE_CATEGORY_KEYS,
+    REVIEW_FRESHNESS_CONFIG,
+    REVIEW_FRESHNESS_LABELS,
     createEmptyScoring,
     normalizeProspectScoring,
     getOptionScore,
@@ -593,7 +682,14 @@
     getRecommendedNextAction,
     formatLastReviewed,
     getDaysSinceReview,
+    getReviewFreshnessStatus,
     sortProspectsByLastReviewed,
     filterProspectsByNextAction,
+    filterProspectsByReviewFreshness,
+    getBuiltInPriorityViews,
+    applyPriorityViewFilter,
+    getBulkReviewQueue,
+    getNextProspectInQueue,
+    getPreviousProspectInQueue,
   };
 })();
