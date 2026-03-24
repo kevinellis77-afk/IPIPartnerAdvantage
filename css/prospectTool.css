@@ -51,6 +51,7 @@
 .prospect-card-selected{border-color:rgba(103,216,255,.55);box-shadow:0 0 0 1px rgba(103,216,255,.3),0 10px 24px rgba(0,0,0,.24)}
 .prospect-card-secondary{font-size:11px;color:var(--text-secondary)}
 .score-badge{font-size:11px;padding:4px 8px;border-radius:999px;background:rgba(103,216,255,.16);color:#9fdfff;font-weight:700}
+.score-badge--stage1{background:rgba(145,196,176,.2);color:#d2f3e5}
 .top50-badge{background:rgba(111,211,143,.18);border:1px solid rgba(111,211,143,.35);padding:4px 8px;border-radius:8px;color:#aee3bd;font-size:11px}
 
 .tier-badge{font-size:11px;padding:4px 8px;border-radius:999px;font-weight:700;border:1px solid transparent;display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2}
@@ -215,3 +216,18 @@
 .prospect-template-card>div{display:flex;justify-content:space-between;gap:8px;align-items:center}
 .prospect-template-card pre{margin:0;white-space:pre-wrap;font-family:inherit;font-size:12px;color:var(--text-primary);background:rgba(4,10,16,.4);padding:10px;border-radius:10px;max-height:200px;overflow:auto}
 @media (max-width:860px){.prospect-research-grid{grid-template-columns:1fr}}
+.stage1-scoring-panel{display:grid;gap:12px}
+.stage1-scoring-panel__head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.stage1-helper-text{margin:0;font-size:12px;color:var(--text-secondary)}
+.stage1-helper-text--muted{font-size:11px;opacity:.86}
+.stage1-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.stage1-summary-grid>div{border:1px solid var(--border-soft);border-radius:10px;padding:8px;background:color-mix(in srgb,var(--card-bg) 86%,transparent);display:grid;gap:3px}
+.stage1-summary-grid span{font-size:11px;color:var(--text-secondary)}
+.stage1-summary-grid strong{font-size:12px;color:var(--text-primary)}
+.stage1-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.stage1-field{display:grid;gap:5px}
+.stage1-field span{font-size:11px;color:var(--text-secondary);font-weight:700}
+.stage1-field em{font-style:normal;opacity:.85}
+.stage1-field small{font-size:11px;color:#9fdfff}
+.stage1-confidence{color:var(--text-secondary)!important;font-weight:600}
+@media (max-width:860px){.stage1-grid,.stage1-summary-grid{grid-template-columns:1fr}}
