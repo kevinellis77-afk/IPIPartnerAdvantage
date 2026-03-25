@@ -241,6 +241,7 @@
 .prospect-research-bullets{margin:0;padding-left:18px;display:grid;gap:5px}
 .prospect-research-bullets li{font-size:12px;color:var(--text-primary)}
 .prospect-research-section--sources{gap:8px}
+.prospect-research-section--suggested-scorecard{opacity:.88}
 .prospect-research-source-tags{display:flex;gap:6px;flex-wrap:wrap}
 .prospect-research-footnote{margin:0;font-size:11px;color:var(--text-secondary)}
 .prospect-research-list{margin:0;padding:0;list-style:none;display:grid;gap:7px}
@@ -250,6 +251,7 @@
 .prospect-research-textarea--prompt{min-height:220px}
 .prospect-research-textarea--output{min-height:210px}
 .prospect-research-contacts-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.prospect-research-kv--suggested{background:color-mix(in srgb,var(--card-bg) 82%, transparent);border-style:dashed}
 .prospect-research-contact-group{display:grid;gap:8px}
 .prospect-research-contact-group h5{margin:0;font-size:12px;color:var(--heading-primary)}
 .prospect-confidence{font-size:10px;text-transform:uppercase;letter-spacing:.04em;padding:2px 6px;border-radius:999px;align-self:flex-start}
