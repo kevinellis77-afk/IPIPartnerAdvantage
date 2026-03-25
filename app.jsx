@@ -4841,43 +4841,164 @@ function ProspectToolPage() {
   const STORAGE_STAGE1_SCORING_KEY = 'partnerProspectStage1ScoringById';
   const STORAGE_RESEARCH_KEY = 'partnerProspectResearchById';
 
-  const RESEARCH_PROMPT_TEMPLATE = `You are a B2B channel research analyst supporting IPI Partner Advantage Stage 1 scoring.
+  const RESEARCH_PROMPT_TEMPLATE = `You are acting as a Channel Sales and Partner Strategy expert in the UK CCaaS, UCaaS, CX and AI market.
 
-Prospect details:
-- Company Name: {{Company Name}}
-- Website: {{Website}}
-- Company Reg No: {{Company Reg No}}
+Your task is to:
+1. Research a prospective partner company
+2. Extract structured commercial signals
+3. Convert those signals into a **Suggested Stage 1 Partner Score**
 
-Research objectives:
-1) Company Overview
-2) Route-to-Revenue
-3) Vendor Signals
-4) Opportunity / Risk
-5) Outreach
-6) Contacts
+Use all available public sources:
+- Company website
+- LinkedIn (company + employees)
+- Google search
+- Vendor / partner pages
+- Press releases
 
-Output requirements:
-- Keep findings practical and commercially relevant.
-- Highlight confidence level where evidence is weak.
-- Use short, scannable bullets.
-- Include source references where possible.
+Be commercially focused. Do NOT produce generic summaries.
 
-Return your response in this structure:
+==================================================
+INPUT
+==================================================
 
-## Company Overview
-## Route-to-Revenue
-## Vendor Signals
-## Opportunity / Risk
-## Outreach
-## Contacts
+Company Name: {{Company Name}}
+Website: {{Website}}
+Company Registration Number: {{Company Reg No}}
 
-For Contacts, group as:
-- C-Suite
-- Management
-- Sales
-- Product / CX
+==================================================
+OUTPUT FORMAT (STRICT)
+==================================================
 
-Each contact should include: Name | Title | LinkedIn URL`;
+--------------------------------------------------
+1. COMPANY OVERVIEW
+--------------------------------------------------
+
+(2–3 sentences max)
+
+--------------------------------------------------
+2. KEY COMMERCIAL SIGNALS
+--------------------------------------------------
+
+Service Focus:
+Customer Profile:
+CX / UC / AI Positioning:
+Sales Motion Indicators:
+
+--------------------------------------------------
+3. VENDOR / PLATFORM SIGNALS
+--------------------------------------------------
+
+Known Vendors:
+Legacy Indicators:
+Modern CCaaS Indicators:
+Displacement Opportunity: High / Medium / Low
+
+--------------------------------------------------
+4. OPPORTUNITY
+--------------------------------------------------
+
+(3–5 bullets)
+
+--------------------------------------------------
+5. RISKS
+--------------------------------------------------
+
+(3–5 bullets)
+
+--------------------------------------------------
+6. KEY CONTACTS
+--------------------------------------------------
+
+C-Suite:
+Management:
+Sales:
+Product / CX:
+
+(Name, Title, LinkedIn if available)
+
+==================================================
+7. SUGGESTED STAGE 1 SCORING
+==================================================
+
+For EACH category:
+
+Return:
+- Suggested Option (must match allowed dropdown)
+- Score (1–5)
+- Confidence (High / Medium / Low)
+- Evidence (2–3 bullets)
+
+----------------------------------
+A. Route-to-Revenue Fit
+Allowed values ONLY:
+- UCaaS + CX Focus
+- WEM / Analytics (No CCaaS)
+- UCaaS Only
+- CCaaS Reseller
+- General IT Services
+- Cyber / Infra Only
+
+----------------------------------
+B. Vendor Displacement Opportunity
+Allowed values ONLY:
+- Legacy (Avaya / Mitel / Cisco)
+- Adjacent (Microsoft / Gamma / 3CX)
+- Mixed Stack
+- Modern CCaaS (Genesys / NICE / Talkdesk / 8x8 / Zoom)
+- Deeply Embedded CCaaS
+
+----------------------------------
+C. Customer & Use Case Fit
+----------------------------------
+
+----------------------------------
+D. Sales Motion Maturity
+----------------------------------
+
+----------------------------------
+E. Scale Fit
+----------------------------------
+
+----------------------------------
+F. Geographic Fit
+----------------------------------
+
+==================================================
+8. CALCULATED SCORE
+==================================================
+
+Calculate:
+
+Weighted Score (out of 5):
+Suggested Tier:
+- Tier 1 – Strategic Target
+- Tier 2 – Strong Prospect
+- Tier 3 – Opportunistic
+- Tier 4 – Low Priority
+
+If Vendor score ≤ 2:
+→ cap at Tier 2
+
+==================================================
+9. SCORING SUMMARY
+==================================================
+
+Provide:
+
+- Why this score makes sense (3 bullets)
+- Weakest factor
+- Confidence in overall scoring
+
+==================================================
+IMPORTANT RULES
+==================================================
+
+- Only use dropdown values provided
+- Do NOT invent categories
+- Do NOT assume vendor relationships without evidence
+- Use conservative scoring if data is unclear
+- Confidence must reflect evidence strength
+- Avoid over-scoring (default bias should be Medium, not High)`;
   const DEFAULT_FILTERS = {
     name: '', industry: '', category: '', channel_role: '', channel_segment: '', country: '', city: '',
     trading_status: '', adopter_profile: '', partnerTierName: '', stage1Tier: '', stage1Status: '', stage1Confidence: '', stage1NextAction: '', stage1Freshness: '', stage1Outcome: '', stage1TargetQuality: '', minEmployees: '', maxEmployees: '', minRevenue: '',
@@ -5435,6 +5556,14 @@ Each contact should include: Name | Title | LinkedIn URL`;
     setFeedback({ tone: 'success', message: 'Research prompt generated.' });
   };
 
+  function getResearchPromptInputs(prospect) {
+    return {
+      companyName: (prospect?.displayName || prospect?.name || 'Unknown company').trim(),
+      website: (prospect?.website || 'Not available').trim(),
+      companyReg: (prospect?.company_registration_number || prospect?.company_reg_no || prospect?.id || 'Not available').trim(),
+    };
+  }
+
   const handleCopyPrompt = async () => {
     const copied = await copyToClipboard(researchPromptDraft);
     if (copied) setFeedback({ tone: 'success', message: 'Copied prompt to clipboard.' });
@@ -5471,9 +5600,7 @@ Each contact should include: Name | Title | LinkedIn URL`;
   }), []);
 
   function generateResearchPrompt(prospect) {
-    const companyName = (prospect?.displayName || prospect?.name || 'Unknown company').trim();
-    const website = (prospect?.website || 'Not available').trim();
-    const companyReg = (prospect?.company_registration_number || prospect?.company_reg_no || prospect?.id || 'Not available').trim();
+    const { companyName, website, companyReg } = getResearchPromptInputs(prospect);
     return RESEARCH_PROMPT_TEMPLATE
       .replaceAll('{{Company Name}}', companyName)
       .replaceAll('{{Website}}', website)
@@ -5525,6 +5652,7 @@ Each contact should include: Name | Title | LinkedIn URL`;
       opportunityRisk: [],
       outreach: [],
       contacts: [],
+      scoring: [],
     };
     let activeKey = null;
     const mapHeaderToKey = (line) => {
@@ -5532,7 +5660,12 @@ Each contact should include: Name | Title | LinkedIn URL`;
       if (normalized.includes('company overview')) return 'companyOverview';
       if (normalized.includes('route-to-revenue') || normalized.includes('route to revenue')) return 'routeToRevenue';
       if (normalized.includes('vendor signals') || normalized.includes('vendor')) return 'vendorSignals';
+      if (normalized.includes('key commercial signals')) return 'routeToRevenue';
+      if (normalized.includes('vendor / platform signals')) return 'vendorSignals';
       if (normalized.includes('opportunity') || normalized.includes('risk')) return 'opportunityRisk';
+      if (normalized.includes('suggested stage 1 scoring')) return 'scoring';
+      if (normalized.includes('calculated score')) return 'scoring';
+      if (normalized.includes('scoring summary')) return 'scoring';
       if (normalized.includes('outreach')) return 'outreach';
       if (normalized.includes('contacts')) return 'contacts';
       return null;
@@ -6499,6 +6632,15 @@ Each contact should include: Name | Title | LinkedIn URL`;
                   <button type="button" className="ui-btn ui-btn--secondary" onClick={() => window.open('https://chatgpt.com/', '_blank', 'noopener,noreferrer')}>Open ChatGPT</button>
                 </div>
               </div>
+              {selected && (() => {
+                const promptInputs = getResearchPromptInputs(selected);
+                return <div className="prospect-research-two-col">
+                  <div className="prospect-research-kv"><span>Company Name</span><p>{promptInputs.companyName}</p></div>
+                  <div className="prospect-research-kv"><span>Website</span><p>{promptInputs.website}</p></div>
+                  <div className="prospect-research-kv"><span>Company Reg No</span><p>{promptInputs.companyReg}</p></div>
+                  <div className="prospect-research-kv"><span>Builder Mode</span><p>Template prefilled from prospect data. Edits are saved automatically for this company.</p></div>
+                </div>;
+              })()}
               <textarea className="ui-search prospect-research-textarea prospect-research-textarea--prompt" rows={12} value={researchPromptDraft} onChange={(event) => handlePromptChange(event.target.value)} />
             </section>
 
@@ -6624,8 +6766,8 @@ Each contact should include: Name | Title | LinkedIn URL`;
                 <div className="prospect-research-kv"><span>Route-to-Revenue</span><p>{(parsedResearchOutput.routeToRevenue || []).join(' ') || '—'}</p></div>
                 <div className="prospect-research-kv"><span>Vendor Signals</span><p>{(parsedResearchOutput.vendorSignals || []).join(' ') || '—'}</p></div>
                 <div className="prospect-research-kv"><span>Opportunity / Risk</span><p>{(parsedResearchOutput.opportunityRisk || []).join(' ') || '—'}</p></div>
-                <div className="prospect-research-kv"><span>Outreach</span><p>{(parsedResearchOutput.outreach || []).join(' ') || '—'}</p></div>
                 <div className="prospect-research-kv"><span>Contacts</span><p>{(parsedResearchOutput.contacts || []).join(' ') || '—'}</p></div>
+                <div className="prospect-research-kv"><span>Scoring Summary</span><p>{(parsedResearchOutput.scoring || []).join(' ') || '—'}</p></div>
               </div>
             </section>}
 
