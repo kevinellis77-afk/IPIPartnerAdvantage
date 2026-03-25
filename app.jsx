@@ -5434,6 +5434,10 @@ IMPORTANT RULES
   React.useEffect(() => {
     if (!selected || bulkReviewOpen) return undefined;
     const handleKeydown = (event) => {
+      const eventTarget = event.target;
+      if (eventTarget instanceof Element && eventTarget.closest('input, textarea, select, button, [contenteditable="true"]')) {
+        return;
+      }
       if (event.key === 'Escape') setSelectedRowId(null);
       if (event.key === 'ArrowLeft' && selectedIndex > 0) {
         event.preventDefault();
