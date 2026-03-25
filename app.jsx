@@ -6569,7 +6569,9 @@ IMPORTANT RULES
           </div>
 
           {drawerTab === 'details' && <>
-            <div className="prospect-summary-strip">
+            <div className="panel-card">
+              <h4>Scoring Dashboard</h4>
+              <div className="prospect-summary-strip">
               <div><span>Stage 1 Score</span><strong><span className={getStage1ScoreClass(selected.stage1WeightedScore, selected.stage1ScoreStatus)}>{formatStage1ScoreCell(selected.stage1WeightedScore, selected.stage1ScoreStatus)}</span></strong></div>
               <div><span>Stage 1 Tier</span><strong>{selected.stage1Tier || (selected.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</strong></div>
               <div><span>Stage 1 Completeness</span><strong>{selected.stage1ScoreStatus || 'Unscored'}</strong></div>
@@ -6581,66 +6583,9 @@ IMPORTANT RULES
               <div><span>Review Freshness</span><strong><span className={`review-freshness review-freshness--${window.ProspectToolUtils.getReviewFreshnessStatus(selected.stage1LastReviewed).toLowerCase().replace(/\s+/g, '-')}`}>{window.ProspectToolUtils.getReviewFreshnessStatus(selected.stage1LastReviewed)}</span></strong></div>
               <div><span>Outcome</span><strong><span className={getOutcomeClass(selected.stage1Outcome || 'Not Contacted')}>{selected.stage1Outcome || 'Not Contacted'}</span></strong></div>
               <div><span>Target Quality</span><strong>{selected.stage1TargetQuality ? <span className={getTargetQualityClass(selected.stage1TargetQuality)}>{selected.stage1TargetQuality}</span> : '—'}</strong></div>
-            </div>
-
-            <div className="panel-card stage1-scoring-panel">
-              <div className="stage1-scoring-panel__head">
-                <h4>Stage 1 Prospect Scoring</h4>
-                <button className="ui-btn ui-btn--primary stage1-save-btn" type="button" onClick={() => saveStage1Scoring({ closeToMainView: true })}>Save scoring</button>
-              </div>
-              <p className="stage1-helper-text">Stage 1 Prospect Scoring is a pre-engagement model designed to prioritise new partner prospects using externally observable signals such as service focus, customer profile, vendor alignment, sales maturity, scale, and geographic fit.</p>
-              <p className="stage1-helper-text stage1-helper-text--muted">This model helps identify which prospects are most likely to justify outreach and qualification effort.</p>
-
-              <div className="stage1-summary-grid">
-                <div className="stage1-summary-grid__tier">
-                  <span>Prospect Tier</span>
-                  <strong>
-                    <span className={getStage1TierClass({ stage1TierBadge: editableScoring.tierBadge })}>
-                      {editableScoring.tierBadge || (editableScoring.completenessStatus === 'Partial' ? 'Partial' : 'Unscored')}
-                    </span>
-                    <em>{editableScoring.tier || (editableScoring.completenessStatus === 'Partial' ? 'Partial scoring in progress' : 'No final tier')}</em>
-                  </strong>
-                </div>
-                <div><span>Weighted Score</span><strong><span className={getStage1ScoreClass(editableScoring.weightedScore, editableScoring.completenessStatus)}>{editableScoring.weightedScore ? `${window.ProspectToolUtils.formatProspectScore(editableScoring.weightedScore)} / 5.00` : (editableScoring.completenessStatus || 'Unscored')}</span></strong></div>
-                <div><span>Percentage</span><strong>{editableScoring.weightedScore ? `${editableScoring.weightedPercent.toFixed(2)}%` : '—'}</strong></div>
-                <div><span>Confidence</span><strong className="stage1-confidence">{editableScoring.confidence ? <span className={getConfidenceClass(editableScoring.confidence)}>{editableScoring.confidence}</span> : 'Not set'}</strong></div>
-                <div><span>Completeness</span><strong>{editableScoring.completenessStatus || 'Unscored'}</strong></div>
-                <div><span>Weakest Factor</span><strong>{editableScoring.weakestFactor || '—'}</strong></div>
-              </div>
-              {editableScoring.tierCapApplied && editableScoring.tierCapReason && <p className="stage1-cap-note">{editableScoring.tierCapReason}</p>}
-
-              <div className="stage1-grid">
-                {stageOneCategoryEntries.map((category) => {
-                  const value = editableScoring[category.key] || { label: '', score: 0 };
-                  return <label key={category.key} className="stage1-field">
-                    <span>{category.label} <em>({Math.round(category.weight * 100)}%)</em></span>
-                    <div className="stage1-input-row">
-                      <select className="ui-search" value={value.label || ''} onChange={(event) => updateScoringCategory(category.key, event.target.value)}>
-                        <option value="">Select {category.label}</option>
-                        {category.options.map((option) => <option key={option.label} value={option.label}>{option.label}</option>)}
-                      </select>
-                      <strong className="stage1-inline-score">{value.score || 0}</strong>
-                    </div>
-                    <small className="stage1-guidance">{stageOneGuidance[category.key] || ''}</small>
-                  </label>;
-                })}
-              </div>
-
-              <div className="stage1-grid stage1-grid--meta">
-                <label className="stage1-field">
-                  <span>Confidence</span>
-                  <select className="ui-search" value={editableScoring.confidence || ''} onChange={(event) => updateScoringMeta('confidence', event.target.value)}>
-                    <option value="">Select confidence</option>
-                    {(stageOneConfig.confidenceOptions || []).map((option) => <option key={option} value={option}>{option}</option>)}
-                  </select>
-                  <small>Low = website only · Medium = multiple public sources · High = multi-source or direct validation.</small>
-                </label>
-                <label className="stage1-field stage1-field--full">
-                  <span>Evidence / Rationale</span>
-                  <textarea className="ui-search" rows={3} value={editableScoring.evidence || ''} onChange={(event) => updateScoringMeta('evidence', event.target.value)} placeholder="e.g. Website shows UCaaS + contact centre services, Microsoft partnership page, strong retail case studies" />
-                </label>
               </div>
             </div>
+
 
             <div className="panel-card stage1-scoring-panel">
               <div className="stage1-scoring-panel__head">
@@ -6724,15 +6669,6 @@ IMPORTANT RULES
 
             <div className="panel-card"><h4>Technology signals</h4><div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{(selected.tech_stack || '').split(/[,;|]/).map((t) => t.trim()).filter(Boolean).map((tech) => <span key={tech} className="tech-tag">{tech}</span>)}{!selected.tech_stack && <span className="tech-tag">No data</span>}</div><p style={{ marginTop: 10 }}>Matched vendors: {selected.matchedVendors?.join(', ') || 'None detected'}</p></div>
 
-            <div className="panel-card"><h4>Contacts</h4>{selected.contacts.length ? selected.contacts.map((c, idx) => <div key={`${c.name}-${idx}`} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}><span>{c.name || c.email || '—'}</span><span className="tech-tag">{c.role || 'Role not set'}</span></div>) : <p>—</p>}</div>
-
-            <div className="panel-card"><h4>Score breakdown</h4>{selected.scoreBreakdown.map((f, idx) => {
-              const m = f.match(/([+-]?\d+(?:\.\d+)?)/);
-              const raw = m ? Number(m[1]) : 0;
-              const fill = Math.min(100, Math.max(8, Math.abs(raw) * 5));
-              const label = f.replace(/\s*[+-]?\d+(?:\.\d+)?$/, '');
-              return <div className="score-bar" key={`${f}-${idx}`}><span>{label}</span><div className="bar"><div className="fill" style={{ width: `${fill}%`, opacity: raw < 0 ? 0.45 : 1 }} /></div></div>;
-            })}</div>
           </>}
 
           {drawerTab === 'research' && <div className="prospect-research-panel">
@@ -6746,6 +6682,66 @@ IMPORTANT RULES
                 <IconButton icon="save" label="Save to notes" onClick={saveResearchToNotes} disabled={!researchResult} />
               </div>
             </div>
+
+            <div className="panel-card stage1-scoring-panel">
+              <div className="stage1-scoring-panel__head">
+                <h4>Stage 1 Prospect Scoring</h4>
+                <button className="ui-btn ui-btn--primary stage1-save-btn" type="button" onClick={() => saveStage1Scoring({ closeToMainView: true })}>Save scoring</button>
+              </div>
+              <p className="stage1-helper-text">Stage 1 Prospect Scoring is a pre-engagement model designed to prioritise new partner prospects using externally observable signals such as service focus, customer profile, vendor alignment, sales maturity, scale, and geographic fit.</p>
+              <p className="stage1-helper-text stage1-helper-text--muted">This model helps identify which prospects are most likely to justify outreach and qualification effort.</p>
+
+              <div className="stage1-summary-grid">
+                <div className="stage1-summary-grid__tier">
+                  <span>Prospect Tier</span>
+                  <strong>
+                    <span className={getStage1TierClass({ stage1TierBadge: editableScoring.tierBadge })}>
+                      {editableScoring.tierBadge || (editableScoring.completenessStatus === 'Partial' ? 'Partial' : 'Unscored')}
+                    </span>
+                    <em>{editableScoring.tier || (editableScoring.completenessStatus === 'Partial' ? 'Partial scoring in progress' : 'No final tier')}</em>
+                  </strong>
+                </div>
+                <div><span>Weighted Score</span><strong><span className={getStage1ScoreClass(editableScoring.weightedScore, editableScoring.completenessStatus)}>{editableScoring.weightedScore ? `${window.ProspectToolUtils.formatProspectScore(editableScoring.weightedScore)} / 5.00` : (editableScoring.completenessStatus || 'Unscored')}</span></strong></div>
+                <div><span>Percentage</span><strong>{editableScoring.weightedScore ? `${editableScoring.weightedPercent.toFixed(2)}%` : '—'}</strong></div>
+                <div><span>Confidence</span><strong className="stage1-confidence">{editableScoring.confidence ? <span className={getConfidenceClass(editableScoring.confidence)}>{editableScoring.confidence}</span> : 'Not set'}</strong></div>
+                <div><span>Completeness</span><strong>{editableScoring.completenessStatus || 'Unscored'}</strong></div>
+                <div><span>Weakest Factor</span><strong>{editableScoring.weakestFactor || '—'}</strong></div>
+              </div>
+              {editableScoring.tierCapApplied && editableScoring.tierCapReason && <p className="stage1-cap-note">{editableScoring.tierCapReason}</p>}
+
+              <div className="stage1-grid">
+                {stageOneCategoryEntries.map((category) => {
+                  const value = editableScoring[category.key] || { label: '', score: 0 };
+                  return <label key={category.key} className="stage1-field">
+                    <span>{category.label} <em>({Math.round(category.weight * 100)}%)</em></span>
+                    <div className="stage1-input-row">
+                      <select className="ui-search" value={value.label || ''} onChange={(event) => updateScoringCategory(category.key, event.target.value)}>
+                        <option value="">Select {category.label}</option>
+                        {category.options.map((option) => <option key={option.label} value={option.label}>{option.label}</option>)}
+                      </select>
+                      <strong className="stage1-inline-score">{value.score || 0}</strong>
+                    </div>
+                    <small className="stage1-guidance">{stageOneGuidance[category.key] || ''}</small>
+                  </label>;
+                })}
+              </div>
+
+              <div className="stage1-grid stage1-grid--meta">
+                <label className="stage1-field">
+                  <span>Confidence</span>
+                  <select className="ui-search" value={editableScoring.confidence || ''} onChange={(event) => updateScoringMeta('confidence', event.target.value)}>
+                    <option value="">Select confidence</option>
+                    {(stageOneConfig.confidenceOptions || []).map((option) => <option key={option} value={option}>{option}</option>)}
+                  </select>
+                  <small>Low = website only · Medium = multiple public sources · High = multi-source or direct validation.</small>
+                </label>
+                <label className="stage1-field stage1-field--full">
+                  <span>Evidence / Rationale</span>
+                  <textarea className="ui-search" rows={3} value={editableScoring.evidence || ''} onChange={(event) => updateScoringMeta('evidence', event.target.value)} placeholder="e.g. Website shows UCaaS + contact centre services, Microsoft partnership page, strong retail case studies" />
+                </label>
+              </div>
+            </div>
+
 
             <section className="panel-card prospect-research-section">
               <div className="prospect-research-section__head">
@@ -6917,49 +6913,9 @@ IMPORTANT RULES
                 <div className="prospect-research-kv"><span>Route-to-Revenue</span><p>{(parsedResearchOutput.routeToRevenue || []).join(' ') || '—'}</p></div>
                 <div className="prospect-research-kv"><span>Vendor Signals</span><p>{(parsedResearchOutput.vendorSignals || []).join(' ') || '—'}</p></div>
                 <div className="prospect-research-kv"><span>Opportunity / Risk</span><p>{(parsedResearchOutput.opportunityRisk || []).join(' ') || '—'}</p></div>
-                <div className="prospect-research-kv"><span>Contacts</span><p>{(parsedResearchOutput.contacts || []).join(' ') || '—'}</p></div>
                 <div className="prospect-research-kv"><span>Scoring Summary</span><p>{(parsedResearchOutput.scoring || []).join(' ') || '—'}</p></div>
               </div>
             </section>}
-
-            {!researchLoading && (() => {
-              const groupedContacts = ensureResearchModel(selected.research || {}).contacts;
-              const fallbackGroupedContacts = (selected.contacts || []).reduce((acc, contact) => {
-                const role = String(contact?.role || '').toLowerCase();
-                const targetGroup = role.includes('chief') || role.includes('ceo') || role.includes('cto') || role.includes('cfo')
-                  ? 'C-Suite'
-                  : role.includes('sales')
-                    ? 'Sales'
-                    : role.includes('product') || role.includes('cx')
-                      ? 'Product / CX'
-                      : 'Management';
-                acc[targetGroup].push({
-                  name: contact?.name || '',
-                  title: contact?.role || '',
-                  linkedin: '',
-                });
-                return acc;
-              }, { 'C-Suite': [], Management: [], Sales: [], 'Product / CX': [] });
-              const displayGroups = ['C-Suite', 'Management', 'Sales', 'Product / CX'].map((groupName) => ({
-                group: groupName,
-                contacts: Array.isArray(groupedContacts?.[groupName]) ? groupedContacts[groupName] : fallbackGroupedContacts[groupName],
-              }));
-              return <section className="panel-card prospect-research-section">
-                <h4>Key Contacts</h4>
-                <div className="prospect-research-contacts-grid">
-                  {displayGroups.map((grouped) => <div key={`always-${grouped.group}`} className="prospect-research-contact-group">
-                    <h5>{grouped.group}</h5>
-                    {grouped.contacts.length ? <ul className="prospect-research-list">{grouped.contacts.map((contact, idx) => <li key={`${grouped.group}-${contact?.name || 'contact'}-${idx}`}>
-                      <div>
-                        <strong>{contact?.name || 'Unknown'}</strong>
-                        <p>{contact?.title || 'Title not provided'}</p>
-                      </div>
-                      {contact?.linkedin ? <a className="prospect-link-chip" href={window.ProspectToolUtils.normalizeUrl(contact.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a> : <span className="tech-tag">No LinkedIn</span>}
-                    </li>)}</ul> : <p className="prospect-research-footnote">No contacts captured yet.</p>}
-                  </div>)}
-                </div>
-              </section>;
-            })()}
           </div>}
         </div>
       </aside>
