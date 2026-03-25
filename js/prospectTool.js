@@ -799,6 +799,12 @@
     })).filter((c) => c.name || c.role || c.email);
     mapped.contacts = contacts;
     mapped.contactCount = contacts.length;
+    mapped.research = {
+      prompt: raw?.research?.prompt || '',
+      outputRaw: raw?.research?.outputRaw || '',
+      contacts: Array.isArray(raw?.research?.contacts) ? raw.research.contacts : [],
+      lastGenerated: raw?.research?.lastGenerated || ''
+    };
 
     const scoreData = calculateIdealPartnerScore(mapped);
     mapped.idealPartnerScore = scoreData.score;

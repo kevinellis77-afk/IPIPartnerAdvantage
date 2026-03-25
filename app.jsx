@@ -4839,6 +4839,45 @@ function ProspectToolPage() {
   const STORAGE_VIEWS_KEY = 'partnerProspectSavedViews';
   const STORAGE_DEFAULT_KEY = 'partnerProspectDefaultViewId';
   const STORAGE_STAGE1_SCORING_KEY = 'partnerProspectStage1ScoringById';
+  const STORAGE_RESEARCH_KEY = 'partnerProspectResearchById';
+
+  const RESEARCH_PROMPT_TEMPLATE = `You are a B2B channel research analyst supporting IPI Partner Advantage Stage 1 scoring.
+
+Prospect details:
+- Company Name: {{Company Name}}
+- Website: {{Website}}
+- Company Reg No: {{Company Reg No}}
+
+Research objectives:
+1) Company Overview
+2) Route-to-Revenue
+3) Vendor Signals
+4) Opportunity / Risk
+5) Outreach
+6) Contacts
+
+Output requirements:
+- Keep findings practical and commercially relevant.
+- Highlight confidence level where evidence is weak.
+- Use short, scannable bullets.
+- Include source references where possible.
+
+Return your response in this structure:
+
+## Company Overview
+## Route-to-Revenue
+## Vendor Signals
+## Opportunity / Risk
+## Outreach
+## Contacts
+
+For Contacts, group as:
+- C-Suite
+- Management
+- Sales
+- Product / CX
+
+Each contact should include: Name | Title | LinkedIn URL`;
   const DEFAULT_FILTERS = {
     name: '', industry: '', category: '', channel_role: '', channel_segment: '', country: '', city: '',
     trading_status: '', adopter_profile: '', partnerTierName: '', stage1Tier: '', stage1Status: '', stage1Confidence: '', stage1NextAction: '', stage1Freshness: '', stage1Outcome: '', stage1TargetQuality: '', minEmployees: '', maxEmployees: '', minRevenue: '',
@@ -4907,6 +4946,9 @@ function ProspectToolPage() {
   const [researchError, setResearchError] = React.useState('');
   const [researchResult, setResearchResult] = React.useState(null);
   const [researchPromptMeta, setResearchPromptMeta] = React.useState(null);
+  const [researchPromptDraft, setResearchPromptDraft] = React.useState('');
+  const [researchOutputRaw, setResearchOutputRaw] = React.useState('');
+  const [parsedResearchOutput, setParsedResearchOutput] = React.useState({});
   const [editableScoring, setEditableScoring] = React.useState(window.ProspectToolUtils.createEmptyScoring());
 
   const keyword = useDebouncedValue(searchInput, 180);
@@ -4996,6 +5038,15 @@ function ProspectToolPage() {
     }
   }, []);
 
+  const readStoredResearch = React.useCallback(() => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(STORAGE_RESEARCH_KEY) || '{}');
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (_err) {
+      return {};
+    }
+  }, [STORAGE_RESEARCH_KEY]);
+
   const IconButton = ({ icon, label, onClick, className = '', disabled = false, type = 'button', tone = 'default' }) => (
     <button type={type} className={`ui-btn ui-btn--secondary prospect-icon-btn prospect-icon-btn--${tone} ${className}`.trim()} aria-label={label} title={label} data-tooltip={label} onClick={onClick} disabled={disabled}>
       <span aria-hidden="true">{iconMap[icon] || icon}</span>
@@ -5025,17 +5076,21 @@ function ProspectToolPage() {
     try {
       const loadedRows = await window.ProspectToolUtils.loadProspectsCsv();
       const storedStage1Scoring = readStoredStage1Scoring();
+      const storedResearch = readStoredResearch();
       const mergedRows = loadedRows.map((row) => {
         const storedScoring = storedStage1Scoring[row.id];
-        if (!storedScoring || typeof storedScoring !== 'object') return row;
+        const storedResearchEntry = storedResearch[row.id];
+        const normalizedResearch = ensureResearchModel(storedResearchEntry || row.research || {});
+        const baseRow = { ...row, research: normalizedResearch };
+        if (!storedScoring || typeof storedScoring !== 'object') return baseRow;
         const normalized = window.ProspectToolUtils.normalizeProspectScoring(storedScoring);
-        return applyScoringToRow(row, normalized);
+        return applyScoringToRow(baseRow, normalized);
       });
       setRows(mergedRows);
     }
     catch (e) { setError(e.message || 'Failed to load CSV'); }
     finally { setLoading(false); }
-  }, [applyScoringToRow, readStoredStage1Scoring]);
+  }, [applyScoringToRow, readStoredStage1Scoring, readStoredResearch, ensureResearchModel]);
 
   const getCurrentTableState = React.useCallback(() => ({
     searchTerm: searchInput,
@@ -5279,6 +5334,9 @@ function ProspectToolPage() {
       setResearchError('');
       setResearchLoading(false);
       setResearchPromptMeta(null);
+      setResearchPromptDraft('');
+      setResearchOutputRaw('');
+      setParsedResearchOutput({});
       setEditableScoring(window.ProspectToolUtils.createEmptyScoring());
     }
   }, [selected?.id]);
@@ -5286,7 +5344,11 @@ function ProspectToolPage() {
   React.useEffect(() => {
     if (!selected) return;
     setEditableScoring(window.ProspectToolUtils.normalizeProspectScoring(selected.scoring));
-  }, [selected?.id]);
+    const model = ensureResearchModel(selected.research || {});
+    setResearchPromptDraft(model.prompt || generateResearchPrompt(selected));
+    setResearchOutputRaw(model.outputRaw || '');
+    setParsedResearchOutput(parseResearchOutput(model.outputRaw || ''));
+  }, [selected?.id, ensureResearchModel, generateResearchPrompt, parseResearchOutput]);
 
   const exportRows = (records, name) => {
     const blob = new Blob([window.ProspectToolUtils.toCsv(records)], { type: 'text/csv;charset=utf-8;' });
@@ -5326,6 +5388,12 @@ function ProspectToolPage() {
       const payload = await service.researchCompany(company);
       setResearchResult(payload.research || null);
       setResearchPromptMeta(payload.prompt || null);
+      const generatedPrompt = payload?.prompt?.body || generateResearchPrompt(company);
+      setResearchPromptDraft(generatedPrompt);
+      saveResearchForSelected({
+        prompt: generatedPrompt,
+        lastGenerated: new Date().toISOString(),
+      });
     } catch (err) {
       setResearchError(err.message || 'Failed to generate company research.');
       setResearchResult(null);
@@ -5356,7 +5424,73 @@ function ProspectToolPage() {
     }
   };
 
+  const handleGenerateResearchPrompt = () => {
+    if (!selected) return;
+    const nextPrompt = generateResearchPrompt(selected);
+    setResearchPromptDraft(nextPrompt);
+    saveResearchForSelected({
+      prompt: nextPrompt,
+      lastGenerated: new Date().toISOString(),
+    });
+    setFeedback({ tone: 'success', message: 'Research prompt generated.' });
+  };
+
+  const handleCopyPrompt = async () => {
+    const copied = await copyToClipboard(researchPromptDraft);
+    if (copied) setFeedback({ tone: 'success', message: 'Copied prompt to clipboard.' });
+    else setFeedback({ tone: 'warning', message: 'Clipboard permission unavailable.' });
+  };
+
+  const handlePromptChange = (value) => {
+    setResearchPromptDraft(value);
+    saveResearchForSelected({ prompt: value });
+  };
+
+  const handleOutputChange = (value) => {
+    setResearchOutputRaw(value);
+    saveResearchForSelected({ outputRaw: value });
+  };
+
+  const handleApplyResearchOutput = () => {
+    const parsed = parseResearchOutput(researchOutputRaw);
+    const groupedContacts = extractContacts(researchOutputRaw);
+    setParsedResearchOutput(parsed);
+    saveResearchForSelected({
+      outputRaw: researchOutputRaw,
+      contacts: groupedContacts,
+    });
+    setFeedback({ tone: 'success', message: 'Research output applied to Research Tab.' });
+  };
+
   const getResearchStatements = React.useCallback((section) => (section?.items || []).map((item) => item?.statement).filter(Boolean), []);
+  function ensureResearchModel(research = {}) {
+    return {
+      prompt: typeof research.prompt === 'string' ? research.prompt : '',
+      outputRaw: typeof research.outputRaw === 'string' ? research.outputRaw : '',
+      contacts: (Array.isArray(research.contacts) || (research.contacts && typeof research.contacts === 'object')) ? research.contacts : [],
+      lastGenerated: typeof research.lastGenerated === 'string' ? research.lastGenerated : '',
+    };
+  }
+
+  function generateResearchPrompt(prospect) {
+    const companyName = (prospect?.displayName || prospect?.name || 'Unknown company').trim();
+    const website = (prospect?.website || 'Not available').trim();
+    const companyReg = (prospect?.company_registration_number || prospect?.company_reg_no || prospect?.id || 'Not available').trim();
+    return RESEARCH_PROMPT_TEMPLATE
+      .replaceAll('{{Company Name}}', companyName)
+      .replaceAll('{{Website}}', website)
+      .replaceAll('{{Company Reg No}}', companyReg);
+  }
+
+  async function copyToClipboard(text) {
+    if (!text) return false;
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (_err) {
+      return false;
+    }
+  }
 
   const uniqueStatements = React.useCallback((items = []) => {
     const seen = new Set();
@@ -5381,6 +5515,78 @@ function ProspectToolPage() {
     if (Number.isNaN(date.getTime())) return 'Not set';
     return date.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
   }, []);
+
+  function parseResearchOutput(rawText) {
+    const text = String(rawText || '').trim();
+    if (!text) return {};
+    const lines = text.split('\n');
+    const sections = {
+      companyOverview: [],
+      routeToRevenue: [],
+      vendorSignals: [],
+      opportunityRisk: [],
+      outreach: [],
+      contacts: [],
+    };
+    let activeKey = null;
+    const mapHeaderToKey = (line) => {
+      const normalized = line.toLowerCase().replace(/^#+\s*/, '').trim();
+      if (normalized.includes('company overview')) return 'companyOverview';
+      if (normalized.includes('route-to-revenue') || normalized.includes('route to revenue')) return 'routeToRevenue';
+      if (normalized.includes('vendor signals') || normalized.includes('vendor')) return 'vendorSignals';
+      if (normalized.includes('opportunity') || normalized.includes('risk')) return 'opportunityRisk';
+      if (normalized.includes('outreach')) return 'outreach';
+      if (normalized.includes('contacts')) return 'contacts';
+      return null;
+    };
+    lines.forEach((line) => {
+      const trimmed = line.trim();
+      if (!trimmed) return;
+      const headerKey = mapHeaderToKey(trimmed);
+      if (headerKey && (/^#{1,6}\s/.test(trimmed) || /:$/.test(trimmed))) {
+        activeKey = headerKey;
+        return;
+      }
+      if (!activeKey) return;
+      sections[activeKey].push(trimmed.replace(/^[-*]\s*/, ''));
+    });
+    return sections;
+  }
+
+  function extractContacts(rawText) {
+    const lines = String(rawText || '').split('\n');
+    const groups = { 'C-Suite': [], Management: [], Sales: [], 'Product / CX': [] };
+    let activeGroup = 'Management';
+    lines.forEach((line) => {
+      const trimmed = line.trim();
+      if (!trimmed) return;
+      if (/c-suite/i.test(trimmed)) {
+        activeGroup = 'C-Suite';
+        return;
+      }
+      if (/management/i.test(trimmed)) {
+        activeGroup = 'Management';
+        return;
+      }
+      if (/sales/i.test(trimmed)) {
+        activeGroup = 'Sales';
+        return;
+      }
+      if (/product|cx/i.test(trimmed)) {
+        activeGroup = 'Product / CX';
+        return;
+      }
+      const linkedInMatch = trimmed.match(/https?:\/\/[^\s|]+linkedin\.com[^\s|]*/i);
+      if (!linkedInMatch) return;
+      const chunks = trimmed.replace(/^[-*]\s*/, '').split('|').map((chunk) => chunk.trim()).filter(Boolean);
+      groups[activeGroup].push({
+        name: chunks[0] || 'Unknown',
+        title: chunks[1] || '',
+        linkedin: linkedInMatch[0],
+      });
+    });
+    return groups;
+  }
 
   const getDisplacementOpportunity = React.useCallback((vendorStatements = []) => {
     const joined = vendorStatements.join(' ').toLowerCase();
@@ -5507,6 +5713,30 @@ function ProspectToolPage() {
       return false;
     }
   }, [readStoredStage1Scoring]);
+
+  const persistResearchForRow = React.useCallback((rowId, research) => {
+    try {
+      const existing = readStoredResearch();
+      existing[rowId] = ensureResearchModel(research);
+      localStorage.setItem(STORAGE_RESEARCH_KEY, JSON.stringify(existing));
+      return true;
+    } catch (_err) {
+      setFeedback({ tone: 'warning', message: 'Unable to persist research locally.' });
+      return false;
+    }
+  }, [readStoredResearch, ensureResearchModel, STORAGE_RESEARCH_KEY]);
+
+  const saveResearchForSelected = React.useCallback((changes) => {
+    if (!selected) return false;
+    let nextResearch = null;
+    setRows((current) => current.map((row) => {
+      if (row.id !== selected.id) return row;
+      nextResearch = ensureResearchModel({ ...(row.research || {}), ...changes });
+      return { ...row, research: nextResearch };
+    }));
+    if (!nextResearch) return false;
+    return persistResearchForRow(selected.id, nextResearch);
+  }, [selected, ensureResearchModel, persistResearchForRow]);
 
   const saveStage1Scoring = React.useCallback((options = {}) => {
     const closeToMainView = Boolean(options.closeToMainView);
@@ -6262,6 +6492,26 @@ function ProspectToolPage() {
               </div>
             </div>
 
+            <section className="panel-card prospect-research-section">
+              <div className="prospect-research-section__head">
+                <div><h4>AI Research Prompt</h4><p>Generate, tweak, and copy a structured prompt for your AI research workflow.</p></div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button type="button" className="ui-btn ui-btn--secondary" onClick={handleGenerateResearchPrompt}>Generate Prompt</button>
+                  <button type="button" className="ui-btn ui-btn--secondary" onClick={handleCopyPrompt} disabled={!researchPromptDraft.trim()}>Copy Prompt</button>
+                  <button type="button" className="ui-btn ui-btn--secondary" onClick={() => window.open('https://chatgpt.com/', '_blank', 'noopener,noreferrer')}>Open ChatGPT</button>
+                </div>
+              </div>
+              <textarea className="ui-search prospect-research-textarea prospect-research-textarea--prompt" rows={12} value={researchPromptDraft} onChange={(event) => handlePromptChange(event.target.value)} />
+            </section>
+
+            <section className="panel-card prospect-research-section">
+              <div className="prospect-research-section__head">
+                <div><h4>Research Output</h4><p>Paste output from your AI tool, then apply it to keep this tab updated.</p></div>
+                <button type="button" className="ui-btn ui-btn--secondary" onClick={handleApplyResearchOutput} disabled={!researchOutputRaw.trim()}>Apply to Research Tab</button>
+              </div>
+              <textarea className="ui-search prospect-research-textarea prospect-research-textarea--output" rows={12} value={researchOutputRaw} onChange={(event) => handleOutputChange(event.target.value)} placeholder="Paste your structured AI research output here." />
+            </section>
+
             {!researchLoading && !researchError && !researchResult && <div className="prospect-state prospect-state--empty"><strong>No research generated yet</strong><p>Run AI research to build a partner-ready summary for this company.</p><div><IconButton icon="load" label="Research Company now" onClick={() => runCompanyResearch(selected)} /></div></div>}
             {researchLoading && <div className="prospect-state prospect-state--loading" role="status" aria-live="polite"><span className="prospect-state__spinner" aria-hidden="true" />Generating AI research…</div>}
             {researchError && <div className="prospect-state prospect-state--error" role="alert"><strong>Research failed</strong><p>{researchError}</p><div><IconButton icon="load" label="Retry research" onClick={() => runCompanyResearch(selected)} /></div></div>}
@@ -6365,7 +6615,59 @@ function ProspectToolPage() {
                   {sourceChips.length > 0 && <div className="prospect-research-source-tags">{sourceChips.map((source) => <span key={source} className="tech-tag">{source}</span>)}</div>}
                   <p className="prospect-research-footnote">Prompt template status: {researchPromptMeta?.backendPromptTemplate ? 'available' : 'unavailable'}.</p>
                 </section>
+
               </div>;
+            })()}
+
+            {!researchLoading && !researchError && !researchResult && Object.values(parsedResearchOutput || {}).some((items) => Array.isArray(items) && items.length > 0) && <section className="panel-card prospect-research-section">
+              <h4>Applied Research Notes</h4>
+              <div className="prospect-research-two-col">
+                <div className="prospect-research-kv"><span>Company Overview</span><p>{(parsedResearchOutput.companyOverview || []).join(' ') || '—'}</p></div>
+                <div className="prospect-research-kv"><span>Route-to-Revenue</span><p>{(parsedResearchOutput.routeToRevenue || []).join(' ') || '—'}</p></div>
+                <div className="prospect-research-kv"><span>Vendor Signals</span><p>{(parsedResearchOutput.vendorSignals || []).join(' ') || '—'}</p></div>
+                <div className="prospect-research-kv"><span>Opportunity / Risk</span><p>{(parsedResearchOutput.opportunityRisk || []).join(' ') || '—'}</p></div>
+                <div className="prospect-research-kv"><span>Outreach</span><p>{(parsedResearchOutput.outreach || []).join(' ') || '—'}</p></div>
+                <div className="prospect-research-kv"><span>Contacts</span><p>{(parsedResearchOutput.contacts || []).join(' ') || '—'}</p></div>
+              </div>
+            </section>}
+
+            {!researchLoading && (() => {
+              const groupedContacts = ensureResearchModel(selected.research || {}).contacts;
+              const fallbackGroupedContacts = (selected.contacts || []).reduce((acc, contact) => {
+                const role = String(contact?.role || '').toLowerCase();
+                const targetGroup = role.includes('chief') || role.includes('ceo') || role.includes('cto') || role.includes('cfo')
+                  ? 'C-Suite'
+                  : role.includes('sales')
+                    ? 'Sales'
+                    : role.includes('product') || role.includes('cx')
+                      ? 'Product / CX'
+                      : 'Management';
+                acc[targetGroup].push({
+                  name: contact?.name || '',
+                  title: contact?.role || '',
+                  linkedin: '',
+                });
+                return acc;
+              }, { 'C-Suite': [], Management: [], Sales: [], 'Product / CX': [] });
+              const displayGroups = ['C-Suite', 'Management', 'Sales', 'Product / CX'].map((groupName) => ({
+                group: groupName,
+                contacts: Array.isArray(groupedContacts?.[groupName]) ? groupedContacts[groupName] : fallbackGroupedContacts[groupName],
+              }));
+              return <section className="panel-card prospect-research-section">
+                <h4>Key Contacts</h4>
+                <div className="prospect-research-contacts-grid">
+                  {displayGroups.map((grouped) => <div key={`always-${grouped.group}`} className="prospect-research-contact-group">
+                    <h5>{grouped.group}</h5>
+                    {grouped.contacts.length ? <ul className="prospect-research-list">{grouped.contacts.map((contact, idx) => <li key={`${grouped.group}-${contact?.name || 'contact'}-${idx}`}>
+                      <div>
+                        <strong>{contact?.name || 'Unknown'}</strong>
+                        <p>{contact?.title || 'Title not provided'}</p>
+                      </div>
+                      {contact?.linkedin ? <a className="prospect-link-chip" href={window.ProspectToolUtils.normalizeUrl(contact.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a> : <span className="tech-tag">No LinkedIn</span>}
+                    </li>)}</ul> : <p className="prospect-research-footnote">No contacts captured yet.</p>}
+                  </div>)}
+                </div>
+              </section>;
             })()}
           </div>}
         </div>
