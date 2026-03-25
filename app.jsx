@@ -4842,7 +4842,7 @@ function ProspectToolPage() {
   const DEFAULT_FILTERS = {
     name: '', industry: '', category: '', channel_role: '', channel_segment: '', country: '', city: '',
     trading_status: '', adopter_profile: '', partnerTierName: '', stage1Tier: '', stage1Status: '', stage1Confidence: '', stage1NextAction: '', stage1Freshness: '', stage1Outcome: '', stage1TargetQuality: '', minEmployees: '', maxEmployees: '', minRevenue: '',
-    maxRevenue: '', hasWebsite: false, hasLinkedIn: false, hasEmail: false, minScore: 0, minStage1Score: ''
+    maxRevenue: '', hasWebsite: false, hasLinkedIn: false, hasEmail: false, minStage1Score: ''
   };
   const ALL_COLUMNS = [
     { key: 'rank', label: '#', essential: true },
@@ -4882,7 +4882,7 @@ function ProspectToolPage() {
   const [top50, setTop50] = React.useState(false);
   const [pageSize, setPageSize] = React.useState(25);
   const [page, setPage] = React.useState(1);
-  const [sort, setSort] = React.useState('score_desc');
+  const [sort, setSort] = React.useState('stage1score_desc');
   const [searchInput, setSearchInput] = React.useState('');
   const [filters, setFilters] = React.useState(DEFAULT_FILTERS);
   const [savedViews, setSavedViews] = React.useState([]);
@@ -5052,7 +5052,7 @@ function ProspectToolPage() {
   const applyTableState = React.useCallback((tableState = {}) => {
     setSearchInput(tableState.searchTerm || '');
     setFilters({ ...DEFAULT_FILTERS, ...(tableState.filters || {}) });
-    setSort(tableState.sort || 'score_desc');
+    setSort(tableState.sort || 'stage1score_desc');
     setPageSize(Number(tableState.pagination?.pageSize || 25));
     setPage(Number(tableState.pagination?.page || 1));
     setView(tableState.view || 'table');
@@ -5116,7 +5116,6 @@ function ProspectToolPage() {
     if (filters.hasWebsite && !r.hasWebsite) return false;
     if (filters.hasLinkedIn && !r.hasLinkedIn) return false;
     if (filters.hasEmail && !r.hasEmail) return false;
-    if (r.idealPartnerScore < Number(filters.minScore || 0)) return false;
     if (filters.minStage1Score && ((r.stage1WeightedScore || 0) < Number(filters.minStage1Score))) return false;
     if (activePriorityViewKey) {
       const isPriorityView = builtInPriorityViews.some((viewItem) => viewItem.key === activePriorityViewKey);
@@ -5138,8 +5137,7 @@ function ProspectToolPage() {
     }
     const [field, dir] = sort.split('_');
     list.sort((a, b) => {
-      const av = field === 'score' ? a.idealPartnerScore
-        : field === 'stage1score' ? (a.stage1WeightedScore || 0)
+      const av = field === 'stage1score' ? (a.stage1WeightedScore || 0)
           : field === 'stage1tier' ? getStage1TierRank(a)
             : field === 'freshness' ? freshnessLabels.indexOf(window.ProspectToolUtils.getReviewFreshnessStatus(a.stage1LastReviewed))
             : field === 'lastreviewed' ? (new Date(a.stage1LastReviewed || 0).getTime() || 0)
@@ -5147,8 +5145,7 @@ function ProspectToolPage() {
                 : field === 'firstcontact' ? (new Date(a.stage1FirstContactDate || 0).getTime() || 0)
             : field === 'revenue' ? a.numericRevenue || 0
               : field === 'employees' ? a.numericEmployees || 0 : (a.name || '');
-      const bv = field === 'score' ? b.idealPartnerScore
-        : field === 'stage1score' ? (b.stage1WeightedScore || 0)
+      const bv = field === 'stage1score' ? (b.stage1WeightedScore || 0)
           : field === 'stage1tier' ? getStage1TierRank(b)
             : field === 'freshness' ? freshnessLabels.indexOf(window.ProspectToolUtils.getReviewFreshnessStatus(b.stage1LastReviewed))
             : field === 'lastreviewed' ? (new Date(b.stage1LastReviewed || 0).getTime() || 0)
@@ -5166,7 +5163,6 @@ function ProspectToolPage() {
   const pageRows = sorted.slice((page - 1) * pageSize, (page - 1) * pageSize + pageSize);
   const topSlice = sorted.slice(0, Math.min(sorted.length, 50));
   const topSummary = {
-    avgScore: topSlice.length ? (topSlice.reduce((sum, row) => sum + row.idealPartnerScore, 0) / topSlice.length).toFixed(1) : '0.0',
     websites: topSlice.filter((r) => r.hasWebsite).length,
     linkedin: topSlice.filter((r) => r.hasLinkedIn).length,
     emails: topSlice.filter((r) => r.hasEmail).length,
@@ -5174,7 +5170,6 @@ function ProspectToolPage() {
   const kpis = {
     total: rows.length,
     email: rows.filter((r) => r.hasEmail).length,
-    avgAll: rows.length ? (rows.reduce((a, b) => a + b.idealPartnerScore, 0) / rows.length).toFixed(1) : '0.0',
     filtered: sorted.length
   };
   const prospectKpiTiles = [
@@ -5193,14 +5188,6 @@ function ProspectToolPage() {
       context: 'Contactability',
       icon: '✉️',
       tone: 'success',
-    },
-    {
-      label: 'Average Score (All)',
-      value: kpis.avgAll,
-      meta: 'Ideal partner scoring baseline',
-      context: 'Quality Index',
-      icon: '📊',
-      tone: 'accent',
     },
     {
       label: 'Current Result Set',
@@ -5314,7 +5301,7 @@ function ProspectToolPage() {
     industry: 'Industry', category: 'Category', channel_role: 'Role', channel_segment: 'Segment', country: 'Country', city: 'City',
     trading_status: 'Trading', adopter_profile: 'Adopter profile', partnerTierName: 'Tier', minEmployees: 'Min employees',
     maxEmployees: 'Max employees', minRevenue: 'Min revenue', maxRevenue: 'Max revenue', hasWebsite: 'Website only',
-    hasLinkedIn: 'LinkedIn only', hasEmail: 'Email only', minScore: 'Min score', stage1Tier: 'Stage 1 tier', stage1Status: 'Stage 1 status', stage1Confidence: 'Stage 1 confidence', stage1NextAction: 'Next action', stage1Freshness: 'Review freshness', stage1Outcome: 'Outcome', stage1TargetQuality: 'Target quality', 'Priority view': 'Priority view',
+    hasLinkedIn: 'LinkedIn only', hasEmail: 'Email only', stage1Tier: 'Stage 1 tier', stage1Status: 'Stage 1 status', stage1Confidence: 'Stage 1 confidence', stage1NextAction: 'Next action', stage1Freshness: 'Review freshness', stage1Outcome: 'Outcome', stage1TargetQuality: 'Target quality', 'Priority view': 'Priority view',
     minStage1Score: 'Min Stage 1 score'
   };
   const activeFilterCount = Object.entries(filters).filter(([_, v]) => v && v !== 0).length;
@@ -5322,7 +5309,7 @@ function ProspectToolPage() {
     setFilters(DEFAULT_FILTERS);
     setSearchInput('');
     setTop50(false);
-    setSort('score_desc');
+    setSort('stage1score_desc');
     setActivePriorityViewKey('');
     setVisibleColumns(DEFAULT_VISIBLE_COLUMNS);
     setFeedback({ tone: 'info', message: 'Filters, search, and columns reset to defaults.' });
@@ -5462,7 +5449,7 @@ function ProspectToolPage() {
     setSavedViews(next);
     if (defaultViewId === savedView.id) {
       setDefaultViewId('');
-      applyTableState({ searchTerm: '', filters: DEFAULT_FILTERS, sort: 'score_desc', pagination: { page: 1, pageSize: 25 }, visibleColumns: DEFAULT_VISIBLE_COLUMNS, columnOrder: DEFAULT_COLUMN_ORDER });
+      applyTableState({ searchTerm: '', filters: DEFAULT_FILTERS, sort: 'stage1score_desc', pagination: { page: 1, pageSize: 25 }, visibleColumns: DEFAULT_VISIBLE_COLUMNS, columnOrder: DEFAULT_COLUMN_ORDER });
     }
     setFeedback({ tone: 'warning', message: `Deleted view "${savedView.name}".` });
   };
@@ -5637,7 +5624,7 @@ function ProspectToolPage() {
   const applyPriorityView = React.useCallback((priorityViewKey, isActive) => {
     if (isActive) {
       setActivePriorityViewKey('');
-      if (sort === 'workingqueue_default') setSort('score_desc');
+      if (sort === 'workingqueue_default') setSort('stage1score_desc');
       return;
     }
     setActivePriorityViewKey(priorityViewKey);
@@ -5751,7 +5738,24 @@ function ProspectToolPage() {
         <input className="ui-search" placeholder="Search company, role, market, technology…" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
         <select className="ui-search prospect-sort-select" value={sort} onChange={(e) => setSort(e.target.value)}>
           {activePriorityViewKey === 'my_working_queue' && <option value="workingqueue_default">Working Queue priority order</option>}
-          <option value="score_desc">Score ↓</option><option value="score_asc">Score ↑</option><option value="stage1score_desc">Stage 1 score ↓</option><option value="stage1score_asc">Stage 1 score ↑</option><option value="stage1tier_desc">Stage 1 tier ↓</option><option value="stage1tier_asc">Stage 1 tier ↑</option><option value="outcome_asc">Outcome lifecycle</option><option value="outcome_desc">Outcome lifecycle (reverse)</option><option value="firstcontact_desc">First contact ↓</option><option value="firstcontact_asc">First contact ↑</option><option value="lastreviewed_desc">Last reviewed ↓</option><option value="lastreviewed_asc">Last reviewed ↑</option><option value="freshness_asc">Freshness (Fresh → Not Reviewed)</option><option value="freshness_desc">Freshness (Not Reviewed → Fresh)</option><option value="revenue_desc">Revenue ↓</option><option value="revenue_asc">Revenue ↑</option><option value="employees_desc">Employees ↓</option><option value="employees_asc">Employees ↑</option><option value="name_asc">Name A→Z</option><option value="name_desc">Name Z→A</option>
+          <option value="stage1score_desc">Stage 1 score ↓</option>
+          <option value="stage1score_asc">Stage 1 score ↑</option>
+          <option value="stage1tier_desc">Stage 1 tier ↓</option>
+          <option value="stage1tier_asc">Stage 1 tier ↑</option>
+          <option value="outcome_asc">Outcome lifecycle</option>
+          <option value="outcome_desc">Outcome lifecycle (reverse)</option>
+          <option value="firstcontact_desc">First contact ↓</option>
+          <option value="firstcontact_asc">First contact ↑</option>
+          <option value="lastreviewed_desc">Last reviewed ↓</option>
+          <option value="lastreviewed_asc">Last reviewed ↑</option>
+          <option value="freshness_asc">Freshness (Fresh → Not Reviewed)</option>
+          <option value="freshness_desc">Freshness (Not Reviewed → Fresh)</option>
+          <option value="revenue_desc">Revenue ↓</option>
+          <option value="revenue_asc">Revenue ↑</option>
+          <option value="employees_desc">Employees ↓</option>
+          <option value="employees_asc">Employees ↑</option>
+          <option value="name_asc">Name A→Z</option>
+          <option value="name_desc">Name Z→A</option>
         </select>
         <IconButton icon="clear" label="Clear search" onClick={() => setSearchInput('')} disabled={!searchInput} />
         <IconButton icon="reset" label="Reset filters" onClick={resetFilters} />
@@ -5815,7 +5819,6 @@ function ProspectToolPage() {
         <input className="ui-search" placeholder="Max employees" type="number" value={filters.maxEmployees} onChange={(e) => setFilters((f) => ({ ...f, maxEmployees: e.target.value }))} />
         <input className="ui-search" placeholder="Min revenue" type="number" value={filters.minRevenue} onChange={(e) => setFilters((f) => ({ ...f, minRevenue: e.target.value }))} />
         <input className="ui-search" placeholder="Max revenue" type="number" value={filters.maxRevenue} onChange={(e) => setFilters((f) => ({ ...f, maxRevenue: e.target.value }))} />
-        <input className="ui-search" placeholder="Min score" type="number" min="0" max="100" value={filters.minScore} onChange={(e) => setFilters((f) => ({ ...f, minScore: e.target.value }))} />
         <input className="ui-search" placeholder="Min Stage 1 score" type="number" min="1" max="5" step="0.01" value={filters.minStage1Score} onChange={(e) => setFilters((f) => ({ ...f, minStage1Score: e.target.value }))} />
         <label><input type="checkbox" checked={filters.hasWebsite} onChange={(e) => setFilters((f) => ({ ...f, hasWebsite: e.target.checked }))} /> Has website</label>
         <label><input type="checkbox" checked={filters.hasLinkedIn} onChange={(e) => setFilters((f) => ({ ...f, hasLinkedIn: e.target.checked }))} /> Has LinkedIn</label>
@@ -5901,7 +5904,6 @@ function ProspectToolPage() {
       </div>
       <div className="top50-summary-grid">
         {[
-          { label: 'Average score', value: topSummary.avgScore, icon: '📈', meta: 'Top-ranked quality signal' },
           { label: 'With website', value: topSummary.websites, icon: '🌐', meta: 'Digital presence check' },
           { label: 'With LinkedIn', value: topSummary.linkedin, icon: 'in', meta: 'Social proof available' },
           { label: 'With email', value: topSummary.emails, icon: '✉️', meta: 'Direct outreach ready' },
