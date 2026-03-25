@@ -5463,14 +5463,12 @@ Each contact should include: Name | Title | LinkedIn URL`;
   };
 
   const getResearchStatements = React.useCallback((section) => (section?.items || []).map((item) => item?.statement).filter(Boolean), []);
-  function ensureResearchModel(research = {}) {
-    return {
-      prompt: typeof research.prompt === 'string' ? research.prompt : '',
-      outputRaw: typeof research.outputRaw === 'string' ? research.outputRaw : '',
-      contacts: (Array.isArray(research.contacts) || (research.contacts && typeof research.contacts === 'object')) ? research.contacts : [],
-      lastGenerated: typeof research.lastGenerated === 'string' ? research.lastGenerated : '',
-    };
-  }
+  const ensureResearchModel = React.useCallback((research = {}) => ({
+    prompt: typeof research.prompt === 'string' ? research.prompt : '',
+    outputRaw: typeof research.outputRaw === 'string' ? research.outputRaw : '',
+    contacts: (Array.isArray(research.contacts) || (research.contacts && typeof research.contacts === 'object')) ? research.contacts : [],
+    lastGenerated: typeof research.lastGenerated === 'string' ? research.lastGenerated : '',
+  }), []);
 
   function generateResearchPrompt(prospect) {
     const companyName = (prospect?.displayName || prospect?.name || 'Unknown company').trim();
