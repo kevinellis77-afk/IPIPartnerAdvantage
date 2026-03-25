@@ -5080,6 +5080,13 @@ IMPORTANT RULES
   };
   const stageOneConfig = window.ProspectToolUtils.STAGE_ONE_SCORING_CONFIG;
   const stageOneCategoryKeys = window.ProspectToolUtils.STAGE_ONE_CATEGORY_KEYS || [];
+  const stageOneCategoryKeyByLabel = React.useMemo(
+    () => Object.entries(stageOneConfig.categories || {}).reduce((acc, [key, category]) => {
+      acc[String(category?.label || '').toLowerCase()] = key;
+      return acc;
+    }, {}),
+    [stageOneConfig.categories],
+  );
   const freshnessLabels = window.ProspectToolUtils.REVIEW_FRESHNESS_LABELS || ['Fresh', 'Aging', 'Stale', 'Not Reviewed'];
   const builtInPriorityViews = window.ProspectToolUtils.getBuiltInPriorityViews ? window.ProspectToolUtils.getBuiltInPriorityViews() : [];
   const builtInLearningViews = window.ProspectToolUtils.getBuiltInLearningViews ? window.ProspectToolUtils.getBuiltInLearningViews() : [];
@@ -5719,6 +5726,89 @@ IMPORTANT RULES
     return groups;
   }
 
+  function parseSuggestedStage1Scorecard(rawText) {
+    const text = String(rawText || '');
+    if (!text.trim()) return null;
+    const lines = text.split('\n').map((line) => line.trim()).filter(Boolean);
+    const categoryEntries = [];
+    let activeEntry = null;
+
+    const tryResolveCategoryKey = (line) => {
+      const normalized = line
+        .toLowerCase()
+        .replace(/^[a-f]\.\s*/i, '')
+        .replace(/^[-*]\s*/, '')
+        .replace(/[:]/g, '')
+        .trim();
+      if (!normalized) return '';
+      const directMatch = stageOneCategoryKeyByLabel[normalized];
+      if (directMatch) return directMatch;
+      return Object.entries(stageOneConfig.categories || {}).find(([, category]) => normalized.includes(String(category?.label || '').toLowerCase()))?.[0] || '';
+    };
+
+    lines.forEach((line) => {
+      const categoryKey = tryResolveCategoryKey(line);
+      if (categoryKey) {
+        activeEntry = { categoryKey, suggestedLabel: '', score: null, confidence: '', evidence: [] };
+        categoryEntries.push(activeEntry);
+        return;
+      }
+      if (!activeEntry) return;
+      if (/^suggested option/i.test(line)) {
+        activeEntry.suggestedLabel = line.split(':').slice(1).join(':').trim();
+        return;
+      }
+      if (/^score/i.test(line)) {
+        const scoreValue = Number((line.match(/-?\d+(?:\.\d+)?/) || [])[0]);
+        if (Number.isFinite(scoreValue)) activeEntry.score = Math.max(1, Math.min(5, scoreValue));
+        return;
+      }
+      if (/^confidence/i.test(line)) {
+        activeEntry.confidence = line.split(':').slice(1).join(':').trim();
+        return;
+      }
+      if (/^-/.test(line) && activeEntry.evidence.length < 4) {
+        activeEntry.evidence.push(line.replace(/^-\s*/, '').trim());
+      }
+    });
+
+    if (!categoryEntries.length) return null;
+    const scoringDraft = stageOneCategoryKeys.reduce((acc, key) => ({ ...acc, [key]: { label: '', score: null } }), {});
+    categoryEntries.forEach((entry) => {
+      const category = stageOneConfig.categories?.[entry.categoryKey];
+      if (!category) return;
+      const allowedOption = (category.options || []).find((option) => option.label.toLowerCase() === String(entry.suggestedLabel || '').toLowerCase());
+      const selectedLabel = allowedOption?.label || '';
+      const selectedScore = selectedLabel ? window.ProspectToolUtils.getOptionScore(entry.categoryKey, selectedLabel) : null;
+      scoringDraft[entry.categoryKey] = {
+        label: selectedLabel,
+        score: Number.isFinite(selectedScore) ? selectedScore : entry.score,
+      };
+    });
+    const calculated = window.ProspectToolUtils.calculateProspectWeightedScore({
+      ...window.ProspectToolUtils.createEmptyScoring(),
+      ...scoringDraft,
+    });
+
+    return {
+      categories: categoryEntries.map((entry) => {
+        const category = stageOneConfig.categories?.[entry.categoryKey];
+        const normalizedScore = Number.isFinite(entry.score) ? entry.score : (scoringDraft[entry.categoryKey]?.score ?? null);
+        return {
+          categoryKey: entry.categoryKey,
+          categoryLabel: category?.label || entry.categoryKey,
+          suggestedLabel: scoringDraft[entry.categoryKey]?.label || entry.suggestedLabel || 'Unmapped option',
+          score: normalizedScore,
+          confidence: entry.confidence || 'Not set',
+          evidence: entry.evidence,
+        };
+      }),
+      weightedScore: calculated.weightedScore,
+      tier: calculated.tier || '',
+      tierBadge: calculated.tierBadge || '',
+    };
+  }
+
   const getDisplacementOpportunity = React.useCallback((vendorStatements = []) => {
     const joined = vendorStatements.join(' ').toLowerCase();
     if (!joined) return 'Unknown';
@@ -5805,6 +5895,10 @@ IMPORTANT RULES
   };
 
   const visibleColumnDefs = columnOrder.map((key) => ALL_COLUMNS.find((c) => c.key === key)).filter(Boolean).filter((c) => visibleColumns.includes(c.key));
+  const suggestedScorecard = React.useMemo(
+    () => parseSuggestedStage1Scorecard(researchOutputRaw),
+    [researchOutputRaw, stageOneCategoryKeyByLabel, stageOneCategoryKeys, stageOneConfig],
+  );
 
   const updateScoringCategory = (categoryKey, label) => {
     setEditableScoring((current) => {
@@ -5832,6 +5926,36 @@ IMPORTANT RULES
       return window.ProspectToolUtils.calculateProspectWeightedScore(nextScoring);
     });
   };
+
+  const applySuggestedCategoryScore = React.useCallback((categorySuggestion) => {
+    if (!categorySuggestion?.categoryKey || !categorySuggestion?.suggestedLabel) return;
+    setEditableScoring((current) => {
+      const score = window.ProspectToolUtils.getOptionScore(categorySuggestion.categoryKey, categorySuggestion.suggestedLabel);
+      if (!Number.isFinite(score)) return current;
+      return window.ProspectToolUtils.calculateProspectWeightedScore({
+        ...current,
+        [categorySuggestion.categoryKey]: { label: categorySuggestion.suggestedLabel, score },
+      });
+    });
+    setFeedback({ tone: 'success', message: `Applied suggested score for ${categorySuggestion.categoryLabel}.` });
+  }, []);
+
+  const applyAllSuggestedScores = React.useCallback(() => {
+    if (!suggestedScorecard?.categories?.length) return;
+    setEditableScoring((current) => {
+      let next = { ...current };
+      suggestedScorecard.categories.forEach((entry) => {
+        const score = window.ProspectToolUtils.getOptionScore(entry.categoryKey, entry.suggestedLabel);
+        if (!Number.isFinite(score)) return;
+        next = {
+          ...next,
+          [entry.categoryKey]: { label: entry.suggestedLabel, score },
+        };
+      });
+      return window.ProspectToolUtils.calculateProspectWeightedScore(next);
+    });
+    setFeedback({ tone: 'success', message: 'Applied all suggested Stage 1 scores to editable controls.' });
+  }, [suggestedScorecard]);
 
   const persistScoringForRow = React.useCallback((rowId, scoring) => {
     try {
@@ -6651,6 +6775,33 @@ IMPORTANT RULES
               </div>
               <textarea className="ui-search prospect-research-textarea prospect-research-textarea--output" rows={12} value={researchOutputRaw} onChange={(event) => handleOutputChange(event.target.value)} placeholder="Paste your structured AI research output here." />
             </section>
+
+            {suggestedScorecard?.categories?.length > 0 && <section className="panel-card prospect-research-section prospect-research-section--suggested-scorecard">
+              <div className="prospect-research-section__head">
+                <div>
+                  <h4>Suggested Stage 1 Score Card</h4>
+                  <p>Guidance parsed from stored research output. Suggestions are separate from manual scoring until applied.</p>
+                </div>
+                <button type="button" className="ui-btn ui-btn--secondary" onClick={applyAllSuggestedScores}>Apply All</button>
+              </div>
+              <div className="prospect-research-kv">
+                <span>Suggested Weighted Score</span>
+                <p>{Number.isFinite(suggestedScorecard.weightedScore) ? `${window.ProspectToolUtils.formatProspectScore(suggestedScorecard.weightedScore)} / 5.00` : '—'} · {suggestedScorecard.tier || 'Tier not derived'}</p>
+              </div>
+              <div className="prospect-research-contacts-grid">
+                {suggestedScorecard.categories.map((entry) => <article key={`suggested-${entry.categoryKey}`} className="prospect-research-kv prospect-research-kv--suggested">
+                  <span>{entry.categoryLabel}</span>
+                  <p><strong>{entry.suggestedLabel || 'Unmapped option'}</strong></p>
+                  <p>Score: {Number.isFinite(entry.score) ? entry.score : '—'} · Confidence: {entry.confidence || 'Not set'}</p>
+                  <ul className="prospect-research-bullets">
+                    {(entry.evidence.length ? entry.evidence : ['No evidence bullets captured.']).map((fact, index) => <li key={`${entry.categoryKey}-evidence-${index}`}>{fact}</li>)}
+                  </ul>
+                  <div>
+                    <button type="button" className="ui-btn ui-btn--secondary" onClick={() => applySuggestedCategoryScore(entry)} disabled={!entry.suggestedLabel || entry.suggestedLabel === 'Unmapped option'}>Apply</button>
+                  </div>
+                </article>)}
+              </div>
+            </section>}
 
             {!researchLoading && !researchError && !researchResult && <div className="prospect-state prospect-state--empty"><strong>No research generated yet</strong><p>Run AI research to build a partner-ready summary for this company.</p><div><IconButton icon="load" label="Research Company now" onClick={() => runCompanyResearch(selected)} /></div></div>}
             {researchLoading && <div className="prospect-state prospect-state--loading" role="status" aria-live="polite"><span className="prospect-state__spinner" aria-hidden="true" />Generating AI research…</div>}
