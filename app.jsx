@@ -5970,36 +5970,6 @@ IMPORTANT RULES
     });
   };
 
-  const applySuggestedCategoryScore = React.useCallback((categorySuggestion) => {
-    if (!categorySuggestion?.categoryKey || !categorySuggestion?.suggestedLabel) return;
-    setEditableScoring((current) => {
-      const score = window.ProspectToolUtils.getOptionScore(categorySuggestion.categoryKey, categorySuggestion.suggestedLabel);
-      if (!Number.isFinite(score)) return current;
-      return window.ProspectToolUtils.calculateProspectWeightedScore({
-        ...current,
-        [categorySuggestion.categoryKey]: { label: categorySuggestion.suggestedLabel, score },
-      });
-    });
-    setFeedback({ tone: 'success', message: `Applied suggested score for ${categorySuggestion.categoryLabel}.` });
-  }, []);
-
-  const applyAllSuggestedScores = React.useCallback(() => {
-    if (!suggestedScorecard?.categories?.length) return;
-    setEditableScoring((current) => {
-      let next = { ...current };
-      suggestedScorecard.categories.forEach((entry) => {
-        const score = window.ProspectToolUtils.getOptionScore(entry.categoryKey, entry.suggestedLabel);
-        if (!Number.isFinite(score)) return;
-        next = {
-          ...next,
-          [entry.categoryKey]: { label: entry.suggestedLabel, score },
-        };
-      });
-      return window.ProspectToolUtils.calculateProspectWeightedScore(next);
-    });
-    setFeedback({ tone: 'success', message: 'Applied all suggested Stage 1 scores to editable controls.' });
-  }, [suggestedScorecard]);
-
   const persistScoringForRow = React.useCallback((rowId, scoring) => {
     try {
       const existing = readStoredStage1Scoring();
@@ -6038,17 +6008,22 @@ IMPORTANT RULES
 
   const saveStage1Scoring = React.useCallback((options = {}) => {
     const closeToMainView = Boolean(options.closeToMainView);
+    const silent = Boolean(options.silent);
+    const scoringDraft = options.scoringDraft || editableScoring;
     if (!selected) return false;
     const normalized = window.ProspectToolUtils.normalizeProspectScoring({
-      ...editableScoring,
+      ...scoringDraft,
       lastReviewed: new Date().toISOString(),
     });
+    setEditableScoring(normalized);
     setRows((current) => current.map((row) => {
       if (row.id !== selected.id) return row;
       return applyScoringToRow(row, normalized);
     }));
     if (!persistScoringForRow(selected.id, normalized)) return false;
-    setFeedback({ tone: 'success', message: `Saved Stage 1 scoring for ${selected.displayName}.` });
+    if (!silent) {
+      setFeedback({ tone: 'success', message: `Saved Stage 1 scoring for ${selected.displayName}.` });
+    }
     if (closeToMainView) {
       setDrawerTab('details');
       setView('table');
@@ -6056,6 +6031,45 @@ IMPORTANT RULES
     }
     return true;
   }, [selected, editableScoring, applyScoringToRow, persistScoringForRow]);
+
+  const applySuggestedCategoryScore = React.useCallback((categorySuggestion) => {
+    if (!categorySuggestion?.categoryKey || !categorySuggestion?.suggestedLabel) return;
+    const score = window.ProspectToolUtils.getOptionScore(categorySuggestion.categoryKey, categorySuggestion.suggestedLabel);
+    if (!Number.isFinite(score) || score <= 0) {
+      setFeedback({ tone: 'warning', message: `Unable to apply suggestion for ${categorySuggestion.categoryLabel}; option could not be matched.` });
+      return;
+    }
+    const nextScoring = window.ProspectToolUtils.calculateProspectWeightedScore({
+      ...editableScoring,
+      [categorySuggestion.categoryKey]: { label: categorySuggestion.suggestedLabel, score },
+    });
+    setEditableScoring(nextScoring);
+    saveStage1Scoring({ silent: true, scoringDraft: nextScoring });
+    setFeedback({ tone: 'success', message: `Applied suggested score for ${categorySuggestion.categoryLabel} and synced Stage 1 scoring.` });
+  }, [editableScoring, saveStage1Scoring]);
+
+  const applyAllSuggestedScores = React.useCallback(() => {
+    if (!suggestedScorecard?.categories?.length) return;
+    let next = { ...editableScoring };
+    let appliedCount = 0;
+    suggestedScorecard.categories.forEach((entry) => {
+      const score = window.ProspectToolUtils.getOptionScore(entry.categoryKey, entry.suggestedLabel);
+      if (!Number.isFinite(score) || score <= 0) return;
+      appliedCount += 1;
+      next = {
+        ...next,
+        [entry.categoryKey]: { label: entry.suggestedLabel, score },
+      };
+    });
+    if (!appliedCount) {
+      setFeedback({ tone: 'warning', message: 'No suggested options could be mapped to Stage 1 categories.' });
+      return;
+    }
+    const nextScoring = window.ProspectToolUtils.calculateProspectWeightedScore(next);
+    setEditableScoring(nextScoring);
+    saveStage1Scoring({ silent: true, scoringDraft: nextScoring });
+    setFeedback({ tone: 'success', message: `Applied ${appliedCount} suggested score${appliedCount === 1 ? '' : 's'} and synced Stage 1 scoring.` });
+  }, [suggestedScorecard, editableScoring, saveStage1Scoring]);
 
   const updateProspectNextAction = React.useCallback((rowId, nextAction) => {
     let updatedRow = null;
@@ -6842,7 +6856,6 @@ IMPORTANT RULES
               </div>
             </section>}
 
-            {!researchLoading && !researchError && !researchResult && <div className="prospect-state prospect-state--empty"><strong>No research generated yet</strong><p>Run AI research to build a partner-ready summary for this company.</p><div><IconButton icon="load" label="Research Company now" onClick={() => runCompanyResearch(selected)} /></div></div>}
             {researchLoading && <div className="prospect-state prospect-state--loading" role="status" aria-live="polite"><span className="prospect-state__spinner" aria-hidden="true" />Generating AI research…</div>}
             {researchError && <div className="prospect-state prospect-state--error" role="alert"><strong>Research failed</strong><p>{researchError}</p><div><IconButton icon="load" label="Retry research" onClick={() => runCompanyResearch(selected)} /></div></div>}
 
