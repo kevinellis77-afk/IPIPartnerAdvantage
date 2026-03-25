@@ -5648,10 +5648,30 @@ IMPORTANT RULES
     return date.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
   }, []);
 
+  function cleanResearchText(value) {
+    return String(value || '')
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .replace(/\[\[[^\]]+\]\]/g, '')
+      .replace(/\*\*/g, '')
+      .replace(/`/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
   function parseResearchOutput(rawText) {
     const text = String(rawText || '').trim();
     if (!text) return {};
-    const lines = text.split('\n');
+    const normalizedText = text
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .replace(/\s+(#{1,6}\s+)/g, '\n$1')
+      .replace(/\s+([A-F]\.\s)/g, '\n$1')
+      .replace(/\s+(Suggested Option:)/gi, '\n$1')
+      .replace(/\s+(Score:\s*)/gi, '\n$1')
+      .replace(/\s+(Confidence:\s*)/gi, '\n$1')
+      .replace(/\s+(Evidence:\s*)/gi, '\n$1');
+    const lines = normalizedText.split('\n');
     const sections = {
       companyOverview: [],
       routeToRevenue: [],
@@ -5663,7 +5683,7 @@ IMPORTANT RULES
     };
     let activeKey = null;
     const mapHeaderToKey = (line) => {
-      const normalized = line.toLowerCase().replace(/^#+\s*/, '').trim();
+      const normalized = cleanResearchText(line.toLowerCase().replace(/^#+\s*/, '').replace(/:$/, '').trim());
       if (normalized.includes('company overview')) return 'companyOverview';
       if (normalized.includes('route-to-revenue') || normalized.includes('route to revenue')) return 'routeToRevenue';
       if (normalized.includes('vendor signals') || normalized.includes('vendor')) return 'vendorSignals';
@@ -5678,7 +5698,7 @@ IMPORTANT RULES
       return null;
     };
     lines.forEach((line) => {
-      const trimmed = line.trim();
+      const trimmed = cleanResearchText(line);
       if (!trimmed) return;
       const headerKey = mapHeaderToKey(trimmed);
       if (headerKey && (/^#{1,6}\s/.test(trimmed) || /:$/.test(trimmed))) {
@@ -5686,7 +5706,13 @@ IMPORTANT RULES
         return;
       }
       if (!activeKey) return;
-      sections[activeKey].push(trimmed.replace(/^[-*]\s*/, ''));
+      const withoutBullet = trimmed.replace(/^[-*]\s*/, '');
+      const snippets = withoutBullet
+        .split(/\s* (?=Suggested Option:|Score:\s*|Confidence:\s*|Evidence:\s*|[A-F]\.\s)/i)
+        .map((item) => cleanResearchText(item))
+        .filter(Boolean);
+      if (!snippets.length) return;
+      sections[activeKey].push(...snippets);
     });
     return sections;
   }
@@ -5729,17 +5755,25 @@ IMPORTANT RULES
   function parseSuggestedStage1Scorecard(rawText) {
     const text = String(rawText || '');
     if (!text.trim()) return null;
-    const lines = text.split('\n').map((line) => line.trim()).filter(Boolean);
+    const lines = text
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .replace(/\[\[[^\]]+\]\]/g, '')
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean);
     const categoryEntries = [];
     let activeEntry = null;
 
-    const tryResolveCategoryKey = (line) => {
-      const normalized = line
+    const normalizeToken = (value) => cleanResearchText(value)
         .toLowerCase()
         .replace(/^[a-f]\.\s*/i, '')
         .replace(/^[-*]\s*/, '')
         .replace(/[:]/g, '')
         .trim();
+
+    const tryResolveCategoryKey = (line) => {
+      const normalized = normalizeToken(line);
       if (!normalized) return '';
       const directMatch = stageOneCategoryKeyByLabel[normalized];
       if (directMatch) return directMatch;
@@ -5754,21 +5788,26 @@ IMPORTANT RULES
         return;
       }
       if (!activeEntry) return;
-      if (/^suggested option/i.test(line)) {
-        activeEntry.suggestedLabel = line.split(':').slice(1).join(':').trim();
-        return;
+      const cleaned = cleanResearchText(line);
+      const suggestedMatch = cleaned.match(/suggested option\s*:?\s*([^*]+?)(?=\s*(score|confidence|evidence|$))/i);
+      if (suggestedMatch?.[1]) {
+        activeEntry.suggestedLabel = cleanResearchText(suggestedMatch[1]);
       }
-      if (/^score/i.test(line)) {
-        const scoreValue = Number((line.match(/-?\d+(?:\.\d+)?/) || [])[0]);
+      const scoreMatch = cleaned.match(/score\s*:?\s*(-?\d+(?:\.\d+)?)/i);
+      if (scoreMatch?.[1]) {
+        const scoreValue = Number(scoreMatch[1]);
         if (Number.isFinite(scoreValue)) activeEntry.score = Math.max(1, Math.min(5, scoreValue));
-        return;
       }
-      if (/^confidence/i.test(line)) {
-        activeEntry.confidence = line.split(':').slice(1).join(':').trim();
-        return;
+      const confidenceMatch = cleaned.match(/confidence\s*:?\s*([a-z]+)/i);
+      if (confidenceMatch?.[1]) {
+        activeEntry.confidence = confidenceMatch[1].charAt(0).toUpperCase() + confidenceMatch[1].slice(1).toLowerCase();
       }
-      if (/^-/.test(line) && activeEntry.evidence.length < 4) {
-        activeEntry.evidence.push(line.replace(/^-\s*/, '').trim());
+      const evidenceInlineMatch = cleaned.match(/evidence\s*:?\s*(.+)$/i);
+      if (evidenceInlineMatch?.[1] && activeEntry.evidence.length < 4) {
+        activeEntry.evidence.push(cleanResearchText(evidenceInlineMatch[1]));
+      }
+      if (/^[-*]/.test(line) && activeEntry.evidence.length < 4) {
+        activeEntry.evidence.push(cleanResearchText(line.replace(/^[-*]\s*/, '')));
       }
     });
 
@@ -5777,8 +5816,12 @@ IMPORTANT RULES
     categoryEntries.forEach((entry) => {
       const category = stageOneConfig.categories?.[entry.categoryKey];
       if (!category) return;
-      const allowedOption = (category.options || []).find((option) => option.label.toLowerCase() === String(entry.suggestedLabel || '').toLowerCase());
-      const selectedLabel = allowedOption?.label || '';
+      const normalizedSuggestedLabel = normalizeToken(entry.suggestedLabel || '');
+      const allowedOption = (category.options || []).find((option) => normalizeToken(option.label) === normalizedSuggestedLabel);
+      const scoreMatchedOption = Number.isFinite(entry.score)
+        ? (category.options || []).find((option) => Number(option.score) === Number(entry.score))
+        : null;
+      const selectedLabel = allowedOption?.label || scoreMatchedOption?.label || '';
       const selectedScore = selectedLabel ? window.ProspectToolUtils.getOptionScore(entry.categoryKey, selectedLabel) : null;
       scoringDraft[entry.categoryKey] = {
         label: selectedLabel,
