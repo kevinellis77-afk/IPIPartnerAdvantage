@@ -5369,6 +5369,40 @@ function ProspectToolPage() {
     }
   };
 
+  const getResearchStatements = React.useCallback((section) => (section?.items || []).map((item) => item?.statement).filter(Boolean), []);
+
+  const uniqueStatements = React.useCallback((items = []) => {
+    const seen = new Set();
+    return items.filter((item) => {
+      const normalized = String(item || '').trim().toLowerCase();
+      if (!normalized || seen.has(normalized)) return false;
+      seen.add(normalized);
+      return true;
+    });
+  }, []);
+
+  const trimStatement = React.useCallback((value, maxLength) => {
+    const text = String(value || '').trim();
+    if (!text) return '—';
+    if (text.length <= maxLength) return text;
+    return `${text.slice(0, Math.max(0, maxLength - 1)).trim()}…`;
+  }, []);
+
+  const formatResearchDate = React.useCallback((value) => {
+    if (!value) return 'Not set';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Not set';
+    return date.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+  }, []);
+
+  const getDisplacementOpportunity = React.useCallback((vendorStatements = []) => {
+    const joined = vendorStatements.join(' ').toLowerCase();
+    if (!joined) return 'Unknown';
+    if (joined.includes('legacy') || joined.includes('incumbent') || joined.includes('migration')) return 'High';
+    if (joined.includes('modern') || joined.includes('already aligned')) return 'Low';
+    return 'Medium';
+  }, []);
+
   const toSummary = (tableState) => {
     const activeFilters = Object.entries(tableState.filters || {}).filter(([_, v]) => v && v !== 0).map(([k, v]) => `${k}:${String(v)}`);
     return {
@@ -6230,25 +6264,107 @@ function ProspectToolPage() {
             {researchLoading && <div className="prospect-state prospect-state--loading" role="status" aria-live="polite"><span className="prospect-state__spinner" aria-hidden="true" />Generating AI research…</div>}
             {researchError && <div className="prospect-state prospect-state--error" role="alert"><strong>Research failed</strong><p>{researchError}</p><div><IconButton icon="load" label="Retry research" onClick={() => runCompanyResearch(selected)} /></div></div>}
 
-            {researchResult && !researchLoading && !researchError && <div className="prospect-research-grid">
-              {[researchResult.companySummary, researchResult.servicesCapabilities, researchResult.likelyVendors, researchResult.ipiSuitability, researchResult.recommendedPartnerMotion, researchResult.suggestedTier, researchResult.keyContactsToTarget, researchResult.suggestedDiscussionThemes].map((section) => <section key={section.title} className="panel-card"><h4>{section.title}</h4><ul className="prospect-research-list">{(section.items || []).map((item, idx) => <li key={`${section.title}-${idx}`}><span>{item.statement}</span><em className={`prospect-confidence prospect-confidence--${item.confidence || 'unknown'}`}>{item.confidence || 'unknown'}</em></li>)}</ul></section>)}
+            {researchResult && !researchLoading && !researchError && (() => {
+              const companyOverview = trimStatement(getResearchStatements(researchResult.companySummary)[0] || selected?.keywords || `${selected?.displayName || 'This prospect'} is a potential channel partner.`, 300);
+              const fitBullets = uniqueStatements(getResearchStatements(researchResult.ipiSuitability)).slice(0, 4);
+              const serviceSignals = uniqueStatements(getResearchStatements(researchResult.servicesCapabilities));
+              const motionSignals = uniqueStatements(getResearchStatements(researchResult.recommendedPartnerMotion));
+              const discussionSignals = uniqueStatements(getResearchStatements(researchResult.suggestedDiscussionThemes));
+              const vendorSignals = uniqueStatements(getResearchStatements(researchResult.likelyVendors));
+              const unknownSignals = uniqueStatements(researchResult.unknowns || []);
+              const confidenceLabel = editableScoring.confidence || 'Not set';
+              const lastUpdated = formatResearchDate(editableScoring.lastReviewed || researchResult.generatedAt);
+              const displacementOpportunity = getDisplacementOpportunity(vendorSignals);
+              const opportunitySignals = uniqueStatements([
+                ...getResearchStatements(researchResult.ipiSuitability).filter((item) => !/\b(risk|weak|low|unclear|poor|hard)\b/i.test(item)),
+                ...motionSignals.filter((item) => /\b(expand|migration|modern|cx|ai|payment|uc|wem|opportun)\b/i.test(item))
+              ]).slice(0, 5);
+              const riskSignals = uniqueStatements([
+                ...unknownSignals,
+                ...vendorSignals.filter((item) => /\b(incumbent|embedded|already|hard|low|risk)\b/i.test(item)),
+                ...getResearchStatements(researchResult.ipiSuitability).filter((item) => /\b(risk|weak|low|unclear|poor|hard)\b/i.test(item))
+              ]).slice(0, 5);
+              const suggestedAngle = trimStatement(motionSignals[0] || discussionSignals[0] || getResearchStatements(researchResult.ipiSuitability)[0] || 'Lead with a practical partner expansion conversation anchored to CX and service outcomes.', 250);
+              const likelyValue = trimStatement(motionSignals[1] || 'Position IPI as the route to add CCaaS, AI and service layers around the existing proposition.', 250);
+              const whyNow = trimStatement(discussionSignals[1] || 'Market demand and legacy platform pressures create a near-term qualification window.', 250);
+              const firstQuestion = trimStatement(discussionSignals[0] || 'Where are customers asking you to go beyond your current communications offer?', 120);
+              const sourceChips = uniqueStatements([
+                ...(researchResult.companySummary?.items || []).flatMap((item) => item.sources || []),
+                ...(researchResult.servicesCapabilities?.items || []).flatMap((item) => item.sources || []),
+                ...(researchResult.likelyVendors?.items || []).flatMap((item) => item.sources || [])
+              ]).slice(0, 8);
 
-              <section className="panel-card">
-                <h4>Outreach Templates</h4>
-                <div className="prospect-templates">{(researchResult.outreachTemplates?.templates || []).map((template, idx) => <article key={`${template.title}-${idx}`} className="prospect-template-card"><div><strong>{template.title}</strong><span className="tech-tag">{template.channel}</span></div><pre>{template.body}</pre><IconButton icon="copy" label={`Copy ${template.title}`} onClick={() => copyTemplate(template)} /></article>)}</div>
-              </section>
+              return <div className="prospect-research-workspace">
+                <section className="panel-card prospect-research-section prospect-research-section--summary">
+                  <div className="prospect-research-section__head">
+                    <div><h4>Research Summary</h4><p>High-level commercial summary.</p></div>
+                    <div className="prospect-research-meta">
+                      <span className={getConfidenceClass(confidenceLabel)}>{confidenceLabel}</span>
+                      <span className="prospect-research-date">Last updated: {lastUpdated}</span>
+                    </div>
+                  </div>
+                  <div className="prospect-research-block">
+                    <span>Company Overview</span>
+                    <p>{companyOverview}</p>
+                  </div>
+                  <div className="prospect-research-block">
+                    <span>Why They May Fit IPI</span>
+                    <ul className="prospect-research-bullets">{(fitBullets.length ? fitBullets : ['Commercial fit needs deeper qualification.']).map((item, idx) => <li key={`fit-${idx}`}>{item}</li>)}</ul>
+                  </div>
+                </section>
 
-              <section className="panel-card">
-                <h4>Unknown / Not Found</h4>
-                {researchResult.unknowns?.length ? <ul className="prospect-research-list">{researchResult.unknowns.map((item, idx) => <li key={`${item}-${idx}`}><span>{item}</span><em className="prospect-confidence prospect-confidence--unknown">unknown</em></li>)}</ul> : <p>None listed.</p>}
-              </section>
+                <div className="prospect-research-two-col">
+                  <section className="panel-card prospect-research-section">
+                    <h4>Route-to-Revenue Signals</h4>
+                    <div className="prospect-research-kv"><span>Current Service Focus</span><p>{trimStatement(serviceSignals[0] || 'No clear service focus captured yet.', 170)}</p></div>
+                    <div className="prospect-research-kv"><span>Customer Profile</span><p>{trimStatement(serviceSignals[1] || selected.channel_segment || 'Not yet qualified.', 170)}</p></div>
+                    <div className="prospect-research-kv"><span>Vertical / Use Case Relevance</span><p>{trimStatement(getResearchStatements(researchResult.suggestedTier)[0] || selected.industry || 'Requires qualification.', 170)}</p></div>
+                    <div className="prospect-research-kv"><span>Visible CX / UC / AI Positioning</span><p>{trimStatement(serviceSignals[2] || 'Signal strength currently limited.', 170)}</p></div>
+                    <div className="prospect-research-kv"><span>Sales Motion Signals</span><p>{trimStatement(motionSignals[0] || 'No strong sales motion signal identified.', 170)}</p></div>
+                  </section>
 
-              <section className="panel-card">
-                <h4>Backend integration metadata</h4>
-                <p style={{ marginBottom: 8 }}>Ready for OpenAI backend integration with deterministic JSON rendering.</p>
-                <p style={{ margin: 0, fontSize: 11, color: 'var(--text-secondary)' }}>Prompt template available in <code>window.ProspectResearch.buildResearchPrompt</code>. {researchPromptMeta?.backendPromptTemplate ? 'Template prepared.' : 'Template unavailable.'}</p>
-              </section>
-            </div>}
+                  <section className="panel-card prospect-research-section">
+                    <h4>Vendor / Platform Signals</h4>
+                    <div className="prospect-research-kv"><span>Known Vendors / Partnerships</span><p>{trimStatement(vendorSignals[0] || selected.matchedVendors?.join(', ') || 'No explicit partnership signal found.', 170)}</p></div>
+                    <div className="prospect-research-kv"><span>Legacy Platform Indicators</span><p>{trimStatement(vendorSignals.find((item) => /\blegacy|incumbent|pbx|hosted\b/i.test(item)) || 'No clear legacy indicator captured.', 170)}</p></div>
+                    <div className="prospect-research-kv"><span>Modern CCaaS Indicators</span><p>{trimStatement(vendorSignals.find((item) => /\bcloud|ccaas|modern|omnichannel\b/i.test(item)) || 'No strong modern CCaaS alignment visible.', 170)}</p></div>
+                    <div className="prospect-research-kv"><span>Displacement Opportunity</span><p><span className={getConfidenceClass(displacementOpportunity)}>{displacementOpportunity}</span></p></div>
+                    <div className="prospect-research-kv"><span>White-label / MSP Clues</span><p>{trimStatement(vendorSignals.find((item) => /\bwhite|msp|managed service|reseller\b/i.test(item)) || 'No white-label/MSP signal identified.', 170)}</p></div>
+                  </section>
+                </div>
+
+                <div className="prospect-research-two-col">
+                  <section className="panel-card prospect-research-section prospect-research-section--opportunity">
+                    <h4>Opportunity</h4>
+                    <ul className="prospect-research-bullets">{(opportunitySignals.length ? opportunitySignals : ['No clear commercial opportunity captured yet.']).map((item, idx) => <li key={`opp-${idx}`}>{item}</li>)}</ul>
+                  </section>
+                  <section className="panel-card prospect-research-section prospect-research-section--risk">
+                    <h4>Risk</h4>
+                    <ul className="prospect-research-bullets">{(riskSignals.length ? riskSignals : ['No material risk flagged yet.']).map((item, idx) => <li key={`risk-${idx}`}>{item}</li>)}</ul>
+                  </section>
+                </div>
+
+                <section className="panel-card prospect-research-section prospect-research-section--outreach">
+                  <h4>Suggested Outreach Angle</h4>
+                  <div className="prospect-research-kv"><span>Suggested Angle</span><p>{suggestedAngle}</p></div>
+                  <div className="prospect-research-kv"><span>Likely IPI Value Proposition</span><p>{likelyValue}</p></div>
+                  <div className="prospect-research-kv"><span>Why Now</span><p>{whyNow}</p></div>
+                  <div className="prospect-research-kv"><span>Suggested First Question</span><p>{firstQuestion}</p></div>
+                </section>
+
+                <section className="panel-card prospect-research-section prospect-research-section--sources">
+                  <h4>Sources &amp; Links</h4>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {selected.website && <a className="prospect-link-chip" href={window.ProspectToolUtils.normalizeUrl(selected.website)} target="_blank" rel="noreferrer">Website</a>}
+                    {selected.linkedin && <a className="prospect-link-chip" href={window.ProspectToolUtils.normalizeUrl(selected.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>}
+                    {selected.ch_link && <a className="prospect-link-chip" href={window.ProspectToolUtils.normalizeUrl(selected.ch_link)} target="_blank" rel="noreferrer">Companies House</a>}
+                    {(selected.matchedVendors || []).slice(0, 3).map((vendor) => <span key={vendor} className="tech-tag">{vendor}</span>)}
+                  </div>
+                  {sourceChips.length > 0 && <div className="prospect-research-source-tags">{sourceChips.map((source) => <span key={source} className="tech-tag">{source}</span>)}</div>}
+                  <p className="prospect-research-footnote">Prompt template status: {researchPromptMeta?.backendPromptTemplate ? 'available' : 'unavailable'}.</p>
+                </section>
+              </div>;
+            })()}
           </div>}
         </div>
       </aside>
