@@ -6668,11 +6668,8 @@ IMPORTANT RULES
               <div className="prospect-summary-strip">
               <div><span>Stage 1 Score</span><strong><span className={getStage1ScoreClass(selected.stage1WeightedScore, selected.stage1ScoreStatus)}>{formatStage1ScoreCell(selected.stage1WeightedScore, selected.stage1ScoreStatus)}</span></strong></div>
               <div><span>Stage 1 Tier</span><strong>{selected.stage1Tier || (selected.stage1ScoreStatus === 'Partial' ? 'Partial' : 'Unscored')}</strong></div>
-              <div><span>Stage 1 Completeness</span><strong>{selected.stage1ScoreStatus || 'Unscored'}</strong></div>
               <div><span>Stage 1 Confidence</span><strong>{selected.stage1Confidence ? <span className={getConfidenceClass(selected.stage1Confidence)}>{selected.stage1Confidence}</span> : '—'}</strong></div>
               <div><span>Next Action</span><strong>{selected.stage1NextAction || '—'}</strong></div>
-              <div><span>Weakest Factor</span><strong>{selected.stage1WeakestFactor || '—'}</strong></div>
-              <div><span>Percentage</span><strong>{selected.stage1WeightedPercent ? `${selected.stage1WeightedPercent.toFixed(2)}%` : '—'}</strong></div>
               <div><span>Last Reviewed</span><strong>{window.ProspectToolUtils.formatLastReviewed(selected.stage1LastReviewed)}</strong></div>
               <div><span>Review Freshness</span><strong><span className={`review-freshness review-freshness--${window.ProspectToolUtils.getReviewFreshnessStatus(selected.stage1LastReviewed).toLowerCase().replace(/\s+/g, '-')}`}>{window.ProspectToolUtils.getReviewFreshnessStatus(selected.stage1LastReviewed)}</span></strong></div>
               <div><span>Outcome</span><strong><span className={getOutcomeClass(selected.stage1Outcome || 'Not Contacted')}>{selected.stage1Outcome || 'Not Contacted'}</span></strong></div>
@@ -6698,12 +6695,9 @@ IMPORTANT RULES
               </div>
               <div className="stage1-summary-grid">
                 <div><span>Final Tier</span><strong><span className={getStage1TierClass({ stage1TierBadge: editableScoring.tierBadge })}>{editableScoring.tier || (editableScoring.completenessStatus === 'Partial' ? 'Partial' : 'Unscored')}</span></strong></div>
-                <div><span>Confidence</span><strong>{editableScoring.confidence ? <span className={getConfidenceClass(editableScoring.confidence)}>{editableScoring.confidence}</span> : 'Not set'}</strong></div>
-                <div><span>Completeness</span><strong>{editableScoring.completenessStatus || 'Unscored'}</strong></div>
                 <div><span>Last Reviewed</span><strong>{window.ProspectToolUtils.formatLastReviewed(editableScoring.lastReviewed)}</strong></div>
                 <div><span>Review Freshness</span><strong><span className={`review-freshness review-freshness--${window.ProspectToolUtils.getReviewFreshnessStatus(editableScoring.lastReviewed).toLowerCase().replace(/\s+/g, '-')}`}>{window.ProspectToolUtils.getReviewFreshnessStatus(editableScoring.lastReviewed)}</span></strong></div>
                 <div><span>Days Since Review</span><strong>{window.ProspectToolUtils.getDaysSinceReview(editableScoring.lastReviewed) ?? '—'}</strong></div>
-                <div><span>Next Action</span><strong>{editableScoring.nextAction || 'Not set'}</strong></div>
               </div>
             </div>
 
@@ -6761,8 +6755,6 @@ IMPORTANT RULES
               </div>
             </div>
 
-            <div className="panel-card"><h4>Technology signals</h4><div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{(selected.tech_stack || '').split(/[,;|]/).map((t) => t.trim()).filter(Boolean).map((tech) => <span key={tech} className="tech-tag">{tech}</span>)}{!selected.tech_stack && <span className="tech-tag">No data</span>}</div><p style={{ marginTop: 10 }}>Matched vendors: {selected.matchedVendors?.join(', ') || 'None detected'}</p></div>
-
           </>}
 
           {drawerTab === 'research' && <div className="prospect-research-panel">
@@ -6796,10 +6788,7 @@ IMPORTANT RULES
                   </strong>
                 </div>
                 <div><span>Weighted Score</span><strong><span className={getStage1ScoreClass(editableScoring.weightedScore, editableScoring.completenessStatus)}>{editableScoring.weightedScore ? `${window.ProspectToolUtils.formatProspectScore(editableScoring.weightedScore)} / 5.00` : (editableScoring.completenessStatus || 'Unscored')}</span></strong></div>
-                <div><span>Percentage</span><strong>{editableScoring.weightedScore ? `${editableScoring.weightedPercent.toFixed(2)}%` : '—'}</strong></div>
                 <div><span>Confidence</span><strong className="stage1-confidence">{editableScoring.confidence ? <span className={getConfidenceClass(editableScoring.confidence)}>{editableScoring.confidence}</span> : 'Not set'}</strong></div>
-                <div><span>Completeness</span><strong>{editableScoring.completenessStatus || 'Unscored'}</strong></div>
-                <div><span>Weakest Factor</span><strong>{editableScoring.weakestFactor || '—'}</strong></div>
               </div>
               {editableScoring.tierCapApplied && editableScoring.tierCapReason && <p className="stage1-cap-note">{editableScoring.tierCapReason}</p>}
 
