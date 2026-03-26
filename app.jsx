@@ -5157,6 +5157,23 @@ IMPORTANT RULES
     stage1TargetQuality: scoring.targetQuality || '',
   }), []);
 
+  const getProspectStorageKey = React.useCallback((prospect) => {
+    if (!prospect || typeof prospect !== 'object') return '';
+    const website = String(prospect.website || '')
+      .trim()
+      .toLowerCase()
+      .replace(/^https?:\/\//, '')
+      .replace(/^www\./, '')
+      .split('/')[0];
+    if (website) return `website:${website}`;
+    const domain = String(prospect.domain || '').trim().toLowerCase();
+    if (domain) return `domain:${domain}`;
+    const companyReg = String(prospect.company_registration_number || prospect.company_reg_no || '').trim().toLowerCase();
+    if (companyReg) return `reg:${companyReg}`;
+    const name = String(prospect.displayName || prospect.name || '').trim().toLowerCase();
+    return name ? `name:${name}` : '';
+  }, []);
+
   const readStoredStage1Scoring = React.useCallback(() => {
     try {
       const parsed = JSON.parse(localStorage.getItem(STORAGE_STAGE1_SCORING_KEY) || '{}');
@@ -5206,8 +5223,9 @@ IMPORTANT RULES
       const storedStage1Scoring = readStoredStage1Scoring();
       const storedResearch = readStoredResearch();
       const mergedRows = loadedRows.map((row) => {
-        const storedScoring = storedStage1Scoring[row.id];
-        const storedResearchEntry = storedResearch[row.id];
+        const storageKey = getProspectStorageKey(row);
+        const storedScoring = storedStage1Scoring[storageKey] || storedStage1Scoring[row.id];
+        const storedResearchEntry = storedResearch[storageKey] || storedResearch[row.id];
         const normalizedResearch = ensureResearchModel(storedResearchEntry || row.research || {});
         const baseRow = { ...row, research: normalizedResearch };
         if (!storedScoring || typeof storedScoring !== 'object') return baseRow;
@@ -5218,7 +5236,7 @@ IMPORTANT RULES
     }
     catch (e) { setError(e.message || 'Failed to load CSV'); }
     finally { setLoading(false); }
-  }, [applyScoringToRow, readStoredStage1Scoring, readStoredResearch, ensureResearchModel]);
+  }, [applyScoringToRow, readStoredStage1Scoring, readStoredResearch, ensureResearchModel, getProspectStorageKey]);
 
   const getCurrentTableState = React.useCallback(() => ({
     searchTerm: searchInput,
@@ -5480,7 +5498,7 @@ IMPORTANT RULES
     setResearchPromptDraft(model.prompt || generateResearchPrompt(selected));
     setResearchOutputRaw(model.outputRaw || '');
     setParsedResearchOutput(parseResearchOutput(model.outputRaw || ''));
-  }, [selected?.id, ensureResearchModel, generateResearchPrompt, parseResearchOutput]);
+  }, [selected?.id, ensureResearchModel]);
 
   const exportRows = (records, name) => {
     const blob = new Blob([window.ProspectToolUtils.toCsv(records)], { type: 'text/csv;charset=utf-8;' });
@@ -5974,29 +5992,36 @@ IMPORTANT RULES
     });
   };
 
-  const persistScoringForRow = React.useCallback((rowId, scoring) => {
+  const persistScoringForRow = React.useCallback((rowRef, scoring) => {
     try {
       const existing = readStoredStage1Scoring();
-      existing[rowId] = scoring;
+      const rowId = typeof rowRef === 'string' ? rowRef : rowRef?.id;
+      const storageKey = typeof rowRef === 'string' ? '' : getProspectStorageKey(rowRef);
+      if (storageKey) existing[storageKey] = scoring;
+      if (rowId) existing[rowId] = scoring;
       localStorage.setItem(STORAGE_STAGE1_SCORING_KEY, JSON.stringify(existing));
       return true;
     } catch (_err) {
       setFeedback({ tone: 'warning', message: 'Saved in current session, but unable to persist scoring locally.' });
       return false;
     }
-  }, [readStoredStage1Scoring]);
+  }, [readStoredStage1Scoring, getProspectStorageKey]);
 
-  const persistResearchForRow = React.useCallback((rowId, research) => {
+  const persistResearchForRow = React.useCallback((rowRef, research) => {
     try {
       const existing = readStoredResearch();
-      existing[rowId] = ensureResearchModel(research);
+      const rowId = typeof rowRef === 'string' ? rowRef : rowRef?.id;
+      const storageKey = typeof rowRef === 'string' ? '' : getProspectStorageKey(rowRef);
+      const normalized = ensureResearchModel(research);
+      if (storageKey) existing[storageKey] = normalized;
+      if (rowId) existing[rowId] = normalized;
       localStorage.setItem(STORAGE_RESEARCH_KEY, JSON.stringify(existing));
       return true;
     } catch (_err) {
       setFeedback({ tone: 'warning', message: 'Unable to persist research locally.' });
       return false;
     }
-  }, [readStoredResearch, ensureResearchModel, STORAGE_RESEARCH_KEY]);
+  }, [readStoredResearch, ensureResearchModel, STORAGE_RESEARCH_KEY, getProspectStorageKey]);
 
   const saveResearchForSelected = React.useCallback((changes) => {
     if (!selected) return false;
@@ -6007,7 +6032,7 @@ IMPORTANT RULES
       return { ...row, research: nextResearch };
     }));
     if (!nextResearch) return false;
-    return persistResearchForRow(selected.id, nextResearch);
+    return persistResearchForRow(selected, nextResearch);
   }, [selected, ensureResearchModel, persistResearchForRow]);
 
   const saveStage1Scoring = React.useCallback((options = {}) => {
@@ -6024,7 +6049,7 @@ IMPORTANT RULES
       if (row.id !== selected.id) return row;
       return applyScoringToRow(row, normalized);
     }));
-    if (!persistScoringForRow(selected.id, normalized)) return false;
+    if (!persistScoringForRow(selected, normalized)) return false;
     if (!silent) {
       setFeedback({ tone: 'success', message: `Saved Stage 1 scoring for ${selected.displayName}.` });
     }
@@ -6085,7 +6110,7 @@ IMPORTANT RULES
       return merged;
     }));
     if (!updatedRow) return;
-    persistScoringForRow(rowId, updatedRow.scoring);
+    persistScoringForRow(updatedRow, updatedRow.scoring);
     setInlineNextActionRowId('');
     setInlineNextActionDraft('');
     const isPriorityView = builtInPriorityViews.some((viewItem) => viewItem.key === activePriorityViewKey);
