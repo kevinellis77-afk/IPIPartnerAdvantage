@@ -5705,26 +5705,33 @@ IMPORTANT RULES
     };
     let activeKey = null;
     const mapHeaderToKey = (line) => {
-      const normalized = cleanResearchText(line.toLowerCase().replace(/^#+\s*/, '').replace(/:$/, '').trim());
+      const normalized = cleanResearchText(line.toLowerCase().replace(/^#+\s*/, '').replace(/^[0-9]+[.)]\s*/, '').replace(/:$/, '').trim());
       if (normalized.includes('company overview')) return 'companyOverview';
       if (normalized.includes('route-to-revenue') || normalized.includes('route to revenue')) return 'routeToRevenue';
-      if (normalized.includes('vendor signals') || normalized.includes('vendor')) return 'vendorSignals';
       if (normalized.includes('key commercial signals')) return 'routeToRevenue';
       if (normalized.includes('vendor / platform signals')) return 'vendorSignals';
+      if (normalized.includes('vendor signals') || normalized === 'vendor' || normalized.startsWith('vendor ')) return 'vendorSignals';
       if (normalized.includes('opportunity') || normalized.includes('risk')) return 'opportunityRisk';
       if (normalized.includes('suggested stage 1 scoring')) return 'scoring';
-      if (normalized.includes('calculated score')) return 'scoring';
       if (normalized.includes('scoring summary')) return 'scoring';
+      if (normalized.includes('calculated score')) return 'scoring';
       if (normalized.includes('outreach')) return 'outreach';
       if (normalized.includes('contacts')) return 'contacts';
+      if (normalized.includes('sources') || normalized.includes('links') || normalized.includes('citations')) return '__ignore__';
       return null;
+    };
+    const isHeadingLine = (line) => {
+      const normalized = cleanResearchText(line).toLowerCase();
+      if (!normalized) return false;
+      if (/^#{1,6}\s/.test(line) || /:\s*$/.test(line)) return true;
+      return /^([0-9]+[.)]\s*)?(company overview|key commercial signals|route[- ]to[- ]revenue|vendor(?:\s*\/\s*platform)? signals|opportunity(?:\s*&\s*risks?)?|risks?|scoring summary|suggested stage 1 scoring|sources|links|citations)\b/i.test(normalized);
     };
     lines.forEach((line) => {
       const trimmed = cleanResearchText(line);
       if (!trimmed) return;
       const headerKey = mapHeaderToKey(trimmed);
-      if (headerKey && (/^#{1,6}\s/.test(trimmed) || /:$/.test(trimmed))) {
-        activeKey = headerKey;
+      if (headerKey && isHeadingLine(line)) {
+        activeKey = headerKey === '__ignore__' ? null : headerKey;
         return;
       }
       if (!activeKey) return;
@@ -5732,6 +5739,7 @@ IMPORTANT RULES
       const snippets = withoutBullet
         .split(/\s* (?=Suggested Option:|Score:\s*|Confidence:\s*|Evidence:\s*|[A-F]\.\s)/i)
         .map((item) => cleanResearchText(item))
+        .map((item) => item.replace(/https?:\/\/\S+/gi, '').trim())
         .filter(Boolean);
       if (!snippets.length) return;
       sections[activeKey].push(...snippets);
