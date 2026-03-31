@@ -2998,8 +2998,8 @@ body { font-family: var(--font-body); color: var(--text-primary); -webkit-font-s
 }
 .competitive-modal-overlay.open { display:flex; }
 .competitive-modal {
-  width:min(1180px, 94vw);
-  max-height:88vh;
+  width:min(1440px, 98vw);
+  max-height:92vh;
   overflow:auto;
   background: #f8fbfd;
   border-radius: 28px;
@@ -3219,6 +3219,314 @@ body { font-family: var(--font-body); color: var(--text-primary); -webkit-font-s
   .competitive-layout { grid-template-columns: 1fr; }
   .competitive-advantage-grid { grid-template-columns: 1fr; }
   .competitive-grid-table { grid-template-columns: minmax(220px, 1.2fr) repeat(6, minmax(84px, 1fr)); }
+}
+
+
+.competitive-intel-app {
+  margin-top: 8px;
+}
+.competitive-intel-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.competitive-intel-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.competitive-filter-btn {
+  border: 1px solid var(--border-light);
+  background: #fff;
+  color: var(--text-secondary);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.competitive-filter-btn:hover,
+.competitive-filter-btn.active {
+  background: rgba(99,171,143,0.14);
+  color: var(--ipi-charcoal);
+  border-color: rgba(99,171,143,0.35);
+}
+.competitive-intel-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-light);
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.competitive-intel-toggle-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.competitive-intel-switch {
+  position: relative;
+  width: 46px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(54,69,79,0.18);
+  transition: background 0.2s ease;
+}
+.competitive-intel-switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.16);
+  transition: transform 0.2s ease;
+}
+.competitive-intel-toggle.is-on .competitive-intel-switch {
+  background: var(--ipi-green);
+}
+.competitive-intel-toggle.is-on .competitive-intel-switch::after {
+  transform: translateX(20px);
+}
+.competitive-intel-scoreboard {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0,1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.competitive-score-card {
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+  padding: 14px 14px 12px;
+}
+.competitive-score-card.elastic {
+  background: linear-gradient(135deg, rgba(99,171,143,0.16), rgba(99,171,143,0.08));
+  border-color: rgba(99,171,143,0.30);
+}
+.competitive-score-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 7px;
+}
+.competitive-score-value {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text-primary);
+  letter-spacing: -0.04em;
+}
+.competitive-score-sub {
+  margin-top: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+.competitive-intel-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  align-items: start;
+}
+.competitive-intel-table-card,
+.competitive-intel-panel {
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: 24px;
+  box-shadow: var(--shadow-sm);
+}
+.competitive-intel-table-card {
+  padding: 0;
+  overflow: hidden;
+}
+.competitive-intel-table-scroll {
+  overflow: auto;
+}
+.competitive-intel-table {
+  min-width: 1180px;
+  display: grid;
+  grid-template-columns: minmax(240px, 1.4fr) repeat(6, minmax(120px, 1fr));
+}
+.competitive-intel-head,
+.competitive-intel-cell {
+  padding: 12px 14px;
+  border-right: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+}
+.competitive-intel-head {
+  background: #34454f;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.competitive-intel-head.elastic {
+  background: linear-gradient(135deg, #63AB8F, #6fa991);
+}
+.competitive-intel-cell.capability {
+  background: #f7fafb;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+}
+.competitive-intel-cell.vendor {
+  font-size: 12px;
+  color: var(--text-primary);
+}
+.competitive-intel-cell.elastic {
+  background: rgba(99,171,143,0.08);
+}
+.competitive-intel-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.competitive-status {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  flex: 0 0 18px;
+}
+.competitive-status.full {
+  background: rgba(99,171,143,0.26);
+  color: #2d6f59;
+}
+.competitive-status.partial {
+  background: rgba(227,196,115,0.34);
+  color: #8b6c10;
+}
+.competitive-status.none {
+  background: rgba(224,126,126,0.26);
+  color: #b54545;
+}
+.competitive-note-text {
+  color: var(--text-secondary);
+}
+.competitive-mini-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(99,171,143,0.14);
+  color: var(--ipi-charcoal);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+.competitive-intel-legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  background: #f8fbfc;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.competitive-intel-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.competitive-intel-panel {
+  padding: 20px 20px 18px;
+  width: 100%;
+}
+.competitive-panel-kicker {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ipi-mauve);
+  margin-bottom: 10px;
+}
+.competitive-panel-title {
+  margin: 0 0 10px 0;
+  font-family: var(--font-display);
+  font-size: 26px;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+.competitive-panel-copy {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+.competitive-panel-block {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(54,69,79,0.10);
+}
+.competitive-panel-block-title {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.competitive-panel-list {
+  list-style: none;
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+}
+.competitive-panel-list li {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-primary);
+  display: flex;
+  gap: 8px;
+}
+.competitive-panel-list li::before {
+  content: '•';
+  color: var(--ipi-green);
+  font-weight: 900;
+}
+.competitive-panel-talktrack {
+  background: linear-gradient(135deg, rgba(99,171,143,0.10), rgba(163,121,146,0.10));
+  border: 1px solid rgba(99,171,143,0.18);
+  border-radius: 18px;
+  padding: 14px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+@media (max-width: 1100px) {
+  .competitive-layout { grid-template-columns: 1fr; }
+  .competitive-advantage-grid { grid-template-columns: 1fr; }
+  .competitive-grid-table { grid-template-columns: minmax(220px, 1.2fr) repeat(6, minmax(84px, 1fr)); }
+  .competitive-intel-scoreboard { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .competitive-intel-layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .competitive-intel-scoreboard { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .competitive-intel-toolbar { align-items: flex-start; }
 }
 
 
@@ -6540,68 +6848,33 @@ to { opacity: 1; transform: translateY(0); }
 </div>
 </div>
 <div class="competitive-modal-view" data-competitive-view="grid">
-<div class="competitive-modal-kicker">Comparison Grid</div>
-<h3 class="competitive-modal-title">Simplified partner-ready comparison</h3>
-<p class="competitive-modal-copy">A concise view based on the attached matrix, focused on the differentiators most useful in partner discussions.</p>
-<div class="competitive-grid-table">
-<div class="competitive-grid-header">Capability lens</div>
-<div class="competitive-grid-header highlight">ElasticCX</div>
-<div class="competitive-grid-header">Genesys</div>
-<div class="competitive-grid-header">Five9</div>
-<div class="competitive-grid-header">NICE</div>
-<div class="competitive-grid-header">Cisco</div>
-<div class="competitive-grid-header">Avaya</div>
-<div class="competitive-grid-cell lens">Integrated UCaaS + CCaaS narrative</div>
-<div class="competitive-grid-cell highlight"><span class="competitive-stars">★★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★</span></div>
-<div class="competitive-grid-cell lens">Omnichannel routing &amp; agent experience</div>
-<div class="competitive-grid-cell highlight"><span class="competitive-stars">★★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★</span></div>
-<div class="competitive-grid-cell lens">Self-service / IVR tooling</div>
-<div class="competitive-grid-cell highlight"><span class="competitive-stars">★★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★</span></div>
-<div class="competitive-grid-cell lens">Reporting / quality / scorecards</div>
-<div class="competitive-grid-cell highlight"><span class="competitive-stars">★★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★</span></div>
-<div class="competitive-grid-cell lens">Admin / developer flexibility</div>
-<div class="competitive-grid-cell highlight"><span class="competitive-stars">★★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★</span></div>
-<div class="competitive-grid-cell lens">Outbound (Dialer)</div>
-<div class="competitive-grid-cell highlight"><span class="competitive-stars">★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★</span></div>
-<div class="competitive-grid-cell lens">Carrier control / provisioning / integration speed</div>
-<div class="competitive-grid-cell highlight"><span class="competitive-stars">★★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★</span></div>
-<div class="competitive-grid-cell"><span class="competitive-stars">★★</span></div>
+<div class="competitive-modal-kicker">Competitive Intelligence Grid</div>
+<h3 class="competitive-modal-title">Interactive partner-ready comparison</h3>
+<p class="competitive-modal-copy">Filter the grid by buying lens and hide non-differentiators. The supporting narrative now sits beneath the matrix so the table has more room.</p>
+<div class="competitive-intel-app" id="competitive-intel-app">
+<div class="competitive-intel-toolbar">
+<div class="competitive-intel-filters" id="competitive-intel-filters"></div>
+<button aria-pressed="false" class="competitive-intel-toggle" id="competitive-diff-toggle" type="button">
+<span class="competitive-intel-toggle-label">Show differentiation only</span>
+<span aria-hidden="true" class="competitive-intel-switch"></span>
+</button>
 </div>
-<div class="competitive-grid-note">Use this as the talk track layer. Keep the full matrix as backup for feature-by-feature challenge questions.</div>
+<div class="competitive-intel-scoreboard" id="competitive-intel-scoreboard"></div>
+<div class="competitive-intel-layout">
+<div class="competitive-intel-table-card">
+<div class="competitive-intel-table-scroll">
+<div class="competitive-intel-table" id="competitive-intel-table"></div>
+</div>
+<div class="competitive-intel-legend">
+<span class="competitive-intel-legend-item"><span class="competitive-status full">✓</span> Fully supported</span>
+<span class="competitive-intel-legend-item"><span class="competitive-status partial">–</span> Partial / add-on</span>
+<span class="competitive-intel-legend-item"><span class="competitive-status none">×</span> Not available / limited</span>
+</div>
+</div>
+<div class="competitive-intel-panel" id="competitive-intel-panel"></div>
+</div>
+<div class="competitive-grid-note">Information is based on the provided matrix and IPI commercial positioning. Validate current vendor specifics before using it externally.</div>
+</div>
 </div>
 </div>
 </div>
@@ -7555,16 +7828,261 @@ updateChrome();
   const competitiveViews = Array.from(document.querySelectorAll('.competitive-modal-view[data-competitive-view]'));
   let lastCompetitiveTrigger = null;
 
+  const competitiveFilterHost = document.getElementById('competitive-intel-filters');
+  const competitiveScoreboard = document.getElementById('competitive-intel-scoreboard');
+  const competitiveTable = document.getElementById('competitive-intel-table');
+  const competitivePanel = document.getElementById('competitive-intel-panel');
+  const competitiveDiffToggle = document.getElementById('competitive-diff-toggle');
+  const competitiveState = { category: 'all', differentiationOnly: false };
+  const competitiveCategories = [
+    { key: 'all', label: 'All Capabilities' },
+    { key: 'ai', label: 'AI & Automation' },
+    { key: 'channels', label: 'Channels' },
+    { key: 'commercial', label: 'Commercial' },
+    { key: 'deployment', label: 'Deployment' },
+    { key: 'integration', label: 'Integration' }
+  ];
+  const competitiveVendors = [
+    { key: 'elastic', label: 'ElasticCX', elastic: true },
+    { key: 'genesys', label: 'Genesys Cloud' },
+    { key: 'salesforce', label: 'Salesforce SCCV' },
+    { key: 'nice', label: 'NICE CXone' },
+    { key: 'avaya', label: 'Avaya Cloud' },
+    { key: '8x8', label: '8x8 CC' }
+  ];
+  const competitiveNarratives = {
+    all: {
+      title: 'Use the grid as a decision tool',
+      copy: 'This view is built to help partners position ElasticCX quickly. Start with the buyer lens that matters most, then use only the rows where the gap is commercially meaningful.',
+      wins: [
+        'ElasticCX stays strong across AI, deployment speed, and commercial simplicity rather than relying on one narrow strength.',
+        'The strongest partner narrative is breadth plus practicality: embedded capability, faster setup, and cleaner commercials.',
+        'Use “show differentiation only” when the conversation needs to focus on why ElasticCX is easier to buy and deploy.'
+      ],
+      gaps: [
+        'Genesys and NICE remain credible enterprise options, but often rely on added modules or more layered commercials.',
+        'Salesforce can look attractive in Salesforce-heavy accounts, but complexity and deployment overhead become issues quickly.',
+        'Avaya and 8x8 are easier to frame as limited on embedded AI depth and modern differentiation.'
+      ],
+      talkTrack: 'If the customer wants a platform that lands cleanly, deploys quickly, and does not force them into layered AI add-ons, ElasticCX is the strongest practical choice.'
+    },
+    ai: {
+      title: 'AI without the add-on tax',
+      copy: 'ElasticCX is strongest when the deal is moving toward embedded AI outcomes rather than bolt-on AI procurement.',
+      wins: [
+        'Embedded AI, voice bot, agent assist, summaries and sentiment are all positioned as native or included strengths.',
+        'Custom AI prompts per queue is a clean differentiator for tailored live operations.',
+        'Quality assurance coverage gives ElasticCX a stronger practical AI story than vendors with partial tooling.'
+      ],
+      gaps: [
+        'Genesys is credible, but add-on cost and partial quality coverage weaken the commercial story.',
+        'Salesforce leans on Einstein, which usually introduces dependency and complexity rather than simplicity.',
+        'Avaya and 8x8 are easier to displace when AI is central to the buying decision.'
+      ],
+      talkTrack: 'Our AI story is already inside the workflow. You are not buying a base platform and then funding a second project to unlock the intelligence layer.'
+    },
+    channels: {
+      title: 'Strong channel coverage where it matters',
+      copy: 'The channel view is not about saying everyone can do voice. It is about showing where ElasticCX supports modern customer contact without forcing awkward connectors or limitations.',
+      wins: [
+        'Voice inbound and outbound capability is competitive, while WhatsApp and social channels stay clean and native.',
+        'ElasticCX holds a stronger channel narrative than vendors that rely on connectors or have social gaps.',
+        'This is useful when the buyer wants one environment rather than a patchwork of third-party pieces.'
+      ],
+      gaps: [
+        'Voice inbound is not a differentiator. Do not lead with it.',
+        'Salesforce and Avaya weaken on modern digital channels.',
+        '8x8 can feel sufficient until the buyer asks for broader channel maturity.'
+      ],
+      talkTrack: 'Most platforms can tick the voice box. The real question is whether digital channels are native and usable without extra stitching. That is where ElasticCX stays stronger.'
+    },
+    commercial: {
+      title: 'Commercial fit for real-world partner deals',
+      copy: 'This lens is designed for the moment when the customer or partner asks whether the platform is realistic to win, deploy and expand in the mid-market.',
+      wins: [
+        'ElasticCX is positioned around a strong 50–400 seat sweet spot, which is commercially useful for a large share of partner-led opportunities.',
+        'UK hosted data residency and simple per-agent pricing cut friction out of the buying motion.',
+        'This makes ElasticCX easier to package and easier to explain than vendors with layered or opaque pricing structures.'
+      ],
+      gaps: [
+        'Enterprise vendors often look powerful but become harder to price and justify in mid-market deals.',
+        'Salesforce stands out as the complexity risk in this view.',
+        'Do not oversell scale. Lead with best-fit segment and value clarity.'
+      ],
+      talkTrack: 'If the opportunity needs commercial clarity, realistic deployment and a strong UK-centric operating model, ElasticCX is a cleaner fit than the heavier enterprise stacks.'
+    },
+    deployment: {
+      title: 'Faster to land, easier to deliver',
+      copy: 'Deployment is where ElasticCX can feel materially easier to buy. This is a strong partner conversation because slow deployment weakens margin, momentum and customer confidence.',
+      wins: [
+        'Weeks rather than months is a strong narrative if the buyer needs speed.',
+        'Low-to-medium configuration complexity makes partner-led delivery more realistic.',
+        'ElasticCX supports a stronger land-and-expand motion because the customer gets value earlier.'
+      ],
+      gaps: [
+        'Salesforce is the obvious complexity anchor in this view.',
+        'Genesys and NICE stay credible but are harder to frame as rapid and simple.',
+        'Avaya and 8x8 can compete on parts of delivery, but not with the same overall AI and channel story.'
+      ],
+      talkTrack: 'The point is not just that we can deploy faster. It is that faster deployment reduces risk, shortens time to value, and makes partner delivery economics work better.'
+    },
+    integration: {
+      title: 'Integration without unnecessary friction',
+      copy: 'This lens works when the prospect is worried about platform fit, workflow continuity, or CRM alignment.',
+      wins: [
+        'Open API coverage plus embedded Salesforce integration gives ElasticCX a strong practical integration story.',
+        'MS Dynamics support helps widen the addressable opportunity beyond Salesforce-first accounts.',
+        'The key narrative is that integration supports the deal rather than becoming a separate programme.'
+      ],
+      gaps: [
+        'Salesforce is naturally strong in its own ecosystem, so do not fight that point directly.',
+        'Avaya and 8x8 are easier to challenge when the customer wants broader integration confidence.',
+        'Use integration as a confidence lever, not as an abstract technical debate.'
+      ],
+      talkTrack: 'We integrate cleanly into the environments customers already run, but without forcing the project to become an integration-heavy transformation exercise.'
+    }
+  };
+  const competitiveRows = [
+    { label: 'Embedded AI (no add-ons)', category: 'ai', values: { elastic: { status: 'full', note: 'Core' }, genesys: { status: 'partial', note: 'Add-on cost' }, salesforce: { status: 'partial', note: 'Einstein AI' }, nice: { status: 'partial', note: 'Separate module' }, avaya: { status: 'none', note: 'Limited' }, '8x8': { status: 'none', note: 'Basic only' } } },
+    { label: 'AI Voice Bot (Autopilot)', category: 'ai', values: { elastic: { status: 'full', note: 'Native' }, genesys: { status: 'full', note: 'Native' }, salesforce: { status: 'partial', note: 'Via Einstein' }, nice: { status: 'full', note: 'Native' }, avaya: { status: 'partial', note: 'Basic IVR' }, '8x8': { status: 'partial', note: 'Limited' } } },
+    { label: 'AI Agent Assist (Sidekick)', category: 'ai', values: { elastic: { status: 'full', note: 'Real-time' }, genesys: { status: 'full', note: 'Agent Assist' }, salesforce: { status: 'partial', note: 'Via Einstein' }, nice: { status: 'full', note: 'NICE Enlighten' }, avaya: { status: 'none', note: 'Not native' }, '8x8': { status: 'none', note: 'Not available' } } },
+    { label: 'AI Call Summaries', category: 'ai', values: { elastic: { status: 'full', note: 'Automated' }, genesys: { status: 'full', note: 'Available' }, salesforce: { status: 'partial', note: 'Limited' }, nice: { status: 'full', note: 'Available' }, avaya: { status: 'none', note: '' }, '8x8': { status: 'none', note: '' } } },
+    { label: 'Sentiment Analysis', category: 'ai', values: { elastic: { status: 'full', note: 'Included' }, genesys: { status: 'full', note: 'Included' }, salesforce: { status: 'partial', note: 'Add-on' }, nice: { status: 'full', note: 'Included' }, avaya: { status: 'partial', note: 'Limited' }, '8x8': { status: 'none', note: '' } } },
+    { label: 'AI Quality Assurance', category: 'ai', values: { elastic: { status: 'full', note: '100% coverage' }, genesys: { status: 'partial', note: 'Partial' }, salesforce: { status: 'none', note: '' }, nice: { status: 'full', note: 'Available' }, avaya: { status: 'none', note: '' }, '8x8': { status: 'none', note: '' } } },
+    { label: 'Custom AI Prompts per Queue', category: 'ai', values: { elastic: { status: 'full', note: 'Unique' }, genesys: { status: 'none', note: '' }, salesforce: { status: 'none', note: '' }, nice: { status: 'none', note: '' }, avaya: { status: 'none', note: '' }, '8x8': { status: 'none', note: '' } } },
+    { label: 'Voice Inbound', category: 'channels', values: { elastic: { status: 'full', note: '' }, genesys: { status: 'full', note: '' }, salesforce: { status: 'full', note: '' }, nice: { status: 'full', note: '' }, avaya: { status: 'full', note: '' }, '8x8': { status: 'full', note: '' } } },
+    { label: 'Outbound Campaigns', category: 'channels', values: { elastic: { status: 'full', note: '' }, genesys: { status: 'full', note: '' }, salesforce: { status: 'partial', note: '' }, nice: { status: 'full', note: '' }, avaya: { status: 'full', note: '' }, '8x8': { status: 'partial', note: '' } } },
+    { label: 'WhatsApp', category: 'channels', values: { elastic: { status: 'full', note: 'Native' }, genesys: { status: 'full', note: '' }, salesforce: { status: 'partial', note: 'Via connector' }, nice: { status: 'full', note: '' }, avaya: { status: 'partial', note: '' }, '8x8': { status: 'partial', note: '' } } },
+    { label: 'Instagram / Facebook', category: 'channels', values: { elastic: { status: 'full', note: 'Native' }, genesys: { status: 'full', note: '' }, salesforce: { status: 'partial', note: '' }, nice: { status: 'full', note: '' }, avaya: { status: 'none', note: '' }, '8x8': { status: 'partial', note: '' } } },
+    { label: 'Target Segment (agents)', category: 'commercial', values: { elastic: { status: 'full', note: '50–400', badge: 'Sweet spot' }, genesys: { status: 'partial', note: '100–5,000+' }, salesforce: { status: 'partial', note: '200–10,000+' }, nice: { status: 'partial', note: '100–5,000+' }, avaya: { status: 'partial', note: '50–2,000' }, '8x8': { status: 'partial', note: '10–500' } } },
+    { label: 'UK Data Residency', category: 'commercial', values: { elastic: { status: 'full', note: 'UK hosted', badge: 'Strong' }, genesys: { status: 'partial', note: 'EU only' }, salesforce: { status: 'partial', note: 'EU option' }, nice: { status: 'partial', note: 'EU option' }, avaya: { status: 'partial', note: '' }, '8x8': { status: 'partial', note: '' } } },
+    { label: 'Pricing Complexity', category: 'commercial', values: { elastic: { status: 'full', note: 'Simple per-agent' }, genesys: { status: 'partial', note: 'Complex tiered' }, salesforce: { status: 'none', note: 'Very complex' }, nice: { status: 'partial', note: 'Tiered modules' }, avaya: { status: 'partial', note: 'Tiered' }, '8x8': { status: 'partial', note: 'Per agent' } } },
+    { label: 'Deployment Speed', category: 'deployment', values: { elastic: { status: 'full', note: 'Weeks', badge: 'Fast' }, genesys: { status: 'partial', note: 'Months' }, salesforce: { status: 'none', note: '6–12 months' }, nice: { status: 'partial', note: '2–4 months' }, avaya: { status: 'partial', note: '1–3 months' }, '8x8': { status: 'full', note: 'Weeks' } } },
+    { label: 'Configuration Complexity', category: 'deployment', values: { elastic: { status: 'full', note: 'Low–Medium' }, genesys: { status: 'partial', note: 'Medium–High' }, salesforce: { status: 'none', note: 'Very high' }, nice: { status: 'partial', note: 'Medium–High' }, avaya: { status: 'partial', note: 'Medium' }, '8x8': { status: 'full', note: 'Low–Medium' } } },
+    { label: 'Partner-led Delivery', category: 'deployment', values: { elastic: { status: 'full', note: 'IPI led' }, genesys: { status: 'full', note: '' }, salesforce: { status: 'full', note: '' }, nice: { status: 'full', note: '' }, avaya: { status: 'full', note: '' }, '8x8': { status: 'partial', note: '' } } },
+    { label: 'Open API (GET & PUSH)', category: 'integration', values: { elastic: { status: 'full', note: 'Native' }, genesys: { status: 'full', note: '' }, salesforce: { status: 'full', note: 'Native' }, nice: { status: 'full', note: '' }, avaya: { status: 'partial', note: '' }, '8x8': { status: 'partial', note: '' } } },
+    { label: 'Salesforce Integration', category: 'integration', values: { elastic: { status: 'full', note: 'Embedded' }, genesys: { status: 'full', note: '' }, salesforce: { status: 'full', note: 'Native' }, nice: { status: 'full', note: '' }, avaya: { status: 'partial', note: '' }, '8x8': { status: 'partial', note: '' } } },
+    { label: 'MS Dynamics Integration', category: 'integration', values: { elastic: { status: 'full', note: '' }, genesys: { status: 'full', note: '' }, salesforce: { status: 'partial', note: '' }, nice: { status: 'full', note: '' }, avaya: { status: 'partial', note: '' }, '8x8': { status: 'partial', note: '' } } }
+  ];
+
   function setCompetitiveView(viewKey) {
     competitiveViews.forEach((view) => {
       view.classList.toggle('active', view.dataset.competitiveView === viewKey);
     });
   }
 
+
+  function getCompetitiveRows() {
+    let rows = competitiveRows.filter((row) => competitiveState.category === 'all' || row.category === competitiveState.category);
+    if (competitiveState.differentiationOnly) {
+      rows = rows.filter((row) => {
+        const elasticStatus = row.values.elastic.status;
+        const others = competitiveVendors.filter((vendor) => !vendor.elastic).map((vendor) => row.values[vendor.key].status);
+        return others.some((status) => status !== elasticStatus);
+      });
+    }
+    return rows;
+  }
+
+  function getStatusMeta(status) {
+    if (status === 'full') return { symbol: '✓', score: 2 };
+    if (status === 'partial') return { symbol: '–', score: 1 };
+    return { symbol: '×', score: 0 };
+  }
+
+  function renderCompetitiveFilters() {
+    if (!competitiveFilterHost) return;
+    competitiveFilterHost.innerHTML = competitiveCategories.map((category) => `
+      <button class="competitive-filter-btn ${competitiveState.category === category.key ? 'active' : ''}" data-competitive-category="${category.key}" type="button">${category.label}</button>
+    `).join('');
+    competitiveFilterHost.querySelectorAll('[data-competitive-category]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        competitiveState.category = btn.dataset.competitiveCategory;
+        renderCompetitiveIntel();
+      });
+    });
+  }
+
+  function renderCompetitiveScores(rows) {
+    if (!competitiveScoreboard) return;
+    const totalPossible = rows.length * 2 || 1;
+    competitiveScoreboard.innerHTML = competitiveVendors.map((vendor) => {
+      const score = rows.reduce((sum, row) => sum + getStatusMeta(row.values[vendor.key].status).score, 0);
+      const rating = `${score}/${totalPossible}`;
+      const summary = rows.length ? `${Math.round((score / totalPossible) * 100)}% fit in this lens` : 'No rows in this lens';
+      return `
+        <div class="competitive-score-card ${vendor.elastic ? 'elastic' : ''}">
+          <div class="competitive-score-label">${vendor.label}</div>
+          <div class="competitive-score-value">${rating}</div>
+          <div class="competitive-score-sub">${summary}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderCompetitiveTable(rows) {
+    if (!competitiveTable) return;
+    const head = ['<div class="competitive-intel-head">Capability</div>']
+      .concat(competitiveVendors.map((vendor) => `<div class="competitive-intel-head ${vendor.elastic ? 'elastic' : ''}">${vendor.label}</div>`))
+      .join('');
+    const body = rows.map((row) => {
+      const cells = competitiveVendors.map((vendor) => {
+        const value = row.values[vendor.key];
+        const meta = getStatusMeta(value.status);
+        return `
+          <div class="competitive-intel-cell vendor ${vendor.elastic ? 'elastic' : ''}">
+            <span class="competitive-intel-value">
+              <span class="competitive-status ${value.status}">${meta.symbol}</span>
+              <span class="competitive-note-text">${value.note || ''}</span>
+              ${value.badge ? `<span class="competitive-mini-badge">${value.badge}</span>` : ''}
+            </span>
+          </div>
+        `;
+      }).join('');
+      return `<div class="competitive-intel-cell capability">${row.label}</div>${cells}`;
+    }).join('');
+    competitiveTable.innerHTML = head + body;
+  }
+
+  function renderCompetitivePanel(rows) {
+    if (!competitivePanel) return;
+    const narrative = competitiveNarratives[competitiveState.category] || competitiveNarratives.all;
+    competitivePanel.innerHTML = `
+      <div class="competitive-panel-kicker">Live talk track</div>
+      <h4 class="competitive-panel-title">${narrative.title}</h4>
+      <div class="competitive-panel-copy">${narrative.copy}</div>
+      <div class="competitive-panel-block">
+        <div class="competitive-panel-block-title">Why ElasticCX wins here</div>
+        <ul class="competitive-panel-list">${narrative.wins.map((item) => `<li>${item}</li>`).join('')}</ul>
+      </div>
+      <div class="competitive-panel-block">
+        <div class="competitive-panel-block-title">Where competitors weaken</div>
+        <ul class="competitive-panel-list">${narrative.gaps.map((item) => `<li>${item}</li>`).join('')}</ul>
+      </div>
+      <div class="competitive-panel-block">
+        <div class="competitive-panel-block-title">30-second talk track</div>
+        <div class="competitive-panel-talktrack">${narrative.talkTrack}</div>
+      </div>
+    `;
+  }
+
+  function renderCompetitiveIntel() {
+    const rows = getCompetitiveRows();
+    renderCompetitiveFilters();
+    renderCompetitiveScores(rows);
+    renderCompetitiveTable(rows);
+    renderCompetitivePanel(rows);
+    if (competitiveDiffToggle) {
+      competitiveDiffToggle.classList.toggle('is-on', competitiveState.differentiationOnly);
+      competitiveDiffToggle.setAttribute('aria-pressed', competitiveState.differentiationOnly ? 'true' : 'false');
+    }
+  }
+
   function openCompetitiveView(viewKey, triggerEl) {
     if (!competitiveOverlay) return;
     lastCompetitiveTrigger = triggerEl || document.activeElement;
     setCompetitiveView(viewKey || 'quadrant');
+    if ((viewKey || 'quadrant') === 'grid') renderCompetitiveIntel();
     competitiveOverlay.classList.add('open');
     competitiveOverlay.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
@@ -7580,6 +8098,15 @@ updateChrome();
       lastCompetitiveTrigger.focus();
     }
   }
+
+  if (competitiveDiffToggle) {
+    competitiveDiffToggle.addEventListener('click', () => {
+      competitiveState.differentiationOnly = !competitiveState.differentiationOnly;
+      renderCompetitiveIntel();
+    });
+  }
+
+  renderCompetitiveIntel();
 
   competitiveOpenBtns.forEach((btn) => {
     btn.addEventListener('click', (event) => {
