@@ -5586,10 +5586,16 @@ IMPORTANT RULES
   };
 
   function getResearchPromptInputs(prospect) {
+    const readText = (value, fallback) => {
+      if (value === null || value === undefined) return fallback;
+      const text = String(value).trim();
+      return text || fallback;
+    };
+
     return {
-      companyName: (prospect?.displayName || prospect?.name || 'Unknown company').trim(),
-      website: (prospect?.website || 'Not available').trim(),
-      companyReg: (prospect?.company_registration_number || prospect?.company_reg_no || prospect?.id || 'Not available').trim(),
+      companyName: readText(prospect?.displayName ?? prospect?.name, 'Unknown company'),
+      website: readText(prospect?.website, 'Not available'),
+      companyReg: readText(prospect?.company_registration_number ?? prospect?.company_reg_no ?? prospect?.id, 'Not available'),
     };
   }
 
