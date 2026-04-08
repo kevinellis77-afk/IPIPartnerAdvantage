@@ -11240,6 +11240,11 @@ const RACI_DROPDOWN_OPTIONS = [
   "Product",
   "Operations",
 ];
+const RACI_ADMIN_GOD_OPTIONS = [
+  "Admin (Jason)",
+  "God (Kevin)",
+  "God (Skip)",
+];
 
 const RACI_FIELDS = ["r", "a", "c", "i"];
 
@@ -11437,6 +11442,7 @@ function GovernancePage() {
   const [showOverdueOnly, setShowOverdueOnly] = React.useState(false);
   const [noteTaskId, setNoteTaskId] = React.useState(null);
   const [showVersions, setShowVersions] = React.useState(false);
+  const [includeAdminGod, setIncludeAdminGod] = React.useState(true);
   const [toast, setToast] = React.useState(null);
   const [versionForm, setVersionForm] = React.useState({ mode: "create", versionId: "", name: "", description: "" });
   const [savedVersions, setSavedVersions] = React.useState(() => {
@@ -11522,6 +11528,12 @@ function GovernancePage() {
   const matrixSignature = JSON.stringify(getMatrixOnlyRows(tasks));
   const unsavedChanges = matrixSignature !== initialMatrixRef.current;
   const loadedVersion = savedVersions.find((item) => item.id === loadedVersionId);
+  const raciRoleOptions = React.useMemo(
+    () => (includeAdminGod
+      ? [...RACI_DROPDOWN_OPTIONS, ...RACI_ADMIN_GOD_OPTIONS]
+      : RACI_DROPDOWN_OPTIONS),
+    [includeAdminGod],
+  );
 
   const updateTask = (id, patch) => {
     setTasks((prev) =>
@@ -11543,6 +11555,18 @@ function GovernancePage() {
   const updateRaciField = (id, field, values) => {
     updateTask(id, { [field]: normaliseRoleValue(values) });
   };
+
+  React.useEffect(() => {
+    if (includeAdminGod) return;
+    setTasks((prev) => prev.map((task) => ({
+      ...task,
+      r: normaliseRoleValue(task.r).filter((role) => !RACI_ADMIN_GOD_OPTIONS.includes(role)),
+      a: normaliseRoleValue(task.a).filter((role) => !RACI_ADMIN_GOD_OPTIONS.includes(role)),
+      c: normaliseRoleValue(task.c).filter((role) => !RACI_ADMIN_GOD_OPTIONS.includes(role)),
+      i: normaliseRoleValue(task.i).filter((role) => !RACI_ADMIN_GOD_OPTIONS.includes(role)),
+    })));
+    showToast("Admin and God roles removed from matrix assignments.");
+  }, [includeAdminGod]);
 
   const clearRaciMatrix = () => {
     if (!window.confirm("Clear all R/A/C/I assignments for every activity?")) return;
@@ -11780,6 +11804,12 @@ function GovernancePage() {
             <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#BFD8D2" }}><input type="checkbox" checked={showIncompleteOnly} onChange={(e) => setShowIncompleteOnly(e.target.checked)} />Incomplete</label>
             <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#BFD8D2" }}><input type="checkbox" checked={showOverdueOnly} onChange={(e) => setShowOverdueOnly(e.target.checked)} />Overdue</label>
           </div>
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "#BFD8D2" }}>
+              <input type="checkbox" checked={includeAdminGod} onChange={(e) => setIncludeAdminGod(e.target.checked)} />
+              Include Admin and God (Jason, Kevin &amp; Skip)
+            </label>
+          </div>
 
           <div id="raci-export-container">
             <div className="raciTableWrap">
@@ -11791,7 +11821,7 @@ function GovernancePage() {
                     <div key={task.id} className="raciTableRow" style={{ borderTop: idx ? `1px solid ${rowStyle.borderColor}` : "none", background: rowStyle.background }}>
                       <div style={{ padding: "10px 14px", fontSize: 12.5, fontWeight: 700, color: "#EAF5FF", display: "flex", alignItems: "center" }}>{task.activity}</div>
                       <div style={{ padding: "10px" }}>
-                        <MultiRoleDropdown id={`raci-${task.id}-r`} label={`Responsible division for ${task.activity}`} value={task.r} options={RACI_DROPDOWN_OPTIONS} onChange={(values) => updateRaciField(task.id, "r", values)} />
+                        <MultiRoleDropdown id={`raci-${task.id}-r`} label={`Responsible division for ${task.activity}`} value={task.r} options={raciRoleOptions} onChange={(values) => updateRaciField(task.id, "r", values)} />
                       </div>
                       <div style={{ padding: "10px" }}><select className="ui-dropdown" value={task.status} onChange={(e) => updateTask(task.id, { status: e.target.value })} style={{ width: "100%", boxShadow: "none" }}>{GOVERNANCE_STATUS_OPTIONS.map((v) => <option key={v} value={v}>{v}</option>)}</select></div>
                       <div style={{ padding: "10px" }}><input value={task.owner} onChange={(e) => updateTask(task.id, { owner: e.target.value })} placeholder="Owner" style={{ width: "100%", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(123,150,163,0.3)", borderRadius: 6, color: "var(--text-primary)", padding: "6px", fontSize: 12 }} /></div>
