@@ -11241,9 +11241,8 @@ const RACI_DROPDOWN_OPTIONS = [
   "Operations",
 ];
 const RACI_ADMIN_GOD_OPTIONS = [
-  "Admin (Jason)",
-  "God (Kevin)",
-  "God (Skip)",
+  "Jason (God)",
+  "Kevin & Skip (Admin)",
 ];
 
 const RACI_FIELDS = ["r", "a", "c", "i"];
@@ -11807,7 +11806,7 @@ function GovernancePage() {
           <div style={{ marginBottom: 14 }}>
             <label style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "#BFD8D2" }}>
               <input type="checkbox" checked={includeAdminGod} onChange={(e) => setIncludeAdminGod(e.target.checked)} />
-              Include Admin and God (Jason, Kevin &amp; Skip)
+              Include Jason (God) and Kevin &amp; Skip (Admin)
             </label>
           </div>
 
