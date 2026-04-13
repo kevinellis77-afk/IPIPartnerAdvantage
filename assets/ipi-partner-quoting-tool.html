@@ -830,6 +830,61 @@
 
   .hidden { display: none !important; }
 
+  /* Licence filter bar */
+  .filter-bar {
+    padding: 8px 14px 6px;
+    border-bottom: 1px solid var(--border);
+    background: var(--off-white);
+  }
+  .filter-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 5px;
+    flex-wrap: wrap;
+  }
+  .filter-row:last-child { margin-bottom: 0; }
+  .filter-label {
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: var(--text-muted);
+    width: 50px;
+    flex-shrink: 0;
+  }
+  .filter-pill {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11.5px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: white;
+    color: var(--charcoal);
+    transition: all 0.12s;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .filter-pill:hover { border-color: var(--charcoal); }
+  .filter-pill.active { background: var(--charcoal-dark); border-color: var(--charcoal-dark); color: white; }
+  .filter-pill.active.agent-named  { background: var(--green);  border-color: var(--green); }
+  .filter-pill.active.agent-conc   { background: var(--mauve);  border-color: var(--mauve); }
+  .filter-pill.active.pay-prepay   { background: #3a8de0;       border-color: #3a8de0; }
+  .filter-pill.active.pay-monthly  { background: #e07b3a;       border-color: #e07b3a; }
+  .product-item-name-qualifier {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-left: 5px;
+    vertical-align: middle;
+  }
+  .q-named   { background: var(--green-pale);  color: #1e7a55; border: 1px solid var(--green); }
+  .q-conc    { background: var(--mauve-pale);  color: #7a3a5e; border: 1px solid var(--mauve); }
+  .q-prepay  { background: #e8f0ff; color: #2a52b0; border: 1px solid #aac0f0; }
+  .q-monthly { background: #fff3e8; color: #a04a00; border: 1px solid #f0b080; }
+
   /* Category colour dots */
   .cat-dot {
     display: inline-block;
@@ -879,6 +934,106 @@
   @keyframes toastIn {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── Product family groups ──────────────────────────────────────── */
+  .product-family {
+    border-bottom: 1px solid var(--off-white);
+  }
+  .product-family:last-child { border-bottom: none; }
+
+  .family-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px 8px 16px;
+    cursor: pointer;
+    background: var(--off-white);
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+    user-select: none;
+  }
+  .family-header:hover { background: #e8eef2; }
+  .family-header.single:hover { background: var(--green-pale); }
+
+  .family-name {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--charcoal);
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .family-meta {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+
+  .family-count {
+    font-size: 10px;
+    color: var(--text-muted);
+    background: var(--border);
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+
+  .family-price {
+    font-size: 12.5px;
+    font-weight: 700;
+    font-family: DM Mono, monospace;
+    color: var(--charcoal);
+    min-width: 52px;
+    text-align: right;
+  }
+
+  .family-add-btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--green-pale);
+    border: 1.5px solid var(--green);
+    color: var(--green);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 300;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    line-height: 1;
+  }
+  .family-add-btn:hover { background: var(--green); color: white; transform: scale(1.08); }
+
+  .family-chevron {
+    font-size: 9px;
+    color: var(--text-muted);
+    transition: transform 0.18s;
+    flex-shrink: 0;
+    width: 12px;
+    text-align: center;
+  }
+  .family-chevron.open { transform: rotate(90deg); }
+
+  .family-items { display: none; }
+  .family-items.open { display: block; }
+
+  /* Variant rows indented inside a family */
+  .product-item.variant {
+    padding-left: 24px;
+    border-left: 3px solid var(--border);
+    background: #fafcfd;
+  }
+  .product-item.variant:hover { background: var(--off-white); }
+  .product-item.variant .product-item-name {
+    font-size: 12.5px;
+    font-weight: 500;
   }
 
   .no-results {
@@ -1487,6 +1642,20 @@
       </div>
     </div>
     <div class="category-tabs" id="categoryTabs"></div>
+    <div class="filter-bar" id="filterBar">
+      <div class="filter-row">
+        <span class="filter-label">Agent</span>
+        <span class="filter-pill active"       data-filter="agent" data-value="all"         onclick="setFilter('agent','all')">All</span>
+        <span class="filter-pill agent-named"  data-filter="agent" data-value="Named"       onclick="setFilter('agent','Named')">Named</span>
+        <span class="filter-pill agent-conc"   data-filter="agent" data-value="Concurrent"  onclick="setFilter('agent','Concurrent')">Concurrent</span>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">Payment</span>
+        <span class="filter-pill active"       data-filter="pay"   data-value="all"         onclick="setFilter('pay','all')">All</span>
+        <span class="filter-pill pay-prepay"   data-filter="pay"   data-value="PrePay"      onclick="setFilter('pay','PrePay')">Annual Pre-Pay</span>
+        <span class="filter-pill pay-monthly"  data-filter="pay"   data-value="PayMonthly"  onclick="setFilter('pay','PayMonthly')">Pay Monthly</span>
+      </div>
+    </div>
     <button class="templates-btn" onclick="openTemplatesModal()">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>
       Quick-Start Templates
@@ -1551,9 +1720,9 @@
       <div class="footer-grid">
         <div class="margin-summary">
           <div class="margin-item">
-            <div class="margin-label">Monthly Recurring</div>
+            <div class="margin-label">Recurring</div>
             <div class="margin-value green" id="totalMRC">£0.00</div>
-            <div class="margin-sub" id="totalMRCNote">per month</div>
+            <div class="margin-sub" id="totalMRCNote">subscription</div>
           </div>
           <div class="margin-item">
             <div class="margin-label">One-Off Charges</div>
@@ -1802,6 +1971,84 @@ const PRODUCTS = [
   {id:"S100973",name:"Consult - ECX CCaaS Consultancy Services",cat:"Consultancy",billing:"One Off",list:156.25,cost:0,threshold:109.38}
 ];
 
+// ─── PRODUCT ATTRIBUTE DERIVATION ────────────────────────────────────────────
+(function() {
+  PRODUCTS.forEach(function(p) {
+    var n = p.name.toLowerCase();
+
+    // Agent type — detect Named vs Concurrent from name
+    if (/(named|nam-)/.test(n) || n.indexOf('(nam') !== -1) {
+      p.agentType = 'Named';
+    } else if (/(conc|concurrent)/.test(n) || n.indexOf('(conc') !== -1) {
+      p.agentType = 'Concurrent';
+    } else {
+      p.agentType = null;
+    }
+
+    // Payment type — detect Annual Pre-Pay vs Pay Monthly
+    if (/annual pre.?pay|ann pre|anprepay|pre-pay|prepay|pre pay/.test(n)) {
+      p.payType = 'PrePay';
+    } else if (/annual pay m|ann pay m|annpaym|paymon|pay monthly|pay m\)|pay mthly|pay mon/.test(n)) {
+      p.payType = 'PayMonthly';
+    } else {
+      p.payType = null;
+    }
+
+    // Clean name: strip agent/payment qualifiers for display when filters are active
+    var cn = p.name;
+    cn = cn.replace(/\s*\((nam|conc)[^)]*\)/gi, '');
+    cn = cn.replace(/\s*\bNAMED\b/gi, '');
+    cn = cn.replace(/\s*\bCONC\b/gi, '');
+    cn = cn.replace(/\s*\bCONCURRENT\b/gi, '');
+    cn = cn.replace(/\s*\bAnnual Pre.?Pay\b/gi, '');
+    cn = cn.replace(/\s*\bAnn Pre.?Pay\b/gi, '');
+    cn = cn.replace(/\s*\bAnPrePay\b/gi, '');
+    cn = cn.replace(/\s*\bPre-?Pay\b/gi, '');
+    cn = cn.replace(/\s*\bAnnual Pay\s*M\w*/gi, '');
+    cn = cn.replace(/\s*\bAnn Pay\s*M\w*/gi, '');
+    cn = cn.replace(/\s*\bAnnPayM\b/gi, '');
+    cn = cn.replace(/\s*\bPayMon\b/gi, '');
+    cn = cn.replace(/\s*\bPay Monthly\b/gi, '');
+    cn = cn.replace(/\s*\bPay Mthly\b/gi, '');
+    cn = cn.replace(/\s*\bPay Mon\b/gi, '');
+    cn = cn.replace(/\s*\bPrePay\b/gi, '');
+    cn = cn.replace(/\s*\([^a-zA-Z0-9]*\)/g, '');
+    cn = cn.replace(/[\s\-]+$/, '');
+    cn = cn.replace(/\s+/g, ' ').trim();
+    p.cleanName = (cn && cn.length > 2) ? cn : p.name;
+  });
+})();
+
+// ─── FILTER STATE ─────────────────────────────────────────────────────────────
+var activeAgentFilter = 'all';
+var activePayFilter   = 'all';
+
+function setFilter(dimension, value) {
+  if (dimension === 'agent') activeAgentFilter = value;
+  if (dimension === 'pay')   activePayFilter   = value;
+
+  // Sync pill active states
+  document.querySelectorAll('.filter-pill').forEach(function(pill) {
+    if (pill.dataset.filter === dimension) {
+      pill.classList.toggle('active', pill.dataset.value === value);
+    }
+  });
+
+  renderProductList();
+}
+
+function productMatchesFilters(p) {
+  // Agent filter: if product HAS agent dimension it must match; if it doesn't → always pass
+  if (activeAgentFilter !== 'all' && p.agentType !== null) {
+    if (p.agentType !== activeAgentFilter) return false;
+  }
+  // Payment filter: if product HAS payment dimension it must match; if it doesn't → always pass
+  if (activePayFilter !== 'all' && p.payType !== null) {
+    if (p.payType !== activePayFilter) return false;
+  }
+  return true;
+}
+
 // ─── CATEGORY COLOURS ───────────────────────────────────────────────────────
 const CAT_COLOURS = {
   'CCaaS':            '#A37992',
@@ -1945,47 +2192,189 @@ function setCategory(cat) {
 // ─── PRODUCT LIST ─────────────────────────────────────────────────────────────
 function filterProducts() { renderProductList(); }
 
+// ─── FAMILY GROUPING ─────────────────────────────────────────────────────────
+var openFamilies = {}; // key = "cat|familyName" → bool
+
+function toggleFamily(key) {
+  openFamilies[key] = !openFamilies[key];
+  renderProductList();
+}
+
+function renderProductItem(p, isVariant) {
+  var colour       = CAT_COLOURS[p.cat] || '#888';
+  var discounted   = getDiscountedPrice(p);
+  var priceDisplay = discounted > 0 ? fmtGBP(discounted) : '—';
+  var listDisplay  = (!isVariant && p.list > 0) ? '<div class="price-threshold">List: ' + fmtGBP(p.list) + '</div>' : '';
+  var variantClass = isVariant ? ' variant' : '';
+  var filtersActive = activeAgentFilter !== 'all' || activePayFilter !== 'all';
+
+  // Build display name
+  var displayName = p.name;
+  var qualBadges  = '';
+
+  if (isVariant) {
+    // Show only the differentiating qualifier as the name
+    var parts = [];
+    if (p.agentType) parts.push(p.agentType);
+    if (p.payType)   parts.push(p.payType === 'PrePay' ? 'Annual Pre-Pay' : 'Pay Monthly');
+    displayName = parts.length > 0 ? parts.join(' · ') : (p.cleanName || p.name);
+  } else if (filtersActive && p.cleanName && p.cleanName !== p.name) {
+    displayName = p.cleanName;
+    if (p.agentType) qualBadges += '<span class="product-item-name-qualifier ' + (p.agentType === 'Named' ? 'q-named' : 'q-conc') + '">' + p.agentType + '</span>';
+    if (p.payType)   qualBadges += '<span class="product-item-name-qualifier ' + (p.payType === 'PrePay' ? 'q-prepay' : 'q-monthly') + '">' + (p.payType === 'PrePay' ? 'Pre-Pay' : 'Pay Monthly') + '</span>';
+  }
+
+  var idStr = p.id;
+  var billingTag = '<span class="tag tag-billing ' + (p.billing === 'Monthly' ? 'monthly' : '') + '">' + (p.billing === 'Monthly' ? 'Recurring' : p.billing) + '</span>';
+
+  var metaHTML = isVariant
+    ? '<div style="font-size:10px;color:var(--text-muted);font-family:DM Mono,monospace;margin-top:2px">' + idStr + '</div>'
+    : '<div class="product-item-meta">' +
+        '<span class="tag" style="background:' + colour + '18;color:' + colour + '">' + p.cat + '</span>' +
+        billingTag +
+        '<span style="font-size:10.5px;color:var(--text-muted);font-family:DM Mono,monospace">' + idStr + '</span>' +
+      '</div>';
+
+  var namePrefix = isVariant ? '' : '<span class="cat-dot" style="background:' + colour + '"></span>';
+
+  return '<div class="product-item' + variantClass + '" onclick="addToQuote(\'" + p.id + "\')">' +
+    '<div class="product-item-info">' +
+      '<div class="product-item-name">' + namePrefix + displayName + qualBadges + '</div>' +
+      metaHTML +
+    '</div>' +
+    '<div class="product-item-price">' +
+      '<div class="price-list">' + priceDisplay + '</div>' +
+      listDisplay +
+    '</div>' +
+    '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">' +
+      '<button class="add-btn" title="Add to quote" onclick="event.stopPropagation();addToQuote(\'" + p.id + "\')">+</button>' +
+      '<button class="info-btn" title="View details" onclick="event.stopPropagation();openProductDetail(\'" + p.id + "\')">i</button>' +
+    '</div>' +
+  '</div>';
+}
+
 function renderProductList() {
-  const search = document.getElementById('searchInput').value.toLowerCase();
-  const filtered = PRODUCTS.filter(p => {
-    const matchCat = activeCategory === 'All' || p.cat === activeCategory;
-    const matchSearch = !search || p.name.toLowerCase().includes(search) || p.id.toLowerCase().includes(search);
-    return matchCat && matchSearch;
+  var search        = document.getElementById('searchInput').value.toLowerCase();
+  var filtersActive = activeAgentFilter !== 'all' || activePayFilter !== 'all';
+
+  var filtered = PRODUCTS.filter(function(p) {
+    var matchCat    = activeCategory === 'All' || p.cat === activeCategory;
+    var matchSearch = !search ||
+      p.name.toLowerCase().indexOf(search) !== -1 ||
+      p.id.toLowerCase().indexOf(search) !== -1 ||
+      (p.cleanName && p.cleanName.toLowerCase().indexOf(search) !== -1);
+    var matchFilter = productMatchesFilters(p);
+    return matchCat && matchSearch && matchFilter;
   });
 
-  const container = document.getElementById('productList');
+  var container = document.getElementById('productList');
   if (filtered.length === 0) {
-    container.innerHTML = `<div class="no-results">No products match your search.</div>`;
+    container.innerHTML = '<div class="no-results">No products match your filters.</div>';
     return;
   }
 
-  container.innerHTML = filtered.map(p => {
-    const colour = CAT_COLOURS[p.cat] || '#888';
-    const discounted = getDiscountedPrice(p);
-    const priceDisplay = discounted > 0 ? fmtGBP(discounted) : '—';
-    const listDisplay = p.list > 0 ? `<div class="price-threshold">List: ${fmtGBP(p.list)}</div>` : '';
-    return `
-      <div class="product-item" onclick="addToQuote('${p.id}')">
-        <div class="product-item-info">
-          <div class="product-item-name">
-            <span class="cat-dot" style="background:${colour}"></span>${p.name}
-          </div>
-          <div class="product-item-meta">
-            <span class="tag" style="background:${colour}18;color:${colour}">${p.cat}</span>
-            <span class="tag tag-billing ${p.billing === 'Monthly' ? 'monthly' : ''}">${p.billing}</span>
-            <span style="font-size:10.5px;color:var(--text-muted);font-family:DM Mono,monospace">${p.id}</span>
-          </div>
-        </div>
-        <div class="product-item-price">
-          <div class="price-list">${priceDisplay}</div>
-          ${listDisplay}
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
-          <button class="add-btn" title="Add to quote" onclick="event.stopPropagation();addToQuote('${p.id}')">+</button>
-          <button class="info-btn" title="View details" onclick="event.stopPropagation();openProductDetail('${p.id}')">i</button>
-        </div>
-      </div>`;
+  // ── Group by (cat, cleanName) maintaining catalogue order ─────────────────
+  var familyMap   = {};
+  var familyOrder = [];
+
+  filtered.forEach(function(p) {
+    var key = p.cat + '|' + (p.cleanName || p.name);
+    if (!familyMap[key]) {
+      familyMap[key] = { name: p.cleanName || p.name, cat: p.cat,
+                         colour: CAT_COLOURS[p.cat] || '#888', products: [] };
+      familyOrder.push(key);
+    }
+    familyMap[key].products.push(p);
+  });
+
+  // ── Render families — data-* attributes, no inline onclick ─────────────
+  var html = familyOrder.map(function(key, keyIdx) {
+    var family   = familyMap[key];
+    var prods    = family.products;
+    var isSingle = prods.length === 1;
+    var colour   = family.colour;
+
+    var autoExpand = filtersActive || !!search || familyOrder.length <= 4;
+    var isOpen     = autoExpand || !!openFamilies[key];
+
+    if (isSingle) {
+      var p    = prods[0];
+      var disc = getDiscountedPrice(p);
+      return '<div class="product-family">' +
+        '<div class="family-header single" data-add-id="' + p.id + '">' +
+          '<span class="cat-dot" style="background:' + colour + ';width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0"></span>' +
+          '<span class="family-name">' + family.name + '</span>' +
+          '<span class="family-meta">' +
+            '<span class="family-price">' + (disc > 0 ? fmtGBP(disc) : '—') + '</span>' +
+            '<button class="family-add-btn" data-add-id="' + p.id + '" title="Add to quote">+</button>' +
+            '<button class="info-btn" data-info-id="' + p.id + '" title="View details" style="margin-left:2px">i</button>' +
+          '</span>' +
+        '</div>' +
+      '</div>';
+    }
+
+    var itemsHTML = prods.map(function(p) { return renderProductItem(p, true); }).join('');
+
+    return '<div class="product-family">' +
+      '<div class="family-header" data-fkey="' + keyIdx + '">' +
+        '<span class="cat-dot" style="background:' + colour + ';width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0"></span>' +
+        '<span class="family-name">' + family.name + '</span>' +
+        '<span class="family-meta">' +
+          '<span class="family-count">' + prods.length + '</span>' +
+          '<span class="family-chevron ' + (isOpen ? 'open' : '') + '">▶</span>' +
+        '</span>' +
+      '</div>' +
+      '<div class="family-items ' + (isOpen ? 'open' : '') + '">' + itemsHTML + '</div>' +
+    '</div>';
   }).join('');
+
+  container.innerHTML = html;
+
+  // ── Wire events via delegation (no inline onclick) ──────────────────────
+  // Single-family header row click → add to quote
+  container.querySelectorAll('.family-header.single').forEach(function(hdr) {
+    hdr.addEventListener('click', function(e) {
+      if (!e.target.closest('[data-info-id]')) addToQuote(hdr.dataset.addId);
+    });
+  });
+
+  // Multi-family header click → toggle expand/collapse
+  container.querySelectorAll('.family-header[data-fkey]').forEach(function(hdr) {
+    hdr.addEventListener('click', function() {
+      var key = familyOrder[parseInt(hdr.dataset.fkey)];
+      if (!key) return;
+      openFamilies[key] = !openFamilies[key];
+      var items   = hdr.nextElementSibling;
+      var chevron = hdr.querySelector('.family-chevron');
+      if (items)   items.classList.toggle('open', !!openFamilies[key]);
+      if (chevron) chevron.classList.toggle('open', !!openFamilies[key]);
+    });
+  });
+
+  // Add buttons (+ on family headers and variant rows)
+  container.querySelectorAll('[data-add-id]').forEach(function(el) {
+    if (el.classList.contains('family-add-btn') || el.classList.contains('add-btn')) {
+      el.addEventListener('click', function(e) {
+        e.stopPropagation();
+        addToQuote(el.dataset.addId);
+      });
+    }
+  });
+
+  // Product-item row click → add to quote (whole row)
+  container.querySelectorAll('.product-item[data-add-id]').forEach(function(row) {
+    row.addEventListener('click', function(e) {
+      if (!e.target.closest('[data-info-id]')) addToQuote(row.dataset.addId);
+    });
+  });
+
+  // Info (i) buttons
+  container.querySelectorAll('[data-info-id]').forEach(function(el) {
+    el.addEventListener('click', function(e) {
+      e.stopPropagation();
+      openProductDetail(el.dataset.infoId);
+    });
+  });
 }
 
 // ─── ADD TO QUOTE ─────────────────────────────────────────────────────────────
@@ -2027,7 +2416,7 @@ function renderQuote() {
 
   // ── Monthly Recurring ──
   if (monthly.length > 0) {
-    html += renderBillingBlock('Monthly Recurring', monthly);
+    html += renderBillingBlock('Recurring Subscriptions', monthly);
   }
 
   // ── One-Off Charges ──
@@ -2876,13 +3265,13 @@ function openExportModal() {
   }
 
   document.getElementById('modalBody').innerHTML = `
-    ${renderBillingSection(monthlyGroups, 'Monthly Recurring Charges', mrc)}
+    ${renderBillingSection(monthlyGroups, 'Recurring Subscriptions', mrc)}
     ${renderBillingSection(oneOffGroups,  'One-Off Charges', otc)}
     <div class="preview-totals">
       <div class="preview-total-item">
-        <div class="preview-total-label">Monthly Recurring</div>
+        <div class="preview-total-label">Recurring Subscriptions</div>
         <div class="preview-total-value green">${fmtGBP(mrc)}</div>
-        <div style="font-size:10px;color:var(--text-muted)">per month</div>
+        <div style="font-size:10px;color:var(--text-muted)">per period</div>
       </div>
       <div class="preview-total-item">
         <div class="preview-total-label">One-Off Charges</div>
@@ -2892,7 +3281,7 @@ function openExportModal() {
       <div class="preview-total-item">
         <div class="preview-total-label">Annual Contract Value</div>
         <div class="preview-total-value">${fmtGBP(acv)}</div>
-        <div style="font-size:10px;color:var(--text-muted)">MRC×12 + OTC</div>
+        <div style="font-size:10px;color:var(--text-muted)">Subscriptions×12 + One-Off</div>
       </div>
     </div>`;
 
@@ -2974,7 +3363,7 @@ function printQuote() {
       </div>`;
   }
 
-  const htmlContent = `<!DOCTYPE html><html><head><title>IPI Quote ${ref}</title>
+  const htmlContent = `<!DOCTYPE html><html><head><meta charset='UTF-8'><title>IPI Quote ${ref}</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Segoe UI',Arial,sans-serif;font-size:11.5px;color:#263238;background:white;padding:28px 32px}
@@ -3056,11 +3445,11 @@ function printQuote() {
     <div class="meta-cell"><div class="meta-label">Valid Until</div><div class="meta-value">${validUntilStr}</div></div>
   </div>
 
-  ${printBillingBlock(monthlyGroups, 'Monthly Recurring Charges', mrc)}
+  ${printBillingBlock(monthlyGroups, 'Recurring Subscriptions', mrc)}
   ${printBillingBlock(oneOffGroups,  'One-Off Charges', otc)}
 
   <div class="totals-grid">
-    <div class="total-cell"><div class="total-label">Monthly Recurring</div><div class="total-value t-green">${fmtGBP(mrc)}</div><div class="total-sub">per month</div></div>
+    <div class="total-cell"><div class="total-label">Recurring Subscriptions</div><div class="total-value t-green">${fmtGBP(mrc)}</div><div class="total-sub">per period</div></div>
     <div class="total-cell"><div class="total-label">One-Off Charges</div><div class="total-value t-mauve">${fmtGBP(otc)}</div><div class="total-sub">one time</div></div>
     <div class="total-cell"><div class="total-label">Annual Contract Value</div><div class="total-value">${fmtGBP(acv)}</div><div class="total-sub">MRC &times; 12 + OTC</div></div>
   </div>
@@ -3071,7 +3460,7 @@ function printQuote() {
     <div class="footer-page">IP Integration Ltd</div>
   </div>
 
-  <script>window.addEventListener('load',function(){window.print();});<\/script>
+  <scr'+'ipt>window.addEventListener('load',function(){window.print();});<\/script>
   </body></html>`;
 
   const blob = new Blob([htmlContent], { type: 'text/html' });
@@ -3093,15 +3482,15 @@ function copyCSV() {
   const levelCSV = document.getElementById('partnerLevel').value;
 
   let csv = `Quote Reference,${ref}\nPartner,${partner}\nEnd Customer,${customer}\nPartner Level,${levelLabelCSV[levelCSV] || 'Not set'}\nDate,${date}\n\n`;
-  csv += `SAP ID,Product Name,Category,Billing Type,Qty,List Price,Partner Price,Total\n`;
+  csv += `SAP ID,Product Name,Category,Charge Type,Qty,List Price,Partner Price,Total\n`;
   quoteItems.forEach(item => {
     const ep = getEffectivePrice(item);
     const base = item.product.list > 0 ? item.product.list : item.product.threshold;
-    csv += `${item.product.id},"${item.product.name}",${item.product.cat},${item.product.billing},${item.qty},${base.toFixed(2)},${ep.toFixed(2)},${(ep*item.qty).toFixed(2)}\n`;
+    csv += `${item.product.id},"${item.product.name}",${item.product.cat},${item.product.billing === 'Monthly' ? 'Recurring' : item.product.billing},${item.qty},${base.toFixed(2)},${ep.toFixed(2)},${(ep*item.qty).toFixed(2)}\n`;
   });
   let mrc = 0, otc = 0;
   quoteItems.forEach(i => { const p = getEffectivePrice(i)*i.qty; if(i.product.billing==='Monthly') mrc+=p; else otc+=p; });
-  csv += `\n,,,,,,\nMonthly Total,,${mrc.toFixed(2)}\nOne-Off Total,,${otc.toFixed(2)}\nACV,,${(mrc*12+otc).toFixed(2)}\n`;
+  csv += `\n,,,,,,\nRecurring Total,,${mrc.toFixed(2)}\nOne-Off Total,,${otc.toFixed(2)}\nACV (Recurring×12 + One-Off),,${(mrc*12+otc).toFixed(2)}\n`;
 
   navigator.clipboard.writeText(csv).then(() => showToast('✓ CSV copied to clipboard'));
 }
@@ -3368,9 +3757,9 @@ function openEmailModal() {
       });
     });
   }
-  addGroupRows(monthlyGroups, 'Monthly Recurring');
+  addGroupRows(monthlyGroups, 'Recurring Subscriptions');
   addGroupRows(oneOffGroups,  'One-Off Charges');
-  summaryRows += '<div style="margin-top:10px;padding-top:8px;border-top:2px solid #263238;display:flex;justify-content:space-between;font-weight:700;font-size:13px"><span>Monthly Total</span><span style="color:#27ae60;font-family:monospace">' + fmtGBP(mrc) + '</span></div>';
+  summaryRows += '<div style="margin-top:10px;padding-top:8px;border-top:2px solid #263238;display:flex;justify-content:space-between;font-weight:700;font-size:13px"><span>Recurring Total</span><span style="color:#27ae60;font-family:monospace">' + fmtGBP(mrc) + '</span></div>';
   if (otc > 0) summaryRows += '<div style="display:flex;justify-content:space-between;font-size:12px;padding-top:3px"><span style="color:#666">One-Off Charges</span><span style="color:#A37992;font-family:monospace">' + fmtGBP(otc) + '</span></div>';
   summaryRows += '<div style="display:flex;justify-content:space-between;font-size:12px;padding-top:3px"><span style="color:#666">Annual Contract Value</span><span style="font-family:monospace;font-weight:700">' + fmtGBP(acv) + '</span></div>';
   if (validStr) summaryRows += '<div style="font-size:11px;color:#888;padding-top:6px">Valid until ' + validStr + (levelStr ? '  ·  ' + levelStr + ' Partner Pricing' : '') + '</div>';
@@ -3438,11 +3827,11 @@ function buildEmailHTML() {
         '<th style="padding:8px 8px;background:#263238;color:rgba(255,255,255,0.75);font-size:10px;text-align:center;text-transform:uppercase;letter-spacing:0.5px">Qty</th>' +
         '<th style="padding:8px 14px;background:#263238;color:rgba(255,255,255,0.75);font-size:10px;text-align:right;text-transform:uppercase;letter-spacing:0.5px">Total</th>' +
       '</tr></thead><tbody>' +
-      buildTableSection(monthlyGroups, 'Monthly Recurring Charges') +
+      buildTableSection(monthlyGroups, 'Recurring Subscriptions') +
       buildTableSection(oneOffGroups,  'One-Off Charges') +
       '</tbody>' +
       '<tfoot>' +
-        '<tr><td colspan="2" style="padding:8px 14px;font-size:12px;font-weight:700;background:#f5f7f8">Monthly Recurring</td><td style="padding:8px 14px;text-align:right;font-size:14px;font-weight:700;color:#27ae60;font-family:monospace;background:#f5f7f8">' + fmtGBP(mrc) + '</td></tr>' +
+        '<tr><td colspan="2" style="padding:8px 14px;font-size:12px;font-weight:700;background:#f5f7f8">Recurring Subscriptions</td><td style="padding:8px 14px;text-align:right;font-size:14px;font-weight:700;color:#27ae60;font-family:monospace;background:#f5f7f8">' + fmtGBP(mrc) + '</td></tr>' +
         (otc > 0 ? '<tr><td colspan="2" style="padding:6px 14px;font-size:12px;color:#666">One-Off Charges</td><td style="padding:6px 14px;text-align:right;font-size:12px;font-weight:600;color:#A37992;font-family:monospace">' + fmtGBP(otc) + '</td></tr>' : '') +
         '<tr><td colspan="2" style="padding:6px 14px;font-size:12px;color:#666">Annual Contract Value</td><td style="padding:6px 14px;text-align:right;font-size:12px;font-weight:700;font-family:monospace">' + fmtGBP(acv) + '</td></tr>' +
       '</tfoot>' +
@@ -3470,7 +3859,7 @@ function sendEmailViaMailto() {
   const summaryText = [
     '--- QUOTE SUMMARY ---',
     'Reference: ' + ref,
-    'Monthly Recurring: ' + fmtGBP(mrc),
+    'Recurring Subscriptions: ' + fmtGBP(mrc),
     otc > 0 ? 'One-Off Charges: ' + fmtGBP(otc) : null,
     'Annual Contract Value: ' + fmtGBP(acv),
     '',
@@ -3633,9 +4022,9 @@ function showToast(msg) {
       <div class="help-section">
         <div class="help-section-title"><span class="help-section-icon">📋</span> Quote Organisation</div>
         <ul class="help-steps">
-          <li><span class="help-step-num">1</span><span>Your quote is automatically grouped into <strong>Monthly Recurring</strong> and <strong>One-Off Charges</strong>, then sub-grouped by product family (CCaaS, PCI Cloud, Services etc.).</span></li>
+          <li><span class="help-step-num">1</span><span>Your quote is automatically grouped into <strong>Recurring Subscriptions</strong> and <strong>One-Off Charges</strong>, then sub-grouped by product family (CCaaS, PCI Cloud, Services etc.).</span></li>
           <li><span class="help-step-num">2</span><span>Use <strong>Notes &amp; Terms</strong> (below the line items) to add covering text, special terms, or a message that will appear on the printed/emailed quote.</span></li>
-          <li><span class="help-step-num">3</span><span>The footer shows live <strong>MRC</strong> (monthly recurring), <strong>OTC</strong> (one-off), and <strong>ACV</strong> (annual contract value = MRC×12 + OTC) totals.</span></li>
+          <li><span class="help-step-num">3</span><span>The footer shows live <strong>Recurring</strong> subscription total, <strong>One-Off</strong> charges, and <strong>ACV</strong> (Annual Contract Value = Recurring×12 + One-Off) totals.</span></li>
         </ul>
       </div>
 
