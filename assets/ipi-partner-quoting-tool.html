@@ -1600,6 +1600,336 @@
     .right-panel { display: block; }
     .quote-body { overflow: visible; padding: 0; }
   }
+
+  /* ─── LAUNCHPAD / PRICE LIST ─── */
+  .launchpad-overlay,
+  .price-list-overlay {
+    position: fixed;
+    inset: 60px 0 0 0;
+    z-index: 150;
+    background:
+      radial-gradient(circle at 18% 18%, rgba(99,171,143,0.10), transparent 28%),
+      radial-gradient(circle at 82% 22%, rgba(163,121,146,0.10), transparent 24%),
+      linear-gradient(180deg, #f7f9fb 0%, #edf2f5 100%);
+    overflow: auto;
+  }
+
+  .launchpad-overlay.hidden,
+  .price-list-overlay.hidden { display: none; }
+
+  .launchpad-shell,
+  .price-list-shell {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 28px 30px 36px;
+  }
+
+  .launchpad-hero {
+    background: linear-gradient(135deg, var(--charcoal-dark) 0%, var(--charcoal) 100%);
+    color: white;
+    border-radius: 24px;
+    padding: 34px 36px;
+    box-shadow: var(--shadow-lg);
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 28px;
+    align-items: center;
+    margin-bottom: 22px;
+  }
+
+  .launchpad-kicker {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--green-light);
+    margin-bottom: 14px;
+  }
+
+  .launchpad-title {
+    font-size: clamp(30px, 4vw, 46px);
+    line-height: 1.03;
+    letter-spacing: -0.03em;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .launchpad-copy {
+    font-size: 15px;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.74);
+    max-width: 680px;
+  }
+
+  .launchpad-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .launchpad-stat {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 16px;
+    padding: 16px 14px;
+  }
+
+  .launchpad-stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .launchpad-stat-label {
+    font-size: 11px;
+    line-height: 1.45;
+    color: rgba(255,255,255,0.66);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+
+  .launchpad-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+
+  .launchpad-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    box-shadow: var(--shadow-sm);
+    padding: 24px;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  }
+
+  .launchpad-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: rgba(99,171,143,0.45);
+  }
+
+  .launchpad-card-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 14px;
+  }
+
+  .launchpad-card.quote .launchpad-card-icon { background: var(--green-pale); }
+  .launchpad-card.price .launchpad-card-icon { background: var(--mauve-pale); }
+
+  .launchpad-card-title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+    color: var(--charcoal-dark);
+  }
+
+  .launchpad-card-copy {
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--text-muted);
+    margin-bottom: 18px;
+  }
+
+  .launchpad-card-points {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .launchpad-card-points div {
+    font-size: 12px;
+    color: var(--charcoal);
+    padding-left: 18px;
+    position: relative;
+  }
+
+  .launchpad-card-points div::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 7px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+
+  .launchpad-card.price .launchpad-card-points div::before { background: var(--mauve); }
+
+  .launchpad-footer-note {
+    margin-top: 18px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 16px 18px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+
+  .price-list-header {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 22px 24px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 18px;
+  }
+
+  .price-list-title {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--charcoal-dark);
+    margin-bottom: 8px;
+  }
+
+  .price-list-copy {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    max-width: 860px;
+    margin-bottom: 18px;
+  }
+
+  .price-list-profile {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: var(--green-pale);
+    color: #1e7a55;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+
+  .price-list-controls {
+    display: grid;
+    grid-template-columns: 220px 220px 220px minmax(220px, 1fr);
+    gap: 12px;
+  }
+
+  .price-list-table-wrap {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+
+  .price-list-table-scroll {
+    overflow: auto;
+    max-height: calc(100vh - 280px);
+  }
+
+  .price-list-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1020px;
+  }
+
+  .price-list-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--charcoal-dark);
+    color: rgba(255,255,255,0.76);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    font-weight: 700;
+    padding: 11px 12px;
+    text-align: left;
+  }
+
+  .price-list-table tbody td {
+    padding: 12px;
+    border-bottom: 1px solid var(--off-white);
+    vertical-align: middle;
+    font-size: 13px;
+  }
+
+  .price-list-table tbody tr:hover td { background: #fafcfd; }
+
+  .price-list-sku {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .price-list-product {
+    font-weight: 600;
+    color: var(--charcoal);
+    line-height: 1.35;
+  }
+
+  .price-list-product-sub {
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.45;
+  }
+
+  .price-list-money {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .price-list-money.net {
+    font-weight: 700;
+    color: var(--green);
+  }
+
+  .price-list-discount-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 58px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: var(--mauve-pale);
+    color: #7a3a5e;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  
+  .price-list-icon-cell { text-align:center; }
+  .price-list-info-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: white;
+    color: var(--charcoal);
+    cursor: pointer;
+    font-weight: 700;
+    transition: all 0.15s ease;
+  }
+  .price-list-info-btn:hover { background: var(--charcoal); color: white; border-color: var(--charcoal); }
+
+@media (max-width: 980px) {
+    .launchpad-hero,
+    .launchpad-cards,
+    .price-list-controls {
+      grid-template-columns: 1fr;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -1610,6 +1940,7 @@
     <div class="logo-text">Partner Quoting Tool <span>Channel Partner Portal</span></div>
   </div>
   <div class="header-actions">
+    <button class="btn btn-secondary" onclick="openLaunchpad()">Launchpad</button>
     <button class="btn btn-secondary" onclick="clearQuote()">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 .49-3.51"></path></svg>
       New Quote
@@ -1629,6 +1960,134 @@
     <button class="help-btn" onclick="openHelpModal()" title="Help & Guide">?</button>
   </div>
 </header>
+
+
+<div class="launchpad-overlay" id="launchpadOverlay">
+  <div class="launchpad-shell">
+    <div class="launchpad-hero">
+      <div>
+        <div class="launchpad-kicker">Partner Commercial Workspace</div>
+        <div class="launchpad-title">Start with the job the partner actually needs to do.</div>
+        <div class="launchpad-copy">The current app drops users straight into quoting. That works for internal power users, but it is the wrong entry point once you add a partner-facing price list. The cleaner approach is a front-door split: <strong>build a quote</strong> or <strong>check partner pricing</strong>.</div>
+      </div>
+      <div class="launchpad-stats">
+        <div class="launchpad-stat">
+          <div class="launchpad-stat-value">2</div>
+          <div class="launchpad-stat-label">Primary journeys from one front door</div>
+        </div>
+        <div class="launchpad-stat">
+          <div class="launchpad-stat-value">6</div>
+          <div class="launchpad-stat-label">Commercial profiles supported</div>
+        </div>
+        <div class="launchpad-stat">
+          <div class="launchpad-stat-value">RRP</div>
+          <div class="launchpad-stat-label">List price stays visible for context</div>
+        </div>
+        <div class="launchpad-stat">
+          <div class="launchpad-stat-value">MVP</div>
+          <div class="launchpad-stat-label">Simple now, extensible later</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="launchpad-cards">
+      <div class="launchpad-card quote">
+        <div class="launchpad-card-icon">🧾</div>
+        <div class="launchpad-card-title">Quoting Tool</div>
+        <div class="launchpad-card-copy">Open the existing quote builder for structured solution assembly, pricing and export.</div>
+        <div class="launchpad-card-points">
+          <div>Use the current product catalogue and line-item workflow</div>
+          <div>Keep save, export and email behaviour unchanged</div>
+          <div>Best for partner-ready quote creation</div>
+        </div>
+        <button class="btn btn-primary" onclick="openQuoteBuilder()">Open Quoting Tool</button>
+      </div>
+
+      <div class="launchpad-card price">
+        <div class="launchpad-card-icon">💷</div>
+        <div class="launchpad-card-title">Partner Price List</div>
+        <div class="launchpad-card-copy">Open a dedicated commercial view showing List RRP and the selected partner net price by model and tier.</div>
+        <div class="launchpad-card-points">
+          <div>Reseller, MSP and Consultant pricing profiles</div>
+          <div>Fast commercial reference during live conversations</div>
+          <div>Cleaner than burying pricing inside the quote builder</div>
+        </div>
+        <button class="btn btn-outline" onclick="openPriceList()">Open Price List</button>
+      </div>
+    </div>
+
+    <div class="launchpad-footer-note">
+      Recommended information architecture: keep the <strong>launchpad</strong> as a permanent first screen, not a throwaway splash page. It gives partners a clean choice between <strong>research pricing</strong> and <strong>build a quote</strong>, which is exactly the split this app now needs.
+    </div>
+  </div>
+</div>
+
+<div class="price-list-overlay hidden" id="priceListOverlay">
+  <div class="price-list-shell">
+    <div class="price-list-header">
+      <div class="price-list-title">Partner Price List</div>
+      <div class="price-list-copy">Partner-focused commercial view showing List RRP alongside calculated net price for the selected route-to-market. This keeps price discovery out of the quote builder and makes the app more usable in a live partner sales cycle.</div>
+      <div class="price-list-profile" id="priceListProfileBadge">Profile: Reseller · Accredited · 20% discount</div>
+      <div class="price-list-controls">
+        <div class="meta-field">
+          <label>Partner Model</label>
+          <select id="priceListPartnerType" onchange="onPriceListProfileChange()"></select>
+        </div>
+        <div class="meta-field">
+          <label>Tier</label>
+          <select id="priceListPartnerTier" onchange="onPriceListProfileChange()"></select>
+        </div>
+        <div class="meta-field">
+          <label>Category</label>
+          <select id="priceListCategory" onchange="renderPartnerPriceList()"></select>
+        </div>
+        <div class="meta-field">
+          <label>Search Products</label>
+          <input type="text" id="priceListSearch" placeholder="Search by product, SKU or family…" oninput="renderPartnerPriceList()">
+        </div>
+        <div class="meta-field">
+          <label>Payment Type</label>
+          <select id="priceListPayType" onchange="renderPartnerPriceList()">
+            <option value="all">All</option>
+            <option value="PrePay">Annual Pre-Pay</option>
+            <option value="PayMonthly">Monthly</option>
+          </select>
+        </div>
+        <div class="meta-field">
+          <label>License Type</label>
+          <select id="priceListAgentType" onchange="renderPartnerPriceList()">
+            <option value="all">All</option>
+            <option value="Named">Named</option>
+            <option value="Concurrent">Concurrent</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="price-list-table-wrap">
+      <div class="price-list-table-scroll">
+        <table class="price-list-table">
+          <thead>
+            <tr>
+              <th style="width:120px">SAP ID</th>
+              <th>Product</th>
+              <th style="width:130px">Category</th>
+              <th style="width:120px">Billing</th>
+              <th style="width:120px">License</th>
+              <th style="width:130px">Payment</th>
+              <th style="width:130px;text-align:right">List RRP</th>
+              <th style="width:110px;text-align:center">Discount</th>
+              <th style="width:140px;text-align:right">Partner Price</th>
+              <th style="width:70px;text-align:center">Info</th>
+            </tr>
+          </thead>
+          <tbody id="priceListBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <div class="app">
   <!-- LEFT: Product Catalogue -->
@@ -1669,18 +2128,26 @@
       <div class="quote-meta">
         <div class="meta-field">
           <label>Partner Name</label>
-          <input type="text" id="partnerName" placeholder="e.g. Acme Technologies Ltd" oninput="autoAssignPartnerLevel()">
+          <input type="text" id="partnerName" placeholder="e.g. Acme Technologies Ltd">
         </div>
         <div class="meta-field">
           <label>End Customer</label>
           <input type="text" id="endCustomer" placeholder="e.g. Global Corp plc">
         </div>
         <div class="meta-field">
-          <label>Partner Level</label>
-          <div id="partnerLevelDisplay" class="partner-level-display">
-            <span id="partnerLevelText" class="partner-level-text none">— Enter partner name —</span>
+          <label>Partner Model</label>
+          <select id="partnerModel" onchange="onPartnerProfileChange()"></select>
+        </div>
+        <div class="meta-field">
+          <label>Partner Tier</label>
+          <select id="partnerTier" onchange="onPartnerProfileChange()"></select>
+        </div>
+        <div class="meta-field">
+          <label>Commercial Profile</label>
+          <div id="partnerLevelDisplay" class="partner-level-display accredited">
+            <span id="partnerLevelText" class="partner-level-text accredited">Reseller · Accredited <span style="opacity:0.6;font-weight:400;font-size:11px">(20% discount)</span></span>
           </div>
-          <input type="hidden" id="partnerLevel" value="">
+          <input type="hidden" id="partnerLevel" value="accredited">
         </div>
         <div class="meta-field">
           <label>Quote Reference <span id="versionIndicator" class="version-indicator unsaved" style="display:none"></span></label>
@@ -2038,13 +2505,14 @@ function setFilter(dimension, value) {
 }
 
 function productMatchesFilters(p) {
-  // Agent filter: if product HAS agent dimension it must match; if it doesn't → always pass
-  if (activeAgentFilter !== 'all' && p.agentType !== null) {
-    if (p.agentType !== activeAgentFilter) return false;
+  const profile = getSelectedQuoteProfile();
+  if (isHiddenForProfile(p, profile)) return false;
+
+  if (activeAgentFilter !== 'all') {
+    if (!p.agentType || p.agentType !== activeAgentFilter) return false;
   }
-  // Payment filter: if product HAS payment dimension it must match; if it doesn't → always pass
-  if (activePayFilter !== 'all' && p.payType !== null) {
-    if (p.payType !== activePayFilter) return false;
+  if (activePayFilter !== 'all') {
+    if (!p.payType || p.payType !== activePayFilter) return false;
   }
   return true;
 }
@@ -2075,26 +2543,174 @@ let currentBaseRef   = quoteCounter;   // base ref (without version suffix)
 let currentVersion   = 0;              // 0 = unsaved, 1+ = saved version number
 let currentChangeNote = '';            // brief description of what changed
 
-// ─── PARTNER LEVEL DISCOUNTS ─────────────────────────────────────────────────
-const PARTNER_DISCOUNTS = { accredited: 0.20, silver: 0.30, gold: 0.40 };
-const SERVICES_DISCOUNT = 0.25; // Fixed 25% for Services & Consultancy
+// ─── PARTNER COMMERCIAL PROFILES ─────────────────────────────────────────────
+const PARTNER_PRICE_PROFILES = {
+  reseller: {
+    label: 'Reseller',
+    tiers: {
+      accredited: { label: 'Accredited', discount: 0.20 },
+      silver:     { label: 'Silver',     discount: 0.30 },
+      gold:       { label: 'Gold',       discount: 0.35 },
+      platinum:   { label: 'Platinum',   discount: 0.40 }
+    }
+  },
+  msp: {
+    label: 'MSP',
+    tiers: {
+      silver:     { label: 'Silver',     discount: 0.35 },
+      gold:       { label: 'Gold',       discount: 0.45 },
+      platinum:   { label: 'Platinum',   discount: 0.55 }
+    }
+  },
+  consultant: {
+    label: 'Consultant',
+    tiers: {
+      consultant: { label: 'Consultant', discount: 0.15 }
+    }
+  }
+};
 const SERVICES_CATS = ['Services', 'Consultancy'];
+const PARTNER_DISCOUNTS = { accredited: 0.20, silver: 0.30, gold: 0.35, platinum: 0.40, consultant: 0.15 };
+
+function getStoredProfileLabel(model, tier) {
+  const typeCfg = PARTNER_PRICE_PROFILES[model] || PARTNER_PRICE_PROFILES.reseller;
+  const tierCfg = (typeCfg.tiers && typeCfg.tiers[tier]) ? typeCfg.tiers[tier] : null;
+  if (tierCfg) return typeCfg.label + ' · ' + tierCfg.label + ' (' + Math.round(tierCfg.discount * 100) + '%)';
+  return tier || 'Not set';
+}
+
+function getSelectedQuoteProfile() {
+  const modelEl = document.getElementById('partnerModel');
+  const tierEl = document.getElementById('partnerTier');
+  const fallback = { type: 'reseller', tier: 'accredited', typeLabel: 'Reseller', tierLabel: 'Accredited', discount: 0.20 };
+  if (!modelEl || !tierEl) return fallback;
+  const type = modelEl.value || 'reseller';
+  const typeCfg = PARTNER_PRICE_PROFILES[type] || PARTNER_PRICE_PROFILES.reseller;
+  const tier = tierEl.value || Object.keys(typeCfg.tiers)[0];
+  const tierCfg = typeCfg.tiers[tier] || typeCfg.tiers[Object.keys(typeCfg.tiers)[0]];
+  return { type, tier, typeLabel: typeCfg.label, tierLabel: tierCfg.label, discount: tierCfg.discount };
+}
 
 function getPartnerDiscount() {
-  const level = document.getElementById('partnerLevel') ? document.getElementById('partnerLevel').value : '';
-  return PARTNER_DISCOUNTS[level] || 0;
+  return getSelectedQuoteProfile().discount || 0;
+}
+
+function isServicesLikeCategory(product) {
+  return !!(product && SERVICES_CATS.includes(product.cat));
+}
+
+function isHiddenForProfile(product, profile) {
+  return !!(product && profile && profile.type === 'msp' && product.cat === 'Services');
+}
+
+function getProfileDiscountForProduct(profile, product) {
+  if (!product) return 0;
+  if (!profile) profile = getSelectedQuoteProfile();
+  if (!profile) return 0;
+
+  if (isServicesLikeCategory(product)) {
+    if (profile.type === 'consultant') return 0.15;
+    if (profile.type === 'reseller') {
+      if (profile.tier === 'accredited') return 0.15;
+      if (profile.tier === 'silver' || profile.tier === 'gold') return 0.20;
+      if (profile.tier === 'platinum') return 0.25;
+      return 0.15;
+    }
+    if (profile.type === 'msp') {
+      if (product.cat === 'Services') return 0;
+      if (profile.tier === 'silver' || profile.tier === 'gold') return 0.20;
+      if (profile.tier === 'platinum') return 0.25;
+      return 0.20;
+    }
+  }
+
+  return profile.discount || 0;
+}
+
+function getPriceForProductByProfile(product, profile) {
+  const base = product && product.list > 0 ? product.list : (product ? product.threshold : 0);
+  if (base <= 0) return 0;
+  if (isHiddenForProfile(product, profile)) return 0;
+  const disc = getProfileDiscountForProduct(profile, product);
+  return disc > 0 ? base * (1 - disc) : base;
+}
+
+function getActiveDetailProfile() {
+  const priceListOverlay = document.getElementById('priceListOverlay');
+  if (priceListOverlay && !priceListOverlay.classList.contains('hidden')) {
+    return getSelectedPriceListProfile();
+  }
+  return getSelectedQuoteProfile();
+}
+
+function getProfileClassName(profile) {
+  const key = (profile && profile.tier) ? profile.tier : 'accredited';
+  return ['accredited','silver','gold','platinum','consultant'].includes(key) ? key : 'accredited';
+}
+
+function getProfileBadgeHTML(profile, emptyText) {
+  if (!profile) return `<span style="margin-left:8px;font-size:11px;color:var(--text-muted)">${emptyText || ''}</span>`;
+  return `<span class="level-badge ${getProfileClassName(profile)}" style="margin-left:8px">${profile.typeLabel} · ${profile.tierLabel} (${Math.round(profile.discount * 100)}%)</span>`;
+}
+
+function syncQuoteTierOptions() {
+  const modelEl = document.getElementById('partnerModel');
+  const tierEl = document.getElementById('partnerTier');
+  if (!modelEl || !tierEl) return;
+  const typeCfg = PARTNER_PRICE_PROFILES[modelEl.value] || PARTNER_PRICE_PROFILES.reseller;
+  const current = tierEl.value;
+  const tierKeys = Object.keys(typeCfg.tiers);
+  tierEl.innerHTML = tierKeys.map(function(key) {
+    const tier = typeCfg.tiers[key];
+    return '<option value="' + key + '">' + tier.label + ' (' + Math.round(tier.discount * 100) + '%)</option>';
+  }).join('');
+  tierEl.value = tierKeys.includes(current) ? current : tierKeys[0];
+}
+
+function populateQuoteProfileControls() {
+  const modelEl = document.getElementById('partnerModel');
+  if (!modelEl) return;
+  modelEl.innerHTML = Object.keys(PARTNER_PRICE_PROFILES).map(function(key) {
+    return '<option value="' + key + '">' + PARTNER_PRICE_PROFILES[key].label + '</option>';
+  }).join('');
+  modelEl.value = 'reseller';
+  syncQuoteTierOptions();
+  applyQuoteProfileDisplay();
+}
+
+function applyQuoteProfileDisplay() {
+  const profile = getSelectedQuoteProfile();
+  const hidden = document.getElementById('partnerLevel');
+  const display = document.getElementById('partnerLevelDisplay');
+  const text = document.getElementById('partnerLevelText');
+  if (hidden) hidden.value = profile.tier;
+  if (display) display.className = 'partner-level-display ' + getProfileClassName(profile);
+  if (text) {
+    text.className = 'partner-level-text ' + getProfileClassName(profile);
+    text.innerHTML = `${profile.typeLabel} · ${profile.tierLabel} <span style="opacity:0.6;font-weight:400;font-size:11px">(${Math.round(profile.discount * 100)}% discount)</span>`;
+  }
+}
+
+function onPartnerProfileChange() {
+  syncQuoteTierOptions();
+  applyQuoteProfileDisplay();
+  renderQuote();
+  renderProductList();
+}
+
+function setQuoteProfile(type, tier) {
+  const modelEl = document.getElementById('partnerModel');
+  const tierEl = document.getElementById('partnerTier');
+  if (!modelEl || !tierEl) return;
+  modelEl.value = PARTNER_PRICE_PROFILES[type] ? type : 'reseller';
+  syncQuoteTierOptions();
+  const typeCfg = PARTNER_PRICE_PROFILES[modelEl.value];
+  tierEl.value = typeCfg.tiers[tier] ? tier : Object.keys(typeCfg.tiers)[0];
+  onPartnerProfileChange();
 }
 
 function getDiscountedPrice(product) {
-  // Use list price as base; if list=0, use threshold as the base price reference
-  const base = product.list > 0 ? product.list : product.threshold;
-  if (base <= 0) return 0;
-  if (SERVICES_CATS.includes(product.cat)) {
-    return base * (1 - SERVICES_DISCOUNT);
-  }
-  const disc = getPartnerDiscount();
-  // Apply partner level discount directly - no threshold floor capping
-  return disc > 0 ? base * (1 - disc) : base;
+  return getPriceForProductByProfile(product, getSelectedQuoteProfile());
 }
 
 // ─── CURRENCY FORMAT ─────────────────────────────────────────────────────────
@@ -2115,57 +2731,12 @@ function generateQuoteRef() {
   return 'QT-' + year + '-' + suffix;
 }
 
-// ─── AUTO-ASSIGN PARTNER LEVEL ───────────────────────────────────────────────
-const LEVEL_OPTIONS = ['accredited', 'silver', 'gold'];
-const LEVEL_LABELS  = { accredited: 'Accredited', silver: 'Silver', gold: 'Gold' };
-const LEVEL_DISC    = { accredited: '20%', silver: '30%', gold: '40%' };
-const LEVEL_ICONS   = { accredited: '🥉', silver: '🥈', gold: '🥇' };
-
-// Simple deterministic hash of a string → integer
-function strHash(s) {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
-  return Math.abs(h);
-}
-
-function applyPartnerLevel(level) {
-  const hidden = document.getElementById('partnerLevel');
-  const display = document.getElementById('partnerLevelDisplay');
-  const text    = document.getElementById('partnerLevelText');
-
-  hidden.value = level || '';
-  display.className = 'partner-level-display' + (level ? ' ' + level : '');
-  text.className = 'partner-level-text' + (level ? ' ' + level : ' none');
-
-  if (level) {
-    text.innerHTML = `<span class="level-icon">${LEVEL_ICONS[level]}</span> ${LEVEL_LABELS[level]} <span style="opacity:0.6;font-weight:400;font-size:11px">(${LEVEL_DISC[level]} discount)</span>`;
-  } else {
-    text.textContent = '— Enter partner name —';
-  }
-
-  renderQuote();
-  renderProductList();
-}
-
-function autoAssignPartnerLevel() {
-  const name = document.getElementById('partnerName').value.trim();
-  if (!name) {
-    applyPartnerLevel(null);
-    return;
-  }
-  // Deterministically pick a level based on the partner name characters
-  const level = LEVEL_OPTIONS[strHash(name) % LEVEL_OPTIONS.length];
-  applyPartnerLevel(level);
-}
-
-// Keep onPartnerLevelChange as alias (used in clearQuote reset path)
-function onPartnerLevelChange() { autoAssignPartnerLevel(); }
-
 // ─── INIT ────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   currentBaseRef = quoteCounter;
   document.getElementById('quoteRef').value = quoteCounter;
   setDefaultValidityDate();
+  populateQuoteProfileControls();
   renderCategoryTabs();
   renderProductList();
   renderTemplatesBody();
@@ -2441,11 +3012,8 @@ function renderBillingBlock(billingLabel, items) {
   // Any cats not in CAT_ORDER append at end
   Object.keys(byCat).forEach(c => { if (!orderedCats.includes(c)) orderedCats.push(c); });
 
-  const levelLabels = { accredited: 'Accredited (20%)', silver: 'Silver (30%)', gold: 'Gold (40%)' };
-  const levelVal = document.getElementById('partnerLevel').value;
-  const levelBadge = levelVal
-    ? `<span class="level-badge ${levelVal}" style="margin-left:8px">${levelLabels[levelVal]}</span>`
-    : `<span style="margin-left:8px;font-size:11px;color:var(--text-muted)">(select partner level to apply discount)</span>`;
+  const profile = getSelectedQuoteProfile();
+  const levelBadge = getProfileBadgeHTML(profile, '(select partner profile to apply discount)');
 
   // Subtotal for this billing block
   let blockTotal = 0;
@@ -2533,9 +3101,7 @@ function renderCatGroup(cat, items) {
 }
 
 function renderSection(title, items) {
-  const levelLabels = { accredited: 'Accredited (20%)', silver: 'Silver (30%)', gold: 'Gold (40%)' };
-  const levelVal = document.getElementById('partnerLevel').value;
-  const discPct = levelVal ? PARTNER_DISCOUNTS[levelVal] * 100 : null;
+  const profile = getSelectedQuoteProfile();
 
   const rows = items.map((item) => {
     const p = item.product;
@@ -2584,9 +3150,7 @@ function renderSection(title, items) {
       </tr>`;
   }).join('');
 
-  const levelBadge = levelVal
-    ? `<span class="level-badge ${levelVal}" style="margin-left:8px">${levelLabels[levelVal]}</span>`
-    : `<span style="margin-left:8px;font-size:11px;color:var(--text-muted)">(no level selected)</span>`;
+  const levelBadge = getProfileBadgeHTML(profile, '(no partner profile selected)');
 
   return `
     <div class="quote-section">
@@ -2663,7 +3227,7 @@ function resetQuote() {
   document.getElementById('quoteRef').value    = currentBaseRef;
   document.getElementById('quoteNotes').value  = '';
   setDefaultValidityDate();
-  applyPartnerLevel(null);
+  setQuoteProfile('reseller', 'accredited');
   renderQuote();
   updateNotesToggle();
   updateVersionIndicator();
@@ -2687,7 +3251,9 @@ function getSavedQuotes() {
 function buildQuoteData(baseRef, version, changeNote) {
   const partner    = document.getElementById('partnerName').value || '';
   const customer   = document.getElementById('endCustomer').value || '';
-  const level      = document.getElementById('partnerLevel').value || '';
+  const profile    = getSelectedQuoteProfile();
+  const level      = profile.tier || '';
+  const partnerModel = profile.type || 'reseller';
   const notes      = document.getElementById('quoteNotes').value.trim();
   const validUntil = document.getElementById('validUntil').value;
   let mrc = 0, otc = 0;
@@ -2697,7 +3263,7 @@ function buildQuoteData(baseRef, version, changeNote) {
   });
   return {
     baseRef, version, ref: baseRef + ' v' + version,
-    partner, customer, level, notes, validUntil,
+    partner, customer, level, partnerModel, notes, validUntil,
     changeNote: changeNote || '', status: 'draft',
     savedAt: new Date().toISOString(),
     mrc, otc, acv: mrc * 12 + otc,
@@ -2799,7 +3365,7 @@ function doLoadQuote(ref) {
   document.getElementById('endCustomer').value = q.customer || '';
   document.getElementById('quoteRef').value = q.ref;
 
-  applyPartnerLevel(q.level || null);
+  setQuoteProfile(q.partnerModel || 'reseller', q.level || 'accredited');
   document.getElementById('quoteNotes').value = q.notes || '';
   document.getElementById('validUntil').value  = q.validUntil || '';
   updateNotesToggle();
@@ -2862,7 +3428,7 @@ function duplicateQuote(ref) {
 
 function openSavedQuotesModal() {
   const saved = getSavedQuotes();
-  const levelLabels = { accredited: 'Accredited', silver: 'Silver', gold: 'Gold' };
+  
   const subtitle = document.getElementById('savedQuotesSubtitle');
   subtitle.textContent = saved.length === 0 ? 'No saved quotes yet' : saved.length + ' saved quote' + (saved.length !== 1 ? 's' : '');
 
@@ -2905,7 +3471,7 @@ function openSavedQuotesModal() {
       const vCount   = versions.length;
       const status   = latest.status || 'draft';
       const levelBadge = latest.level
-        ? '<span class="sq-level-badge ' + latest.level + '">' + levelLabels[latest.level] + '</span>' : '';
+        ? '<span class="sq-level-badge ' + (latest.level || '') + '">' + getStoredProfileLabel(latest.partnerModel || 'reseller', latest.level) + '</span>' : '';
       const validStr = latest.validUntil
         ? ' &nbsp;·&nbsp; Valid to ' + new Date(latest.validUntil).toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'}) : '';
 
@@ -3205,9 +3771,8 @@ function openExportModal() {
   const customer = document.getElementById('endCustomer').value || 'End Customer';
   const ref      = document.getElementById('quoteRef').value;
   const date     = new Date().toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'});
-  const levelLabels = { accredited: 'Accredited', silver: 'Silver', gold: 'Gold' };
-  const levelVal = document.getElementById('partnerLevel').value;
-  const levelStr = levelVal ? ` · ${levelLabels[levelVal]}` : '';
+  const profile = getSelectedQuoteProfile();
+  const levelStr = ` · ${profile.typeLabel} · ${profile.tierLabel}`;
   document.getElementById('modalSubtitle').textContent = `${ref} · ${partner} → ${customer}${levelStr} · ${date}`;
 
   const { monthlyGroups, oneOffGroups, mrc, otc, acv } = getGroupedQuoteData();
@@ -3299,10 +3864,9 @@ function printQuote() {
   const customer = document.getElementById('endCustomer').value || 'End Customer';
   const ref      = document.getElementById('quoteRef').value;
   const date     = new Date().toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'});
-  const levelLabels = { accredited: 'Accredited', silver: 'Silver', gold: 'Gold' };
-  const levelVal    = document.getElementById('partnerLevel').value;
-  const levelStr    = levelLabels[levelVal] || 'Not set';
-  const discPctStr  = levelVal ? ` &nbsp;&bull;&nbsp; ${PARTNER_DISCOUNTS[levelVal] * 100}% Partner Discount` : '';
+  const printProfile = getSelectedQuoteProfile();
+  const levelStr    = printProfile.typeLabel + ' · ' + printProfile.tierLabel;
+  const discPctStr  = ` &nbsp;&bull;&nbsp; ${Math.round(printProfile.discount * 100)}% Partner Discount`;
   const validRaw    = document.getElementById('validUntil').value;
   const validUntilStr = validRaw ? new Date(validRaw).toLocaleDateString('en-GB', {day:'2-digit',month:'long',year:'numeric'}) : 'Not specified';
   const quoteNotes  = document.getElementById('quoteNotes').value.trim();
@@ -3439,8 +4003,8 @@ function printQuote() {
     <div class="meta-cell"><div class="meta-label">Quote Reference</div><div class="meta-value">${ref}</div></div>
     <div class="meta-cell"><div class="meta-label">Partner Name</div><div class="meta-value">${partner}</div></div>
     <div class="meta-cell"><div class="meta-label">End Customer</div><div class="meta-value">${customer}</div></div>
-    <div class="meta-cell"><div class="meta-label">Partner Level</div><div class="meta-value">
-      <span class="level-pill ${levelVal || ''}">${levelStr}</span>${discPctStr}
+    <div class="meta-cell"><div class="meta-label">Partner Profile</div><div class="meta-value">
+      <span class="level-pill ${getProfileClassName(getSelectedQuoteProfile())}">${getSelectedQuoteProfile().typeLabel} · ${getSelectedQuoteProfile().tierLabel}</span> &nbsp;&bull;&nbsp; ${Math.round(getSelectedQuoteProfile().discount * 100)}% Partner Discount
     </div></div>
     <div class="meta-cell"><div class="meta-label">Valid Until</div><div class="meta-value">${validUntilStr}</div></div>
   </div>
@@ -3478,10 +4042,9 @@ function copyCSV() {
   const partner = document.getElementById('partnerName').value || '';
   const customer = document.getElementById('endCustomer').value || '';
   const date = new Date().toLocaleDateString('en-GB');
-  const levelLabelCSV = { accredited: 'Accredited', silver: 'Silver', gold: 'Gold' };
-  const levelCSV = document.getElementById('partnerLevel').value;
+  const profileCSV = getSelectedQuoteProfile();
 
-  let csv = `Quote Reference,${ref}\nPartner,${partner}\nEnd Customer,${customer}\nPartner Level,${levelLabelCSV[levelCSV] || 'Not set'}\nDate,${date}\n\n`;
+  let csv = `Quote Reference,${ref}\nPartner,${partner}\nEnd Customer,${customer}\nPartner Profile,${profileCSV.typeLabel} · ${profileCSV.tierLabel} (${Math.round(profileCSV.discount * 100)}%)\nDate,${date}\n\n`;
   csv += `SAP ID,Product Name,Category,Charge Type,Qty,List Price,Partner Price,Total\n`;
   quoteItems.forEach(item => {
     const ep = getEffectivePrice(item);
@@ -3592,16 +4155,15 @@ function openProductDetail(id) {
 
   const meta   = getProductMeta(product);
   const colour = CAT_COLOURS[product.cat] || '#888';
-  const price  = getDiscountedPrice(product);
+  const detailProfile = getActiveDetailProfile();
+  const price  = getPriceForProductByProfile(product, detailProfile);
   const base   = product.list > 0 ? product.list : product.threshold;
-  const level  = document.getElementById('partnerLevel').value;
-  const levelLabels = { accredited: 'Accredited', silver: 'Silver', gold: 'Gold' };
+  const hasPartnerProfile = !!detailProfile;
 
   document.getElementById('pdCatDot').style.background = colour;
   document.getElementById('pdTitle').textContent = product.name;
   document.getElementById('pdSku').textContent = product.id + '  ·  ' + product.cat;
 
-  // Specs grid
   const specs = [
     { label: 'Category',    value: product.cat },
     { label: 'Billing',     value: product.billing },
@@ -3609,25 +4171,23 @@ function openProductDetail(id) {
     { label: 'Commitment',  value: meta.commitment },
   ];
   if (base > 0) specs.push({ label: 'List Price', value: fmtGBP(base) });
-  if (price > 0 && level) specs.push({ label: levelLabels[level] + ' Price', value: fmtGBP(price) });
+  if (price > 0 && hasPartnerProfile) specs.push({ label: detailProfile.typeLabel + ' · ' + detailProfile.tierLabel + ' Price', value: fmtGBP(price) });
 
   const specsHTML = specs.map(s =>
     '<div class="pd-spec"><div class="pd-spec-label">' + s.label + '</div><div class="pd-spec-value">' + s.value + '</div></div>'
   ).join('');
 
-  // Price box
   const priceHTML = price > 0 ? '<div class="pd-price-box">' +
-    '<div><div class="pd-price-label">' + (level ? levelLabels[level] + ' Partner Price' : 'List Price') + '</div>' +
+    '<div><div class="pd-price-label">' + (hasPartnerProfile ? (detailProfile.typeLabel + ' · ' + detailProfile.tierLabel + ' Partner Price') : 'List Price') + '</div>' +
     '<div class="pd-price-sub">' + product.billing + '</div></div>' +
     '<div class="pd-price-value">' + fmtGBP(price) + '</div>' +
     '</div>' : '';
 
-  // Related products — use data-id to avoid single-quote escaping in onclick
   const relatedItems = meta.related && meta.related.length > 0
     ? meta.related.map(([relId, why]) => {
         const rp = PRODUCTS.find(p => p.id === relId);
         if (!rp) return null;
-        const rprice  = getDiscountedPrice(rp);
+        const rprice  = getPriceForProductByProfile(rp, detailProfile);
         const rcolour = CAT_COLOURS[rp.cat] || '#888';
         return { relId, why, rp, rprice, rcolour };
       }).filter(Boolean)
@@ -3646,27 +4206,31 @@ function openProductDetail(id) {
     : '';
 
   const tipHTML = meta.tip ? '<div style="background:#fffbf0;border:1.5px solid #f0d060;border-radius:8px;padding:10px 12px;margin-bottom:16px">' +
-    '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#8a6000;margin-bottom:4px">💡 Tip</div>' +
-    '<div style="font-size:12.5px;color:#5a4000;line-height:1.5">' + meta.tip + '</div></div>' : '';
+    '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;color:#a07000;margin-bottom:5px">Commercial Tip</div>' +
+    '<div style="font-size:12.5px;line-height:1.55;color:var(--charcoal)">' + meta.tip + '</div>' +
+    '</div>' : '';
 
   document.getElementById('pdBody').innerHTML =
-    '<p class="pd-section-title">Overview</p>' +
-    '<p class="pd-desc">' + meta.desc + '</p>' +
-    '<p class="pd-section-title">Specifications</p>' +
-    '<div class="pd-specs">' + specsHTML + '</div>' +
+    '<div class="pd-badges">' +
+      '<span class="tag" style="background:' + colour + '18;color:' + colour + '">' + product.cat + '</span>' +
+      '<span class="tag tag-billing ' + (product.billing === 'Monthly' ? 'monthly' : '') + '">' + (product.billing === 'Monthly' ? 'Recurring' : product.billing) + '</span>' +
+      (meta.agentType && meta.agentType !== 'N/A' ? '<span class="tag" style="background:#f4f7fa;color:var(--charcoal)">' + meta.agentType + '</span>' : '') +
+    '</div>' +
     priceHTML +
+    '<p class="pd-desc">' + meta.desc + '</p>' +
     tipHTML +
+    '<p class="pd-section-title">Commercial & Product Details</p>' +
+    '<div class="pd-spec-grid">' + specsHTML + '</div>' +
     relatedHTML;
 
-  // Wire related product clicks via event delegation (no inline onclick needed)
-  document.getElementById('pdBody').querySelectorAll('.pd-related-item').forEach(el => {
+  document.getElementById('productDetailOverlay').classList.add('visible');
+  
+  document.querySelectorAll('.pd-related-item[data-related-id]').forEach(function(el) {
     el.addEventListener('click', function() {
-      addToQuote(this.dataset.relatedId);
-      closeProductDetail();
+      const relId = el.getAttribute('data-related-id');
+      if (relId) openProductDetail(relId);
     });
   });
-
-  document.getElementById('productDetailOverlay').classList.add('visible');
 }
 
 function closeProductDetail(e) {
@@ -3721,9 +4285,8 @@ function openEmailModal() {
   const ref       = document.getElementById('quoteRef').value;
   const validRaw  = document.getElementById('validUntil').value;
   const validStr  = validRaw ? new Date(validRaw).toLocaleDateString('en-GB', {day:'2-digit',month:'long',year:'numeric'}) : '';
-  const levelLabels = { accredited: 'Accredited', silver: 'Silver', gold: 'Gold' };
-  const levelVal  = document.getElementById('partnerLevel').value;
-  const levelStr  = levelLabels[levelVal] || '';
+  const emailProfile = getSelectedQuoteProfile();
+  const levelStr  = emailProfile.typeLabel + ' · ' + emailProfile.tierLabel;
 
   const { monthlyGroups, oneOffGroups, mrc, otc, acv } = getGroupedQuoteData();
 
@@ -3783,9 +4346,8 @@ function buildEmailHTML() {
   const ref       = document.getElementById('quoteRef').value;
   const validRaw  = document.getElementById('validUntil').value;
   const validStr  = validRaw ? new Date(validRaw).toLocaleDateString('en-GB', {day:'2-digit',month:'long',year:'numeric'}) : '';
-  const levelLabels = { accredited: 'Accredited', silver: 'Silver', gold: 'Gold' };
-  const levelVal  = document.getElementById('partnerLevel').value;
-  const levelStr  = levelLabels[levelVal] ? levelLabels[levelVal] + ' Partner Pricing' : '';
+  const emailHTMLProfile = getSelectedQuoteProfile();
+  const levelStr  = emailHTMLProfile.typeLabel + ' · ' + emailHTMLProfile.tierLabel + ' Partner Pricing';
   const bodyText  = document.getElementById('emailBody').value.trim().replace(/\n/g, '<br>');
   const { monthlyGroups, oneOffGroups, mrc, otc, acv } = getGroupedQuoteData();
 
@@ -3984,6 +4546,144 @@ function showToast(msg) {
   document.body.appendChild(el);
   toastTimer = setTimeout(() => el.remove(), 2500);
 }
+
+// ─── PARTNER PRICE LIST LAYER ───────────────────────────────────────────────
+function initPartnerPriceList() {
+  populatePriceListProfileControls();
+  populatePriceListCategoryOptions();
+  renderPartnerPriceList();
+  openLaunchpad();
+}
+
+function openLaunchpad() {
+  document.getElementById('launchpadOverlay').classList.remove('hidden');
+  document.getElementById('priceListOverlay').classList.add('hidden');
+}
+
+function openQuoteBuilder() {
+  document.getElementById('launchpadOverlay').classList.add('hidden');
+  document.getElementById('priceListOverlay').classList.add('hidden');
+}
+
+function openPriceList() {
+  document.getElementById('launchpadOverlay').classList.add('hidden');
+  document.getElementById('priceListOverlay').classList.remove('hidden');
+  renderPartnerPriceList();
+}
+
+function populatePriceListProfileControls() {
+  const typeEl = document.getElementById('priceListPartnerType');
+  const tierEl = document.getElementById('priceListPartnerTier');
+  if (!typeEl || !tierEl) return;
+
+  typeEl.innerHTML = Object.keys(PARTNER_PRICE_PROFILES).map(function(key) {
+    return '<option value="' + key + '">' + PARTNER_PRICE_PROFILES[key].label + '</option>';
+  }).join('');
+  typeEl.value = 'reseller';
+  syncPriceListTierOptions();
+}
+
+function syncPriceListTierOptions() {
+  const typeEl = document.getElementById('priceListPartnerType');
+  const tierEl = document.getElementById('priceListPartnerTier');
+  const typeCfg = PARTNER_PRICE_PROFILES[typeEl.value];
+  const current = tierEl.value;
+  const tierKeys = Object.keys(typeCfg.tiers);
+
+  tierEl.innerHTML = tierKeys.map(function(key) {
+    const tier = typeCfg.tiers[key];
+    return '<option value="' + key + '">' + tier.label + ' (' + Math.round(tier.discount * 100) + '%)</option>';
+  }).join('');
+
+  tierEl.value = tierKeys.includes(current) ? current : tierKeys[0];
+}
+
+function getSelectedPriceListProfile() {
+  const type = document.getElementById('priceListPartnerType').value;
+  const tier = document.getElementById('priceListPartnerTier').value;
+  const typeCfg = PARTNER_PRICE_PROFILES[type];
+  const tierCfg = typeCfg.tiers[tier];
+  return {
+    type: type,
+    tier: tier,
+    typeLabel: typeCfg.label,
+    tierLabel: tierCfg.label,
+    discount: tierCfg.discount
+  };
+}
+
+function onPriceListProfileChange() {
+  syncPriceListTierOptions();
+  renderPartnerPriceList();
+}
+
+function populatePriceListCategoryOptions() {
+  const catEl = document.getElementById('priceListCategory');
+  if (!catEl) return;
+  const cats = ['All'].concat(Object.keys(CAT_COLOURS));
+  catEl.innerHTML = cats.map(function(cat) {
+    return '<option value="' + cat + '">' + cat + '</option>';
+  }).join('');
+  catEl.value = 'All';
+}
+
+function renderPartnerPriceList() {
+  const body = document.getElementById('priceListBody');
+  if (!body || typeof PRODUCTS === 'undefined') return;
+
+  const profile = getSelectedPriceListProfile();
+  const badge = document.getElementById('priceListProfileBadge');
+  if (badge) badge.textContent = 'Profile: ' + profile.typeLabel + ' · ' + profile.tierLabel + ' · ' + Math.round(profile.discount * 100) + '% discount';
+
+  const category = document.getElementById('priceListCategory').value || 'All';
+  const search = (document.getElementById('priceListSearch').value || '').toLowerCase();
+  const payType = document.getElementById('priceListPayType').value || 'all';
+  const agentType = document.getElementById('priceListAgentType').value || 'all';
+
+  const rows = PRODUCTS.filter(function(p) {
+    if (isHiddenForProfile(p, profile)) return false;
+    const matchCategory = category === 'All' || p.cat === category;
+    const matchSearch = !search ||
+      p.name.toLowerCase().indexOf(search) !== -1 ||
+      p.id.toLowerCase().indexOf(search) !== -1 ||
+      (p.cleanName && p.cleanName.toLowerCase().indexOf(search) !== -1);
+    const matchPayType = payType === 'all' ? true : (!!p.payType && p.payType === payType);
+    const matchAgentType = agentType === 'all' ? true : (!!p.agentType && p.agentType === agentType);
+    return matchCategory && matchSearch && matchPayType && matchAgentType;
+  }).sort(function(a, b) {
+    if (a.cat !== b.cat) return a.cat.localeCompare(b.cat);
+    return a.name.localeCompare(b.name);
+  });
+
+  if (!rows.length) {
+    body.innerHTML = '<tr><td colspan="10" style="padding:32px;text-align:center;color:var(--text-muted)">No products match this search.</td></tr>';
+    return;
+  }
+
+  body.innerHTML = rows.map(function(p) {
+    const base = p.list > 0 ? p.list : p.threshold;
+    const appliedDiscount = getProfileDiscountForProduct(profile, p);
+    const net = getPriceForProductByProfile(p, profile);
+    const billing = p.billing === 'Monthly' ? 'Recurring' : p.billing;
+    const licenseLabel = p.agentType || '—';
+    const payLabel = p.payType === 'PrePay' ? 'Annual Pre-Pay' : (p.payType === 'PayMonthly' ? 'Monthly' : '—');
+    return '<tr>' +
+      '<td><div class="price-list-sku">' + p.id + '</div></td>' +
+      '<td><div class="price-list-product">' + p.name + '</div><div class="price-list-product-sub">' + (p.cleanName && p.cleanName !== p.name ? p.cleanName + ' · ' : '') + billing + '</div></td>' +
+      '<td>' + p.cat + '</td>' +
+      '<td>' + billing + '</td>' +
+      '<td>' + licenseLabel + '</td>' +
+      '<td>' + payLabel + '</td>' +
+      '<td class="price-list-money">' + fmtGBP(base) + '</td>' +
+      '<td style="text-align:center"><span class="price-list-discount-pill">' + Math.round(appliedDiscount * 100) + '%</span></td>' +
+      '<td class="price-list-money net">' + fmtGBP(net) + '</td>' +
+      '<td class="price-list-icon-cell"><button class="price-list-info-btn" title="View details" onclick="openProductDetail(\'' + p.id + '\')">i</button></td>' +
+    '</tr>';
+  }).join('');
+}
+
+window.addEventListener('DOMContentLoaded', initPartnerPriceList);
+
 </script>
 
 <!-- Help Modal -->
@@ -4001,7 +4701,7 @@ function showToast(msg) {
       <div class="help-section">
         <div class="help-section-title"><span class="help-section-icon">🚀</span> Getting Started</div>
         <ul class="help-steps">
-          <li><span class="help-step-num">1</span><span>Enter the <strong>Partner Name</strong> in the top bar — your partner level (<span class="help-badge hb-gold">Gold</span>, <span class="help-badge hb-mauve">Silver</span>, Accredited) is automatically assigned and all prices update instantly.</span></li>
+          <li><span class="help-step-num">1</span><span>Enter the <strong>Partner Name</strong> in the top bar, then explicitly choose the <strong>Partner Model</strong> and <strong>Partner Tier</strong>. Quote pricing and product catalogue pricing update from the same commercial rules.</span></li>
           <li><span class="help-step-num">2</span><span>Add an <strong>End Customer</strong> name and check or edit the <strong>Quote Reference</strong> and <strong>Valid Until</strong> date (defaults to 30 days).</span></li>
           <li><span class="help-step-num">3</span><span>Browse the <strong>Product Catalogue</strong> on the left. Use category tabs or the search box to find products. Click <strong>+</strong> to add a product to your quote, or click <strong>ⓘ</strong> to read a full description and see suggested companion products.</span></li>
           <li><span class="help-step-num">4</span><span>Adjust <strong>quantities</strong> directly in the quote table. Partner prices are calculated automatically — no manual editing needed.</span></li>
@@ -4012,10 +4712,10 @@ function showToast(msg) {
       <div class="help-section">
         <div class="help-section-title"><span class="help-section-icon">💰</span> Partner Pricing</div>
         <div class="help-tips">
-          <div class="help-tip"><strong>Accredited (20%)</strong>Entry-level partner discount — 20% off list price across all product categories.</div>
-          <div class="help-tip"><strong>Silver (30%)</strong>Mid-tier partner discount — 30% off list price. Assigned based on partner name.</div>
-          <div class="help-tip"><strong>Gold (40%)</strong>Premium partner discount — 40% off list price for highest-tier partners.</div>
-          <div class="help-tip"><strong>Services &amp; Consultancy</strong>Always 25% off list price regardless of partner level — this is a fixed margin category.</div>
+          <div class="help-tip"><strong>Reseller</strong>Accredited 20%, Silver 30%, Gold 35%, Platinum 40%.</div>
+          <div class="help-tip"><strong>MSP</strong>Silver 35%, Gold 45%, Platinum 55%.</div>
+          <div class="help-tip"><strong>Consultant</strong>Single commercial tier at 15% discount.</div>
+          <div class="help-tip"><strong>One pricing matrix</strong>The quote builder and the partner price list now use the same commercial rules, so there is no drift between views.</div>
         </div>
       </div>
 
