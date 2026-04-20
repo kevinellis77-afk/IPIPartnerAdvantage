@@ -2540,19 +2540,46 @@ const PRODUCT_CSV_REQUIRED_HEADERS = ['product_id', 'product_e', 'category', 'bi
 const PRODUCT_CATALOGUE_STORAGE_KEY = 'ipi-partner-quote-products-v1';
 
 const PRODUCT_CSV_HEADER_ALIASES = {
-  product_id: ['product_id', 'id'],
-  product_e: ['product_e', 'name'],
-  category: ['category', 'cat'],
-  billing: ['billing'],
-  list_rrp: ['list_rrp', 'list'],
-  cost: ['cost'],
-  threshold: ['threshold'],
-  license_type: ['license_type', 'agent_type'],
-  payment_type: ['payment_type', 'commitment'],
-  description: ['description', 'desc'],
-  tip: ['tip'],
-  related_products: ['related_products', 'related']
+  product_id: ['product_id', 'id', 'sku', 'productcode'],
+  product_e: ['product_e', 'name', 'productname', 'product'],
+  category: ['category', 'cat', 'productcategory'],
+  billing: ['billing', 'billingtype'],
+  list_rrp: ['list_rrp', 'list', 'rrp', 'listrrp', 'listprice'],
+  cost: ['cost', 'buy', 'buyprice'],
+  threshold: ['threshold', 'floor', 'minprice'],
+  license_type: ['license_type', 'agent_type', 'licensetype', 'license', 'agenttype'],
+  payment_type: ['payment_type', 'commitment', 'paymenttype', 'payment', 'term'],
+  description: ['description', 'desc', 'productdescription'],
+  tip: ['tip', 'hint'],
+  related_products: ['related_products', 'related', 'relatedproducts']
 };
+
+function normalizeHeaderName(header) {
+  return String(header || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^\w]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
+function parseNumericValue(value) {
+  const raw = String(value == null ? '' : value).trim();
+  if (!raw) return 0;
+  const cleaned = raw.replace(/[^0-9.\-]/g, '');
+  if (!cleaned || cleaned === '-' || cleaned === '.' || cleaned === '-.') return 0;
+  const parsed = Number(cleaned);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function splitLicensePayment(value) {
+  const raw = String(value == null ? '' : value).trim();
+  if (!raw) return { license_type: '', payment_type: '' };
+  const parts = raw.split(/\s*(?:\/|\||-)\s*/).map(function(part) { return part.trim(); }).filter(Boolean);
+  if (parts.length >= 2) {
+    return { license_type: parts[0], payment_type: parts.slice(1).join(' / ') };
+  }
+  return { license_type: raw, payment_type: '' };
+}
 
 function parseCsvRows(text) {
   const rows = [];
@@ -2595,12 +2622,17 @@ function parseCsvRows(text) {
 function parseProductCsv(text) {
   const rows = parseCsvRows(text);
   if (!rows.length) return [];
-  const headers = rows[0].map(function(h) { return String(h || '').trim().toLowerCase(); });
+  const headers = rows[0].map(normalizeHeaderName);
   const headerIndex = {};
   Object.keys(PRODUCT_CSV_HEADER_ALIASES).forEach(function(key) {
     const aliases = PRODUCT_CSV_HEADER_ALIASES[key];
-    const idx = headers.findIndex(function(h) { return aliases.includes(h); });
+    const idx = headers.findIndex(function(h) {
+      return aliases.some(function(alias) { return normalizeHeaderName(alias) === h; });
+    });
     if (idx !== -1) headerIndex[key] = idx;
+  });
+  const combinedLicensePaymentIdx = headers.findIndex(function(h) {
+    return ['license_payment', 'license_payment_type', 'license_or_payment', 'license___payment'].includes(h);
   });
 
   const missing = PRODUCT_CSV_REQUIRED_HEADERS.filter(function(h) { return headerIndex[h] == null; });
@@ -2614,20 +2646,29 @@ function parseProductCsv(text) {
       const idx = headerIndex[header];
       out[header] = idx == null ? '' : (cells[idx] == null ? '' : String(cells[idx]).trim());
     });
+    out.license_payment = combinedLicensePaymentIdx === -1 ? '' : (cells[combinedLicensePaymentIdx] == null ? '' : String(cells[combinedLicensePaymentIdx]).trim());
     return out;
   }).filter(function(r) { return r.product_id && r.product_e; });
 
   return mapped.map(function(r) {
+    let licenseType = r.license_type || '';
+    let paymentType = r.payment_type || '';
+    if ((!licenseType || !paymentType) && r.license_payment) {
+      const split = splitLicensePayment(r.license_payment);
+      if (!licenseType) licenseType = split.license_type;
+      if (!paymentType) paymentType = split.payment_type;
+    }
+
     return {
       id: r.product_id,
       name: r.product_e,
       cat: r.category || 'Uncategorised',
       billing: r.billing || 'Monthly',
-      list: Number(r.list_rrp) || 0,
-      cost: Number(r.cost) || 0,
-      threshold: Number(r.threshold) || 0,
-      license_type: r.license_type || '',
-      payment_type: r.payment_type || '',
+      list: parseNumericValue(r.list_rrp),
+      cost: parseNumericValue(r.cost),
+      threshold: parseNumericValue(r.threshold),
+      license_type: licenseType,
+      payment_type: paymentType,
       description: r.description || '',
       tip: r.tip || '',
       related_products: r.related_products || ''
