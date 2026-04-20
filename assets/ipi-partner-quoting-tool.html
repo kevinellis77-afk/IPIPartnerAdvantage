@@ -1830,14 +1830,15 @@
   }
 
   .price-list-table-scroll {
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
     max-height: calc(100vh - 280px);
   }
 
   .price-list-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 1020px;
+    min-width: 0;
   }
 
   .price-list-table thead th {
@@ -2042,13 +2043,11 @@
           <thead>
             <tr>
               <th style="width:120px">SAP ID</th>
-              <th>Product</th>
+              <th style="width:33%">Product</th>
               <th style="width:130px">Category</th>
-              <th style="width:120px">Billing</th>
               <th style="width:120px">License</th>
               <th style="width:130px">Payment</th>
               <th style="width:130px;text-align:right">List RRP</th>
-              <th style="width:110px;text-align:center">Discount</th>
               <th style="width:140px;text-align:right">Partner Price</th>
               <th style="width:70px;text-align:center">Info</th>
             </tr>
@@ -4990,14 +4989,13 @@ function renderPartnerPriceList() {
   });
 
   if (!rows.length) {
-    body.innerHTML = '<tr><td colspan="10" style="padding:32px;text-align:center;color:var(--text-muted)">No products match this search.</td></tr>';
+    body.innerHTML = '<tr><td colspan="8" style="padding:32px;text-align:center;color:var(--text-muted)">No products match this search.</td></tr>';
     return;
   }
 
   body.innerHTML = rows.map(function(p) {
     const meta = getProductMeta(p);
     const base = p.list > 0 ? p.list : p.threshold;
-    const appliedDiscount = getProfileDiscountForProduct(profile, p);
     const net = getPriceForProductByProfile(p, profile);
     const billing = p.billing === 'Monthly' ? 'Recurring' : p.billing;
     const licenseLabel = meta.agentType || p.agentType || '—';
@@ -5006,11 +5004,9 @@ function renderPartnerPriceList() {
       '<td><div class="price-list-sku">' + p.id + '</div></td>' +
       '<td><div class="price-list-product">' + p.name + '</div><div class="price-list-product-sub">' + (p.cleanName && p.cleanName !== p.name ? p.cleanName + ' · ' : '') + billing + '</div></td>' +
       '<td>' + p.cat + '</td>' +
-      '<td>' + billing + '</td>' +
       '<td>' + licenseLabel + '</td>' +
       '<td>' + payLabel + '</td>' +
       '<td class="price-list-money">' + fmtGBP(base) + '</td>' +
-      '<td style="text-align:center"><span class="price-list-discount-pill">' + Math.round(appliedDiscount * 100) + '%</span></td>' +
       '<td class="price-list-money net">' + fmtGBP(net) + '</td>' +
       '<td class="price-list-icon-cell"><button class="price-list-info-btn" title="View details" onclick="openProductDetail(\'' + p.id + '\')">i</button></td>' +
     '</tr>';
