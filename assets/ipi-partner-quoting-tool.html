@@ -2415,6 +2415,22 @@ function stripBracketedProductText(name) {
   return name.replace(/\s*\([^)]*\)/g, '').replace(/\s+/g, ' ').trim();
 }
 
+function normalizeAgentType(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+  if (/^nam/i.test(raw)) return 'Named';
+  if (/^conc/i.test(raw)) return 'Concurrent';
+  return raw;
+}
+
+function normalizePaymentType(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+  if (/annual pre.?pay|ann(?:ual)?\s*pre|pre-?pay/i.test(raw)) return 'PrePay';
+  if (/pay monthly|monthly pay|ann(?:ual)?\s*pay|pay m(?:on|thly)|annpaym/i.test(raw)) return 'PayMonthly';
+  return null;
+}
+
 function applyDerivedProductAttributes() {
   PRODUCTS.forEach(function(p) {
     var originalName = (p.name || '').trim();
@@ -2422,8 +2438,11 @@ function applyDerivedProductAttributes() {
 
     p.name = stripBracketedProductText(originalName);
 
-    // Agent type — detect Named vs Concurrent from name
-    if (/(named|nam-)/.test(n) || n.indexOf('(nam') !== -1) {
+    // Agent type — prefer imported CSV value, then infer from product name.
+    const importedAgentType = normalizeAgentType(p.license_type);
+    if (importedAgentType) {
+      p.agentType = importedAgentType;
+    } else if (/(named|nam-)/.test(n) || n.indexOf('(nam') !== -1) {
       p.agentType = 'Named';
     } else if (/(conc|concurrent)/.test(n) || n.indexOf('(conc') !== -1) {
       p.agentType = 'Concurrent';
@@ -2431,8 +2450,11 @@ function applyDerivedProductAttributes() {
       p.agentType = null;
     }
 
-    // Payment type — detect Annual Pre-Pay vs Pay Monthly
-    if (/annual pre.?pay|ann pre|anprepay|pre-pay|prepay|pre pay/.test(n)) {
+    // Payment type — prefer imported CSV value, then infer from product name.
+    const importedPaymentType = normalizePaymentType(p.payment_type);
+    if (importedPaymentType) {
+      p.payType = importedPaymentType;
+    } else if (/annual pre.?pay|ann pre|anprepay|pre-pay|prepay|pre pay/.test(n)) {
       p.payType = 'PrePay';
     } else if (/annual pay m|ann pay m|annpaym|paymon|pay monthly|pay m\)|pay mthly|pay mon/.test(n)) {
       p.payType = 'PayMonthly';
@@ -2765,9 +2787,10 @@ function handleProductImportFile(event) {
 
       PRODUCTS.splice(0, PRODUCTS.length);
       imported.forEach(function(p) { PRODUCTS.push(p); });
+      quoteItems = [];
       persistProductCatalogue();
       refreshProductCatalogueViews();
-      showToast('✓ Product CSV uploaded (' + imported.length + ' rows)');
+      showToast('✓ Product CSV uploaded (' + imported.length + ' rows) — catalogue replaced');
     } catch (err) {
       alert('Unable to import product CSV: ' + (err && err.message ? err.message : err));
     } finally {
@@ -4972,12 +4995,13 @@ function renderPartnerPriceList() {
   }
 
   body.innerHTML = rows.map(function(p) {
+    const meta = getProductMeta(p);
     const base = p.list > 0 ? p.list : p.threshold;
     const appliedDiscount = getProfileDiscountForProduct(profile, p);
     const net = getPriceForProductByProfile(p, profile);
     const billing = p.billing === 'Monthly' ? 'Recurring' : p.billing;
-    const licenseLabel = p.agentType || '—';
-    const payLabel = p.payType === 'PrePay' ? 'Annual Pre-Pay' : (p.payType === 'PayMonthly' ? 'Monthly' : '—');
+    const licenseLabel = meta.agentType || p.agentType || '—';
+    const payLabel = meta.commitment || (p.payType === 'PrePay' ? 'Annual Pre-Pay' : (p.payType === 'PayMonthly' ? 'Monthly' : '—'));
     return '<tr>' +
       '<td><div class="price-list-sku">' + p.id + '</div></td>' +
       '<td><div class="price-list-product">' + p.name + '</div><div class="price-list-product-sub">' + (p.cleanName && p.cleanName !== p.name ? p.cleanName + ' · ' : '') + billing + '</div></td>' +
