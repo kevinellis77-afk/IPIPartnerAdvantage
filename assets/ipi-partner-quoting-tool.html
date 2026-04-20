@@ -1949,6 +1949,15 @@
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
       Saved Quotes
     </button>
+    <button class="btn btn-secondary" onclick="downloadProductExtractCsv()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      Product Extract CSV
+    </button>
+    <button class="btn btn-secondary" onclick="openProductImportPicker()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+      Upload Product CSV
+    </button>
+    <input type="file" id="productCsvUpload" accept=".csv,text/csv" class="hidden" onchange="handleProductImportFile(event)">
     <button class="btn btn-secondary btn-version" id="saveVersionBtn" onclick="promptSaveVersion()">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
       <span id="saveVersionBtnLabel">Save v1</span>
@@ -2443,9 +2452,9 @@ function stripBracketedProductText(name) {
   return name.replace(/\s*\([^)]*\)/g, '').replace(/\s+/g, ' ').trim();
 }
 
-(function() {
+function applyDerivedProductAttributes() {
   PRODUCTS.forEach(function(p) {
-    var originalName = p.name;
+    var originalName = (p.name || '').trim();
     var n = originalName.toLowerCase();
 
     p.name = stripBracketedProductText(originalName);
@@ -2491,7 +2500,163 @@ function stripBracketedProductText(name) {
     cn = cn.replace(/\s+/g, ' ').trim();
     p.cleanName = (cn && cn.length > 2) ? cn : p.name;
   });
-})();
+}
+
+applyDerivedProductAttributes();
+
+function csvEscape(value) {
+  const raw = value == null ? '' : String(value);
+  if (/[",\n]/.test(raw)) return '"' + raw.replace(/"/g, '""') + '"';
+  return raw;
+}
+
+const PRODUCT_CSV_HEADERS = ['id', 'name', 'cat', 'billing', 'list', 'cost', 'threshold'];
+
+function parseCsvRows(text) {
+  const rows = [];
+  let row = [];
+  let cell = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    const next = text[i + 1];
+    if (ch === '"') {
+      if (inQuotes && next === '"') {
+        cell += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+    if (!inQuotes && ch === ',') {
+      row.push(cell);
+      cell = '';
+      continue;
+    }
+    if (!inQuotes && (ch === '\n' || ch === '\r')) {
+      if (ch === '\r' && next === '\n') i++;
+      row.push(cell);
+      if (row.some(function(c) { return String(c).trim().length > 0; })) rows.push(row);
+      row = [];
+      cell = '';
+      continue;
+    }
+    cell += ch;
+  }
+  row.push(cell);
+  if (row.some(function(c) { return String(c).trim().length > 0; })) rows.push(row);
+  return rows;
+}
+
+function parseProductCsv(text) {
+  const rows = parseCsvRows(text);
+  if (!rows.length) return [];
+  const headers = rows[0].map(function(h) { return String(h || '').trim().toLowerCase(); });
+  const required = PRODUCT_CSV_HEADERS;
+  const missing = required.filter(function(h) { return !headers.includes(h); });
+  if (missing.length) {
+    throw new Error('Missing required columns: ' + missing.join(', '));
+  }
+  const mapped = rows.slice(1).map(function(cells) {
+    const out = {};
+    headers.forEach(function(header, idx) { out[header] = (cells[idx] == null ? '' : String(cells[idx]).trim()); });
+    return out;
+  }).filter(function(r) { return r.id && r.name; });
+
+  return mapped.map(function(r) {
+    return {
+      id: r.id,
+      name: r.name,
+      cat: r.cat || 'Uncategorised',
+      billing: r.billing || 'Monthly',
+      list: Number(r.list) || 0,
+      cost: Number(r.cost) || 0,
+      threshold: Number(r.threshold) || 0
+    };
+  });
+}
+
+function updateCategoryMetadataFromProducts() {
+  PRODUCTS.forEach(function(p) {
+    const category = p.cat || 'Uncategorised';
+    if (!CAT_COLOURS[category]) CAT_COLOURS[category] = '#6f7f8a';
+    if (!CAT_SLUG[category]) {
+      CAT_SLUG[category] = 'cat-' + category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    }
+  });
+}
+
+function syncQuoteItemsToCurrentProducts() {
+  const productById = {};
+  PRODUCTS.forEach(function(p) { productById[p.id] = p; });
+  quoteItems = quoteItems.map(function(item) {
+    const latest = productById[item.product.id];
+    return latest ? { product: latest, qty: item.qty, override: item.override } : null;
+  }).filter(Boolean);
+}
+
+function refreshProductCatalogueViews() {
+  applyDerivedProductAttributes();
+  updateCategoryMetadataFromProducts();
+  syncQuoteItemsToCurrentProducts();
+  renderCategoryTabs();
+  renderProductList();
+  renderQuote();
+  populatePriceListCategoryOptions();
+  renderPartnerPriceList();
+}
+
+function downloadProductExtractCsv() {
+  const lines = [PRODUCT_CSV_HEADERS.map(csvEscape).join(',')];
+  PRODUCTS.forEach(function(p) {
+    const row = PRODUCT_CSV_HEADERS.map(function(h) {
+      const value = p[h];
+      return csvEscape(typeof value === 'number' ? value : (value == null ? '' : value));
+    });
+    lines.push(row.join(','));
+  });
+  const stamp = new Date().toISOString().slice(0, 10);
+  downloadBlob('partner-quoting-product-extract-' + stamp + '.csv', lines.join('\n'), 'text/csv;charset=utf-8;');
+  showToast('✓ Product extract CSV downloaded');
+}
+
+function openProductImportPicker() {
+  const input = document.getElementById('productCsvUpload');
+  if (!input) return;
+  input.value = '';
+  input.click();
+}
+
+function handleProductImportFile(event) {
+  const input = event && event.target;
+  const file = input && input.files && input.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(loadEvt) {
+    try {
+      const text = String(loadEvt.target && loadEvt.target.result || '');
+      const imported = parseProductCsv(text);
+      if (!imported.length) throw new Error('No valid product rows were found in the CSV.');
+
+      PRODUCTS.splice(0, PRODUCTS.length);
+      imported.forEach(function(p) { PRODUCTS.push(p); });
+      refreshProductCatalogueViews();
+      showToast('✓ Product CSV uploaded (' + imported.length + ' rows)');
+    } catch (err) {
+      alert('Unable to import product CSV: ' + (err && err.message ? err.message : err));
+    } finally {
+      if (input) input.value = '';
+    }
+  };
+  reader.onerror = function() {
+    alert('Unable to read selected CSV file.');
+    if (input) input.value = '';
+  };
+  reader.readAsText(file);
+}
 
 // ─── FILTER STATE ─────────────────────────────────────────────────────────────
 var activeAgentFilter = 'all';
