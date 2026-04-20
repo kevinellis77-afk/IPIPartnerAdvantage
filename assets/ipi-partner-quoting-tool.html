@@ -3107,13 +3107,16 @@ function getProfileBadgeHTML(profile, emptyText) {
   return `<span class="level-badge ${getProfileClassName(profile)}" style="margin-left:8px">${profile.typeLabel} · ${profile.tierLabel} (${Math.round(profile.discount * 100)}%)</span>`;
 }
 
-function syncQuoteTierOptions() {
-  const modelEl = document.getElementById('partnerModel');
-  const tierEl = document.getElementById('partnerTier');
-  if (!modelEl || !tierEl) return;
-  const typeCfg = PARTNER_PRICE_PROFILES[modelEl.value] || PARTNER_PRICE_PROFILES.reseller;
+function syncTierOptionsFor(typeEl, tierEl) {
+  if (!typeEl || !tierEl) return;
+  const fallbackType = PARTNER_PRICE_PROFILES.reseller ? 'reseller' : Object.keys(PARTNER_PRICE_PROFILES)[0];
+  const selectedType = PARTNER_PRICE_PROFILES[typeEl.value] ? typeEl.value : fallbackType;
+  typeEl.value = selectedType;
+  const typeCfg = PARTNER_PRICE_PROFILES[selectedType];
+  if (!typeCfg || !typeCfg.tiers) return;
   const current = tierEl.value;
   const tierKeys = Object.keys(typeCfg.tiers);
+  if (!tierKeys.length) return;
   tierEl.innerHTML = tierKeys.map(function(key) {
     const tier = typeCfg.tiers[key];
     return '<option value="' + key + '">' + tier.label + ' (' + Math.round(tier.discount * 100) + '%)</option>';
@@ -3121,14 +3124,26 @@ function syncQuoteTierOptions() {
   tierEl.value = tierKeys.includes(current) ? current : tierKeys[0];
 }
 
-function populateQuoteProfileControls() {
-  const modelEl = document.getElementById('partnerModel');
-  if (!modelEl) return;
-  modelEl.innerHTML = Object.keys(PARTNER_PRICE_PROFILES).map(function(key) {
+function populateProfileControls(typeEl, tierEl, defaultType) {
+  if (!typeEl || !tierEl) return;
+  typeEl.innerHTML = Object.keys(PARTNER_PRICE_PROFILES).map(function(key) {
     return '<option value="' + key + '">' + PARTNER_PRICE_PROFILES[key].label + '</option>';
   }).join('');
-  modelEl.value = 'reseller';
-  syncQuoteTierOptions();
+  typeEl.value = PARTNER_PRICE_PROFILES[defaultType] ? defaultType : 'reseller';
+  syncTierOptionsFor(typeEl, tierEl);
+}
+
+function syncQuoteTierOptions() {
+  const modelEl = document.getElementById('partnerModel');
+  const tierEl = document.getElementById('partnerTier');
+  syncTierOptionsFor(modelEl, tierEl);
+}
+
+function populateQuoteProfileControls() {
+  const modelEl = document.getElementById('partnerModel');
+  const tierEl = document.getElementById('partnerTier');
+  if (!modelEl || !tierEl) return;
+  populateProfileControls(modelEl, tierEl, 'reseller');
   applyQuoteProfileDisplay();
 }
 
@@ -3147,6 +3162,15 @@ function applyQuoteProfileDisplay() {
 
 function onPartnerProfileChange() {
   syncQuoteTierOptions();
+  const modelEl = document.getElementById('partnerModel');
+  const tierEl = document.getElementById('partnerTier');
+  const priceTypeEl = document.getElementById('priceListPartnerType');
+  const priceTierEl = document.getElementById('priceListPartnerTier');
+  if (modelEl && tierEl && priceTypeEl && priceTierEl) {
+    priceTypeEl.value = modelEl.value;
+    syncTierOptionsFor(priceTypeEl, priceTierEl);
+    priceTierEl.value = tierEl.value;
+  }
   applyQuoteProfileDisplay();
   renderQuote();
   renderProductList();
@@ -5155,34 +5179,13 @@ function updateToolbarState() {
 function populatePriceListProfileControls() {
   const typeEl = document.getElementById('priceListPartnerType');
   const tierEl = document.getElementById('priceListPartnerTier');
-  if (!typeEl || !tierEl) return;
-
-  typeEl.innerHTML = Object.keys(PARTNER_PRICE_PROFILES).map(function(key) {
-    return '<option value="' + key + '">' + PARTNER_PRICE_PROFILES[key].label + '</option>';
-  }).join('');
-  typeEl.value = 'reseller';
-  syncPriceListTierOptions();
+  populateProfileControls(typeEl, tierEl, 'reseller');
 }
 
 function syncPriceListTierOptions() {
   const typeEl = document.getElementById('priceListPartnerType');
   const tierEl = document.getElementById('priceListPartnerTier');
-  if (!typeEl || !tierEl) return;
-  const fallbackType = PARTNER_PRICE_PROFILES.reseller ? 'reseller' : Object.keys(PARTNER_PRICE_PROFILES)[0];
-  const selectedType = PARTNER_PRICE_PROFILES[typeEl.value] ? typeEl.value : fallbackType;
-  typeEl.value = selectedType;
-  const typeCfg = PARTNER_PRICE_PROFILES[selectedType];
-  if (!typeCfg || !typeCfg.tiers) return;
-  const current = tierEl.value;
-  const tierKeys = Object.keys(typeCfg.tiers);
-  if (!tierKeys.length) return;
-
-  tierEl.innerHTML = tierKeys.map(function(key) {
-    const tier = typeCfg.tiers[key];
-    return '<option value="' + key + '">' + tier.label + ' (' + Math.round(tier.discount * 100) + '%)</option>';
-  }).join('');
-
-  tierEl.value = tierKeys.includes(current) ? current : tierKeys[0];
+  syncTierOptionsFor(typeEl, tierEl);
 }
 
 function getSelectedPriceListProfile() {
@@ -5209,7 +5212,19 @@ function getSelectedPriceListProfile() {
 
 function onPriceListProfileChange() {
   syncPriceListTierOptions();
+  const typeEl = document.getElementById('priceListPartnerType');
+  const tierEl = document.getElementById('priceListPartnerTier');
+  const quoteTypeEl = document.getElementById('partnerModel');
+  const quoteTierEl = document.getElementById('partnerTier');
+  if (typeEl && tierEl && quoteTypeEl && quoteTierEl) {
+    quoteTypeEl.value = typeEl.value;
+    syncTierOptionsFor(quoteTypeEl, quoteTierEl);
+    quoteTierEl.value = tierEl.value;
+    applyQuoteProfileDisplay();
+  }
   syncPriceListFilterOptions();
+  renderQuote();
+  renderProductList();
   renderPartnerPriceList();
 }
 
