@@ -3188,11 +3188,12 @@ function generateQuoteRef() {
 // ─── INIT ────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   loadStoredProductCatalogue();
+  populateQuoteProfileControls();
+  populatePriceListProfileControls();
   refreshProductCatalogueViews();
   currentBaseRef = quoteCounter;
   document.getElementById('quoteRef').value = quoteCounter;
   setDefaultValidityDate();
-  populateQuoteProfileControls();
   renderTemplatesBody();
   updateVersionIndicator();
 });
@@ -5166,9 +5167,15 @@ function populatePriceListProfileControls() {
 function syncPriceListTierOptions() {
   const typeEl = document.getElementById('priceListPartnerType');
   const tierEl = document.getElementById('priceListPartnerTier');
-  const typeCfg = PARTNER_PRICE_PROFILES[typeEl.value];
+  if (!typeEl || !tierEl) return;
+  const fallbackType = PARTNER_PRICE_PROFILES.reseller ? 'reseller' : Object.keys(PARTNER_PRICE_PROFILES)[0];
+  const selectedType = PARTNER_PRICE_PROFILES[typeEl.value] ? typeEl.value : fallbackType;
+  typeEl.value = selectedType;
+  const typeCfg = PARTNER_PRICE_PROFILES[selectedType];
+  if (!typeCfg || !typeCfg.tiers) return;
   const current = tierEl.value;
   const tierKeys = Object.keys(typeCfg.tiers);
+  if (!tierKeys.length) return;
 
   tierEl.innerHTML = tierKeys.map(function(key) {
     const tier = typeCfg.tiers[key];
@@ -5179,10 +5186,18 @@ function syncPriceListTierOptions() {
 }
 
 function getSelectedPriceListProfile() {
-  const type = document.getElementById('priceListPartnerType').value;
-  const tier = document.getElementById('priceListPartnerTier').value;
+  const typeEl = document.getElementById('priceListPartnerType');
+  const tierEl = document.getElementById('priceListPartnerTier');
+  const fallbackType = PARTNER_PRICE_PROFILES.reseller ? 'reseller' : Object.keys(PARTNER_PRICE_PROFILES)[0];
+  const type = typeEl && PARTNER_PRICE_PROFILES[typeEl.value] ? typeEl.value : fallbackType;
   const typeCfg = PARTNER_PRICE_PROFILES[type];
+  if (!typeCfg || !typeCfg.tiers) return null;
+  const tierKeys = Object.keys(typeCfg.tiers);
+  if (!tierKeys.length) return null;
+  const requestedTier = tierEl ? tierEl.value : '';
+  const tier = typeCfg.tiers[requestedTier] ? requestedTier : tierKeys[0];
   const tierCfg = typeCfg.tiers[tier];
+  if (!tierCfg) return null;
   return {
     type: type,
     tier: tier,
@@ -5222,6 +5237,7 @@ function syncPriceListFilterOptions() {
   if (!catEl) return;
 
   const profile = getSelectedPriceListProfile();
+  if (!profile) return;
   const visibleProducts = PRODUCTS.filter(function(product) {
     return !isHiddenForProfile(product, profile);
   });
