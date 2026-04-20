@@ -2439,9 +2439,16 @@ const PRODUCTS = [
 ];
 
 // ─── PRODUCT ATTRIBUTE DERIVATION ────────────────────────────────────────────
+function stripBracketedProductText(name) {
+  return name.replace(/\s*\([^)]*\)/g, '').replace(/\s+/g, ' ').trim();
+}
+
 (function() {
   PRODUCTS.forEach(function(p) {
-    var n = p.name.toLowerCase();
+    var originalName = p.name;
+    var n = originalName.toLowerCase();
+
+    p.name = stripBracketedProductText(originalName);
 
     // Agent type — detect Named vs Concurrent from name
     if (/(named|nam-)/.test(n) || n.indexOf('(nam') !== -1) {
@@ -2462,7 +2469,7 @@ const PRODUCTS = [
     }
 
     // Clean name: strip agent/payment qualifiers for display when filters are active
-    var cn = p.name;
+    var cn = p.name || originalName;
     cn = cn.replace(/\s*\((nam|conc)[^)]*\)/gi, '');
     cn = cn.replace(/\s*\bNAMED\b/gi, '');
     cn = cn.replace(/\s*\bCONC\b/gi, '');
