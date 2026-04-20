@@ -2522,7 +2522,36 @@ function downloadBlob(filename, content, mimeType) {
   setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
 }
 
-const PRODUCT_CSV_HEADERS = ['id', 'name', 'cat', 'billing', 'list', 'cost', 'threshold'];
+const PRODUCT_CSV_HEADERS = [
+  'product_id',
+  'product_e',
+  'category',
+  'billing',
+  'list_rrp',
+  'cost',
+  'threshold',
+  'license_type',
+  'payment_type',
+  'description',
+  'tip',
+  'related_products'
+];
+const PRODUCT_CSV_REQUIRED_HEADERS = ['product_id', 'product_e', 'category', 'billing', 'list_rrp', 'cost', 'threshold'];
+
+const PRODUCT_CSV_HEADER_ALIASES = {
+  product_id: ['product_id', 'id'],
+  product_e: ['product_e', 'name'],
+  category: ['category', 'cat'],
+  billing: ['billing'],
+  list_rrp: ['list_rrp', 'list'],
+  cost: ['cost'],
+  threshold: ['threshold'],
+  license_type: ['license_type', 'agent_type'],
+  payment_type: ['payment_type', 'commitment'],
+  description: ['description', 'desc'],
+  tip: ['tip'],
+  related_products: ['related_products', 'related']
+};
 
 function parseCsvRows(text) {
   const rows = [];
@@ -2566,26 +2595,41 @@ function parseProductCsv(text) {
   const rows = parseCsvRows(text);
   if (!rows.length) return [];
   const headers = rows[0].map(function(h) { return String(h || '').trim().toLowerCase(); });
-  const required = PRODUCT_CSV_HEADERS;
-  const missing = required.filter(function(h) { return !headers.includes(h); });
+  const headerIndex = {};
+  Object.keys(PRODUCT_CSV_HEADER_ALIASES).forEach(function(key) {
+    const aliases = PRODUCT_CSV_HEADER_ALIASES[key];
+    const idx = headers.findIndex(function(h) { return aliases.includes(h); });
+    if (idx !== -1) headerIndex[key] = idx;
+  });
+
+  const missing = PRODUCT_CSV_REQUIRED_HEADERS.filter(function(h) { return headerIndex[h] == null; });
   if (missing.length) {
     throw new Error('Missing required columns: ' + missing.join(', '));
   }
+
   const mapped = rows.slice(1).map(function(cells) {
     const out = {};
-    headers.forEach(function(header, idx) { out[header] = (cells[idx] == null ? '' : String(cells[idx]).trim()); });
+    PRODUCT_CSV_HEADERS.forEach(function(header) {
+      const idx = headerIndex[header];
+      out[header] = idx == null ? '' : (cells[idx] == null ? '' : String(cells[idx]).trim());
+    });
     return out;
-  }).filter(function(r) { return r.id && r.name; });
+  }).filter(function(r) { return r.product_id && r.product_e; });
 
   return mapped.map(function(r) {
     return {
-      id: r.id,
-      name: r.name,
-      cat: r.cat || 'Uncategorised',
+      id: r.product_id,
+      name: r.product_e,
+      cat: r.category || 'Uncategorised',
       billing: r.billing || 'Monthly',
-      list: Number(r.list) || 0,
+      list: Number(r.list_rrp) || 0,
       cost: Number(r.cost) || 0,
-      threshold: Number(r.threshold) || 0
+      threshold: Number(r.threshold) || 0,
+      license_type: r.license_type || '',
+      payment_type: r.payment_type || '',
+      description: r.description || '',
+      tip: r.tip || '',
+      related_products: r.related_products || ''
     };
   });
 }
@@ -2623,8 +2667,26 @@ function refreshProductCatalogueViews() {
 function downloadProductExtractCsv() {
   const lines = [PRODUCT_CSV_HEADERS.map(csvEscape).join(',')];
   PRODUCTS.forEach(function(p) {
+    const meta = getProductMeta(p);
+    const relatedProducts = (meta.related || []).map(function(entry) {
+      return entry && entry[0] ? (entry[1] ? (entry[0] + ' (' + entry[1] + ')') : entry[0]) : '';
+    }).filter(Boolean).join(' | ');
+    const exportRow = {
+      product_id: p.id,
+      product_e: p.name,
+      category: p.cat,
+      billing: p.billing,
+      list_rrp: p.list,
+      cost: p.cost,
+      threshold: p.threshold,
+      license_type: meta.agentType || '',
+      payment_type: meta.commitment || '',
+      description: meta.desc || '',
+      tip: meta.tip || '',
+      related_products: relatedProducts
+    };
     const row = PRODUCT_CSV_HEADERS.map(function(h) {
-      const value = p[h];
+      const value = exportRow[h];
       return csvEscape(typeof value === 'number' ? value : (value == null ? '' : value));
     });
     lines.push(row.join(','));
@@ -4318,6 +4380,22 @@ const PRODUCT_META = {
 
 // Fallback description generator for products without specific metadata
 function getProductMeta(product) {
+  const inlineRelated = String(product.related_products || '').split('|').map(function(part) {
+    const trimmed = String(part || '').trim();
+    if (!trimmed) return null;
+    const match = trimmed.match(/^([A-Za-z0-9_-]+)\s*\((.*)\)$/);
+    return match ? [match[1], match[2]] : [trimmed, ''];
+  }).filter(Boolean);
+  const hasInlineMeta = !!(product.description || product.tip || product.license_type || product.payment_type || inlineRelated.length);
+  if (hasInlineMeta) {
+    return {
+      desc: product.description || '',
+      agentType: product.license_type || 'N/A',
+      commitment: product.payment_type || (product.billing === 'One Off' ? 'One-Off' : 'Monthly'),
+      related: inlineRelated,
+      tip: product.tip || ''
+    };
+  }
   if (PRODUCT_META[product.id]) return PRODUCT_META[product.id];
   // Generate sensible fallback based on product attributes
   const isNamed = product.name.toLowerCase().includes('named') || product.name.toLowerCase().includes('nam');
