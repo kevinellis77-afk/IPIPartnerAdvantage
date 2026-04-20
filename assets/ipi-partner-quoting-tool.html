@@ -2537,6 +2537,7 @@ const PRODUCT_CSV_HEADERS = [
   'related_products'
 ];
 const PRODUCT_CSV_REQUIRED_HEADERS = ['product_id', 'product_e', 'category', 'billing', 'list_rrp', 'cost', 'threshold'];
+const PRODUCT_CATALOGUE_STORAGE_KEY = 'ipi-partner-quote-products-v1';
 
 const PRODUCT_CSV_HEADER_ALIASES = {
   product_id: ['product_id', 'id'],
@@ -2634,6 +2635,49 @@ function parseProductCsv(text) {
   });
 }
 
+function cloneProductsForStorage(products) {
+  return products.map(function(p) {
+    return {
+      id: p.id,
+      name: p.name,
+      cat: p.cat,
+      billing: p.billing,
+      list: Number(p.list) || 0,
+      cost: Number(p.cost) || 0,
+      threshold: Number(p.threshold) || 0,
+      license_type: p.license_type || '',
+      payment_type: p.payment_type || '',
+      description: p.description || '',
+      tip: p.tip || '',
+      related_products: p.related_products || ''
+    };
+  });
+}
+
+function loadStoredProductCatalogue() {
+  try {
+    const raw = localStorage.getItem(PRODUCT_CATALOGUE_STORAGE_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || !parsed.length) return false;
+    const normalized = cloneProductsForStorage(parsed).filter(function(p) { return p.id && p.name; });
+    if (!normalized.length) return false;
+    PRODUCTS.splice(0, PRODUCTS.length);
+    normalized.forEach(function(p) { PRODUCTS.push(p); });
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+function persistProductCatalogue() {
+  try {
+    localStorage.setItem(PRODUCT_CATALOGUE_STORAGE_KEY, JSON.stringify(cloneProductsForStorage(PRODUCTS)));
+  } catch (err) {
+    // Ignore localStorage write failures (private mode / quota).
+  }
+}
+
 function updateCategoryMetadataFromProducts() {
   PRODUCTS.forEach(function(p) {
     const category = p.cat || 'Uncategorised';
@@ -2717,6 +2761,7 @@ function handleProductImportFile(event) {
 
       PRODUCTS.splice(0, PRODUCTS.length);
       imported.forEach(function(p) { PRODUCTS.push(p); });
+      persistProductCatalogue();
       refreshProductCatalogueViews();
       showToast('✓ Product CSV uploaded (' + imported.length + ' rows)');
     } catch (err) {
@@ -2979,12 +3024,12 @@ function generateQuoteRef() {
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
+  loadStoredProductCatalogue();
+  refreshProductCatalogueViews();
   currentBaseRef = quoteCounter;
   document.getElementById('quoteRef').value = quoteCounter;
   setDefaultValidityDate();
   populateQuoteProfileControls();
-  renderCategoryTabs();
-  renderProductList();
   renderTemplatesBody();
   updateVersionIndicator();
 });
