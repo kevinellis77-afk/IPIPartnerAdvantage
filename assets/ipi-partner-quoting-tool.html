@@ -2548,10 +2548,29 @@ function normalizePaymentType(value) {
   return null;
 }
 
+function normalizeBillingType(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return 'Monthly';
+  const lower = raw.toLowerCase();
+  if (
+    /one[\s-]?off|one[\s-]?time|otc|non[\s-]?recurring|setup|implementation|professional services|project/i.test(lower)
+  ) {
+    return 'One Off';
+  }
+  if (
+    /monthly|recurring|subscription|mrc|annual|pre[\s-]?pay|pay[\s-]?monthly|ann(?:ual)?\s*pay/i.test(lower)
+  ) {
+    return 'Monthly';
+  }
+  return 'Monthly';
+}
+
 function applyDerivedProductAttributes() {
   PRODUCTS.forEach(function(p) {
     var originalName = (p.name || '').trim();
     var n = originalName.toLowerCase();
+
+    p.billing = normalizeBillingType(p.billing);
 
     p.name = stripBracketedProductText(originalName);
 
