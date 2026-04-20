@@ -1861,15 +1861,7 @@
     font-weight: 700;
     letter-spacing: -0.03em;
     color: var(--charcoal-dark);
-    margin-bottom: 8px;
-  }
-
-  .price-list-copy {
-    font-size: 13px;
-    color: var(--text-muted);
-    line-height: 1.6;
-    max-width: 860px;
-    margin-bottom: 18px;
+    margin-bottom: 10px;
   }
 
   .price-list-profile {
@@ -1885,11 +1877,43 @@
     margin-bottom: 16px;
   }
 
+  .price-list-header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .price-list-filter-toggle {
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--charcoal);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+
+  .price-list-filter-toggle:hover {
+    background: var(--off-white);
+  }
+
+  .price-list-filter-summary {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
   .price-list-controls {
     display: grid;
     grid-template-columns: 220px 220px 220px minmax(220px, 1fr);
     gap: 12px;
   }
+
+  .price-list-controls.hidden { display: none; }
 
   .price-list-table-wrap {
     background: white;
@@ -1924,6 +1948,21 @@
     padding: 11px 12px;
     text-align: left;
   }
+
+  .price-list-table thead th.sortable {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .price-list-table thead th.sortable::after {
+    content: '↕';
+    margin-left: 6px;
+    opacity: 0.5;
+    font-size: 10px;
+  }
+
+  .price-list-table thead th.sortable.is-sorted-asc::after { content: '▲'; opacity: 0.9; }
+  .price-list-table thead th.sortable.is-sorted-desc::after { content: '▼'; opacity: 0.9; }
 
   .price-list-table tbody td {
     padding: 12px;
@@ -2072,12 +2111,15 @@
 </div>
 
 <div class="price-list-overlay hidden" id="priceListOverlay">
-  <div class="price-list-shell">
+    <div class="price-list-shell">
     <div class="price-list-header">
       <div class="price-list-title">Partner Price List</div>
-      <div class="price-list-copy">Partner-focused commercial view showing List RRP alongside calculated net price for the selected route-to-market. This keeps price discovery out of the quote builder and makes the app more usable in a live partner sales cycle.</div>
-      <div class="price-list-profile" id="priceListProfileBadge">Profile: Reseller · Accredited · 20% discount</div>
-      <div class="price-list-controls">
+      <div class="price-list-header-actions">
+        <div class="price-list-profile" id="priceListProfileBadge">Profile: Reseller · Accredited · 20% discount</div>
+        <button class="price-list-filter-toggle" id="priceListFilterToggleBtn" type="button" onclick="togglePriceListFilters()">Hide filters</button>
+      </div>
+      <p class="price-list-filter-summary" id="priceListFilterSummary"></p>
+      <div class="price-list-controls" id="priceListControls">
         <div class="meta-field">
           <label>Partner Model</label>
           <select id="priceListPartnerType" onchange="onPriceListProfileChange()"></select>
@@ -2118,13 +2160,13 @@
         <table class="price-list-table">
           <thead>
             <tr>
-              <th style="width:120px">SAP ID</th>
-              <th style="width:33%">Product</th>
-              <th style="width:130px">Category</th>
-              <th style="width:120px">License</th>
-              <th style="width:130px">Payment</th>
-              <th style="width:130px;text-align:right">List RRP</th>
-              <th style="width:140px;text-align:right">Partner Price</th>
+              <th class="sortable" data-sort-key="id" style="width:120px">SAP ID</th>
+              <th class="sortable" data-sort-key="name" style="width:33%">Product</th>
+              <th class="sortable" data-sort-key="cat" style="width:130px">Category</th>
+              <th class="sortable" data-sort-key="license" style="width:120px">License</th>
+              <th class="sortable" data-sort-key="payment" style="width:130px">Payment</th>
+              <th class="sortable" data-sort-key="list" style="width:130px;text-align:right">List RRP</th>
+              <th class="sortable" data-sort-key="partner" style="width:140px;text-align:right">Partner Price</th>
               <th style="width:70px;text-align:center">Info</th>
             </tr>
           </thead>
@@ -2805,7 +2847,7 @@ function refreshProductCatalogueViews() {
   renderCategoryTabs();
   renderProductList();
   renderQuote();
-  populatePriceListCategoryOptions();
+  syncPriceListFilterOptions();
   renderPartnerPriceList();
 }
 
@@ -4946,6 +4988,9 @@ function showConfirmBanner(message, actionLabel, onConfirm) {
 
 // ─── TOAST ────────────────────────────────────────────────────────────────────
 let toastTimer;
+let priceListFiltersCollapsed = false;
+let priceListSortState = { key: 'cat', direction: 'asc' };
+
 function showToast(msg) {
   const existing = document.querySelector('.toast');
   if (existing) existing.remove();
@@ -4960,7 +5005,8 @@ function showToast(msg) {
 // ─── PARTNER PRICE LIST LAYER ───────────────────────────────────────────────
 function initPartnerPriceList() {
   populatePriceListProfileControls();
-  populatePriceListCategoryOptions();
+  bindPriceListSorting();
+  syncPriceListFilterOptions();
   renderPartnerPriceList();
   openLaunchpad();
 }
@@ -4980,6 +5026,7 @@ function openQuoteBuilder() {
 function openPriceList() {
   document.getElementById('launchpadOverlay').classList.add('hidden');
   document.getElementById('priceListOverlay').classList.remove('hidden');
+  syncPriceListFilterOptions();
   renderPartnerPriceList();
   updateToolbarState();
 }
@@ -5128,17 +5175,136 @@ function getSelectedPriceListProfile() {
 
 function onPriceListProfileChange() {
   syncPriceListTierOptions();
+  syncPriceListFilterOptions();
   renderPartnerPriceList();
 }
 
-function populatePriceListCategoryOptions() {
+function setSelectOptions(selectEl, options, allLabel) {
+  if (!selectEl) return;
+  const current = selectEl.value;
+  const safeOptions = Array.from(new Set(options.filter(Boolean))).sort(function(a, b) {
+    return String(a).localeCompare(String(b));
+  });
+  const allValue = 'all';
+  const html = ['<option value="' + allValue + '">' + allLabel + '</option>'].concat(
+    safeOptions.map(function(option) {
+      return '<option value="' + option + '">' + option + '</option>';
+    })
+  ).join('');
+  selectEl.innerHTML = html;
+  const preferred = current || allValue;
+  selectEl.value = safeOptions.includes(preferred) || preferred === allValue ? preferred : allValue;
+}
+
+function syncPriceListFilterOptions() {
   const catEl = document.getElementById('priceListCategory');
+  const payEl = document.getElementById('priceListPayType');
+  const agentEl = document.getElementById('priceListAgentType');
   if (!catEl) return;
-  const cats = ['All'].concat(Object.keys(CAT_COLOURS));
-  catEl.innerHTML = cats.map(function(cat) {
-    return '<option value="' + cat + '">' + cat + '</option>';
-  }).join('');
-  catEl.value = 'All';
+
+  const profile = getSelectedPriceListProfile();
+  const visibleProducts = PRODUCTS.filter(function(product) {
+    return !isHiddenForProfile(product, profile);
+  });
+
+  setSelectOptions(catEl, visibleProducts.map(function(product) { return product.cat; }), 'All categories');
+  setSelectOptions(payEl, visibleProducts.map(function(product) {
+    return getProductMeta(product).commitment || (product.payType === 'PrePay' ? 'Annual Pre-Pay' : (product.payType === 'PayMonthly' ? 'Monthly' : '—'));
+  }), 'All payment types');
+  setSelectOptions(agentEl, visibleProducts.map(function(product) {
+    return getProductMeta(product).agentType || product.agentType || '—';
+  }), 'All license types');
+}
+
+function bindPriceListSorting() {
+  document.querySelectorAll('.price-list-table thead th.sortable').forEach(function(th) {
+    th.addEventListener('click', function() {
+      const key = th.getAttribute('data-sort-key');
+      if (!key) return;
+      if (priceListSortState.key === key) {
+        priceListSortState.direction = priceListSortState.direction === 'asc' ? 'desc' : 'asc';
+      } else {
+        priceListSortState = { key: key, direction: 'asc' };
+      }
+      renderPartnerPriceList();
+    });
+  });
+}
+
+function updatePriceListSortIndicators() {
+  document.querySelectorAll('.price-list-table thead th.sortable').forEach(function(th) {
+    th.classList.remove('is-sorted-asc', 'is-sorted-desc');
+    const key = th.getAttribute('data-sort-key');
+    if (key === priceListSortState.key) {
+      th.classList.add(priceListSortState.direction === 'asc' ? 'is-sorted-asc' : 'is-sorted-desc');
+    }
+  });
+}
+
+function getPriceListSortValue(product, profile, sortKey) {
+  const meta = getProductMeta(product);
+  const listPrice = product.list > 0 ? product.list : product.threshold;
+  const payLabel = meta.commitment || (product.payType === 'PrePay' ? 'Annual Pre-Pay' : (product.payType === 'PayMonthly' ? 'Monthly' : '—'));
+  const licenseLabel = meta.agentType || product.agentType || '—';
+  switch (sortKey) {
+    case 'id': return product.id;
+    case 'name': return product.name;
+    case 'cat': return product.cat;
+    case 'license': return licenseLabel;
+    case 'payment': return payLabel;
+    case 'list': return Number(listPrice || 0);
+    case 'partner': return Number(getPriceForProductByProfile(product, profile) || 0);
+    default: return product.name;
+  }
+}
+
+function comparePriceListRows(a, b, profile) {
+  const direction = priceListSortState.direction === 'desc' ? -1 : 1;
+  const left = getPriceListSortValue(a, profile, priceListSortState.key);
+  const right = getPriceListSortValue(b, profile, priceListSortState.key);
+  const isNumeric = typeof left === 'number' && typeof right === 'number';
+  if (isNumeric) {
+    if (left === right) return a.name.localeCompare(b.name);
+    return (left - right) * direction;
+  }
+  const compare = String(left).localeCompare(String(right), undefined, { sensitivity: 'base', numeric: true });
+  if (compare !== 0) return compare * direction;
+  return a.name.localeCompare(b.name);
+}
+
+function updatePriceListFilterSummary() {
+  const summaryEl = document.getElementById('priceListFilterSummary');
+  if (!summaryEl) return;
+
+  const filters = [];
+  const selectedModel = document.getElementById('priceListPartnerType');
+  const selectedTier = document.getElementById('priceListPartnerTier');
+  const selectedCategory = document.getElementById('priceListCategory');
+  const selectedPayment = document.getElementById('priceListPayType');
+  const selectedLicense = document.getElementById('priceListAgentType');
+  const searchValue = (document.getElementById('priceListSearch')?.value || '').trim();
+
+  if (selectedModel?.value) filters.push(selectedModel.options[selectedModel.selectedIndex]?.text || selectedModel.value);
+  if (selectedTier?.value) filters.push(selectedTier.options[selectedTier.selectedIndex]?.text || selectedTier.value);
+  if (selectedCategory?.value && selectedCategory.value !== 'all') filters.push('Category: ' + selectedCategory.value);
+  if (selectedPayment?.value && selectedPayment.value !== 'all') filters.push('Payment: ' + selectedPayment.value);
+  if (selectedLicense?.value && selectedLicense.value !== 'all') filters.push('License: ' + selectedLicense.value);
+  if (searchValue) filters.push('Search: "' + searchValue + '"');
+
+  summaryEl.textContent = filters.length ? 'Active filters: ' + filters.join(' · ') : 'No filters selected';
+}
+
+function togglePriceListFilters(forceExpanded) {
+  const controls = document.getElementById('priceListControls');
+  const toggleBtn = document.getElementById('priceListFilterToggleBtn');
+  if (!controls || !toggleBtn) return;
+  if (typeof forceExpanded === 'boolean') {
+    priceListFiltersCollapsed = !forceExpanded;
+  } else {
+    priceListFiltersCollapsed = !priceListFiltersCollapsed;
+  }
+  controls.classList.toggle('hidden', priceListFiltersCollapsed);
+  toggleBtn.textContent = priceListFiltersCollapsed ? 'Show filters' : 'Hide filters';
 }
 
 function renderPartnerPriceList() {
@@ -5146,28 +5312,32 @@ function renderPartnerPriceList() {
   if (!body || typeof PRODUCTS === 'undefined') return;
 
   const profile = getSelectedPriceListProfile();
+  syncPriceListFilterOptions();
   const badge = document.getElementById('priceListProfileBadge');
   if (badge) badge.textContent = 'Profile: ' + profile.typeLabel + ' · ' + profile.tierLabel + ' · ' + Math.round(profile.discount * 100) + '% discount';
 
-  const category = document.getElementById('priceListCategory').value || 'All';
+  const category = document.getElementById('priceListCategory').value || 'all';
   const search = (document.getElementById('priceListSearch').value || '').toLowerCase();
   const payType = document.getElementById('priceListPayType').value || 'all';
   const agentType = document.getElementById('priceListAgentType').value || 'all';
 
+  updatePriceListSortIndicators();
+  updatePriceListFilterSummary();
+
   const rows = PRODUCTS.filter(function(p) {
     if (isHiddenForProfile(p, profile)) return false;
-    const matchCategory = category === 'All' || p.cat === category;
+    const meta = getProductMeta(p);
+    const payLabel = meta.commitment || (p.payType === 'PrePay' ? 'Annual Pre-Pay' : (p.payType === 'PayMonthly' ? 'Monthly' : '—'));
+    const licenseLabel = meta.agentType || p.agentType || '—';
+    const matchCategory = category === 'all' || p.cat === category;
     const matchSearch = !search ||
       p.name.toLowerCase().indexOf(search) !== -1 ||
       p.id.toLowerCase().indexOf(search) !== -1 ||
       (p.cleanName && p.cleanName.toLowerCase().indexOf(search) !== -1);
-    const matchPayType = payType === 'all' ? true : (!!p.payType && p.payType === payType);
-    const matchAgentType = agentType === 'all' ? true : (!!p.agentType && p.agentType === agentType);
+    const matchPayType = payType === 'all' ? true : payLabel === payType;
+    const matchAgentType = agentType === 'all' ? true : licenseLabel === agentType;
     return matchCategory && matchSearch && matchPayType && matchAgentType;
-  }).sort(function(a, b) {
-    if (a.cat !== b.cat) return a.cat.localeCompare(b.cat);
-    return a.name.localeCompare(b.name);
-  });
+  }).sort(function(a, b) { return comparePriceListRows(a, b, profile); });
 
   if (!rows.length) {
     body.innerHTML = '<tr><td colspan="8" style="padding:32px;text-align:center;color:var(--text-muted)">No products match this search.</td></tr>';
