@@ -2510,6 +2510,18 @@ function csvEscape(value) {
   return raw;
 }
 
+function downloadBlob(filename, content, mimeType) {
+  const blob = new Blob([content], { type: mimeType || 'application/octet-stream' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename || 'download';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+}
+
 const PRODUCT_CSV_HEADERS = ['id', 'name', 'cat', 'billing', 'list', 'cost', 'threshold'];
 
 function parseCsvRows(text) {
