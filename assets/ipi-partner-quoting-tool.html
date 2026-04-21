@@ -526,6 +526,31 @@
     transition: border-color 0.15s;
   }
   .meta-field input:focus, .meta-field select:focus { border-color: var(--green); }
+  .meta-field-checkbox {
+    display: flex;
+    align-items: flex-end;
+  }
+  .meta-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--charcoal);
+    padding: 8px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: white;
+    min-height: 36px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .meta-checkbox-label input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    accent-color: var(--green);
+  }
 
   /* Quote Body */
   .quote-body {
@@ -2151,6 +2176,12 @@
             <option value="Named">Named</option>
             <option value="Concurrent">Concurrent</option>
           </select>
+        </div>
+        <div class="meta-field meta-field-checkbox">
+          <label class="meta-checkbox-label">
+            <input type="checkbox" id="priceListRrpOnly" onchange="renderPartnerPriceList()">
+            Show RRP only
+          </label>
         </div>
       </div>
     </div>
@@ -5294,6 +5325,7 @@ function updatePriceListSortIndicators() {
 function getPriceListSortValue(product, profile, sortKey) {
   const meta = getProductMeta(product);
   const listPrice = product.list > 0 ? product.list : product.threshold;
+  const showRrpOnly = !!document.getElementById('priceListRrpOnly')?.checked;
   const payLabel = meta.commitment || (product.payType === 'PrePay' ? 'Annual Pre-Pay' : (product.payType === 'PayMonthly' ? 'Monthly' : '—'));
   const licenseLabel = meta.agentType || product.agentType || '—';
   switch (sortKey) {
@@ -5303,7 +5335,7 @@ function getPriceListSortValue(product, profile, sortKey) {
     case 'license': return licenseLabel;
     case 'payment': return payLabel;
     case 'list': return Number(listPrice || 0);
-    case 'partner': return Number(getPriceForProductByProfile(product, profile) || 0);
+    case 'partner': return Number(showRrpOnly ? listPrice : (getPriceForProductByProfile(product, profile) || 0));
     default: return product.name;
   }
 }
@@ -5332,6 +5364,7 @@ function updatePriceListFilterSummary() {
   const selectedCategory = document.getElementById('priceListCategory');
   const selectedPayment = document.getElementById('priceListPayType');
   const selectedLicense = document.getElementById('priceListAgentType');
+  const showRrpOnly = !!document.getElementById('priceListRrpOnly')?.checked;
   const searchValue = (document.getElementById('priceListSearch')?.value || '').trim();
 
   if (selectedModel?.value) filters.push(selectedModel.options[selectedModel.selectedIndex]?.text || selectedModel.value);
@@ -5339,6 +5372,7 @@ function updatePriceListFilterSummary() {
   if (selectedCategory?.value && selectedCategory.value !== 'all') filters.push('Category: ' + selectedCategory.value);
   if (selectedPayment?.value && selectedPayment.value !== 'all') filters.push('Payment: ' + selectedPayment.value);
   if (selectedLicense?.value && selectedLicense.value !== 'all') filters.push('License: ' + selectedLicense.value);
+  if (showRrpOnly) filters.push('RRP only');
   if (searchValue) filters.push('Search: "' + searchValue + '"');
 
   summaryEl.textContent = filters.length ? 'Active filters: ' + filters.join(' · ') : 'No filters selected';
@@ -5364,13 +5398,17 @@ function renderPartnerPriceList() {
   const profile = getSelectedPriceListProfile();
   syncPriceListFilterOptions();
   const badge = document.getElementById('priceListProfileBadge');
-  if (badge) badge.textContent = 'Profile: ' + profile.typeLabel + ' · ' + profile.tierLabel + ' · ' + Math.round(profile.discount * 100) + '% discount';
+  const showRrpOnly = !!document.getElementById('priceListRrpOnly')?.checked;
+  if (badge) {
+    badge.textContent = showRrpOnly
+      ? 'Profile: ' + profile.typeLabel + ' · ' + profile.tierLabel + ' · RRP only (no discount)'
+      : 'Profile: ' + profile.typeLabel + ' · ' + profile.tierLabel + ' · ' + Math.round(profile.discount * 100) + '% discount';
+  }
 
   const category = document.getElementById('priceListCategory').value || 'all';
   const search = (document.getElementById('priceListSearch').value || '').toLowerCase();
   const payType = document.getElementById('priceListPayType').value || 'all';
   const agentType = document.getElementById('priceListAgentType').value || 'all';
-
   updatePriceListSortIndicators();
   updatePriceListFilterSummary();
 
@@ -5397,7 +5435,7 @@ function renderPartnerPriceList() {
   body.innerHTML = rows.map(function(p) {
     const meta = getProductMeta(p);
     const base = p.list > 0 ? p.list : p.threshold;
-    const net = getPriceForProductByProfile(p, profile);
+    const net = showRrpOnly ? base : getPriceForProductByProfile(p, profile);
     const billing = p.billing === 'Monthly' ? 'Recurring' : p.billing;
     const licenseLabel = meta.agentType || p.agentType || '—';
     const payLabel = meta.commitment || (p.payType === 'PrePay' ? 'Annual Pre-Pay' : (p.payType === 'PayMonthly' ? 'Monthly' : '—'));
