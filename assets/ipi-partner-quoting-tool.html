@@ -125,6 +125,32 @@
     margin: 0 2px;
   }
 
+  .global-profile-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .global-profile-label {
+    color: rgba(255,255,255,0.85);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .global-profile-controls select {
+    background: rgba(255,255,255,0.14);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.26);
+    border-radius: 6px;
+    font-size: 12px;
+    padding: 4px 8px;
+    min-width: 120px;
+  }
+
   .toolbar-menu {
     position: relative;
   }
@@ -354,6 +380,7 @@
   }
 
   .cat-tab {
+    appearance: none;
     padding: 4px 10px;
     border-radius: 20px;
     font-size: 11.5px;
@@ -364,8 +391,15 @@
     color: var(--text-muted);
     transition: all 0.15s;
     white-space: nowrap;
+    font-family: inherit;
+    line-height: 1.2;
   }
   .cat-tab:hover { border-color: var(--charcoal); color: var(--charcoal); }
+  .cat-tab:focus-visible {
+    outline: none;
+    border-color: var(--green);
+    box-shadow: 0 0 0 2px rgba(99,171,143,0.22);
+  }
   .cat-tab.active {
     background: var(--charcoal-dark);
     border-color: var(--charcoal-dark);
@@ -1029,6 +1063,16 @@
     flex-wrap: wrap;
   }
   .filter-row:last-child { margin-bottom: 0; }
+  .shared-filter-segmented { display: flex; gap: 5px; flex-wrap: wrap; }
+  .shared-filter-dropdown {
+    min-width: 170px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 5px 8px;
+    font-size: 12px;
+    color: var(--charcoal);
+    background: white;
+  }
   .filter-label {
     font-size: 9.5px;
     font-weight: 700;
@@ -1039,6 +1083,7 @@
     flex-shrink: 0;
   }
   .filter-pill {
+    appearance: none;
     padding: 3px 10px;
     border-radius: 12px;
     font-size: 11.5px;
@@ -1050,8 +1095,15 @@
     transition: all 0.12s;
     white-space: nowrap;
     user-select: none;
+    font-family: inherit;
+    line-height: 1.2;
   }
   .filter-pill:hover { border-color: var(--charcoal); }
+  .filter-pill:focus-visible {
+    outline: none;
+    border-color: var(--green);
+    box-shadow: 0 0 0 2px rgba(99,171,143,0.22);
+  }
   .filter-pill.active { background: var(--charcoal-dark); border-color: var(--charcoal-dark); color: white; }
   .filter-pill.active.agent-named  { background: var(--green);  border-color: var(--green); }
   .filter-pill.active.agent-conc   { background: var(--mauve);  border-color: var(--mauve); }
@@ -2179,6 +2231,11 @@
     <div class="logo-text">Partner Quoting Tool <span>Channel Partner Portal</span></div>
   </div>
   <div class="header-actions">
+    <div class="global-profile-controls">
+      <span class="global-profile-label">Profile</span>
+      <select id="globalPartnerType" onchange="onGlobalProfileChange()"></select>
+      <select id="globalPartnerTier" onchange="onGlobalProfileChange()"></select>
+    </div>
     <div class="toolbar-menu">
       <button class="btn btn-secondary toolbar-menu-btn" id="workspaceMenuBtn" onclick="toggleToolbarMenu('workspaceMenu')">
         Workspace
@@ -2259,14 +2316,15 @@
       <p class="price-list-filter-summary" id="priceListFilterSummary"></p>
       <div class="price-list-controls" id="priceListControls">
         <div class="meta-field">
-          <label>Partner Model</label>
+          <label id="labelPriceListPartnerModel">Partner Model</label>
           <select id="priceListPartnerType" onchange="onPriceListProfileChange()"></select>
         </div>
         <div class="meta-field">
-          <label>Tier</label>
+          <label id="labelPriceListPartnerTier">Partner Tier</label>
           <select id="priceListPartnerTier" onchange="onPriceListProfileChange()"></select>
         </div>
         <div class="meta-field">
+          <label id="labelPriceListCategory">Category</label>
           <label>Category</label>
           <select id="priceListCategory" class="multi-select-native" multiple onchange="renderPartnerPriceList()"></select>
         </div>
@@ -2275,11 +2333,11 @@
           <input type="text" id="priceListSearch" placeholder="Search by product, SKU or family…" oninput="renderPartnerPriceList()">
         </div>
         <div class="meta-field">
-          <label>Payment Type</label>
+          <label id="labelPriceListPaymentType">Payment Type</label>
           <select id="priceListPayType" class="multi-select-native" multiple onchange="renderPartnerPriceList()"></select>
         </div>
         <div class="meta-field">
-          <label>License Type</label>
+          <label id="labelPriceListLicenseType">License Type</label>
           <select id="priceListAgentType" class="multi-select-native" multiple onchange="renderPartnerPriceList()"></select>
         </div>
         <div class="meta-field meta-field-checkbox">
@@ -2298,9 +2356,9 @@
             <tr>
               <th class="sortable" data-sort-key="id" style="width:120px">SAP ID</th>
               <th class="sortable" data-sort-key="name" style="width:33%">Product</th>
-              <th class="sortable" data-sort-key="cat" style="width:130px">Category</th>
-              <th class="sortable" data-sort-key="license" style="width:120px">License</th>
-              <th class="sortable" data-sort-key="payment" style="width:130px">Payment</th>
+              <th class="sortable" id="thPriceListCategory" data-sort-key="cat" style="width:130px">Category</th>
+              <th class="sortable" id="thPriceListLicense" data-sort-key="license" style="width:120px">License</th>
+              <th class="sortable" id="thPriceListPayment" data-sort-key="payment" style="width:130px">Payment</th>
               <th class="sortable" data-sort-key="list" style="width:130px;text-align:right">List RRP</th>
               <th class="sortable" data-sort-key="partner" style="width:140px;text-align:right">Partner Price</th>
               <th style="width:70px;text-align:center">Info</th>
@@ -2325,20 +2383,23 @@
         <input type="text" id="searchInput" placeholder="Search products or SKU…" oninput="filterProducts()">
       </div>
     </div>
-    <div class="category-tabs" id="categoryTabs"></div>
+    <div class="category-tabs" id="categoryTabs" role="tablist" aria-label="Product categories"></div>
     <div class="filter-bar" id="filterBar">
-      <div class="filter-row">
+      <div class="filter-row" role="group" aria-label="Filter by license type">
         <span class="filter-label">Agent</span>
-        <span class="filter-pill active"       data-filter="agent" data-value="all"         onclick="setFilter('agent','all')">All</span>
-        <span class="filter-pill agent-named"  data-filter="agent" data-value="Named"       onclick="setFilter('agent','Named')">Named</span>
-        <span class="filter-pill agent-conc"   data-filter="agent" data-value="Concurrent"  onclick="setFilter('agent','Concurrent')">Concurrent</span>
+        <button class="filter-pill active" type="button" data-filter="agent" data-value="all"        aria-pressed="true"  onclick="setFilter('agent','all')">All</button>
+        <button class="filter-pill agent-named" type="button" data-filter="agent" data-value="Named"      aria-pressed="false" onclick="setFilter('agent','Named')">Named</button>
+        <button class="filter-pill agent-conc" type="button" data-filter="agent" data-value="Concurrent" aria-pressed="false" onclick="setFilter('agent','Concurrent')">Concurrent</button>
       </div>
-      <div class="filter-row">
+      <div class="filter-row" role="group" aria-label="Filter by payment type">
         <span class="filter-label">Payment</span>
-        <span class="filter-pill active"       data-filter="pay"   data-value="all"         onclick="setFilter('pay','all')">All</span>
-        <span class="filter-pill pay-prepay"   data-filter="pay"   data-value="PrePay"      onclick="setFilter('pay','PrePay')">Annual Pre-Pay</span>
-        <span class="filter-pill pay-monthly"  data-filter="pay"   data-value="PayMonthly"  onclick="setFilter('pay','PayMonthly')">Pay Monthly</span>
+        <button class="filter-pill active" type="button" data-filter="pay" data-value="all"        aria-pressed="true"  onclick="setFilter('pay','all')">All</button>
+        <button class="filter-pill pay-prepay" type="button" data-filter="pay" data-value="PrePay"     aria-pressed="false" onclick="setFilter('pay','PrePay')">Annual Pre-Pay</button>
+        <button class="filter-pill pay-monthly" type="button" data-filter="pay" data-value="PayMonthly" aria-pressed="false" onclick="setFilter('pay','PayMonthly')">Pay Monthly</button>
       </div>
+    <div class="category-tabs" id="categoryTabs" data-control-mode="segmented"></div>
+    <div class="filter-bar" id="filterBar">
+      <div id="sharedQuoteFilterControls"></div>
     </div>
     <button class="templates-btn" onclick="openTemplatesModal()">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>
@@ -2360,11 +2421,11 @@
           <input type="text" id="endCustomer" placeholder="e.g. Global Corp plc">
         </div>
         <div class="meta-field">
-          <label>Partner Model</label>
+          <label id="labelQuotePartnerModel">Partner Model</label>
           <select id="partnerModel" onchange="onPartnerProfileChange()"></select>
         </div>
         <div class="meta-field">
-          <label>Partner Tier</label>
+          <label id="labelQuotePartnerTier">Partner Tier</label>
           <select id="partnerTier" onchange="onPartnerProfileChange()"></select>
         </div>
         <div class="meta-field">
@@ -2671,8 +2732,8 @@ function stripBracketedProductText(name) {
 function normalizeAgentType(value) {
   const raw = String(value || '').trim();
   if (!raw) return null;
-  if (/^nam/i.test(raw)) return 'Named';
-  if (/^conc/i.test(raw)) return 'Concurrent';
+  if (/^nam/i.test(raw)) return CANONICAL_DICTIONARY.licenseTypes.named;
+  if (/^conc/i.test(raw)) return CANONICAL_DICTIONARY.licenseTypes.concurrent;
   return raw;
 }
 
@@ -2682,6 +2743,19 @@ function normalizePaymentType(value) {
   if (/annual pre.?pay|ann(?:ual)?\s*pre|pre-?pay/i.test(raw)) return 'PrePay';
   if (/pay monthly|monthly pay|ann(?:ual)?\s*pay|pay m(?:on|thly)|annpaym/i.test(raw)) return 'PayMonthly';
   return null;
+}
+
+function getCanonicalPaymentDisplay(product, explicit) {
+  if (explicit) return normalizeImportedDisplayValue('payment', explicit);
+  if (product && product.payType === 'PrePay') return CANONICAL_DICTIONARY.paymentTypes.prepay;
+  if (product && product.payType === 'PayMonthly') return CANONICAL_DICTIONARY.paymentTypes.monthly;
+  return CANONICAL_DICTIONARY.paymentTypes.na;
+}
+
+function getCanonicalLicenseDisplay(product, explicit) {
+  if (explicit) return normalizeImportedDisplayValue('license', explicit);
+  if (product && product.agentType) return normalizeImportedDisplayValue('license', product.agentType);
+  return CANONICAL_DICTIONARY.licenseTypes.dash;
 }
 
 function normalizeBillingType(value) {
@@ -2919,13 +2993,13 @@ function parseProductCsv(text) {
     return {
       id: r.product_id,
       name: r.product_e,
-      cat: r.category || 'Uncategorised',
+      cat: normalizeImportedDisplayValue('category', r.category) || 'Uncategorised',
       billing: r.billing || 'Monthly',
       list: parseNumericValue(r.list_rrp),
       cost: parseNumericValue(r.cost),
       threshold: parseNumericValue(r.threshold),
-      license_type: licenseType,
-      payment_type: paymentType,
+      license_type: normalizeImportedDisplayValue('license', licenseType),
+      payment_type: normalizeImportedDisplayValue('payment', paymentType),
       description: r.description || '',
       tip: r.tip || '',
       related_products: r.related_products || ''
@@ -2999,7 +3073,7 @@ function refreshProductCatalogueViews() {
   applyDerivedProductAttributes();
   updateCategoryMetadataFromProducts();
   syncQuoteItemsToCurrentProducts();
-  renderCategoryTabs();
+  renderSharedQuoteFilters();
   renderProductList();
   renderQuote();
   syncPriceListFilterOptions();
@@ -3077,34 +3151,228 @@ function handleProductImportFile(event) {
 }
 
 // ─── FILTER STATE ─────────────────────────────────────────────────────────────
-var activeAgentFilter = 'all';
-var activePayFilter   = 'all';
+const FILTER_VALUE_MAP = {
+  paymentType: [
+    { value: 'all', label: 'All', aliases: ['all', ''] },
+    { value: 'PrePay', label: 'Annual Pre-Pay', aliases: ['prepay', 'annual pre-pay', 'annual prepay', 'annualprepay'] },
+    { value: 'PayMonthly', label: 'Monthly', aliases: ['paymonthly', 'pay monthly', 'monthly', 'annual (monthly pay)', 'annual monthly pay', 'annpaym'] },
+    { value: 'OnDemand', label: 'On Demand', aliases: ['ondemand', 'on demand'] },
+    { value: 'OneOff', label: 'One-Off', aliases: ['oneoff', 'one-off'] }
+  ],
+  licenseType: [
+    { value: 'all', label: 'All', aliases: ['all', ''] },
+    { value: 'Named', label: 'Named', aliases: ['named', 'named licenses'] },
+    { value: 'Concurrent', label: 'Concurrent', aliases: ['concurrent', 'concurrent licenses'] },
+    { value: 'N/A', label: 'N/A', aliases: ['n/a', 'na', '—'] }
+  ]
+};
 
-function setFilter(dimension, value) {
-  if (dimension === 'agent') activeAgentFilter = value;
-  if (dimension === 'pay')   activePayFilter   = value;
+const FILTER_SCHEMA = {
+  category: { key: 'category', label: 'Category', defaultValue: 'all', controlModes: ['segmented', 'dropdown'] },
+  paymentType: { key: 'paymentType', label: 'Payment', defaultValue: 'all', controlModes: ['segmented', 'dropdown'] },
+  licenseType: { key: 'licenseType', label: 'License', defaultValue: 'all', controlModes: ['segmented', 'dropdown'] },
+  search: { key: 'search', label: 'Search', defaultValue: '' }
+};
 
-  // Sync pill active states
+  // Sync pill active states and announce selected item
   document.querySelectorAll('.filter-pill').forEach(function(pill) {
     if (pill.dataset.filter === dimension) {
-      pill.classList.toggle('active', pill.dataset.value === value);
+      const isActive = pill.dataset.value === value;
+      pill.classList.toggle('active', isActive);
+      pill.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      pill.tabIndex = isActive ? 0 : -1;
     }
+const FILTER_PARITY_REGRESSION_CHECKLIST = [
+  'Select one category + one payment + one license in Product Catalogue; verify same subset in Product Price List.',
+  'Repeat with search text and ensure IDs shown in catalogue match IDs shown in Product Price List.',
+  'Validate payment labels map consistently (Annual Pre-Pay / Monthly) and select same canonical values in both views.',
+  'Validate “All” state clears each dimension and both views return complete visible profile product set.'
+];
+
+let sharedFilterState = {
+  category: FILTER_SCHEMA.category.defaultValue,
+  paymentType: FILTER_SCHEMA.paymentType.defaultValue,
+  licenseType: FILTER_SCHEMA.licenseType.defaultValue,
+  search: FILTER_SCHEMA.search.defaultValue
+};
+
+function normalizeMappedFilterValue(type, value) {
+  const raw = String(value == null ? '' : value).trim();
+  const lower = raw.toLowerCase();
+  const options = FILTER_VALUE_MAP[type] || [];
+  const direct = options.find(function(option) { return option.value.toLowerCase() === lower; });
+  if (direct) return direct.value;
+  const alias = options.find(function(option) {
+    return (option.aliases || []).some(function(aliasValue) { return String(aliasValue).toLowerCase() === lower; });
   });
+  return alias ? alias.value : raw;
+}
 
   renderProductList();
   persistWorkflowContext();
+function getMappedFilterLabel(type, value) {
+  const normalized = normalizeMappedFilterValue(type, value);
+  const option = (FILTER_VALUE_MAP[type] || []).find(function(item) { return item.value === normalized; });
+  return option ? option.label : normalized;
+}
+
+function moveSegmentedFocus(currentEl, groupSelector, itemSelector, direction) {
+  if (!currentEl) return null;
+  const group = currentEl.closest(groupSelector);
+  if (!group) return null;
+  const options = Array.from(group.querySelectorAll(itemSelector));
+  if (!options.length) return null;
+  const currentIndex = options.findIndex(function(option) { return option === currentEl; });
+  if (currentIndex < 0) return null;
+  const nextIndex = (currentIndex + direction + options.length) % options.length;
+  return options[nextIndex];
+}
+
+function onCategoryTabKeydown(event) {
+  if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+  const nextTab = moveSegmentedFocus(event.currentTarget, '#categoryTabs', '.cat-tab', event.key === 'ArrowRight' ? 1 : -1);
+  if (!nextTab) return;
+  event.preventDefault();
+  nextTab.click();
+  nextTab.focus();
+}
+
+function onFilterPillKeydown(event) {
+  if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+  const nextPill = moveSegmentedFocus(event.currentTarget, '.filter-row', '.filter-pill', event.key === 'ArrowRight' ? 1 : -1);
+  if (!nextPill) return;
+  event.preventDefault();
+  nextPill.click();
+  nextPill.focus();
+}
+
+function bindSegmentedControlKeyboardHandlers() {
+  document.querySelectorAll('#categoryTabs .cat-tab').forEach(function(tab) {
+    tab.removeEventListener('keydown', onCategoryTabKeydown);
+    tab.addEventListener('keydown', onCategoryTabKeydown);
+  });
+  document.querySelectorAll('.filter-pill').forEach(function(pill) {
+    pill.removeEventListener('keydown', onFilterPillKeydown);
+    pill.addEventListener('keydown', onFilterPillKeydown);
+  });
 }
 
 function productMatchesFilters(p) {
   const profile = getSelectedQuoteProfile();
   if (isHiddenForProfile(p, profile)) return false;
+function getCanonicalProductPaymentValue(product) {
+  const meta = getProductMeta(product);
+  const paymentRaw = meta.commitment || product.payType || '';
+  return normalizeMappedFilterValue('paymentType', paymentRaw) || 'all';
+}
 
-  if (activeAgentFilter !== 'all') {
-    if (!p.agentType || p.agentType !== activeAgentFilter) return false;
+function getCanonicalProductLicenseValue(product) {
+  const meta = getProductMeta(product);
+  const licenseRaw = meta.agentType || product.agentType || 'N/A';
+  return normalizeMappedFilterValue('licenseType', licenseRaw) || 'N/A';
+}
+
+function getCanonicalCategoryValue(category) {
+  return normalizeCategoryLabel(category);
+}
+
+function getQuoteSearchValue() {
+  return (document.getElementById('searchInput')?.value || '').trim();
+}
+
+function updateSharedFilterState(key, value, opts) {
+  const safeOpts = opts || {};
+  if (!Object.prototype.hasOwnProperty.call(FILTER_SCHEMA, key)) return;
+  if (key === 'search') {
+    sharedFilterState.search = String(value || '').trim();
+  } else if (key === 'category') {
+    sharedFilterState.category = (value === 'all') ? 'all' : getCanonicalCategoryValue(value);
+  } else if (key === 'paymentType' || key === 'licenseType') {
+    sharedFilterState[key] = normalizeMappedFilterValue(key, value || 'all') || 'all';
   }
-  if (activePayFilter !== 'all') {
-    if (!p.payType || p.payType !== activePayFilter) return false;
+
+  if (key === 'search') {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput && searchInput.value !== sharedFilterState.search) searchInput.value = sharedFilterState.search;
   }
+
+  if (!safeOpts.skipRenderControls) renderSharedQuoteFilters();
+  if (!safeOpts.skipRenderProducts) renderProductList();
+}
+
+function getFilterControlOptions(filterKey) {
+  if (filterKey === 'category') {
+    return [{ value: 'all', label: 'All' }].concat(
+      Object.keys(CAT_COLOURS).map(function(cat) {
+        const label = normalizeCategoryLabel(cat);
+        return { value: getCanonicalCategoryValue(cat), label: label };
+      })
+    );
+  }
+  if (filterKey === 'paymentType' || filterKey === 'licenseType') {
+    return (FILTER_VALUE_MAP[filterKey] || []).map(function(option) {
+      return { value: option.value, label: option.label };
+    });
+  }
+  return [];
+}
+
+function renderFilterControl(filterKey, mode, options, selectedValue) {
+  const escapedFilter = String(filterKey);
+  if (mode === 'dropdown') {
+    const optionHtml = options.map(function(option) {
+      const selected = option.value === selectedValue ? ' selected' : '';
+      return '<option value="' + option.value + '"' + selected + '>' + option.label + '</option>';
+    }).join('');
+    return '<select class="shared-filter-dropdown" data-filter-key="' + escapedFilter + '">' + optionHtml + '</select>';
+  }
+
+  return '<div class="shared-filter-segmented" data-filter-key="' + escapedFilter + '">' +
+    options.map(function(option) {
+      const isActive = option.value === selectedValue ? ' active' : '';
+      return '<button type="button" class="filter-pill' + isActive + '" data-filter-key="' + escapedFilter + '" data-value="' + option.value + '">' + option.label + '</button>';
+    }).join('') +
+  '</div>';
+}
+
+function bindSharedFilterControlHandlers(container) {
+  if (!container) return;
+  container.querySelectorAll('[data-filter-key][data-value]').forEach(function(button) {
+    button.addEventListener('click', function() {
+      updateSharedFilterState(button.dataset.filterKey, button.dataset.value);
+    });
+  });
+  container.querySelectorAll('select[data-filter-key]').forEach(function(select) {
+    select.addEventListener('change', function() {
+      updateSharedFilterState(select.dataset.filterKey, select.value);
+    });
+  });
+}
+
+function renderSharedQuoteFilters() {
+  const filterContainer = document.getElementById('sharedQuoteFilterControls');
+  const categoryContainer = document.getElementById('categoryTabs');
+  if (!filterContainer || !categoryContainer) return;
+
+  const categoryMode = categoryContainer.dataset.controlMode || 'segmented';
+  categoryContainer.innerHTML = renderFilterControl('category', categoryMode, getFilterControlOptions('category'), sharedFilterState.category);
+  bindSharedFilterControlHandlers(categoryContainer);
+
+  const paymentMode = filterContainer.dataset.paymentControlMode || 'segmented';
+  const licenseMode = filterContainer.dataset.licenseControlMode || 'segmented';
+  filterContainer.innerHTML = [
+    '<div class="filter-row"><span class="filter-label">' + FILTER_SCHEMA.licenseType.label + '</span>' + renderFilterControl('licenseType', licenseMode, getFilterControlOptions('licenseType'), sharedFilterState.licenseType) + '</div>',
+    '<div class="filter-row"><span class="filter-label">' + FILTER_SCHEMA.paymentType.label + '</span>' + renderFilterControl('paymentType', paymentMode, getFilterControlOptions('paymentType'), sharedFilterState.paymentType) + '</div>'
+  ].join('');
+  bindSharedFilterControlHandlers(filterContainer);
+}
+
+function productMatchesFilters(p) {
+  const profile = getSelectedQuoteProfile();
+  if (isHiddenForProfile(p, profile)) return false;
+  if (sharedFilterState.category !== 'all' && getCanonicalCategoryValue(p.cat) !== sharedFilterState.category) return false;
+  if (sharedFilterState.licenseType !== 'all' && getCanonicalProductLicenseValue(p) !== sharedFilterState.licenseType) return false;
+  if (sharedFilterState.paymentType !== 'all' && getCanonicalProductPaymentValue(p) !== sharedFilterState.paymentType) return false;
   return true;
 }
 
@@ -3126,13 +3394,67 @@ const CAT_SLUG = {
   'Networking':'cat-networking','UCaaS':'cat-ucaas','Consultancy':'cat-consultancy'
 };
 
+const CANONICAL_DICTIONARY = {
+  labels: {
+    partnerModel: 'Partner Model',
+    partnerTier: 'Partner Tier',
+    category: 'Category',
+    paymentType: 'Payment Type',
+    licenseType: 'License Type',
+    allCategories: 'All Categories',
+    allPaymentTypes: 'All Payment Types',
+    allLicenseTypes: 'All License Types'
+  },
+  partnerModels: {
+    reseller: 'Reseller',
+    msp: 'MSP',
+    consultant: 'Consultant'
+  },
+  partnerTiers: {
+    accredited: 'Accredited',
+    silver: 'Silver',
+    gold: 'Gold',
+    platinum: 'Platinum',
+    consultant: 'Consultant'
+  },
+  paymentTypes: {
+    prepay: 'Annual Pre-Pay',
+    paymonthly: 'Pay Monthly',
+    monthly: 'Monthly',
+    ondemand: 'On Demand',
+    na: '—'
+  },
+  licenseTypes: {
+    named: 'Named',
+    concurrent: 'Concurrent',
+    namedLicenses: 'Named Licenses',
+    concurrentLicenses: 'Concurrent Licenses',
+    na: 'N/A',
+    dash: '—'
+  },
+  categories: [
+    'UCaaS',
+    'CCaaS',
+    'AI',
+    'PCI Cloud',
+    'Services',
+    'Consultancy',
+    'Inbound Telephony',
+    'Networking'
+  ]
+};
+
 // ─── STATE ───────────────────────────────────────────────────────────────────
 let quoteItems       = []; // { product, qty, override }
-let activeCategory   = 'All';
+let activeCategory   = CANONICAL_DICTIONARY.labels.allCategories;
 let quoteCounter     = generateQuoteRef();
 let currentBaseRef   = quoteCounter;   // base ref (without version suffix)
 let currentVersion   = 0;              // 0 = unsaved, 1+ = saved version number
 let currentChangeNote = '';            // brief description of what changed
+const PROFILE_STORAGE_KEY = 'ipi_global_profile_state_v1';
+const appState = {
+  profile: { type: 'reseller', tier: 'accredited' }
+};
 
 const WORKFLOW_CONTEXT_STORAGE_VERSION = 'v1';
 const WORKFLOW_CONTEXT_KEYS = {
@@ -3149,26 +3471,26 @@ const workflowSessionState = {
 // ─── PARTNER COMMERCIAL PROFILES ─────────────────────────────────────────────
 const PARTNER_PRICE_PROFILES = {
   reseller: {
-    label: 'Reseller',
+    label: CANONICAL_DICTIONARY.partnerModels.reseller,
     tiers: {
-      accredited: { label: 'Accredited', discount: 0.20 },
-      silver:     { label: 'Silver',     discount: 0.30 },
-      gold:       { label: 'Gold',       discount: 0.35 },
-      platinum:   { label: 'Platinum',   discount: 0.40 }
+      accredited: { label: CANONICAL_DICTIONARY.partnerTiers.accredited, discount: 0.20 },
+      silver:     { label: CANONICAL_DICTIONARY.partnerTiers.silver,     discount: 0.30 },
+      gold:       { label: CANONICAL_DICTIONARY.partnerTiers.gold,       discount: 0.35 },
+      platinum:   { label: CANONICAL_DICTIONARY.partnerTiers.platinum,   discount: 0.40 }
     }
   },
   msp: {
-    label: 'MSP',
+    label: CANONICAL_DICTIONARY.partnerModels.msp,
     tiers: {
-      silver:     { label: 'Silver',     discount: 0.35 },
-      gold:       { label: 'Gold',       discount: 0.45 },
-      platinum:   { label: 'Platinum',   discount: 0.55 }
+      silver:     { label: CANONICAL_DICTIONARY.partnerTiers.silver,     discount: 0.35 },
+      gold:       { label: CANONICAL_DICTIONARY.partnerTiers.gold,       discount: 0.45 },
+      platinum:   { label: CANONICAL_DICTIONARY.partnerTiers.platinum,   discount: 0.55 }
     }
   },
   consultant: {
-    label: 'Consultant',
+    label: CANONICAL_DICTIONARY.partnerModels.consultant,
     tiers: {
-      consultant: { label: 'Consultant', discount: 0.15 }
+      consultant: { label: CANONICAL_DICTIONARY.partnerTiers.consultant, discount: 0.15 }
     }
   }
 };
@@ -3182,20 +3504,132 @@ function getStoredProfileLabel(model, tier) {
   return tier || 'Not set';
 }
 
-function getSelectedQuoteProfile() {
-  const modelEl = document.getElementById('partnerModel');
-  const tierEl = document.getElementById('partnerTier');
+function buildProfileFromState(type, tier) {
   const fallback = { type: 'reseller', tier: 'accredited', typeLabel: 'Reseller', tierLabel: 'Accredited', discount: 0.20 };
-  if (!modelEl || !tierEl) return fallback;
-  const type = modelEl.value || 'reseller';
   const typeCfg = PARTNER_PRICE_PROFILES[type] || PARTNER_PRICE_PROFILES.reseller;
-  const tier = tierEl.value || Object.keys(typeCfg.tiers)[0];
-  const tierCfg = typeCfg.tiers[tier] || typeCfg.tiers[Object.keys(typeCfg.tiers)[0]];
-  return { type, tier, typeLabel: typeCfg.label, tierLabel: tierCfg.label, discount: tierCfg.discount };
+  const resolvedTier = tier || Object.keys(typeCfg.tiers)[0];
+  const tierCfg = typeCfg.tiers[resolvedTier] || typeCfg.tiers[Object.keys(typeCfg.tiers)[0]];
+  if (!tierCfg) return fallback;
+  const resolvedTierKey = typeCfg.tiers[resolvedTier] ? resolvedTier : Object.keys(typeCfg.tiers)[0];
+  return { type, tier: resolvedTierKey, typeLabel: typeCfg.label, tierLabel: tierCfg.label, discount: tierCfg.discount };
+}
+
+function saveGlobalProfileState() {
+  try {
+    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(appState.profile));
+  } catch (_) {}
+}
+
+function loadGlobalProfileState() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY) || '{}');
+    if (stored && PARTNER_PRICE_PROFILES[stored.type]) {
+      const typeCfg = PARTNER_PRICE_PROFILES[stored.type];
+      const tier = typeCfg.tiers[stored.tier] ? stored.tier : Object.keys(typeCfg.tiers)[0];
+      appState.profile = { type: stored.type, tier: tier };
+    }
+  } catch (_) {}
+}
+
+function getSelectedQuoteProfile() {
+  return buildProfileFromState(appState.profile.type, appState.profile.tier);
+}
+
+function getSelectedPriceListProfile() {
+  return buildProfileFromState(appState.profile.type, appState.profile.tier);
+}
+
+function getSelectedGlobalProfile() {
+  return buildProfileFromState(appState.profile.type, appState.profile.tier);
 }
 
 function getPartnerDiscount() {
   return getSelectedQuoteProfile().discount || 0;
+}
+
+function syncTierOptionsFor(typeEl, tierEl) {
+  if (!typeEl || !tierEl) return;
+  const fallbackType = PARTNER_PRICE_PROFILES.reseller ? 'reseller' : Object.keys(PARTNER_PRICE_PROFILES)[0];
+  const selectedType = PARTNER_PRICE_PROFILES[typeEl.value] ? typeEl.value : fallbackType;
+  typeEl.value = selectedType;
+  const typeCfg = PARTNER_PRICE_PROFILES[selectedType];
+  if (!typeCfg || !typeCfg.tiers) return;
+  const current = tierEl.value;
+  const tierKeys = Object.keys(typeCfg.tiers);
+  if (!tierKeys.length) return;
+  tierEl.innerHTML = tierKeys.map(function(key) {
+    const tierData = typeCfg.tiers[key];
+    return '<option value="' + key + '">' + tierData.label + ' (' + Math.round(tierData.discount * 100) + '%)</option>';
+  }).join('');
+  tierEl.value = tierKeys.includes(current) ? current : tierKeys[0];
+}
+
+function populateProfileControls(typeEl, tierEl, defaultType) {
+  if (!typeEl || !tierEl) return;
+  typeEl.innerHTML = Object.keys(PARTNER_PRICE_PROFILES).map(function(key) {
+    return '<option value="' + key + '">' + PARTNER_PRICE_PROFILES[key].label + '</option>';
+  }).join('');
+  typeEl.value = PARTNER_PRICE_PROFILES[defaultType] ? defaultType : 'reseller';
+  syncTierOptionsFor(typeEl, tierEl);
+}
+
+function applyGlobalProfileToControls() {
+  const typeEl = document.getElementById('globalPartnerType');
+  const tierEl = document.getElementById('globalPartnerTier');
+  if (!typeEl || !tierEl) return;
+  typeEl.value = appState.profile.type;
+  syncTierOptionsFor(typeEl, tierEl);
+  const typeCfg = PARTNER_PRICE_PROFILES[typeEl.value];
+  tierEl.value = typeCfg.tiers[appState.profile.tier] ? appState.profile.tier : Object.keys(typeCfg.tiers)[0];
+}
+
+function populateGlobalProfileControls() {
+  const typeEl = document.getElementById('globalPartnerType');
+  const tierEl = document.getElementById('globalPartnerTier');
+  if (!typeEl || !tierEl) return;
+  populateProfileControls(typeEl, tierEl, appState.profile.type || 'reseller');
+  applyGlobalProfileToControls();
+}
+
+function onGlobalProfileChange() {
+  const typeEl = document.getElementById('globalPartnerType');
+  const tierEl = document.getElementById('globalPartnerTier');
+  if (!typeEl || !tierEl) return;
+  syncTierOptionsFor(typeEl, tierEl);
+  const type = PARTNER_PRICE_PROFILES[typeEl.value] ? typeEl.value : 'reseller';
+  const typeCfg = PARTNER_PRICE_PROFILES[type];
+  const tier = typeCfg.tiers[tierEl.value] ? tierEl.value : Object.keys(typeCfg.tiers)[0];
+  appState.profile = { type: type, tier: tier };
+  saveGlobalProfileState();
+  applyGlobalProfileToControls();
+  applyQuoteProfileDisplay();
+  syncPriceListFilterOptions();
+  renderQuote();
+  renderProductList();
+  renderPartnerPriceList();
+}
+
+function setQuoteProfile(type, tier) {
+  const nextType = PARTNER_PRICE_PROFILES[type] ? type : 'reseller';
+  const typeCfg = PARTNER_PRICE_PROFILES[nextType];
+  const nextTier = typeCfg.tiers[tier] ? tier : Object.keys(typeCfg.tiers)[0];
+  appState.profile = { type: nextType, tier: nextTier };
+  saveGlobalProfileState();
+  applyGlobalProfileToControls();
+  onGlobalProfileChange();
+}
+
+function applyQuoteProfileDisplay() {
+  const profile = getSelectedQuoteProfile();
+  const hidden = document.getElementById('partnerLevel');
+  const display = document.getElementById('partnerLevelDisplay');
+  const text = document.getElementById('partnerLevelText');
+  if (hidden) hidden.value = profile.tier;
+  if (display) display.className = 'partner-level-display ' + getProfileClassName(profile);
+  if (text) {
+    text.className = 'partner-level-text ' + getProfileClassName(profile);
+    text.innerHTML = `${profile.typeLabel} · ${profile.tierLabel} <span style="opacity:0.6;font-weight:400;font-size:11px">(${Math.round(profile.discount * 100)}% discount)</span>`;
+  }
 }
 
 function isServicesLikeCategory(product) {
@@ -3451,6 +3885,56 @@ function normalizeCategory(category) {
   return String(category || '').trim().toLowerCase().replace(/\s+/g, '');
 }
 
+function normalizeImportedDisplayValue(type, value) {
+  const raw = String(value == null ? '' : value).trim();
+  const token = normalizeCategory(raw);
+  if (!raw) return '';
+
+  if (type === 'category') {
+    const lookup = {
+      ucaas: 'UCaaS',
+      ccaas: 'CCaaS',
+      ai: 'AI',
+      pcicloud: 'PCI Cloud',
+      pci: 'PCI Cloud',
+      services: 'Services',
+      consultancy: 'Consultancy',
+      inboundtelephony: 'Inbound Telephony',
+      networking: 'Networking'
+    };
+    return lookup[token] || raw;
+  }
+  if (type === 'payment') {
+    if (/annual pre.?pay|ann(?:ual)?\s*pre|pre-?pay/i.test(raw) || token === 'prepay') return CANONICAL_DICTIONARY.paymentTypes.prepay;
+    if (/pay monthly|monthly pay|ann(?:ual)?\s*pay|pay m(?:on|thly)|annpaym/i.test(raw) || token === 'paymonthly') return CANONICAL_DICTIONARY.paymentTypes.paymonthly;
+    if (/on[\s-]?demand/i.test(raw) || token === 'ondemand') return CANONICAL_DICTIONARY.paymentTypes.ondemand;
+    if (/^n\s*\/?\s*a$/i.test(raw) || raw === '—') return CANONICAL_DICTIONARY.paymentTypes.na;
+    return raw;
+  }
+  if (type === 'license') {
+    if (/^nam/i.test(raw)) return CANONICAL_DICTIONARY.licenseTypes.named;
+    if (/^conc/i.test(raw)) return CANONICAL_DICTIONARY.licenseTypes.concurrent;
+    if (/^n\s*\/?\s*a$/i.test(raw) || raw === '—') return CANONICAL_DICTIONARY.licenseTypes.na;
+    return raw;
+  }
+  return raw;
+}
+
+function getCategorySortOrder(category = '') {
+  const normalized = normalizeCategory(normalizeImportedDisplayValue('category', category));
+  const order = CANONICAL_DICTIONARY.categories.map(function(cat) { return normalizeCategory(cat); });
+  const index = order.indexOf(normalized);
+  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+}
+
+function sortByCategoryOrder(values) {
+  return values.slice().sort(function(a, b) {
+    const orderDiff = getCategorySortOrder(a) - getCategorySortOrder(b);
+    if (orderDiff !== 0) return orderDiff;
+    return String(a).localeCompare(String(b), undefined, { sensitivity: 'base', numeric: true });
+  });
+}
+
 function isCcaasCategory(category) {
   return normalizeCategory(category) === 'ccaas';
 }
@@ -3549,15 +4033,65 @@ function restoreWorkflowContext() {
   } else {
     updateWorkflowContextBar();
   }
+function applyUILabelDictionary() {
+  const labels = CANONICAL_DICTIONARY.labels;
+  const map = {
+    labelQuotePartnerModel: labels.partnerModel,
+    labelQuotePartnerTier: labels.partnerTier,
+    labelPriceListPartnerModel: labels.partnerModel,
+    labelPriceListPartnerTier: labels.partnerTier,
+    labelPriceListCategory: labels.category,
+    labelPriceListPaymentType: labels.paymentType,
+    labelPriceListLicenseType: labels.licenseType,
+    thPriceListCategory: labels.category,
+    thPriceListLicense: 'License',
+    thPriceListPayment: 'Payment'
+  };
+  Object.keys(map).forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = map[id];
+  });
+}
+
+function renderHelpModalContent() {
+  const host = document.getElementById('helpModalDynamic');
+  if (!host) return;
+  host.innerHTML = `
+    <div class="help-section">
+      <div class="help-section-title"><span class="help-section-icon">🚀</span> Getting Started</div>
+      <ul class="help-steps">
+        <li><span class="help-step-num">1</span><span>Enter the <strong>Partner Name</strong>, then choose the <strong>${CANONICAL_DICTIONARY.labels.partnerModel}</strong> and <strong>${CANONICAL_DICTIONARY.labels.partnerTier}</strong>. Quote and pricing views use the same commercial rules.</span></li>
+        <li><span class="help-step-num">2</span><span>Add an <strong>End Customer</strong> name and check or edit the <strong>Quote Reference</strong> and <strong>Valid Until</strong> date (defaults to 30 days).</span></li>
+        <li><span class="help-step-num">3</span><span>Browse the <strong>Product Catalogue</strong> and filter by <strong>${CANONICAL_DICTIONARY.labels.category}</strong>, <strong>${CANONICAL_DICTIONARY.labels.paymentType}</strong>, or <strong>${CANONICAL_DICTIONARY.labels.licenseType}</strong> to find products quickly.</span></li>
+      </ul>
+    </div>
+    <div class="help-section">
+      <div class="help-section-title"><span class="help-section-icon">💰</span> Partner Pricing</div>
+      <div class="help-tips">
+        <div class="help-tip"><strong>${CANONICAL_DICTIONARY.partnerModels.reseller}</strong> ${CANONICAL_DICTIONARY.partnerTiers.accredited} 20%, ${CANONICAL_DICTIONARY.partnerTiers.silver} 30%, ${CANONICAL_DICTIONARY.partnerTiers.gold} 35%, ${CANONICAL_DICTIONARY.partnerTiers.platinum} 40%.</div>
+        <div class="help-tip"><strong>${CANONICAL_DICTIONARY.partnerModels.msp}</strong> ${CANONICAL_DICTIONARY.partnerTiers.silver} 35%, ${CANONICAL_DICTIONARY.partnerTiers.gold} 45%, ${CANONICAL_DICTIONARY.partnerTiers.platinum} 55%.</div>
+        <div class="help-tip"><strong>${CANONICAL_DICTIONARY.partnerModels.consultant}</strong> Single commercial tier at 15% discount.</div>
+        <div class="help-tip"><strong>One pricing matrix</strong>The quote builder and partner price list use identical discount logic and terminology.</div>
+      </div>
+    </div>
+  `;
 }
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
+  applyUILabelDictionary();
+  renderHelpModalContent();
   loadStoredProductCatalogue();
   populateQuoteProfileControls();
   populatePriceListProfileControls();
   restoreWorkflowContext();
+  loadGlobalProfileState();
+  populateGlobalProfileControls();
+  applyQuoteProfileDisplay();
   refreshProductCatalogueViews();
+  setFilter('agent', activeAgentFilter);
+  setFilter('pay', activePayFilter);
+  bindSegmentedControlKeyboardHandlers();
   currentBaseRef = quoteCounter;
   if (!document.getElementById('quoteRef').value) {
     document.getElementById('quoteRef').value = quoteCounter;
@@ -3571,13 +4105,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // ─── CATEGORY TABS ───────────────────────────────────────────────────────────
 function renderCategoryTabs() {
-  const cats = ['All', ...Object.keys(CAT_COLOURS)];
+  const cats = [CANONICAL_DICTIONARY.labels.allCategories, ...sortByCategoryOrder(Object.keys(CAT_COLOURS))];
   const container = document.getElementById('categoryTabs');
   container.innerHTML = cats.map(cat => {
-    const slug = cat === 'All' ? '' : CAT_SLUG[cat] || '';
+    const slug = cat === CANONICAL_DICTIONARY.labels.allCategories ? '' : CAT_SLUG[cat] || '';
     const isActive = activeCategory === cat;
-    return `<div class="cat-tab ${slug} ${isActive ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</div>`;
+    return `<button class="cat-tab ${slug} ${isActive ? 'active' : ''}" type="button" role="tab" data-category="${cat}" aria-selected="${isActive ? 'true' : 'false'}" tabindex="${isActive ? '0' : '-1'}" onclick="setCategory('${cat}')">${cat}</button>`;
   }).join('');
+  bindSegmentedControlKeyboardHandlers();
 }
 
 function setCategory(cat) {
@@ -3591,6 +4126,7 @@ function setCategory(cat) {
 function filterProducts() {
   renderProductList();
   persistWorkflowContext();
+  updateSharedFilterState('search', getQuoteSearchValue(), { skipRenderControls: true });
 }
 
 // ─── FAMILY GROUPING ─────────────────────────────────────────────────────────
@@ -3601,13 +4137,101 @@ function toggleFamily(key) {
   renderProductList();
 }
 
+function formatProductMoney(value) {
+  return value > 0 ? fmtGBP(value) : '—';
+}
+
+function getBillingLabel(product) {
+  return product && product.billing === 'Monthly' ? 'Recurring' : (product && product.billing ? product.billing : '—');
+}
+
+function getProductLicenseLabel(product) {
+  const meta = getProductMeta(product);
+  return meta.agentType || product.agentType || '—';
+}
+
+function getProductPaymentLabel(product) {
+  return getDisplayPaymentType(product) || '—';
+}
+
+function renderProductSkuBlock(product, className) {
+  return '<span class="' + (className || '') + '" style="font-size:10.5px;color:var(--text-muted);font-family:DM Mono,monospace">' + product.id + '</span>';
+}
+
+function renderProductCategoryBadge(product, colour) {
+  return '<span class="tag" style="background:' + colour + '18;color:' + colour + '">' + product.cat + '</span>';
+}
+
+function renderProductInfoAction(productId, className, titleText, extraAttrs) {
+  const title = titleText || 'View details';
+  return '<button class="' + className + '" data-info-id="' + productId + '" title="' + title + '" aria-label="' + title + '"' + (extraAttrs ? ' ' + extraAttrs : '') + '>i</button>';
+}
+
+function renderProductTitleSnippet(product, options) {
+  const opts = options || {};
+  const colour = opts.colour || '#888';
+  const showDot = opts.showDot !== false;
+  const qualifiers = opts.qualifiers || '';
+  const title = opts.title || product.name;
+  const className = opts.className || 'product-item-name';
+  return '<div class="' + className + '">' +
+    (showDot ? '<span class="cat-dot" style="background:' + colour + '"></span>' : '') +
+    title + qualifiers +
+  '</div>';
+}
+
+function renderProductMetaSnippet(product, options) {
+  const opts = options || {};
+  if (opts.mode === 'subtitle') {
+    const prefix = opts.cleanNamePrefix && opts.cleanNamePrefix !== product.name ? opts.cleanNamePrefix + ' · ' : '';
+    return '<div class="' + (opts.className || 'price-list-product-sub') + '">' + prefix + getBillingLabel(product) + '</div>';
+  }
+  if (opts.skuOnly) {
+    return '<div class="' + (opts.skuClassName || '') + '" style="font-size:10px;color:var(--text-muted);font-family:DM Mono,monospace;margin-top:2px">' + product.id + '</div>';
+  }
+  const colour = opts.colour || '#888';
+  const metaClassName = opts.className || 'product-item-meta';
+  const billingClass = opts.billingClassName || 'tag tag-billing ' + (product.billing === 'Monthly' ? 'monthly' : '');
+  const billingLabel = opts.billingLabel || getBillingLabel(product);
+  const skuClass = opts.skuClassName || '';
+  const prefix = opts.prefix || '';
+  return '<div class="' + metaClassName + '">' +
+      prefix +
+      renderProductCategoryBadge(product, colour) +
+      '<span class="' + billingClass + '">' + billingLabel + '</span>' +
+      renderProductSkuBlock(product, skuClass) +
+    '</div>';
+}
+
+function bindInfoPanelTriggers(container) {
+  if (!container) return;
+  container.querySelectorAll('[data-info-id]').forEach(function(el) {
+    el.addEventListener('click', function(e) {
+      e.stopPropagation();
+      openProductDetail(el.dataset.infoId);
+    });
+  });
+}
+
+const PRODUCT_UI_PARITY_CHECKLIST = {
+  fields: [
+    { field: 'SKU', quoteProductList: true, priceListTable: true },
+    { field: 'Category badge / category label', quoteProductList: true, priceListTable: true },
+    { field: 'Billing label', quoteProductList: true, priceListTable: true },
+    { field: 'License label', quoteProductList: true, priceListTable: true },
+    { field: 'Payment label', quoteProductList: true, priceListTable: true },
+    { field: 'Money formatting (GBP)', quoteProductList: true, priceListTable: true },
+    { field: 'Info panel trigger', quoteProductList: true, priceListTable: true }
+  ]
+};
+
 function renderProductItem(p, isVariant) {
   var colour       = CAT_COLOURS[p.cat] || '#888';
   var discounted   = getDiscountedPrice(p);
-  var priceDisplay = discounted > 0 ? fmtGBP(discounted) : '—';
+  var priceDisplay = formatProductMoney(discounted);
   var listDisplay  = (!isVariant && p.list > 0) ? '<div class="price-threshold">List: ' + fmtGBP(p.list) + '</div>' : '';
   var variantClass = isVariant ? ' variant' : '';
-  var filtersActive = activeAgentFilter !== 'all' || activePayFilter !== 'all';
+  var filtersActive = sharedFilterState.licenseType !== 'all' || sharedFilterState.paymentType !== 'all';
 
   // Build display name
   var displayName = p.name;
@@ -3617,30 +4241,19 @@ function renderProductItem(p, isVariant) {
     // Show only the differentiating qualifier as the name
     var parts = [];
     if (p.agentType) parts.push(p.agentType);
-    if (p.payType)   parts.push(p.payType === 'PrePay' ? 'Annual Pre-Pay' : 'Pay Monthly');
+    if (p.payType)   parts.push(getMappedFilterLabel('paymentType', p.payType));
     displayName = parts.length > 0 ? parts.join(' · ') : (p.cleanName || p.name);
   } else if (filtersActive && p.cleanName && p.cleanName !== p.name) {
     displayName = p.cleanName;
     if (p.agentType) qualBadges += '<span class="product-item-name-qualifier ' + (p.agentType === 'Named' ? 'q-named' : 'q-conc') + '">' + p.agentType + '</span>';
-    if (p.payType)   qualBadges += '<span class="product-item-name-qualifier ' + (p.payType === 'PrePay' ? 'q-prepay' : 'q-monthly') + '">' + (p.payType === 'PrePay' ? 'Pre-Pay' : 'Pay Monthly') + '</span>';
+    if (p.payType)   qualBadges += '<span class="product-item-name-qualifier ' + (normalizeMappedFilterValue('paymentType', p.payType) === 'PrePay' ? 'q-prepay' : 'q-monthly') + '">' + getMappedFilterLabel('paymentType', p.payType) + '</span>';
   }
 
-  var idStr = p.id;
-  var billingTag = '<span class="tag tag-billing ' + (p.billing === 'Monthly' ? 'monthly' : '') + '">' + (p.billing === 'Monthly' ? 'Recurring' : p.billing) + '</span>';
+  var metaHTML = renderProductMetaSnippet(p, { skuOnly: isVariant, colour: colour });
 
-  var metaHTML = isVariant
-    ? '<div style="font-size:10px;color:var(--text-muted);font-family:DM Mono,monospace;margin-top:2px">' + idStr + '</div>'
-    : '<div class="product-item-meta">' +
-        '<span class="tag" style="background:' + colour + '18;color:' + colour + '">' + p.cat + '</span>' +
-        billingTag +
-        '<span style="font-size:10.5px;color:var(--text-muted);font-family:DM Mono,monospace">' + idStr + '</span>' +
-      '</div>';
-
-  var namePrefix = isVariant ? '' : '<span class="cat-dot" style="background:' + colour + '"></span>';
-
-  return '<div class="product-item' + variantClass + '" onclick="addToQuote(\'" + p.id + "\')">' +
+  return '<div class="product-item' + variantClass + '" data-add-id="' + p.id + '">' +
     '<div class="product-item-info">' +
-      '<div class="product-item-name">' + namePrefix + displayName + qualBadges + '</div>' +
+      renderProductTitleSnippet(p, { colour: colour, showDot: !isVariant, title: displayName, qualifiers: qualBadges }) +
       metaHTML +
     '</div>' +
     '<div class="product-item-price">' +
@@ -3649,17 +4262,18 @@ function renderProductItem(p, isVariant) {
     '</div>' +
     '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">' +
       '<button class="add-btn" title="Add to quote" onclick="event.stopPropagation();addToQuote(\'" + p.id + "\')">+</button>' +
-      '<button class="info-btn" title="View details" onclick="event.stopPropagation();openProductDetail(\'" + p.id + "\')">i</button>' +
+      renderProductInfoAction(p.id, 'info-btn') +
     '</div>' +
   '</div>';
 }
 
 function renderProductList() {
-  var search        = document.getElementById('searchInput').value.toLowerCase();
-  var filtersActive = activeAgentFilter !== 'all' || activePayFilter !== 'all';
+  var search        = sharedFilterState.search.toLowerCase();
+  var filtersActive = sharedFilterState.licenseType !== 'all' || sharedFilterState.paymentType !== 'all';
 
   var filtered = PRODUCTS.filter(function(p) {
-    var matchCat    = activeCategory === 'All' || p.cat === activeCategory;
+    var matchCat    = activeCategory === CANONICAL_DICTIONARY.labels.allCategories || p.cat === activeCategory;
+    var matchCat    = sharedFilterState.category === 'all' || getCanonicalCategoryValue(p.cat) === sharedFilterState.category;
     var matchSearch = !search ||
       p.name.toLowerCase().indexOf(search) !== -1 ||
       p.id.toLowerCase().indexOf(search) !== -1 ||
@@ -3688,7 +4302,7 @@ function renderProductList() {
     familyMap[key].products.push(p);
   });
 
-  if (isCcaasCategory(activeCategory)) {
+  if (isCcaasCategory(sharedFilterState.category)) {
     familyOrder.sort(function(a, b) {
       var fa = familyMap[a];
       var fb = familyMap[b];
@@ -3717,9 +4331,9 @@ function renderProductList() {
           '<span class="cat-dot" style="background:' + colour + ';width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0"></span>' +
           '<span class="family-name">' + family.name + '</span>' +
           '<span class="family-meta">' +
-            '<span class="family-price">' + (disc > 0 ? fmtGBP(disc) : '—') + '</span>' +
+            '<span class="family-price">' + formatProductMoney(disc) + '</span>' +
             '<button class="family-add-btn" data-add-id="' + p.id + '" title="Add to quote">+</button>' +
-            '<button class="info-btn" data-info-id="' + p.id + '" title="View details" style="margin-left:2px">i</button>' +
+            renderProductInfoAction(p.id, 'info-btn', 'View details', 'style="margin-left:2px"') +
           '</span>' +
         '</div>' +
       '</div>';
@@ -3781,12 +4395,7 @@ function renderProductList() {
   });
 
   // Info (i) buttons
-  container.querySelectorAll('[data-info-id]').forEach(function(el) {
-    el.addEventListener('click', function(e) {
-      e.stopPropagation();
-      openProductDetail(el.dataset.infoId);
-    });
-  });
+  bindInfoPanelTriggers(container);
 }
 
 // ─── ADD TO QUOTE ─────────────────────────────────────────────────────────────
@@ -5413,7 +6022,6 @@ function showToast(msg) {
 // ─── PARTNER PRICE LIST LAYER ───────────────────────────────────────────────
 function initPartnerPriceList() {
   initializePriceListMultiSelects();
-  populatePriceListProfileControls();
   bindPriceListSorting();
   syncPriceListFilterOptions();
   renderPartnerPriceList();
@@ -5649,9 +6257,9 @@ function getMultiSelectValues(selectEl) {
 }
 
 function initializePriceListMultiSelects() {
-  ensurePriceListMultiSelect('priceListCategory', 'All categories');
-  ensurePriceListMultiSelect('priceListPayType', 'All payment types');
-  ensurePriceListMultiSelect('priceListAgentType', 'All license types');
+  ensurePriceListMultiSelect('priceListCategory', CANONICAL_DICTIONARY.labels.allCategories);
+  ensurePriceListMultiSelect('priceListPayType', CANONICAL_DICTIONARY.labels.allPaymentTypes);
+  ensurePriceListMultiSelect('priceListAgentType', CANONICAL_DICTIONARY.labels.allLicenseTypes);
 }
 
 function ensurePriceListMultiSelect(selectId, placeholder) {
@@ -5691,10 +6299,11 @@ function renderPriceListMultiSelect(selectEl) {
   if (!menu || !toggleText) return;
   const options = Array.from(selectEl.options || []);
   const selected = getMultiSelectValues(selectEl);
+  const selectedLabels = options.filter(function(option) { return option.selected; }).map(function(option) { return option.textContent; });
   const allSelected = options.length > 0 && selected.length === options.length;
   if (!options.length) toggleText.textContent = 'No options';
   else if (allSelected || !selected.length) toggleText.textContent = selectEl.dataset.placeholder || 'All selected';
-  else if (selected.length === 1) toggleText.textContent = selected[0];
+  else if (selected.length === 1) toggleText.textContent = selectedLabels[0] || selected[0];
   else toggleText.textContent = selected.length + ' selected';
   menu.innerHTML = options.map(function(option) {
     const checked = selected.includes(option.value) ? 'checked' : '';
@@ -5716,14 +6325,16 @@ function closePriceListMultiDropdowns() {
   });
 }
 
-function setMultiSelectOptions(selectEl, options) {
+function setMultiSelectOptions(selectEl, options, labelFormatter) {
   if (!selectEl) return;
   const currentSelections = getMultiSelectValues(selectEl);
-  const safeOptions = Array.from(new Set(options.filter(Boolean))).sort(function(a, b) {
-    return String(a).localeCompare(String(b));
-  });
+  const safeOptionsRaw = Array.from(new Set(options.filter(Boolean)));
+  const safeOptions = selectEl.id === 'priceListCategory'
+    ? sortByCategoryOrder(safeOptionsRaw)
+    : safeOptionsRaw.sort(function(a, b) { return String(a).localeCompare(String(b)); });
   selectEl.innerHTML = safeOptions.map(function(option) {
-    return '<option value="' + option + '">' + option + '</option>';
+    const label = typeof labelFormatter === 'function' ? labelFormatter(option) : option;
+    return '<option value="' + option + '">' + label + '</option>';
   }).join('');
   const selectionsToApply = currentSelections.length ? currentSelections : safeOptions;
   Array.from(selectEl.options).forEach(function(optionEl) {
@@ -5746,11 +6357,14 @@ function syncPriceListFilterOptions() {
 
   setMultiSelectOptions(catEl, visibleProducts.map(function(product) { return product.cat; }));
   setMultiSelectOptions(payEl, visibleProducts.map(function(product) {
-    return getProductMeta(product).commitment || (product.payType === 'PrePay' ? 'Annual Pre-Pay' : (product.payType === 'PayMonthly' ? 'Monthly' : '—'));
+    return getCanonicalPaymentDisplay(product, getProductMeta(product).commitment);
   }));
   setMultiSelectOptions(agentEl, visibleProducts.map(function(product) {
-    return getProductMeta(product).agentType || product.agentType || '—';
+    return getCanonicalLicenseDisplay(product, getProductMeta(product).agentType);
   }));
+  setMultiSelectOptions(catEl, visibleProducts.map(function(product) { return getCanonicalCategoryValue(product.cat); }));
+  setMultiSelectOptions(payEl, visibleProducts.map(function(product) { return getCanonicalProductPaymentValue(product); }), function(value) { return getMappedFilterLabel('paymentType', value); });
+  setMultiSelectOptions(agentEl, visibleProducts.map(function(product) { return getCanonicalProductLicenseValue(product); }), function(value) { return getMappedFilterLabel('licenseType', value); });
 }
 
 function bindPriceListSorting() {
@@ -5779,11 +6393,12 @@ function updatePriceListSortIndicators() {
 }
 
 function getPriceListSortValue(product, profile, sortKey) {
-  const meta = getProductMeta(product);
   const listPrice = product.list > 0 ? product.list : product.threshold;
   const showRrpOnly = !!document.getElementById('priceListRrpOnly')?.checked;
-  const payLabel = meta.commitment || (product.payType === 'PrePay' ? 'Annual Pre-Pay' : (product.payType === 'PayMonthly' ? 'Monthly' : '—'));
-  const licenseLabel = meta.agentType || product.agentType || '—';
+  const payLabel = getCanonicalPaymentDisplay(product, meta.commitment);
+  const licenseLabel = getCanonicalLicenseDisplay(product, meta.agentType);
+  const payLabel = getDisplayPaymentType(product);
+  const licenseLabel = getDisplayLicenseType(product);
   switch (sortKey) {
     case 'id': return product.id;
     case 'name': return product.name;
@@ -5800,10 +6415,14 @@ function comparePriceListRows(a, b, profile) {
   if (isCcaasCategory(a.cat) && isCcaasCategory(b.cat)) {
     const metaA = getProductMeta(a);
     const metaB = getProductMeta(b);
-    const licenseA = metaA.agentType || a.agentType || 'N/A';
-    const licenseB = metaB.agentType || b.agentType || 'N/A';
-    const paymentA = metaA.commitment || (a.payType === 'PrePay' ? 'Annual Pre-Pay' : (a.payType === 'PayMonthly' ? 'Monthly' : ''));
-    const paymentB = metaB.commitment || (b.payType === 'PrePay' ? 'Annual Pre-Pay' : (b.payType === 'PayMonthly' ? 'Monthly' : ''));
+    const licenseA = getCanonicalLicenseDisplay(a, metaA.agentType || 'N/A');
+    const licenseB = getCanonicalLicenseDisplay(b, metaB.agentType || 'N/A');
+    const paymentA = getCanonicalPaymentDisplay(a, metaA.commitment);
+    const paymentB = getCanonicalPaymentDisplay(b, metaB.commitment);
+    const licenseA = getDisplayLicenseType(a);
+    const licenseB = getDisplayLicenseType(b);
+    const paymentA = getDisplayPaymentType(a);
+    const paymentB = getDisplayPaymentType(b);
 
     const ccaasOrderDiff =
       getLicenseBlockOrder(licenseA) - getLicenseBlockOrder(licenseB) ||
@@ -5833,22 +6452,20 @@ function updatePriceListFilterSummary() {
   if (!summaryEl) return;
 
   const filters = [];
-  const selectedModel = document.getElementById('priceListPartnerType');
-  const selectedTier = document.getElementById('priceListPartnerTier');
+  const profile = getSelectedPriceListProfile();
   const selectedCategory = document.getElementById('priceListCategory');
   const selectedPayment = document.getElementById('priceListPayType');
   const selectedLicense = document.getElementById('priceListAgentType');
   const showRrpOnly = !!document.getElementById('priceListRrpOnly')?.checked;
   const searchValue = (document.getElementById('priceListSearch')?.value || '').trim();
 
-  if (selectedModel?.value) filters.push(selectedModel.options[selectedModel.selectedIndex]?.text || selectedModel.value);
-  if (selectedTier?.value) filters.push(selectedTier.options[selectedTier.selectedIndex]?.text || selectedTier.value);
+  if (profile) filters.push('Profile: ' + profile.typeLabel + ' · ' + profile.tierLabel);
   const selectedCategories = getMultiSelectValues(selectedCategory);
   const selectedPayments = getMultiSelectValues(selectedPayment);
   const selectedLicenses = getMultiSelectValues(selectedLicense);
   if (selectedCategories.length && selectedCategories.length !== selectedCategory.options.length) filters.push('Category: ' + selectedCategories.join(', '));
-  if (selectedPayments.length && selectedPayments.length !== selectedPayment.options.length) filters.push('Payment: ' + selectedPayments.join(', '));
-  if (selectedLicenses.length && selectedLicenses.length !== selectedLicense.options.length) filters.push('License: ' + selectedLicenses.join(', '));
+  if (selectedPayments.length && selectedPayments.length !== selectedPayment.options.length) filters.push('Payment: ' + selectedPayments.map(function(value) { return getMappedFilterLabel('paymentType', value); }).join(', '));
+  if (selectedLicenses.length && selectedLicenses.length !== selectedLicense.options.length) filters.push('License: ' + selectedLicenses.map(function(value) { return getMappedFilterLabel('licenseType', value); }).join(', '));
   if (showRrpOnly) filters.push('RRP only');
   if (searchValue) filters.push('Search: "' + searchValue + '"');
 
@@ -5877,9 +6494,12 @@ function getFilteredPriceListRows(profile) {
   return PRODUCTS.filter(function(p) {
     if (isHiddenForProfile(p, activeProfile)) return false;
     const meta = getProductMeta(p);
-    const payLabel = meta.commitment || (p.payType === 'PrePay' ? 'Annual Pre-Pay' : (p.payType === 'PayMonthly' ? 'Monthly' : '—'));
-    const licenseLabel = meta.agentType || p.agentType || '—';
+    const payLabel = getCanonicalPaymentDisplay(p, meta.commitment);
+    const licenseLabel = getCanonicalLicenseDisplay(p, meta.agentType);
     const matchCategory = !category.length || category.includes(p.cat);
+    const payLabel = getCanonicalProductPaymentValue(p);
+    const licenseLabel = getCanonicalProductLicenseValue(p);
+    const matchCategory = !category.length || category.includes(getCanonicalCategoryValue(p.cat));
     const matchSearch = !search ||
       p.name.toLowerCase().indexOf(search) !== -1 ||
       p.id.toLowerCase().indexOf(search) !== -1 ||
@@ -5923,55 +6543,39 @@ function renderPartnerPriceList() {
       block.items.forEach(function(p) {
         const base = p.list > 0 ? p.list : p.threshold;
         const net = showRrpOnly ? base : getPriceForProductByProfile(p, profile);
-        const billing = p.billing === 'Monthly' ? 'Recurring' : p.billing;
-        const payLabel = getDisplayPaymentType(p);
+        const payLabel = getProductPaymentLabel(p);
+        const licenseLabel = getProductLicenseLabel(p);
+        const productTitle = renderProductTitleSnippet(p, { className: 'price-list-product', showDot: false, title: p.name });
+        const productMeta = renderProductMetaSnippet(p, { mode: 'subtitle', className: 'price-list-product-sub', cleanNamePrefix: p.cleanName });
         html.push('<tr>' +
           '<td><div class="price-list-sku">' + p.id + '</div></td>' +
-          '<td><div class="price-list-product">' + p.name + '</div><div class="price-list-product-sub">' + (p.cleanName && p.cleanName !== p.name ? p.cleanName + ' · ' : '') + billing + '</div></td>' +
+          '<td>' + productTitle + productMeta + '</td>' +
           '<td>' + section.category + '</td>' +
-          '<td>' + block.licenseType + '</td>' +
+          '<td>' + licenseLabel + '</td>' +
           '<td>' + payLabel + '</td>' +
           '<td class="price-list-money">' + fmtGBP(base) + '</td>' +
           '<td class="price-list-money net">' + fmtGBP(net) + '</td>' +
-          '<td class="price-list-icon-cell"><button class="price-list-info-btn" title="View details" onclick="openProductDetail(\'' + p.id + '\')">i</button></td>' +
+          '<td class="price-list-icon-cell">' + renderProductInfoAction(p.id, 'price-list-info-btn') + '</td>' +
         '</tr>');
       });
     });
   });
   body.innerHTML = html.join('');
   persistWorkflowContext();
+  bindInfoPanelTriggers(body);
 }
 
-const EXPORT_CATEGORY_ORDER = ['UCAAS', 'CCAAS', 'AI', 'PCI CLOUD', 'SERVICES', 'CONSULTANCY'];
 const EXPORT_LICENSE_ORDER = ['NAMED LICENSES', 'CONCURRENT LICENSES', 'N/A'];
 
 function normalizeCategoryLabel(value) {
-  const normalized = normalizeCategory(value).toUpperCase();
-  if (normalized === 'UCAAS') return 'UCaaS';
-  if (normalized === 'CCAAS') return 'CCaaS';
-  if (normalized === 'AI') return 'AI';
-  if (normalized === 'PCICLOUD') return 'PCI Cloud';
-  if (normalized === 'SERVICES') return 'Services';
-  if (normalized === 'CONSULTANCY') return 'Consultancy';
-  return String(value || 'Uncategorised').trim() || 'Uncategorised';
-}
-
-function getCategorySortOrder(category = '') {
-  const value = normalizeCategory(category).toUpperCase();
-  if (value === 'UCAAS') return 1;
-  if (value === 'CCAAS') return 2;
-  if (value === 'AI') return 3;
-  if (value === 'PCICLOUD') return 4;
-  if (value === 'SERVICES') return 5;
-  if (value === 'CONSULTANCY') return 6;
-  return 999;
+  return normalizeImportedDisplayValue('category', value) || 'Uncategorised';
 }
 
 function normalizeLicenseType(value) {
   const raw = String(value == null ? '' : value).trim();
-  if (!raw || raw === '—' || /^n\s*\/?\s*a$/i.test(raw)) return 'N/A';
-  if (/^nam/i.test(raw)) return 'Named Licenses';
-  if (/^conc/i.test(raw)) return 'Concurrent Licenses';
+  if (!raw || raw === '—' || /^n\s*\/?\s*a$/i.test(raw)) return CANONICAL_DICTIONARY.licenseTypes.na;
+  if (/^nam/i.test(raw)) return CANONICAL_DICTIONARY.licenseTypes.namedLicenses;
+  if (/^conc/i.test(raw)) return CANONICAL_DICTIONARY.licenseTypes.concurrentLicenses;
   return raw;
 }
 
@@ -6002,7 +6606,12 @@ function getPaymentTypeOrder(paymentType, productName = '') {
 
 function getDisplayPaymentType(product) {
   const meta = getProductMeta(product);
-  return meta.commitment || (product.payType === 'PrePay' ? 'Annual Pre-Pay' : (product.payType === 'PayMonthly' ? 'Monthly' : '—'));
+  return getCanonicalPaymentDisplay(product, meta.commitment);
+  return getMappedFilterLabel('paymentType', getCanonicalProductPaymentValue(product));
+}
+
+function getDisplayLicenseType(product) {
+  return getMappedFilterLabel('licenseType', getCanonicalProductLicenseValue(product));
 }
 
 function sortRowsForCategory(rows, category) {
@@ -6236,6 +6845,7 @@ window.addEventListener('DOMContentLoaded', initPartnerPriceList);
           <div class="help-tip"><strong>One pricing matrix</strong>The quote builder and the partner price list now use the same commercial rules, so there is no drift between views.</div>
         </div>
       </div>
+      <div id="helpModalDynamic"></div>
 
       <div class="help-section">
         <div class="help-section-title"><span class="help-section-icon">📋</span> Quote Organisation</div>
