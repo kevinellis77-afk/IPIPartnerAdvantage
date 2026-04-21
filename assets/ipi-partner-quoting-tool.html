@@ -526,6 +526,62 @@
     transition: border-color 0.15s;
   }
   .meta-field input:focus, .meta-field select:focus { border-color: var(--green); }
+  .multi-select {
+    position: relative;
+  }
+  .multi-select-toggle {
+    width: 100%;
+    min-height: 37px;
+    padding: 7px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--charcoal);
+    background: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+  }
+  .multi-select-toggle:focus { outline: none; border-color: var(--green); }
+  .multi-select-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 15;
+    padding: 6px;
+  }
+  .multi-select-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .multi-select-option:hover { background: var(--off-white); }
+  .multi-select-option input {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    accent-color: var(--green);
+  }
+  .multi-select-native {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+  }
   .meta-field-checkbox {
     display: flex;
     align-items: flex-end;
@@ -2156,7 +2212,14 @@
         </div>
         <div class="meta-field">
           <label>Category</label>
-          <select id="priceListCategory" onchange="renderPartnerPriceList()"></select>
+          <div class="multi-select" id="priceListCategoryWrap">
+            <button type="button" class="multi-select-toggle" id="priceListCategoryToggle" onclick="togglePriceListMultiDropdown('priceListCategoryWrap')">
+              <span id="priceListCategoryLabel">All categories</span>
+              <span aria-hidden="true">▼</span>
+            </button>
+            <div class="multi-select-menu hidden" id="priceListCategoryMenu"></div>
+            <select id="priceListCategory" multiple class="multi-select-native" onchange="renderPartnerPriceList()"></select>
+          </div>
         </div>
         <div class="meta-field">
           <label>Search Products</label>
@@ -2164,19 +2227,25 @@
         </div>
         <div class="meta-field">
           <label>Payment Type</label>
-          <select id="priceListPayType" onchange="renderPartnerPriceList()">
-            <option value="all">All</option>
-            <option value="PrePay">Annual Pre-Pay</option>
-            <option value="PayMonthly">Monthly</option>
-          </select>
+          <div class="multi-select" id="priceListPayTypeWrap">
+            <button type="button" class="multi-select-toggle" id="priceListPayTypeToggle" onclick="togglePriceListMultiDropdown('priceListPayTypeWrap')">
+              <span id="priceListPayTypeLabel">All payment types</span>
+              <span aria-hidden="true">▼</span>
+            </button>
+            <div class="multi-select-menu hidden" id="priceListPayTypeMenu"></div>
+            <select id="priceListPayType" multiple class="multi-select-native" onchange="renderPartnerPriceList()"></select>
+          </div>
         </div>
         <div class="meta-field">
           <label>License Type</label>
-          <select id="priceListAgentType" onchange="renderPartnerPriceList()">
-            <option value="all">All</option>
-            <option value="Named">Named</option>
-            <option value="Concurrent">Concurrent</option>
-          </select>
+          <div class="multi-select" id="priceListAgentTypeWrap">
+            <button type="button" class="multi-select-toggle" id="priceListAgentTypeToggle" onclick="togglePriceListMultiDropdown('priceListAgentTypeWrap')">
+              <span id="priceListAgentTypeLabel">All license types</span>
+              <span aria-hidden="true">▼</span>
+            </button>
+            <div class="multi-select-menu hidden" id="priceListAgentTypeMenu"></div>
+            <select id="priceListAgentType" multiple class="multi-select-native" onchange="renderPartnerPriceList()"></select>
+          </div>
         </div>
         <div class="meta-field meta-field-checkbox">
           <label class="meta-checkbox-label">
@@ -5132,10 +5201,14 @@ function closeToolbarMenus() {
 
 document.addEventListener('click', function(e) {
   if (!e.target.closest('.toolbar-menu')) closeToolbarMenus();
+  if (!e.target.closest('.multi-select')) closePriceListMultiDropdowns();
 });
 
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeToolbarMenus();
+  if (e.key === 'Escape') {
+    closeToolbarMenus();
+    closePriceListMultiDropdowns();
+  }
 });
 
 function selectWorkspace(view) {
@@ -5284,6 +5357,84 @@ function setSelectOptions(selectEl, options, allLabel) {
   selectEl.value = safeOptions.includes(preferred) || preferred === allValue ? preferred : allValue;
 }
 
+function getMultiSelectValues(selectEl) {
+  if (!selectEl) return [];
+  return Array.from(selectEl.selectedOptions || []).map(function(option) {
+    return option.value;
+  }).filter(Boolean);
+}
+
+function getPriceListMultiSelectLabel(selected, allCount, allLabel) {
+  if (!allCount || selected.length === allCount || !selected.length) return allLabel;
+  if (selected.length === 1) return selected[0];
+  if (selected.length === 2) return selected[0] + ', ' + selected[1];
+  return selected.length + ' selected';
+}
+
+function setMultiSelectOptions(selectEl, options) {
+  if (!selectEl) return;
+  const currentSelections = getMultiSelectValues(selectEl);
+  const safeOptions = Array.from(new Set(options.filter(Boolean))).sort(function(a, b) {
+    return String(a).localeCompare(String(b));
+  });
+  selectEl.innerHTML = safeOptions.map(function(option) {
+    return '<option value="' + option + '">' + option + '</option>';
+  }).join('');
+  const selectionsToApply = currentSelections.length ? currentSelections : safeOptions;
+  Array.from(selectEl.options).forEach(function(optionEl) {
+    optionEl.selected = selectionsToApply.includes(optionEl.value);
+  });
+}
+
+function syncPriceListMultiSelectUi(config) {
+  const selectEl = document.getElementById(config.selectId);
+  const menuEl = document.getElementById(config.menuId);
+  const labelEl = document.getElementById(config.labelId);
+  if (!selectEl || !menuEl || !labelEl) return;
+  const selected = getMultiSelectValues(selectEl);
+  const allCount = selectEl.options.length;
+  labelEl.textContent = getPriceListMultiSelectLabel(selected, allCount, config.allLabel);
+  menuEl.innerHTML = Array.from(selectEl.options).map(function(optionEl) {
+    const checked = optionEl.selected ? 'checked' : '';
+    return (
+      '<label class="multi-select-option">' +
+      '<input type="checkbox" data-select-id="' + config.selectId + '" value="' + optionEl.value + '" ' + checked + ' onchange="onPriceListMultiSelectChange(event)">' +
+      '<span>' + optionEl.text + '</span>' +
+      '</label>'
+    );
+  }).join('');
+}
+
+function onPriceListMultiSelectChange(event) {
+  const checkbox = event?.target;
+  if (!checkbox) return;
+  const selectId = checkbox.getAttribute('data-select-id');
+  const selectEl = selectId ? document.getElementById(selectId) : null;
+  if (!selectEl) return;
+  const targetOption = Array.from(selectEl.options).find(function(optionEl) {
+    return optionEl.value === checkbox.value;
+  });
+  if (!targetOption) return;
+  targetOption.selected = checkbox.checked;
+  renderPartnerPriceList();
+}
+
+function closePriceListMultiDropdowns() {
+  document.querySelectorAll('.multi-select-menu').forEach(function(menuEl) {
+    menuEl.classList.add('hidden');
+  });
+}
+
+function togglePriceListMultiDropdown(wrapperId) {
+  const wrapper = document.getElementById(wrapperId);
+  if (!wrapper) return;
+  const menuEl = wrapper.querySelector('.multi-select-menu');
+  if (!menuEl) return;
+  const willOpen = menuEl.classList.contains('hidden');
+  closePriceListMultiDropdowns();
+  if (willOpen) menuEl.classList.remove('hidden');
+}
+
 function syncPriceListFilterOptions() {
   const catEl = document.getElementById('priceListCategory');
   const payEl = document.getElementById('priceListPayType');
@@ -5296,13 +5447,16 @@ function syncPriceListFilterOptions() {
     return !isHiddenForProfile(product, profile);
   });
 
-  setSelectOptions(catEl, visibleProducts.map(function(product) { return product.cat; }), 'All categories');
-  setSelectOptions(payEl, visibleProducts.map(function(product) {
+  setMultiSelectOptions(catEl, visibleProducts.map(function(product) { return product.cat; }));
+  setMultiSelectOptions(payEl, visibleProducts.map(function(product) {
     return getProductMeta(product).commitment || (product.payType === 'PrePay' ? 'Annual Pre-Pay' : (product.payType === 'PayMonthly' ? 'Monthly' : '—'));
-  }), 'All payment types');
-  setSelectOptions(agentEl, visibleProducts.map(function(product) {
+  }));
+  setMultiSelectOptions(agentEl, visibleProducts.map(function(product) {
     return getProductMeta(product).agentType || product.agentType || '—';
-  }), 'All license types');
+  }));
+  syncPriceListMultiSelectUi({ selectId: 'priceListCategory', menuId: 'priceListCategoryMenu', labelId: 'priceListCategoryLabel', allLabel: 'All categories' });
+  syncPriceListMultiSelectUi({ selectId: 'priceListPayType', menuId: 'priceListPayTypeMenu', labelId: 'priceListPayTypeLabel', allLabel: 'All payment types' });
+  syncPriceListMultiSelectUi({ selectId: 'priceListAgentType', menuId: 'priceListAgentTypeMenu', labelId: 'priceListAgentTypeLabel', allLabel: 'All license types' });
 }
 
 function bindPriceListSorting() {
@@ -5377,9 +5531,12 @@ function updatePriceListFilterSummary() {
 
   if (selectedModel?.value) filters.push(selectedModel.options[selectedModel.selectedIndex]?.text || selectedModel.value);
   if (selectedTier?.value) filters.push(selectedTier.options[selectedTier.selectedIndex]?.text || selectedTier.value);
-  if (selectedCategory?.value && selectedCategory.value !== 'all') filters.push('Category: ' + selectedCategory.value);
-  if (selectedPayment?.value && selectedPayment.value !== 'all') filters.push('Payment: ' + selectedPayment.value);
-  if (selectedLicense?.value && selectedLicense.value !== 'all') filters.push('License: ' + selectedLicense.value);
+  const selectedCategories = getMultiSelectValues(selectedCategory);
+  const selectedPayments = getMultiSelectValues(selectedPayment);
+  const selectedLicenses = getMultiSelectValues(selectedLicense);
+  if (selectedCategories.length && selectedCategories.length !== selectedCategory.options.length) filters.push('Category: ' + selectedCategories.join(', '));
+  if (selectedPayments.length && selectedPayments.length !== selectedPayment.options.length) filters.push('Payment: ' + selectedPayments.join(', '));
+  if (selectedLicenses.length && selectedLicenses.length !== selectedLicense.options.length) filters.push('License: ' + selectedLicenses.join(', '));
   if (showRrpOnly) filters.push('RRP only');
   if (searchValue) filters.push('Search: "' + searchValue + '"');
 
@@ -5401,22 +5558,22 @@ function togglePriceListFilters(forceExpanded) {
 
 function getFilteredPriceListRows(profile) {
   const activeProfile = profile || getSelectedPriceListProfile();
-  const category = document.getElementById('priceListCategory').value || 'all';
+  const category = getMultiSelectValues(document.getElementById('priceListCategory'));
   const search = (document.getElementById('priceListSearch').value || '').toLowerCase();
-  const payType = document.getElementById('priceListPayType').value || 'all';
-  const agentType = document.getElementById('priceListAgentType').value || 'all';
+  const payType = getMultiSelectValues(document.getElementById('priceListPayType'));
+  const agentType = getMultiSelectValues(document.getElementById('priceListAgentType'));
   return PRODUCTS.filter(function(p) {
     if (isHiddenForProfile(p, activeProfile)) return false;
     const meta = getProductMeta(p);
     const payLabel = meta.commitment || (p.payType === 'PrePay' ? 'Annual Pre-Pay' : (p.payType === 'PayMonthly' ? 'Monthly' : '—'));
     const licenseLabel = meta.agentType || p.agentType || '—';
-    const matchCategory = category === 'all' || p.cat === category;
+    const matchCategory = !category.length || category.includes(p.cat);
     const matchSearch = !search ||
       p.name.toLowerCase().indexOf(search) !== -1 ||
       p.id.toLowerCase().indexOf(search) !== -1 ||
       (p.cleanName && p.cleanName.toLowerCase().indexOf(search) !== -1);
-    const matchPayType = payType === 'all' ? true : payLabel === payType;
-    const matchAgentType = agentType === 'all' ? true : licenseLabel === agentType;
+    const matchPayType = !payType.length ? true : payType.includes(payLabel);
+    const matchAgentType = !agentType.length ? true : agentType.includes(licenseLabel);
     return matchCategory && matchSearch && matchPayType && matchAgentType;
   }).sort(function(a, b) { return comparePriceListRows(a, b, activeProfile); });
 }
