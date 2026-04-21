@@ -3275,6 +3275,72 @@ function fmtGBP(val) {
   return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
 }
 
+// ─── SHARED SORT HELPERS ─────────────────────────────────────────────────────
+function normalizeCategory(category) {
+  return String(category || '').trim().toLowerCase().replace(/\s+/g, '');
+}
+
+function isCcaasCategory(category) {
+  return normalizeCategory(category) === 'ccaas';
+}
+
+function getCcaasFamilyOrder(productName = '') {
+  const name = String(productName || '').toLowerCase().trim();
+  if (name.includes('ecx voice')) return 1;
+  if (name.includes('ecx omni')) return 2;
+  if (name.includes('ecx max')) return 3;
+  if (name.includes('ecx ai insight')) return 4;
+  return 999;
+}
+
+function getCcaasPaymentTypeOrder(paymentType, productName = '') {
+  const payment = String(paymentType || '').toLowerCase().trim();
+  const name = String(productName || '').toLowerCase().trim();
+
+  if (name.includes('overage') || payment.includes('overage')) return 4;
+  if (payment === 'prepay' || /annual pre.?pay|ann(?:ual)?\s*pre|pre-?pay/.test(payment)) return 1;
+  if (payment === 'paymonthly' || /monthly|pay monthly|ann(?:ual)?\s*pay|pay m(?:on|thly)|annpaym/.test(payment)) return 2;
+  if (/on[\s-]?demand/.test(payment) || /on[\s-]?demand/.test(name)) return 3;
+  return 100;
+}
+
+function getLicenseBlockOrder(agentType) {
+  const value = String(agentType || 'N/A').toLowerCase().trim();
+  if (value === 'named') return 1;
+  if (value === 'concurrent') return 2;
+  return 3;
+}
+
+function getRowProduct(row) {
+  return row && row.product ? row.product : row;
+}
+
+function sortRowsWithinCategory(rows, category) {
+  if (!Array.isArray(rows) || !isCcaasCategory(category)) return Array.isArray(rows) ? rows.slice() : [];
+
+  return rows.slice().sort((a, b) => {
+    const ap = getRowProduct(a) || {};
+    const bp = getRowProduct(b) || {};
+
+    const licenseDelta = getLicenseBlockOrder(ap.agentType) - getLicenseBlockOrder(bp.agentType);
+    if (licenseDelta !== 0) return licenseDelta;
+
+    const familyDelta = getCcaasFamilyOrder(ap.name) - getCcaasFamilyOrder(bp.name);
+    if (familyDelta !== 0) return familyDelta;
+
+    const paymentDelta = getCcaasPaymentTypeOrder(ap.payType, ap.name) - getCcaasPaymentTypeOrder(bp.payType, bp.name);
+    if (paymentDelta !== 0) return paymentDelta;
+
+    const paymentLabelDelta = String(ap.payType || '').localeCompare(String(bp.payType || ''), undefined, { sensitivity: 'base' });
+    if (paymentLabelDelta !== 0) return paymentLabelDelta;
+
+    const nameDelta = String(ap.name || '').localeCompare(String(bp.name || ''), undefined, { sensitivity: 'base' });
+    if (nameDelta !== 0) return nameDelta;
+
+    return String(ap.id || '').localeCompare(String(bp.id || ''), undefined, { sensitivity: 'base' });
+  });
+}
+
 function generateQuoteRef() {
   const year  = new Date().getFullYear();
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -3416,10 +3482,21 @@ function renderProductList() {
     familyMap[key].products.push(p);
   });
 
+  if (isCcaasCategory(activeCategory)) {
+    familyOrder.sort(function(a, b) {
+      var fa = familyMap[a];
+      var fb = familyMap[b];
+      if (!fa || !fb) return 0;
+      var famDelta = getCcaasFamilyOrder(fa.name) - getCcaasFamilyOrder(fb.name);
+      if (famDelta !== 0) return famDelta;
+      return String(fa.name || '').localeCompare(String(fb.name || ''), undefined, { sensitivity: 'base' });
+    });
+  }
+
   // ── Render families — data-* attributes, no inline onclick ─────────────
   var html = familyOrder.map(function(key, keyIdx) {
     var family   = familyMap[key];
-    var prods    = family.products;
+    var prods    = isCcaasCategory(family.cat) ? sortRowsWithinCategory(family.products, family.cat) : family.products;
     var isSingle = prods.length === 1;
     var colour   = family.colour;
 
@@ -3577,7 +3654,7 @@ function renderBillingBlock(billingLabel, items) {
   let blockTotal = 0;
   items.forEach(i => { blockTotal += getEffectivePrice(i) * i.qty; });
 
-  let catSections = orderedCats.map(cat => renderCatGroup(cat, byCat[cat])).join('');
+  let catSections = orderedCats.map(cat => renderCatGroup(cat, sortRowsWithinCategory(byCat[cat], cat))).join('');
 
   return `
     <div class="billing-block">
@@ -4306,7 +4383,7 @@ function getGroupedQuoteData() {
     });
     const ordered = CAT_ORDER.filter(c => map[c]);
     Object.keys(map).forEach(c => { if (!ordered.includes(c)) ordered.push(c); });
-    return ordered.map(cat => ({ cat, items: map[cat] }));
+    return ordered.map(cat => ({ cat, items: sortRowsWithinCategory(map[cat], cat) }));
   }
 
   let mrc = 0, otc = 0;
@@ -5492,6 +5569,24 @@ function getPriceListSortValue(product, profile, sortKey) {
 }
 
 function comparePriceListRows(a, b, profile) {
+  if (isCcaasCategory(a.cat) && isCcaasCategory(b.cat)) {
+    const metaA = getProductMeta(a);
+    const metaB = getProductMeta(b);
+    const licenseA = metaA.agentType || a.agentType || 'N/A';
+    const licenseB = metaB.agentType || b.agentType || 'N/A';
+    const paymentA = metaA.commitment || (a.payType === 'PrePay' ? 'Annual Pre-Pay' : (a.payType === 'PayMonthly' ? 'Monthly' : ''));
+    const paymentB = metaB.commitment || (b.payType === 'PrePay' ? 'Annual Pre-Pay' : (b.payType === 'PayMonthly' ? 'Monthly' : ''));
+
+    const ccaasOrderDiff =
+      getLicenseBlockOrder(licenseA) - getLicenseBlockOrder(licenseB) ||
+      getCcaasFamilyOrder(a.name) - getCcaasFamilyOrder(b.name) ||
+      getCcaasPaymentTypeOrder(paymentA, a.name) - getCcaasPaymentTypeOrder(paymentB, b.name) ||
+      String(paymentA).localeCompare(String(paymentB), undefined, { sensitivity: 'base', numeric: true }) ||
+      String(a.name || '').localeCompare(String(b.name || ''), undefined, { sensitivity: 'base', numeric: true }) ||
+      String(a.id || '').localeCompare(String(b.id || ''), undefined, { sensitivity: 'base', numeric: true });
+    if (ccaasOrderDiff !== 0) return ccaasOrderDiff;
+  }
+
   const direction = priceListSortState.direction === 'desc' ? -1 : 1;
   const left = getPriceListSortValue(a, profile, priceListSortState.key);
   const right = getPriceListSortValue(b, profile, priceListSortState.key);
@@ -5715,6 +5810,16 @@ function exportPriceListPdf() {
     const licenseBlocks = sortedLicenses.map(function(licenseType) {
       const items = [...grouped[category][licenseType]];
       items.sort(function(a, b) {
+        if (normalizeCategoryLabel(category).toUpperCase() === 'CCAAS') {
+          const paymentA = getProductMeta(a).commitment || (a.payType === 'PrePay' ? 'Annual Pre-Pay' : (a.payType === 'PayMonthly' ? 'Monthly' : ''));
+          const paymentB = getProductMeta(b).commitment || (b.payType === 'PrePay' ? 'Annual Pre-Pay' : (b.payType === 'PayMonthly' ? 'Monthly' : ''));
+          const familyDiff = getCcaasFamilyOrder(a.name) - getCcaasFamilyOrder(b.name);
+          if (familyDiff !== 0) return familyDiff;
+          const paymentDiff = getCcaasPaymentTypeOrder(paymentA, a.name) - getCcaasPaymentTypeOrder(paymentB, b.name);
+          if (paymentDiff !== 0) return paymentDiff;
+          const paymentLabelDiff = String(paymentA).localeCompare(String(paymentB), undefined, { sensitivity: 'base', numeric: true });
+          if (paymentLabelDiff !== 0) return paymentLabelDiff;
+        }
         if (normalizeCategoryLabel(category).toUpperCase() === 'PCI CLOUD') {
           const familyDiff = getPciProductFamilyOrder(a.name) - getPciProductFamilyOrder(b.name);
           if (familyDiff !== 0) return familyDiff;
