@@ -90,6 +90,40 @@
     align-items: center;
     gap: 10px;
   }
+  .workflow-context-bar {
+    background: #f3f6f8;
+    border-bottom: 1px solid var(--border);
+    padding: 8px 32px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-height: 48px;
+  }
+  .context-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid #d4dde2;
+    font-size: 12px;
+    color: var(--charcoal-dark);
+    white-space: nowrap;
+  }
+  .context-chip b { font-weight: 700; }
+  .context-chip.status {
+    background: #edf4ff;
+    border-color: #c9dbf8;
+    color: #2a52b0;
+  }
+  .context-separator {
+    color: #9aa9b3;
+    font-size: 12px;
+    font-weight: 700;
+    margin: 0 2px;
+  }
 
   .global-profile-controls {
     display: flex;
@@ -234,7 +268,7 @@
   .app {
     display: grid;
     grid-template-columns: var(--panel-width, 360px) 1fr;
-    height: calc(100vh - 60px);
+    height: calc(100vh - 108px);
   }
 
   /* ─── LEFT PANEL ─── */
@@ -1798,7 +1832,7 @@
 
   /* Print styles */
   @media print {
-    header, .left-panel, .quote-header, .quote-footer { display: none !important; }
+    header, .workflow-context-bar, .left-panel, .quote-header, .quote-footer { display: none !important; }
     .app { display: block; height: auto; }
     .right-panel { display: block; }
     .quote-body { overflow: visible; padding: 0; }
@@ -2237,6 +2271,15 @@
     <button class="help-btn" onclick="openHelpModal()" title="Help & Guide">?</button>
   </div>
 </header>
+
+<div class="workflow-context-bar" id="workflowContextBar">
+  <span class="context-chip"><b>Workspace:</b> <span id="contextWorkspace">Launchpad</span></span>
+  <span class="context-separator">›</span>
+  <span class="context-chip"><b>Partner Profile:</b> <span id="contextPartnerProfile">Reseller · Accredited (20%)</span></span>
+  <span class="context-separator">›</span>
+  <span class="context-chip"><b>Quote Ref:</b> <span id="contextQuoteRef">Draft</span></span>
+  <span class="context-chip status">Single contextual session</span>
+</div>
 
 
 <div class="launchpad-overlay" id="launchpadOverlay">
@@ -3165,6 +3208,8 @@ function normalizeMappedFilterValue(type, value) {
   return alias ? alias.value : raw;
 }
 
+  renderProductList();
+  persistWorkflowContext();
 function getMappedFilterLabel(type, value) {
   const normalized = normalizeMappedFilterValue(type, value);
   const option = (FILTER_VALUE_MAP[type] || []).find(function(item) { return item.value === normalized; });
@@ -3411,6 +3456,18 @@ const appState = {
   profile: { type: 'reseller', tier: 'accredited' }
 };
 
+const WORKFLOW_CONTEXT_STORAGE_VERSION = 'v1';
+const WORKFLOW_CONTEXT_KEYS = {
+  profile: 'ipi_workflow_' + WORKFLOW_CONTEXT_STORAGE_VERSION + '_profile',
+  workspace: 'ipi_workflow_' + WORKFLOW_CONTEXT_STORAGE_VERSION + '_workspace',
+  quoteFilters: 'ipi_workflow_' + WORKFLOW_CONTEXT_STORAGE_VERSION + '_quote_filters',
+  priceFilters: 'ipi_workflow_' + WORKFLOW_CONTEXT_STORAGE_VERSION + '_price_filters'
+};
+const workflowSessionState = {
+  quoteFilters: null,
+  priceFilters: null
+};
+
 // ─── PARTNER COMMERCIAL PROFILES ─────────────────────────────────────────────
 const PARTNER_PRICE_PROFILES = {
   reseller: {
@@ -3633,6 +3690,187 @@ function getProfileBadgeHTML(profile, emptyText) {
   return `<span class="level-badge ${getProfileClassName(profile)}" style="margin-left:8px">${profile.typeLabel} · ${profile.tierLabel} (${Math.round(profile.discount * 100)}%)</span>`;
 }
 
+function syncTierOptionsFor(typeEl, tierEl) {
+  if (!typeEl || !tierEl) return;
+  const fallbackType = PARTNER_PRICE_PROFILES.reseller ? 'reseller' : Object.keys(PARTNER_PRICE_PROFILES)[0];
+  const selectedType = PARTNER_PRICE_PROFILES[typeEl.value] ? typeEl.value : fallbackType;
+  typeEl.value = selectedType;
+  const typeCfg = PARTNER_PRICE_PROFILES[selectedType];
+  if (!typeCfg || !typeCfg.tiers) return;
+  const current = tierEl.value;
+  const tierKeys = Object.keys(typeCfg.tiers);
+  if (!tierKeys.length) return;
+  tierEl.innerHTML = tierKeys.map(function(key) {
+    const tier = typeCfg.tiers[key];
+    return '<option value="' + key + '">' + tier.label + ' (' + Math.round(tier.discount * 100) + '%)</option>';
+  }).join('');
+  tierEl.value = tierKeys.includes(current) ? current : tierKeys[0];
+}
+
+function populateProfileControls(typeEl, tierEl, defaultType) {
+  if (!typeEl || !tierEl) return;
+  typeEl.innerHTML = Object.keys(PARTNER_PRICE_PROFILES).map(function(key) {
+    return '<option value="' + key + '">' + PARTNER_PRICE_PROFILES[key].label + '</option>';
+  }).join('');
+  typeEl.value = PARTNER_PRICE_PROFILES[defaultType] ? defaultType : 'reseller';
+  syncTierOptionsFor(typeEl, tierEl);
+}
+
+function syncQuoteTierOptions() {
+  const modelEl = document.getElementById('partnerModel');
+  const tierEl = document.getElementById('partnerTier');
+  syncTierOptionsFor(modelEl, tierEl);
+}
+
+function populateQuoteProfileControls() {
+  const modelEl = document.getElementById('partnerModel');
+  const tierEl = document.getElementById('partnerTier');
+  if (!modelEl || !tierEl) return;
+  populateProfileControls(modelEl, tierEl, 'reseller');
+  applyQuoteProfileDisplay();
+}
+
+function applyQuoteProfileDisplay() {
+  const profile = getSelectedQuoteProfile();
+  const hidden = document.getElementById('partnerLevel');
+  const display = document.getElementById('partnerLevelDisplay');
+  const text = document.getElementById('partnerLevelText');
+  if (hidden) hidden.value = profile.tier;
+  if (display) display.className = 'partner-level-display ' + getProfileClassName(profile);
+  if (text) {
+    text.className = 'partner-level-text ' + getProfileClassName(profile);
+    text.innerHTML = `${profile.typeLabel} · ${profile.tierLabel} <span style="opacity:0.6;font-weight:400;font-size:11px">(${Math.round(profile.discount * 100)}% discount)</span>`;
+  }
+}
+
+function setStoredJson(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (_) {}
+}
+
+function getStoredJson(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch (_) {
+    return fallback;
+  }
+}
+
+function getQuoteFilterState() {
+  return {
+    category: activeCategory,
+    agent: activeAgentFilter,
+    pay: activePayFilter,
+    search: document.getElementById('searchInput')?.value || ''
+  };
+}
+
+function applyQuoteFilterState(state) {
+  if (!state) return;
+  activeCategory = state.category || 'All';
+  activeAgentFilter = state.agent || 'all';
+  activePayFilter = state.pay || 'all';
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchInput.value = state.search || '';
+  renderCategoryTabs();
+  ['agent', 'pay'].forEach(function(dimension) {
+    const selected = dimension === 'agent' ? activeAgentFilter : activePayFilter;
+    document.querySelectorAll('.filter-pill[data-filter="' + dimension + '"]').forEach(function(pill) {
+      pill.classList.toggle('active', pill.dataset.value === selected);
+    });
+  });
+}
+
+function getPriceListFilterState() {
+  const categoryEl = document.getElementById('priceListCategory');
+  const payEl = document.getElementById('priceListPayType');
+  const agentEl = document.getElementById('priceListAgentType');
+  return {
+    category: getMultiSelectValues(categoryEl),
+    payType: getMultiSelectValues(payEl),
+    agentType: getMultiSelectValues(agentEl),
+    search: document.getElementById('priceListSearch')?.value || '',
+    rrpOnly: !!document.getElementById('priceListRrpOnly')?.checked,
+    filtersCollapsed: !!priceListFiltersCollapsed
+  };
+}
+
+function applyPriceListFilterState(state) {
+  if (!state) return;
+  const categoryEl = document.getElementById('priceListCategory');
+  const payEl = document.getElementById('priceListPayType');
+  const agentEl = document.getElementById('priceListAgentType');
+  const searchEl = document.getElementById('priceListSearch');
+  const rrpOnlyEl = document.getElementById('priceListRrpOnly');
+  [ [categoryEl, state.category], [payEl, state.payType], [agentEl, state.agentType] ].forEach(function(entry) {
+    const el = entry[0];
+    const values = Array.isArray(entry[1]) ? entry[1] : [];
+    if (!el) return;
+    Array.from(el.options).forEach(function(optionEl) {
+      optionEl.selected = values.length ? values.includes(optionEl.value) : true;
+    });
+    renderPriceListMultiSelect(el);
+  });
+  if (searchEl) searchEl.value = state.search || '';
+  if (rrpOnlyEl) rrpOnlyEl.checked = !!state.rrpOnly;
+  togglePriceListFilters(!state.filtersCollapsed);
+}
+
+function persistWorkflowContext() {
+  const profile = getSelectedQuoteProfile();
+  if (profile) setStoredJson(WORKFLOW_CONTEXT_KEYS.profile, { type: profile.type, tier: profile.tier });
+  setStoredJson(WORKFLOW_CONTEXT_KEYS.workspace, { workspace: getCurrentWorkspace() });
+  workflowSessionState.quoteFilters = getQuoteFilterState();
+  workflowSessionState.priceFilters = getPriceListFilterState();
+  setStoredJson(WORKFLOW_CONTEXT_KEYS.quoteFilters, workflowSessionState.quoteFilters);
+  setStoredJson(WORKFLOW_CONTEXT_KEYS.priceFilters, workflowSessionState.priceFilters);
+  updateWorkflowContextBar();
+}
+
+function updateWorkflowContextBar() {
+  const workspaceMap = { launchpad: 'Launchpad', quote: 'Quoting Tool', price: 'Partner Price List' };
+  const workspaceLabel = workspaceMap[getCurrentWorkspace()] || 'Launchpad';
+  const profile = getSelectedQuoteProfile();
+  const ref = (document.getElementById('quoteRef')?.value || '').trim() || 'Draft (not set)';
+  const workspaceEl = document.getElementById('contextWorkspace');
+  const profileEl = document.getElementById('contextPartnerProfile');
+  const refEl = document.getElementById('contextQuoteRef');
+  if (workspaceEl) workspaceEl.textContent = workspaceLabel;
+  if (profileEl) profileEl.textContent = profile ? (profile.typeLabel + ' · ' + profile.tierLabel + ' (' + Math.round(profile.discount * 100) + '%)') : 'Not set';
+  if (refEl) refEl.textContent = ref;
+}
+
+function onPartnerProfileChange() {
+  syncQuoteTierOptions();
+  const modelEl = document.getElementById('partnerModel');
+  const tierEl = document.getElementById('partnerTier');
+  const priceTypeEl = document.getElementById('priceListPartnerType');
+  const priceTierEl = document.getElementById('priceListPartnerTier');
+  if (modelEl && tierEl && priceTypeEl && priceTierEl) {
+    priceTypeEl.value = modelEl.value;
+    syncTierOptionsFor(priceTypeEl, priceTierEl);
+    priceTierEl.value = tierEl.value;
+  }
+  applyQuoteProfileDisplay();
+  renderQuote();
+  renderProductList();
+  updateWorkflowContextBar();
+  persistWorkflowContext();
+}
+
+function setQuoteProfile(type, tier) {
+  const modelEl = document.getElementById('partnerModel');
+  const tierEl = document.getElementById('partnerTier');
+  if (!modelEl || !tierEl) return;
+  modelEl.value = PARTNER_PRICE_PROFILES[type] ? type : 'reseller';
+  syncQuoteTierOptions();
+  const typeCfg = PARTNER_PRICE_PROFILES[modelEl.value];
+  tierEl.value = typeCfg.tiers[tier] ? tier : Object.keys(typeCfg.tiers)[0];
+  onPartnerProfileChange();
+}
+
 function getDiscountedPrice(product) {
   return getPriceForProductByProfile(product, getSelectedQuoteProfile());
 }
@@ -3771,6 +4009,30 @@ function generateQuoteRef() {
   return 'QT-' + year + '-' + suffix;
 }
 
+function restoreWorkflowContext() {
+  const storedProfile = getStoredJson(WORKFLOW_CONTEXT_KEYS.profile, null);
+  if (storedProfile && storedProfile.type && storedProfile.tier) {
+    setQuoteProfile(storedProfile.type, storedProfile.tier);
+  }
+
+  const quoteFilters = getStoredJson(WORKFLOW_CONTEXT_KEYS.quoteFilters, null);
+  if (quoteFilters) {
+    workflowSessionState.quoteFilters = quoteFilters;
+    applyQuoteFilterState(quoteFilters);
+  }
+
+  const priceFilters = getStoredJson(WORKFLOW_CONTEXT_KEYS.priceFilters, null);
+  if (priceFilters) {
+    workflowSessionState.priceFilters = priceFilters;
+    applyPriceListFilterState(priceFilters);
+  }
+
+  const workspaceState = getStoredJson(WORKFLOW_CONTEXT_KEYS.workspace, null);
+  if (workspaceState && workspaceState.workspace) {
+    selectWorkspace(workspaceState.workspace, { rehydrateOnly: true });
+  } else {
+    updateWorkflowContextBar();
+  }
 function applyUILabelDictionary() {
   const labels = CANONICAL_DICTIONARY.labels;
   const map = {
@@ -3820,6 +4082,9 @@ window.addEventListener('DOMContentLoaded', () => {
   applyUILabelDictionary();
   renderHelpModalContent();
   loadStoredProductCatalogue();
+  populateQuoteProfileControls();
+  populatePriceListProfileControls();
+  restoreWorkflowContext();
   loadGlobalProfileState();
   populateGlobalProfileControls();
   applyQuoteProfileDisplay();
@@ -3828,10 +4093,14 @@ window.addEventListener('DOMContentLoaded', () => {
   setFilter('pay', activePayFilter);
   bindSegmentedControlKeyboardHandlers();
   currentBaseRef = quoteCounter;
-  document.getElementById('quoteRef').value = quoteCounter;
+  if (!document.getElementById('quoteRef').value) {
+    document.getElementById('quoteRef').value = quoteCounter;
+  }
   setDefaultValidityDate();
   renderTemplatesBody();
   updateVersionIndicator();
+  updateWorkflowContextBar();
+  persistWorkflowContext();
 });
 
 // ─── CATEGORY TABS ───────────────────────────────────────────────────────────
@@ -3850,10 +4119,13 @@ function setCategory(cat) {
   activeCategory = cat;
   renderCategoryTabs();
   renderProductList();
+  persistWorkflowContext();
 }
 
 // ─── PRODUCT LIST ─────────────────────────────────────────────────────────────
 function filterProducts() {
+  renderProductList();
+  persistWorkflowContext();
   updateSharedFilterState('search', getQuoteSearchValue(), { skipRenderControls: true });
 }
 
@@ -4515,6 +4787,8 @@ function onQuoteRefChange() {
   currentBaseRef = document.getElementById('quoteRef').value;
   currentVersion = 0;
   updateVersionIndicator();
+  updateWorkflowContextBar();
+  persistWorkflowContext();
 }
 
 function loadQuote(ref) {
@@ -5758,12 +6032,14 @@ function openLaunchpad() {
   document.getElementById('launchpadOverlay').classList.remove('hidden');
   document.getElementById('priceListOverlay').classList.add('hidden');
   updateToolbarState();
+  updateWorkflowContextBar();
 }
 
 function openQuoteBuilder() {
   document.getElementById('launchpadOverlay').classList.add('hidden');
   document.getElementById('priceListOverlay').classList.add('hidden');
   updateToolbarState();
+  updateWorkflowContextBar();
 }
 
 function openPriceList() {
@@ -5772,6 +6048,7 @@ function openPriceList() {
   syncPriceListFilterOptions();
   renderPartnerPriceList();
   updateToolbarState();
+  updateWorkflowContextBar();
 }
 
 function getCurrentWorkspace() {
@@ -5809,11 +6086,26 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-function selectWorkspace(view) {
+function selectWorkspace(view, options) {
+  const config = options || {};
   closeToolbarMenus();
+  const previousWorkspace = getCurrentWorkspace();
+  if (previousWorkspace === 'quote') workflowSessionState.quoteFilters = getQuoteFilterState();
+  if (previousWorkspace === 'price') workflowSessionState.priceFilters = getPriceListFilterState();
+
   if (view === 'launchpad') openLaunchpad();
   else if (view === 'price') openPriceList();
   else openQuoteBuilder();
+
+  if (view === 'quote') applyQuoteFilterState(workflowSessionState.quoteFilters || getStoredJson(WORKFLOW_CONTEXT_KEYS.quoteFilters, null));
+  if (view === 'price') applyPriceListFilterState(workflowSessionState.priceFilters || getStoredJson(WORKFLOW_CONTEXT_KEYS.priceFilters, null));
+
+  if (!config.rehydrateOnly) {
+    renderProductList();
+    renderPartnerPriceList();
+  }
+  updateWorkflowContextBar();
+  persistWorkflowContext();
 }
 
 function updateToolbarState() {
@@ -5884,6 +6176,60 @@ function updateToolbarState() {
     actionsBtn.classList.remove('hidden');
     actionsMenu.innerHTML = '<div class="toolbar-menu-empty">Choose Quoting Tool or Partner Price List from Workspace to see contextual actions.</div>';
   }
+}
+
+function populatePriceListProfileControls() {
+  const typeEl = document.getElementById('priceListPartnerType');
+  const tierEl = document.getElementById('priceListPartnerTier');
+  populateProfileControls(typeEl, tierEl, 'reseller');
+}
+
+function syncPriceListTierOptions() {
+  const typeEl = document.getElementById('priceListPartnerType');
+  const tierEl = document.getElementById('priceListPartnerTier');
+  syncTierOptionsFor(typeEl, tierEl);
+}
+
+function getSelectedPriceListProfile() {
+  const typeEl = document.getElementById('priceListPartnerType');
+  const tierEl = document.getElementById('priceListPartnerTier');
+  const fallbackType = PARTNER_PRICE_PROFILES.reseller ? 'reseller' : Object.keys(PARTNER_PRICE_PROFILES)[0];
+  const type = typeEl && PARTNER_PRICE_PROFILES[typeEl.value] ? typeEl.value : fallbackType;
+  const typeCfg = PARTNER_PRICE_PROFILES[type];
+  if (!typeCfg || !typeCfg.tiers) return null;
+  const tierKeys = Object.keys(typeCfg.tiers);
+  if (!tierKeys.length) return null;
+  const requestedTier = tierEl ? tierEl.value : '';
+  const tier = typeCfg.tiers[requestedTier] ? requestedTier : tierKeys[0];
+  const tierCfg = typeCfg.tiers[tier];
+  if (!tierCfg) return null;
+  return {
+    type: type,
+    tier: tier,
+    typeLabel: typeCfg.label,
+    tierLabel: tierCfg.label,
+    discount: tierCfg.discount
+  };
+}
+
+function onPriceListProfileChange() {
+  syncPriceListTierOptions();
+  const typeEl = document.getElementById('priceListPartnerType');
+  const tierEl = document.getElementById('priceListPartnerTier');
+  const quoteTypeEl = document.getElementById('partnerModel');
+  const quoteTierEl = document.getElementById('partnerTier');
+  if (typeEl && tierEl && quoteTypeEl && quoteTierEl) {
+    quoteTypeEl.value = typeEl.value;
+    syncTierOptionsFor(quoteTypeEl, quoteTierEl);
+    quoteTierEl.value = tierEl.value;
+    applyQuoteProfileDisplay();
+  }
+  syncPriceListFilterOptions();
+  renderQuote();
+  renderProductList();
+  renderPartnerPriceList();
+  updateWorkflowContextBar();
+  persistWorkflowContext();
 }
 
 function setSelectOptions(selectEl, options, allLabel) {
@@ -6184,6 +6530,7 @@ function renderPartnerPriceList() {
 
   if (!rows.length) {
     body.innerHTML = '<tr><td colspan="8" style="padding:32px;text-align:center;color:var(--text-muted)">No products match this search.</td></tr>';
+    persistWorkflowContext();
     return;
   }
 
@@ -6214,6 +6561,7 @@ function renderPartnerPriceList() {
     });
   });
   body.innerHTML = html.join('');
+  persistWorkflowContext();
   bindInfoPanelTriggers(body);
 }
 
@@ -6477,6 +6825,26 @@ window.addEventListener('DOMContentLoaded', initPartnerPriceList);
     </div>
     <div class="modal-body" style="padding:24px">
 
+      <div class="help-section">
+        <div class="help-section-title"><span class="help-section-icon">🚀</span> Unified Workflow (Single Session)</div>
+        <ul class="help-steps">
+          <li><span class="help-step-num">1</span><span>Use <strong>Workspace</strong> to move between <strong>Launchpad</strong>, <strong>Quoting Tool</strong>, and <strong>Partner Price List</strong>. You stay in one contextual session.</span></li>
+          <li><span class="help-step-num">2</span><span>The header context bar shows your active <strong>workspace</strong>, <strong>partner profile</strong>, and <strong>quote reference</strong> so you always know what session you are in.</span></li>
+          <li><span class="help-step-num">3</span><span><strong>Global settings</strong>: Partner Model + Tier (commercial profile) are shared across all workspaces.</span></li>
+          <li><span class="help-step-num">4</span><span><strong>Workspace-specific settings</strong>: catalogue category/filter/search and price-list filter/search are remembered per workspace, including when you switch views or reload.</span></li>
+          <li><span class="help-step-num">5</span><span>Add an <strong>End Customer</strong>, maintain your <strong>Quote Reference</strong>, and save versions as normal.</span></li>
+        </ul>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title"><span class="help-section-icon">💰</span> Partner Pricing</div>
+        <div class="help-tips">
+          <div class="help-tip"><strong>Reseller</strong>Accredited 20%, Silver 30%, Gold 35%, Platinum 40%.</div>
+          <div class="help-tip"><strong>MSP</strong>Silver 35%, Gold 45%, Platinum 55%.</div>
+          <div class="help-tip"><strong>Consultant</strong>Single commercial tier at 15% discount.</div>
+          <div class="help-tip"><strong>One pricing matrix</strong>The quote builder and the partner price list now use the same commercial rules, so there is no drift between views.</div>
+        </div>
+      </div>
       <div id="helpModalDynamic"></div>
 
       <div class="help-section">
