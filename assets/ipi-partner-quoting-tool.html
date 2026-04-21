@@ -2197,7 +2197,6 @@
       <div class="price-list-title">Partner Price List</div>
       <div class="price-list-header-actions">
         <div class="price-list-profile" id="priceListProfileBadge">Profile: Reseller · Accredited · 20% discount</div>
-        <button class="btn btn-outline btn-sm" type="button" onclick="exportPriceListPdf()">Export PDF</button>
         <button class="price-list-filter-toggle" id="priceListFilterToggleBtn" type="button" onclick="togglePriceListFilters()">Hide filters</button>
       </div>
       <p class="price-list-filter-summary" id="priceListFilterSummary"></p>
@@ -2212,7 +2211,7 @@
         </div>
         <div class="meta-field">
           <label>Category</label>
-          <select id="priceListCategory" multiple onchange="renderPartnerPriceList()"></select>
+          <select id="priceListCategory" class="multi-select-native" multiple onchange="renderPartnerPriceList()"></select>
         </div>
         <div class="meta-field">
           <label>Search Products</label>
@@ -2220,11 +2219,11 @@
         </div>
         <div class="meta-field">
           <label>Payment Type</label>
-          <select id="priceListPayType" multiple onchange="renderPartnerPriceList()"></select>
+          <select id="priceListPayType" class="multi-select-native" multiple onchange="renderPartnerPriceList()"></select>
         </div>
         <div class="meta-field">
           <label>License Type</label>
-          <select id="priceListAgentType" multiple onchange="renderPartnerPriceList()"></select>
+          <select id="priceListAgentType" class="multi-select-native" multiple onchange="renderPartnerPriceList()"></select>
         </div>
         <div class="meta-field meta-field-checkbox">
           <label class="meta-checkbox-label">
@@ -5128,6 +5127,7 @@ function showToast(msg) {
 
 // ─── PARTNER PRICE LIST LAYER ───────────────────────────────────────────────
 function initPartnerPriceList() {
+  initializePriceListMultiSelects();
   populatePriceListProfileControls();
   bindPriceListSorting();
   syncPriceListFilterOptions();
@@ -5343,6 +5343,74 @@ function getMultiSelectValues(selectEl) {
   }).filter(Boolean);
 }
 
+function initializePriceListMultiSelects() {
+  ensurePriceListMultiSelect('priceListCategory', 'All categories');
+  ensurePriceListMultiSelect('priceListPayType', 'All payment types');
+  ensurePriceListMultiSelect('priceListAgentType', 'All license types');
+}
+
+function ensurePriceListMultiSelect(selectId, placeholder) {
+  const selectEl = document.getElementById(selectId);
+  if (!selectEl || selectEl.dataset.multiSelectBound === 'true') return;
+  const wrapper = document.createElement('div');
+  wrapper.className = 'multi-select';
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'multi-select-toggle';
+  button.innerHTML = '<span>' + placeholder + '</span><span aria-hidden="true">▾</span>';
+  const menu = document.createElement('div');
+  menu.className = 'multi-select-menu hidden';
+  wrapper.appendChild(button);
+  wrapper.appendChild(menu);
+  selectEl.parentNode.insertBefore(wrapper, selectEl);
+  wrapper.appendChild(selectEl);
+  selectEl.dataset.multiSelectBound = 'true';
+  selectEl.dataset.placeholder = placeholder;
+  selectEl.addEventListener('change', function() {
+    renderPriceListMultiSelect(selectEl);
+  });
+  button.addEventListener('click', function() {
+    const isHidden = menu.classList.contains('hidden');
+    closePriceListMultiDropdowns();
+    if (isHidden) menu.classList.remove('hidden');
+  });
+  renderPriceListMultiSelect(selectEl);
+}
+
+function renderPriceListMultiSelect(selectEl) {
+  if (!selectEl) return;
+  const wrapper = selectEl.closest('.multi-select');
+  if (!wrapper) return;
+  const menu = wrapper.querySelector('.multi-select-menu');
+  const toggleText = wrapper.querySelector('.multi-select-toggle span');
+  if (!menu || !toggleText) return;
+  const options = Array.from(selectEl.options || []);
+  const selected = getMultiSelectValues(selectEl);
+  const allSelected = options.length > 0 && selected.length === options.length;
+  if (!options.length) toggleText.textContent = 'No options';
+  else if (allSelected || !selected.length) toggleText.textContent = selectEl.dataset.placeholder || 'All selected';
+  else if (selected.length === 1) toggleText.textContent = selected[0];
+  else toggleText.textContent = selected.length + ' selected';
+  menu.innerHTML = options.map(function(option) {
+    const checked = selected.includes(option.value) ? 'checked' : '';
+    return '<label class="multi-select-option"><input type="checkbox" value="' + option.value + '" ' + checked + '><span>' + option.textContent + '</span></label>';
+  }).join('');
+  menu.querySelectorAll('input[type="checkbox"]').forEach(function(checkbox) {
+    checkbox.addEventListener('change', function() {
+      const matchingOption = options.find(function(option) { return option.value === checkbox.value; });
+      if (!matchingOption) return;
+      matchingOption.selected = checkbox.checked;
+      selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  });
+}
+
+function closePriceListMultiDropdowns() {
+  document.querySelectorAll('.multi-select-menu').forEach(function(menu) {
+    menu.classList.add('hidden');
+  });
+}
+
 function setMultiSelectOptions(selectEl, options) {
   if (!selectEl) return;
   const currentSelections = getMultiSelectValues(selectEl);
@@ -5356,6 +5424,7 @@ function setMultiSelectOptions(selectEl, options) {
   Array.from(selectEl.options).forEach(function(optionEl) {
     optionEl.selected = selectionsToApply.includes(optionEl.value);
   });
+  renderPriceListMultiSelect(selectEl);
 }
 
 function syncPriceListFilterOptions() {
