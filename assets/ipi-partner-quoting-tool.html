@@ -91,6 +91,32 @@
     gap: 10px;
   }
 
+  .global-profile-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .global-profile-label {
+    color: rgba(255,255,255,0.85);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .global-profile-controls select {
+    background: rgba(255,255,255,0.14);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.26);
+    border-radius: 6px;
+    font-size: 12px;
+    padding: 4px 8px;
+    min-width: 120px;
+  }
+
   .toolbar-menu {
     position: relative;
   }
@@ -2145,6 +2171,11 @@
     <div class="logo-text">Partner Quoting Tool <span>Channel Partner Portal</span></div>
   </div>
   <div class="header-actions">
+    <div class="global-profile-controls">
+      <span class="global-profile-label">Profile</span>
+      <select id="globalPartnerType" onchange="onGlobalProfileChange()"></select>
+      <select id="globalPartnerTier" onchange="onGlobalProfileChange()"></select>
+    </div>
     <div class="toolbar-menu">
       <button class="btn btn-secondary toolbar-menu-btn" id="workspaceMenuBtn" onclick="toggleToolbarMenu('workspaceMenu')">
         Workspace
@@ -2215,14 +2246,6 @@
       </div>
       <p class="price-list-filter-summary" id="priceListFilterSummary"></p>
       <div class="price-list-controls" id="priceListControls">
-        <div class="meta-field">
-          <label>Partner Model</label>
-          <select id="priceListPartnerType" onchange="onPriceListProfileChange()"></select>
-        </div>
-        <div class="meta-field">
-          <label>Tier</label>
-          <select id="priceListPartnerTier" onchange="onPriceListProfileChange()"></select>
-        </div>
         <div class="meta-field">
           <label>Category</label>
           <select id="priceListCategory" class="multi-select-native" multiple onchange="renderPartnerPriceList()"></select>
@@ -2315,14 +2338,6 @@
         <div class="meta-field">
           <label>End Customer</label>
           <input type="text" id="endCustomer" placeholder="e.g. Global Corp plc">
-        </div>
-        <div class="meta-field">
-          <label>Partner Model</label>
-          <select id="partnerModel" onchange="onPartnerProfileChange()"></select>
-        </div>
-        <div class="meta-field">
-          <label>Partner Tier</label>
-          <select id="partnerTier" onchange="onPartnerProfileChange()"></select>
         </div>
         <div class="meta-field">
           <label>Commercial Profile</label>
@@ -3089,6 +3104,10 @@ let quoteCounter     = generateQuoteRef();
 let currentBaseRef   = quoteCounter;   // base ref (without version suffix)
 let currentVersion   = 0;              // 0 = unsaved, 1+ = saved version number
 let currentChangeNote = '';            // brief description of what changed
+const PROFILE_STORAGE_KEY = 'ipi_global_profile_state_v1';
+const appState = {
+  profile: { type: 'reseller', tier: 'accredited' }
+};
 
 // ─── PARTNER COMMERCIAL PROFILES ─────────────────────────────────────────────
 const PARTNER_PRICE_PROFILES = {
@@ -3126,20 +3145,132 @@ function getStoredProfileLabel(model, tier) {
   return tier || 'Not set';
 }
 
-function getSelectedQuoteProfile() {
-  const modelEl = document.getElementById('partnerModel');
-  const tierEl = document.getElementById('partnerTier');
+function buildProfileFromState(type, tier) {
   const fallback = { type: 'reseller', tier: 'accredited', typeLabel: 'Reseller', tierLabel: 'Accredited', discount: 0.20 };
-  if (!modelEl || !tierEl) return fallback;
-  const type = modelEl.value || 'reseller';
   const typeCfg = PARTNER_PRICE_PROFILES[type] || PARTNER_PRICE_PROFILES.reseller;
-  const tier = tierEl.value || Object.keys(typeCfg.tiers)[0];
-  const tierCfg = typeCfg.tiers[tier] || typeCfg.tiers[Object.keys(typeCfg.tiers)[0]];
-  return { type, tier, typeLabel: typeCfg.label, tierLabel: tierCfg.label, discount: tierCfg.discount };
+  const resolvedTier = tier || Object.keys(typeCfg.tiers)[0];
+  const tierCfg = typeCfg.tiers[resolvedTier] || typeCfg.tiers[Object.keys(typeCfg.tiers)[0]];
+  if (!tierCfg) return fallback;
+  const resolvedTierKey = typeCfg.tiers[resolvedTier] ? resolvedTier : Object.keys(typeCfg.tiers)[0];
+  return { type, tier: resolvedTierKey, typeLabel: typeCfg.label, tierLabel: tierCfg.label, discount: tierCfg.discount };
+}
+
+function saveGlobalProfileState() {
+  try {
+    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(appState.profile));
+  } catch (_) {}
+}
+
+function loadGlobalProfileState() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY) || '{}');
+    if (stored && PARTNER_PRICE_PROFILES[stored.type]) {
+      const typeCfg = PARTNER_PRICE_PROFILES[stored.type];
+      const tier = typeCfg.tiers[stored.tier] ? stored.tier : Object.keys(typeCfg.tiers)[0];
+      appState.profile = { type: stored.type, tier: tier };
+    }
+  } catch (_) {}
+}
+
+function getSelectedQuoteProfile() {
+  return buildProfileFromState(appState.profile.type, appState.profile.tier);
+}
+
+function getSelectedPriceListProfile() {
+  return buildProfileFromState(appState.profile.type, appState.profile.tier);
+}
+
+function getSelectedGlobalProfile() {
+  return buildProfileFromState(appState.profile.type, appState.profile.tier);
 }
 
 function getPartnerDiscount() {
   return getSelectedQuoteProfile().discount || 0;
+}
+
+function syncTierOptionsFor(typeEl, tierEl) {
+  if (!typeEl || !tierEl) return;
+  const fallbackType = PARTNER_PRICE_PROFILES.reseller ? 'reseller' : Object.keys(PARTNER_PRICE_PROFILES)[0];
+  const selectedType = PARTNER_PRICE_PROFILES[typeEl.value] ? typeEl.value : fallbackType;
+  typeEl.value = selectedType;
+  const typeCfg = PARTNER_PRICE_PROFILES[selectedType];
+  if (!typeCfg || !typeCfg.tiers) return;
+  const current = tierEl.value;
+  const tierKeys = Object.keys(typeCfg.tiers);
+  if (!tierKeys.length) return;
+  tierEl.innerHTML = tierKeys.map(function(key) {
+    const tierData = typeCfg.tiers[key];
+    return '<option value="' + key + '">' + tierData.label + ' (' + Math.round(tierData.discount * 100) + '%)</option>';
+  }).join('');
+  tierEl.value = tierKeys.includes(current) ? current : tierKeys[0];
+}
+
+function populateProfileControls(typeEl, tierEl, defaultType) {
+  if (!typeEl || !tierEl) return;
+  typeEl.innerHTML = Object.keys(PARTNER_PRICE_PROFILES).map(function(key) {
+    return '<option value="' + key + '">' + PARTNER_PRICE_PROFILES[key].label + '</option>';
+  }).join('');
+  typeEl.value = PARTNER_PRICE_PROFILES[defaultType] ? defaultType : 'reseller';
+  syncTierOptionsFor(typeEl, tierEl);
+}
+
+function applyGlobalProfileToControls() {
+  const typeEl = document.getElementById('globalPartnerType');
+  const tierEl = document.getElementById('globalPartnerTier');
+  if (!typeEl || !tierEl) return;
+  typeEl.value = appState.profile.type;
+  syncTierOptionsFor(typeEl, tierEl);
+  const typeCfg = PARTNER_PRICE_PROFILES[typeEl.value];
+  tierEl.value = typeCfg.tiers[appState.profile.tier] ? appState.profile.tier : Object.keys(typeCfg.tiers)[0];
+}
+
+function populateGlobalProfileControls() {
+  const typeEl = document.getElementById('globalPartnerType');
+  const tierEl = document.getElementById('globalPartnerTier');
+  if (!typeEl || !tierEl) return;
+  populateProfileControls(typeEl, tierEl, appState.profile.type || 'reseller');
+  applyGlobalProfileToControls();
+}
+
+function onGlobalProfileChange() {
+  const typeEl = document.getElementById('globalPartnerType');
+  const tierEl = document.getElementById('globalPartnerTier');
+  if (!typeEl || !tierEl) return;
+  syncTierOptionsFor(typeEl, tierEl);
+  const type = PARTNER_PRICE_PROFILES[typeEl.value] ? typeEl.value : 'reseller';
+  const typeCfg = PARTNER_PRICE_PROFILES[type];
+  const tier = typeCfg.tiers[tierEl.value] ? tierEl.value : Object.keys(typeCfg.tiers)[0];
+  appState.profile = { type: type, tier: tier };
+  saveGlobalProfileState();
+  applyGlobalProfileToControls();
+  applyQuoteProfileDisplay();
+  syncPriceListFilterOptions();
+  renderQuote();
+  renderProductList();
+  renderPartnerPriceList();
+}
+
+function setQuoteProfile(type, tier) {
+  const nextType = PARTNER_PRICE_PROFILES[type] ? type : 'reseller';
+  const typeCfg = PARTNER_PRICE_PROFILES[nextType];
+  const nextTier = typeCfg.tiers[tier] ? tier : Object.keys(typeCfg.tiers)[0];
+  appState.profile = { type: nextType, tier: nextTier };
+  saveGlobalProfileState();
+  applyGlobalProfileToControls();
+  onGlobalProfileChange();
+}
+
+function applyQuoteProfileDisplay() {
+  const profile = getSelectedQuoteProfile();
+  const hidden = document.getElementById('partnerLevel');
+  const display = document.getElementById('partnerLevelDisplay');
+  const text = document.getElementById('partnerLevelText');
+  if (hidden) hidden.value = profile.tier;
+  if (display) display.className = 'partner-level-display ' + getProfileClassName(profile);
+  if (text) {
+    text.className = 'partner-level-text ' + getProfileClassName(profile);
+    text.innerHTML = `${profile.typeLabel} · ${profile.tierLabel} <span style="opacity:0.6;font-weight:400;font-size:11px">(${Math.round(profile.discount * 100)}% discount)</span>`;
+  }
 }
 
 function isServicesLikeCategory(product) {
@@ -3198,86 +3329,6 @@ function getProfileClassName(profile) {
 function getProfileBadgeHTML(profile, emptyText) {
   if (!profile) return `<span style="margin-left:8px;font-size:11px;color:var(--text-muted)">${emptyText || ''}</span>`;
   return `<span class="level-badge ${getProfileClassName(profile)}" style="margin-left:8px">${profile.typeLabel} · ${profile.tierLabel} (${Math.round(profile.discount * 100)}%)</span>`;
-}
-
-function syncTierOptionsFor(typeEl, tierEl) {
-  if (!typeEl || !tierEl) return;
-  const fallbackType = PARTNER_PRICE_PROFILES.reseller ? 'reseller' : Object.keys(PARTNER_PRICE_PROFILES)[0];
-  const selectedType = PARTNER_PRICE_PROFILES[typeEl.value] ? typeEl.value : fallbackType;
-  typeEl.value = selectedType;
-  const typeCfg = PARTNER_PRICE_PROFILES[selectedType];
-  if (!typeCfg || !typeCfg.tiers) return;
-  const current = tierEl.value;
-  const tierKeys = Object.keys(typeCfg.tiers);
-  if (!tierKeys.length) return;
-  tierEl.innerHTML = tierKeys.map(function(key) {
-    const tier = typeCfg.tiers[key];
-    return '<option value="' + key + '">' + tier.label + ' (' + Math.round(tier.discount * 100) + '%)</option>';
-  }).join('');
-  tierEl.value = tierKeys.includes(current) ? current : tierKeys[0];
-}
-
-function populateProfileControls(typeEl, tierEl, defaultType) {
-  if (!typeEl || !tierEl) return;
-  typeEl.innerHTML = Object.keys(PARTNER_PRICE_PROFILES).map(function(key) {
-    return '<option value="' + key + '">' + PARTNER_PRICE_PROFILES[key].label + '</option>';
-  }).join('');
-  typeEl.value = PARTNER_PRICE_PROFILES[defaultType] ? defaultType : 'reseller';
-  syncTierOptionsFor(typeEl, tierEl);
-}
-
-function syncQuoteTierOptions() {
-  const modelEl = document.getElementById('partnerModel');
-  const tierEl = document.getElementById('partnerTier');
-  syncTierOptionsFor(modelEl, tierEl);
-}
-
-function populateQuoteProfileControls() {
-  const modelEl = document.getElementById('partnerModel');
-  const tierEl = document.getElementById('partnerTier');
-  if (!modelEl || !tierEl) return;
-  populateProfileControls(modelEl, tierEl, 'reseller');
-  applyQuoteProfileDisplay();
-}
-
-function applyQuoteProfileDisplay() {
-  const profile = getSelectedQuoteProfile();
-  const hidden = document.getElementById('partnerLevel');
-  const display = document.getElementById('partnerLevelDisplay');
-  const text = document.getElementById('partnerLevelText');
-  if (hidden) hidden.value = profile.tier;
-  if (display) display.className = 'partner-level-display ' + getProfileClassName(profile);
-  if (text) {
-    text.className = 'partner-level-text ' + getProfileClassName(profile);
-    text.innerHTML = `${profile.typeLabel} · ${profile.tierLabel} <span style="opacity:0.6;font-weight:400;font-size:11px">(${Math.round(profile.discount * 100)}% discount)</span>`;
-  }
-}
-
-function onPartnerProfileChange() {
-  syncQuoteTierOptions();
-  const modelEl = document.getElementById('partnerModel');
-  const tierEl = document.getElementById('partnerTier');
-  const priceTypeEl = document.getElementById('priceListPartnerType');
-  const priceTierEl = document.getElementById('priceListPartnerTier');
-  if (modelEl && tierEl && priceTypeEl && priceTierEl) {
-    priceTypeEl.value = modelEl.value;
-    syncTierOptionsFor(priceTypeEl, priceTierEl);
-    priceTierEl.value = tierEl.value;
-  }
-  applyQuoteProfileDisplay();
-  renderQuote();
-  renderProductList();
-}
-
-function setQuoteProfile(type, tier) {
-  const modelEl = document.getElementById('partnerModel');
-  const tierEl = document.getElementById('partnerTier');
-  if (!modelEl || !tierEl) return;
-  modelEl.value = PARTNER_PRICE_PROFILES[type] ? type : 'reseller';
-  syncQuoteTierOptions();
-  const typeCfg = PARTNER_PRICE_PROFILES[modelEl.value];
-  tierEl.value = typeCfg.tiers[tier] ? tier : Object.keys(typeCfg.tiers)[0];
-  onPartnerProfileChange();
 }
 
 function getDiscountedPrice(product) {
@@ -3371,8 +3422,9 @@ function generateQuoteRef() {
 // ─── INIT ────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   loadStoredProductCatalogue();
-  populateQuoteProfileControls();
-  populatePriceListProfileControls();
+  loadGlobalProfileState();
+  populateGlobalProfileControls();
+  applyQuoteProfileDisplay();
   refreshProductCatalogueViews();
   currentBaseRef = quoteCounter;
   document.getElementById('quoteRef').value = quoteCounter;
@@ -5219,7 +5271,6 @@ function showToast(msg) {
 // ─── PARTNER PRICE LIST LAYER ───────────────────────────────────────────────
 function initPartnerPriceList() {
   initializePriceListMultiSelects();
-  populatePriceListProfileControls();
   bindPriceListSorting();
   syncPriceListFilterOptions();
   renderPartnerPriceList();
@@ -5356,58 +5407,6 @@ function updateToolbarState() {
     actionsBtn.classList.remove('hidden');
     actionsMenu.innerHTML = '<div class="toolbar-menu-empty">Choose Quoting Tool or Partner Price List from Workspace to see contextual actions.</div>';
   }
-}
-
-function populatePriceListProfileControls() {
-  const typeEl = document.getElementById('priceListPartnerType');
-  const tierEl = document.getElementById('priceListPartnerTier');
-  populateProfileControls(typeEl, tierEl, 'reseller');
-}
-
-function syncPriceListTierOptions() {
-  const typeEl = document.getElementById('priceListPartnerType');
-  const tierEl = document.getElementById('priceListPartnerTier');
-  syncTierOptionsFor(typeEl, tierEl);
-}
-
-function getSelectedPriceListProfile() {
-  const typeEl = document.getElementById('priceListPartnerType');
-  const tierEl = document.getElementById('priceListPartnerTier');
-  const fallbackType = PARTNER_PRICE_PROFILES.reseller ? 'reseller' : Object.keys(PARTNER_PRICE_PROFILES)[0];
-  const type = typeEl && PARTNER_PRICE_PROFILES[typeEl.value] ? typeEl.value : fallbackType;
-  const typeCfg = PARTNER_PRICE_PROFILES[type];
-  if (!typeCfg || !typeCfg.tiers) return null;
-  const tierKeys = Object.keys(typeCfg.tiers);
-  if (!tierKeys.length) return null;
-  const requestedTier = tierEl ? tierEl.value : '';
-  const tier = typeCfg.tiers[requestedTier] ? requestedTier : tierKeys[0];
-  const tierCfg = typeCfg.tiers[tier];
-  if (!tierCfg) return null;
-  return {
-    type: type,
-    tier: tier,
-    typeLabel: typeCfg.label,
-    tierLabel: tierCfg.label,
-    discount: tierCfg.discount
-  };
-}
-
-function onPriceListProfileChange() {
-  syncPriceListTierOptions();
-  const typeEl = document.getElementById('priceListPartnerType');
-  const tierEl = document.getElementById('priceListPartnerTier');
-  const quoteTypeEl = document.getElementById('partnerModel');
-  const quoteTierEl = document.getElementById('partnerTier');
-  if (typeEl && tierEl && quoteTypeEl && quoteTierEl) {
-    quoteTypeEl.value = typeEl.value;
-    syncTierOptionsFor(quoteTypeEl, quoteTierEl);
-    quoteTierEl.value = tierEl.value;
-    applyQuoteProfileDisplay();
-  }
-  syncPriceListFilterOptions();
-  renderQuote();
-  renderProductList();
-  renderPartnerPriceList();
 }
 
 function setSelectOptions(selectEl, options, allLabel) {
@@ -5619,16 +5618,14 @@ function updatePriceListFilterSummary() {
   if (!summaryEl) return;
 
   const filters = [];
-  const selectedModel = document.getElementById('priceListPartnerType');
-  const selectedTier = document.getElementById('priceListPartnerTier');
+  const profile = getSelectedPriceListProfile();
   const selectedCategory = document.getElementById('priceListCategory');
   const selectedPayment = document.getElementById('priceListPayType');
   const selectedLicense = document.getElementById('priceListAgentType');
   const showRrpOnly = !!document.getElementById('priceListRrpOnly')?.checked;
   const searchValue = (document.getElementById('priceListSearch')?.value || '').trim();
 
-  if (selectedModel?.value) filters.push(selectedModel.options[selectedModel.selectedIndex]?.text || selectedModel.value);
-  if (selectedTier?.value) filters.push(selectedTier.options[selectedTier.selectedIndex]?.text || selectedTier.value);
+  if (profile) filters.push('Profile: ' + profile.typeLabel + ' · ' + profile.tierLabel);
   const selectedCategories = getMultiSelectValues(selectedCategory);
   const selectedPayments = getMultiSelectValues(selectedPayment);
   const selectedLicenses = getMultiSelectValues(selectedLicense);
