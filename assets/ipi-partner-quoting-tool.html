@@ -526,6 +526,62 @@
     transition: border-color 0.15s;
   }
   .meta-field input:focus, .meta-field select:focus { border-color: var(--green); }
+  .multi-select {
+    position: relative;
+  }
+  .multi-select-toggle {
+    width: 100%;
+    min-height: 37px;
+    padding: 7px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--charcoal);
+    background: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+  }
+  .multi-select-toggle:focus { outline: none; border-color: var(--green); }
+  .multi-select-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 15;
+    padding: 6px;
+  }
+  .multi-select-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .multi-select-option:hover { background: var(--off-white); }
+  .multi-select-option input {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    accent-color: var(--green);
+  }
+  .multi-select-native {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+  }
   .meta-field-checkbox {
     display: flex;
     align-items: flex-end;
@@ -5124,10 +5180,14 @@ function closeToolbarMenus() {
 
 document.addEventListener('click', function(e) {
   if (!e.target.closest('.toolbar-menu')) closeToolbarMenus();
+  if (!e.target.closest('.multi-select')) closePriceListMultiDropdowns();
 });
 
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeToolbarMenus();
+  if (e.key === 'Escape') {
+    closeToolbarMenus();
+    closePriceListMultiDropdowns();
+  }
 });
 
 function selectWorkspace(view) {
