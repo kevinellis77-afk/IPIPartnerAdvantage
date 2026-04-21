@@ -4584,7 +4584,7 @@ function printQuote() {
     <div class="footer-page">IP Integration Ltd</div>
   </div>
 
-  <scr'+'ipt>window.addEventListener('load',function(){window.print();});<\/script>
+  <script>window.addEventListener('load',function(){window.print();});<\/script>
   </body></html>`;
 
   const blob = new Blob([htmlContent], { type: 'text/html' });
@@ -5541,6 +5541,61 @@ function renderPartnerPriceList() {
   }).join('');
 }
 
+const EXPORT_CATEGORY_ORDER = ['UCAAS', 'CCAAS', 'AI', 'PCI CLOUD', 'SERVICES', 'CONSULTANCY'];
+const EXPORT_LICENSE_ORDER = ['NAMED', 'CONCURRENT', 'N/A'];
+const PCI_PRODUCT_FAMILY_ORDER = ['PAUSEABLE', 'CLOUD PCI STANDARD', 'CLOUD PCI DIGITAL', 'CLOUD PCI PREMIUM'];
+const PCI_PAYMENT_ORDER = ['ANNUAL PRE-PAY', 'MONTHLY', 'ON DEMAND'];
+
+function normalizeCategoryLabel(value) {
+  const normalized = String(value || '').trim().toUpperCase().replace(/[^A-Z0-9]+/g, ' ');
+  if (normalized === 'UCAAS') return 'UCaaS';
+  if (normalized === 'CCAAS') return 'CCaaS';
+  if (normalized === 'AI') return 'AI';
+  if (normalized === 'PCI CLOUD') return 'PCI Cloud';
+  if (normalized === 'SERVICES') return 'Services';
+  if (normalized === 'CONSULTANCY') return 'Consultancy';
+  return String(value || 'Uncategorised').trim() || 'Uncategorised';
+}
+
+function getCategorySortOrder(category) {
+  const normalized = String(category || '').trim().toUpperCase().replace(/[^A-Z0-9]+/g, ' ');
+  const index = EXPORT_CATEGORY_ORDER.indexOf(normalized);
+  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+}
+
+function normalizeLicenseType(value) {
+  const raw = String(value == null ? '' : value).trim();
+  if (!raw || raw === '—' || /^n\s*\/?\s*a$/i.test(raw)) return 'N/A';
+  if (/^nam/i.test(raw)) return 'NAMED';
+  if (/^conc/i.test(raw)) return 'CONCURRENT';
+  return raw.toUpperCase();
+}
+
+function getLicenseSortOrder(type) {
+  const normalized = normalizeLicenseType(type);
+  const index = EXPORT_LICENSE_ORDER.indexOf(normalized);
+  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+}
+
+function getPciProductFamilyOrder(productName) {
+  const name = String(productName || '').toUpperCase();
+  if (name.includes('PAUSEABLE')) return 0;
+  if (name.includes('CLOUD PCI STANDARD')) return 1;
+  if (name.includes('CLOUD PCI DIGITAL')) return 2;
+  if (name.includes('CLOUD PCI PREMIUM')) return 3;
+  return Number.MAX_SAFE_INTEGER;
+}
+
+function normalizePaymentTypeForExport(paymentType) {
+  return String(paymentType || '').trim().toUpperCase().replace(/\s+/g, ' ');
+}
+
+function getPaymentTypeOrder(paymentType) {
+  const normalized = normalizePaymentTypeForExport(paymentType);
+  const index = PCI_PAYMENT_ORDER.indexOf(normalized);
+  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+}
+
 function exportPriceListPdf() {
   const profile = getSelectedPriceListProfile();
   const rows = getFilteredPriceListRows(profile);
@@ -5556,21 +5611,55 @@ function exportPriceListPdf() {
     : profile.typeLabel + ' · ' + profile.tierLabel + ' · ' + Math.round(profile.discount * 100) + '% discount';
 
   const grouped = rows.reduce(function(acc, product) {
-    const cat = product.cat || 'Uncategorised';
-    const license = getProductMeta(product).agentType || product.agentType || 'Unspecified';
-    if (!acc[cat]) acc[cat] = {};
-    if (!acc[cat][license]) acc[cat][license] = [];
-    acc[cat][license].push(product);
+    const categoryLabel = normalizeCategoryLabel(product.cat);
+    const licenseLabel = normalizeLicenseType(getProductMeta(product).agentType || product.agentType);
+    if (!acc[categoryLabel]) acc[categoryLabel] = {};
+    if (!acc[categoryLabel][licenseLabel]) acc[categoryLabel][licenseLabel] = [];
+    acc[categoryLabel][licenseLabel].push(product);
     return acc;
   }, {});
 
-  const categorySections = Object.keys(grouped).sort(function(a, b) {
-    return String(a).localeCompare(String(b), undefined, { sensitivity: 'base', numeric: true });
-  }).map(function(category) {
-    const licenseBlocks = Object.keys(grouped[category]).sort(function(a, b) {
+  const sortedCategories = Object.keys(grouped)
+    .filter(function(categoryLabel) {
+      return Object.values(grouped[categoryLabel] || {}).some(function(items) { return items && items.length; });
+    })
+    .sort(function(a, b) {
+      const orderDiff = getCategorySortOrder(a) - getCategorySortOrder(b);
+      if (orderDiff !== 0) return orderDiff;
       return String(a).localeCompare(String(b), undefined, { sensitivity: 'base', numeric: true });
-    }).map(function(licenseType) {
-      const items = grouped[category][licenseType];
+    });
+
+  const categorySections = sortedCategories.map(function(category) {
+    const sortedLicenses = Object.keys(grouped[category] || {})
+      .filter(function(licenseType) {
+        const items = grouped[category][licenseType];
+        return Array.isArray(items) && items.length > 0;
+      })
+      .sort(function(a, b) {
+        const orderDiff = getLicenseSortOrder(a) - getLicenseSortOrder(b);
+        if (orderDiff !== 0) return orderDiff;
+        return String(a).localeCompare(String(b), undefined, { sensitivity: 'base', numeric: true });
+      });
+
+    if (!sortedLicenses.length) return '';
+
+    const licenseBlocks = sortedLicenses.map(function(licenseType) {
+      const items = [...grouped[category][licenseType]];
+      items.sort(function(a, b) {
+        if (normalizeCategoryLabel(category).toUpperCase() === 'PCI CLOUD') {
+          const familyDiff = getPciProductFamilyOrder(a.name) - getPciProductFamilyOrder(b.name);
+          if (familyDiff !== 0) return familyDiff;
+          const paymentA = getProductMeta(a).commitment || (a.payType === 'PrePay' ? 'Annual Pre-Pay' : (a.payType === 'PayMonthly' ? 'Monthly' : '—'));
+          const paymentB = getProductMeta(b).commitment || (b.payType === 'PrePay' ? 'Annual Pre-Pay' : (b.payType === 'PayMonthly' ? 'Monthly' : '—'));
+          const paymentDiff = getPaymentTypeOrder(paymentA) - getPaymentTypeOrder(paymentB);
+          if (paymentDiff !== 0) return paymentDiff;
+          const paymentLabelDiff = String(paymentA).localeCompare(String(paymentB), undefined, { sensitivity: 'base', numeric: true });
+          if (paymentLabelDiff !== 0) return paymentLabelDiff;
+        }
+        return String(a.name || '').localeCompare(String(b.name || ''), undefined, { sensitivity: 'base', numeric: true }) ||
+          String(a.id || '').localeCompare(String(b.id || ''), undefined, { sensitivity: 'base', numeric: true });
+      });
+
       const rowsHtml = items.map(function(p) {
         const meta = getProductMeta(p);
         const listPrice = p.list > 0 ? p.list : p.threshold;
@@ -5587,7 +5676,7 @@ function exportPriceListPdf() {
       return '' +
         '<div class="license-block">' +
           '<div class="license-header">' + licenseType + ' <span>' + items.length + ' products</span></div>' +
-          '<table><thead><tr><th>SAP ID</th><th>Product</th><th>Payment Type</th><th class="num">List RRP</th><th class="num">Partner Price</th></tr></thead>' +
+          '<table class="export-lines"><colgroup><col class="col-sap"><col class="col-product"><col class="col-pay"><col class="col-list"><col class="col-partner"></colgroup><thead><tr><th>SAP ID</th><th>Product</th><th>Payment Type</th><th class="num">List RRP</th><th class="num">Partner Price</th></tr></thead>' +
           '<tbody>' + rowsHtml + '</tbody></table>' +
         '</div>';
     }).join('');
@@ -5597,8 +5686,12 @@ function exportPriceListPdf() {
   const htmlContent = `<!DOCTYPE html><html><head><meta charset='UTF-8'><title>IPI Partner Price List</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
+    html,body,.doc-header,.meta-grid,.category-section,.category-section h2,.license-block,.license-header,th,.meta-cell{
+      -webkit-print-color-adjust:exact;
+      print-color-adjust:exact;
+    }
     body{font-family:'Segoe UI',Arial,sans-serif;font-size:11px;color:#263238;background:white;padding:24px 28px}
-    .doc-header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;border-bottom:3px solid #263238;padding-bottom:12px;margin-bottom:14px}
+    .doc-header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;border-bottom:3px solid #263337;padding-bottom:12px;margin-bottom:14px;background:#f5f8fa;padding:10px;border-radius:8px}
     .doc-logo{display:flex;align-items:center;gap:10px}
     .doc-logo-mark{width:34px;height:34px;background:linear-gradient(135deg,#63AB8F,#A37992);border-radius:8px;color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center}
     .doc-logo-name{font-size:16px;font-weight:700}
@@ -5607,25 +5700,35 @@ function exportPriceListPdf() {
     .doc-title h1{font-size:19px}
     .doc-title p{font-size:10px;color:#7a8f9a;margin-top:2px}
     .meta-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:1px;background:#dde4e8;border:1px solid #dde4e8;border-radius:6px;overflow:hidden;margin-bottom:16px}
-    .meta-cell{background:white;padding:8px 10px}
+    .meta-cell{background:#ffffff;padding:8px 10px}
     .meta-label{font-size:8px;text-transform:uppercase;letter-spacing:.6px;color:#7a8f9a;margin-bottom:2px;font-weight:700}
     .meta-value{font-size:11px;font-weight:700}
-    .category-section{margin-bottom:16px;page-break-inside:avoid}
-    .category-section h2{font-size:12px;text-transform:uppercase;letter-spacing:.5px;background:#f5f8fa;border:1px solid #dde4e8;padding:7px 10px;border-radius:6px;color:#36454F}
-    .license-block{margin-top:8px;border:1px solid #e4eaee;border-radius:6px;overflow:hidden}
+    .category-section{margin-bottom:16px;page-break-inside:avoid;break-inside:avoid}
+    .category-section h2{font-size:12px;text-transform:uppercase;letter-spacing:.5px;background:#36454F;border:1px solid #263337;padding:7px 10px;border-radius:6px;color:#fff;page-break-after:avoid;break-after:avoid}
+    .license-block{margin-top:8px;border:1px solid #d4dde2;border-radius:6px;overflow:hidden;page-break-inside:avoid;break-inside:avoid}
     .license-header{background:#36454F;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:6px 10px;display:flex;justify-content:space-between}
-    .license-header span{color:#b5c3cb;font-weight:600}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:6px 8px;border-bottom:1px solid #f0f4f6;vertical-align:top}
-    th{font-size:8.5px;text-transform:uppercase;letter-spacing:.4px;background:#3f5562;color:#edf3f6;font-weight:600;text-align:left}
+    .license-header span{color:#d6e2e8;font-weight:600}
+    table{width:100%;border-collapse:collapse;table-layout:fixed}
+    table.export-lines .col-sap{width:120px}
+    table.export-lines .col-product{width:auto}
+    table.export-lines .col-pay{width:180px}
+    table.export-lines .col-list{width:140px}
+    table.export-lines .col-partner{width:140px}
+    th,td{padding:6px 8px;border-bottom:1px solid #eef3f6;vertical-align:top}
+    th{font-size:8.5px;text-transform:uppercase;letter-spacing:.4px;background:#263337;color:#edf3f6;font-weight:600;text-align:left}
     td{font-size:10.5px}
+    td:nth-child(2){overflow-wrap:anywhere;word-break:break-word}
     .num{text-align:right}
     .strong{font-weight:700;color:#1f7a57}
     .footer{margin-top:10px;border-top:1px solid #dde4e8;padding-top:8px;font-size:9px;color:#8c9aa3}
     @media print{
       @page{size:A4;margin:12mm 10mm}
       body{padding:0}
-      .category-section{page-break-inside:avoid}
+      .category-section{page-break-inside:avoid;break-inside:avoid}
+      .category-section h2{page-break-after:avoid;break-after:avoid}
+      .license-block{page-break-inside:avoid;break-inside:avoid}
+      thead{display:table-header-group}
+      tr,td,th{page-break-inside:avoid;break-inside:avoid}
     }
   </style></head><body>
     <div class="doc-header">
@@ -5651,7 +5754,7 @@ function exportPriceListPdf() {
     ${categorySections}
 
     <div class="footer">Generated by IPI Partner Quoting Tool &nbsp;&bull;&nbsp; Prices subject to formal agreement and IPI approval.</div>
-    <scr'+'ipt>window.addEventListener('load',function(){window.print();});<\/script>
+    <script>window.addEventListener('load',function(){window.print();});<\/script>
   </body></html>`;
 
   const blob = new Blob([htmlContent], { type: 'text/html' });
