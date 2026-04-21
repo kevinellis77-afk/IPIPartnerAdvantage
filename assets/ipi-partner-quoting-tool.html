@@ -3779,10 +3779,98 @@ function toggleFamily(key) {
   renderProductList();
 }
 
+function formatProductMoney(value) {
+  return value > 0 ? fmtGBP(value) : '—';
+}
+
+function getBillingLabel(product) {
+  return product && product.billing === 'Monthly' ? 'Recurring' : (product && product.billing ? product.billing : '—');
+}
+
+function getProductLicenseLabel(product) {
+  const meta = getProductMeta(product);
+  return meta.agentType || product.agentType || '—';
+}
+
+function getProductPaymentLabel(product) {
+  return getDisplayPaymentType(product) || '—';
+}
+
+function renderProductSkuBlock(product, className) {
+  return '<span class="' + (className || '') + '" style="font-size:10.5px;color:var(--text-muted);font-family:DM Mono,monospace">' + product.id + '</span>';
+}
+
+function renderProductCategoryBadge(product, colour) {
+  return '<span class="tag" style="background:' + colour + '18;color:' + colour + '">' + product.cat + '</span>';
+}
+
+function renderProductInfoAction(productId, className, titleText, extraAttrs) {
+  const title = titleText || 'View details';
+  return '<button class="' + className + '" data-info-id="' + productId + '" title="' + title + '" aria-label="' + title + '"' + (extraAttrs ? ' ' + extraAttrs : '') + '>i</button>';
+}
+
+function renderProductTitleSnippet(product, options) {
+  const opts = options || {};
+  const colour = opts.colour || '#888';
+  const showDot = opts.showDot !== false;
+  const qualifiers = opts.qualifiers || '';
+  const title = opts.title || product.name;
+  const className = opts.className || 'product-item-name';
+  return '<div class="' + className + '">' +
+    (showDot ? '<span class="cat-dot" style="background:' + colour + '"></span>' : '') +
+    title + qualifiers +
+  '</div>';
+}
+
+function renderProductMetaSnippet(product, options) {
+  const opts = options || {};
+  if (opts.mode === 'subtitle') {
+    const prefix = opts.cleanNamePrefix && opts.cleanNamePrefix !== product.name ? opts.cleanNamePrefix + ' · ' : '';
+    return '<div class="' + (opts.className || 'price-list-product-sub') + '">' + prefix + getBillingLabel(product) + '</div>';
+  }
+  if (opts.skuOnly) {
+    return '<div class="' + (opts.skuClassName || '') + '" style="font-size:10px;color:var(--text-muted);font-family:DM Mono,monospace;margin-top:2px">' + product.id + '</div>';
+  }
+  const colour = opts.colour || '#888';
+  const metaClassName = opts.className || 'product-item-meta';
+  const billingClass = opts.billingClassName || 'tag tag-billing ' + (product.billing === 'Monthly' ? 'monthly' : '');
+  const billingLabel = opts.billingLabel || getBillingLabel(product);
+  const skuClass = opts.skuClassName || '';
+  const prefix = opts.prefix || '';
+  return '<div class="' + metaClassName + '">' +
+      prefix +
+      renderProductCategoryBadge(product, colour) +
+      '<span class="' + billingClass + '">' + billingLabel + '</span>' +
+      renderProductSkuBlock(product, skuClass) +
+    '</div>';
+}
+
+function bindInfoPanelTriggers(container) {
+  if (!container) return;
+  container.querySelectorAll('[data-info-id]').forEach(function(el) {
+    el.addEventListener('click', function(e) {
+      e.stopPropagation();
+      openProductDetail(el.dataset.infoId);
+    });
+  });
+}
+
+const PRODUCT_UI_PARITY_CHECKLIST = {
+  fields: [
+    { field: 'SKU', quoteProductList: true, priceListTable: true },
+    { field: 'Category badge / category label', quoteProductList: true, priceListTable: true },
+    { field: 'Billing label', quoteProductList: true, priceListTable: true },
+    { field: 'License label', quoteProductList: true, priceListTable: true },
+    { field: 'Payment label', quoteProductList: true, priceListTable: true },
+    { field: 'Money formatting (GBP)', quoteProductList: true, priceListTable: true },
+    { field: 'Info panel trigger', quoteProductList: true, priceListTable: true }
+  ]
+};
+
 function renderProductItem(p, isVariant) {
   var colour       = CAT_COLOURS[p.cat] || '#888';
   var discounted   = getDiscountedPrice(p);
-  var priceDisplay = discounted > 0 ? fmtGBP(discounted) : '—';
+  var priceDisplay = formatProductMoney(discounted);
   var listDisplay  = (!isVariant && p.list > 0) ? '<div class="price-threshold">List: ' + fmtGBP(p.list) + '</div>' : '';
   var variantClass = isVariant ? ' variant' : '';
   var filtersActive = sharedFilterState.licenseType !== 'all' || sharedFilterState.paymentType !== 'all';
@@ -3803,22 +3891,11 @@ function renderProductItem(p, isVariant) {
     if (p.payType)   qualBadges += '<span class="product-item-name-qualifier ' + (normalizeMappedFilterValue('paymentType', p.payType) === 'PrePay' ? 'q-prepay' : 'q-monthly') + '">' + getMappedFilterLabel('paymentType', p.payType) + '</span>';
   }
 
-  var idStr = p.id;
-  var billingTag = '<span class="tag tag-billing ' + (p.billing === 'Monthly' ? 'monthly' : '') + '">' + (p.billing === 'Monthly' ? 'Recurring' : p.billing) + '</span>';
+  var metaHTML = renderProductMetaSnippet(p, { skuOnly: isVariant, colour: colour });
 
-  var metaHTML = isVariant
-    ? '<div style="font-size:10px;color:var(--text-muted);font-family:DM Mono,monospace;margin-top:2px">' + idStr + '</div>'
-    : '<div class="product-item-meta">' +
-        '<span class="tag" style="background:' + colour + '18;color:' + colour + '">' + p.cat + '</span>' +
-        billingTag +
-        '<span style="font-size:10.5px;color:var(--text-muted);font-family:DM Mono,monospace">' + idStr + '</span>' +
-      '</div>';
-
-  var namePrefix = isVariant ? '' : '<span class="cat-dot" style="background:' + colour + '"></span>';
-
-  return '<div class="product-item' + variantClass + '" onclick="addToQuote(\'" + p.id + "\')">' +
+  return '<div class="product-item' + variantClass + '" data-add-id="' + p.id + '">' +
     '<div class="product-item-info">' +
-      '<div class="product-item-name">' + namePrefix + displayName + qualBadges + '</div>' +
+      renderProductTitleSnippet(p, { colour: colour, showDot: !isVariant, title: displayName, qualifiers: qualBadges }) +
       metaHTML +
     '</div>' +
     '<div class="product-item-price">' +
@@ -3827,7 +3904,7 @@ function renderProductItem(p, isVariant) {
     '</div>' +
     '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">' +
       '<button class="add-btn" title="Add to quote" onclick="event.stopPropagation();addToQuote(\'" + p.id + "\')">+</button>' +
-      '<button class="info-btn" title="View details" onclick="event.stopPropagation();openProductDetail(\'" + p.id + "\')">i</button>' +
+      renderProductInfoAction(p.id, 'info-btn') +
     '</div>' +
   '</div>';
 }
@@ -3896,9 +3973,9 @@ function renderProductList() {
           '<span class="cat-dot" style="background:' + colour + ';width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0"></span>' +
           '<span class="family-name">' + family.name + '</span>' +
           '<span class="family-meta">' +
-            '<span class="family-price">' + (disc > 0 ? fmtGBP(disc) : '—') + '</span>' +
+            '<span class="family-price">' + formatProductMoney(disc) + '</span>' +
             '<button class="family-add-btn" data-add-id="' + p.id + '" title="Add to quote">+</button>' +
-            '<button class="info-btn" data-info-id="' + p.id + '" title="View details" style="margin-left:2px">i</button>' +
+            renderProductInfoAction(p.id, 'info-btn', 'View details', 'style="margin-left:2px"') +
           '</span>' +
         '</div>' +
       '</div>';
@@ -3960,12 +4037,7 @@ function renderProductList() {
   });
 
   // Info (i) buttons
-  container.querySelectorAll('[data-info-id]').forEach(function(el) {
-    el.addEventListener('click', function(e) {
-      e.stopPropagation();
-      openProductDetail(el.dataset.infoId);
-    });
-  });
+  bindInfoPanelTriggers(container);
 }
 
 // ─── ADD TO QUOTE ─────────────────────────────────────────────────────────────
@@ -6038,22 +6110,25 @@ function renderPartnerPriceList() {
       block.items.forEach(function(p) {
         const base = p.list > 0 ? p.list : p.threshold;
         const net = showRrpOnly ? base : getPriceForProductByProfile(p, profile);
-        const billing = p.billing === 'Monthly' ? 'Recurring' : p.billing;
-        const payLabel = getDisplayPaymentType(p);
+        const payLabel = getProductPaymentLabel(p);
+        const licenseLabel = getProductLicenseLabel(p);
+        const productTitle = renderProductTitleSnippet(p, { className: 'price-list-product', showDot: false, title: p.name });
+        const productMeta = renderProductMetaSnippet(p, { mode: 'subtitle', className: 'price-list-product-sub', cleanNamePrefix: p.cleanName });
         html.push('<tr>' +
           '<td><div class="price-list-sku">' + p.id + '</div></td>' +
-          '<td><div class="price-list-product">' + p.name + '</div><div class="price-list-product-sub">' + (p.cleanName && p.cleanName !== p.name ? p.cleanName + ' · ' : '') + billing + '</div></td>' +
+          '<td>' + productTitle + productMeta + '</td>' +
           '<td>' + section.category + '</td>' +
-          '<td>' + block.licenseType + '</td>' +
+          '<td>' + licenseLabel + '</td>' +
           '<td>' + payLabel + '</td>' +
           '<td class="price-list-money">' + fmtGBP(base) + '</td>' +
           '<td class="price-list-money net">' + fmtGBP(net) + '</td>' +
-          '<td class="price-list-icon-cell"><button class="price-list-info-btn" title="View details" onclick="openProductDetail(\'' + p.id + '\')">i</button></td>' +
+          '<td class="price-list-icon-cell">' + renderProductInfoAction(p.id, 'price-list-info-btn') + '</td>' +
         '</tr>');
       });
     });
   });
   body.innerHTML = html.join('');
+  bindInfoPanelTriggers(body);
 }
 
 const EXPORT_LICENSE_ORDER = ['NAMED LICENSES', 'CONCURRENT LICENSES', 'N/A'];
