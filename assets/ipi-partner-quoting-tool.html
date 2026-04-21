@@ -90,6 +90,40 @@
     align-items: center;
     gap: 10px;
   }
+  .workflow-context-bar {
+    background: #f3f6f8;
+    border-bottom: 1px solid var(--border);
+    padding: 8px 32px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-height: 48px;
+  }
+  .context-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid #d4dde2;
+    font-size: 12px;
+    color: var(--charcoal-dark);
+    white-space: nowrap;
+  }
+  .context-chip b { font-weight: 700; }
+  .context-chip.status {
+    background: #edf4ff;
+    border-color: #c9dbf8;
+    color: #2a52b0;
+  }
+  .context-separator {
+    color: #9aa9b3;
+    font-size: 12px;
+    font-weight: 700;
+    margin: 0 2px;
+  }
 
   .toolbar-menu {
     position: relative;
@@ -208,7 +242,7 @@
   .app {
     display: grid;
     grid-template-columns: var(--panel-width, 360px) 1fr;
-    height: calc(100vh - 60px);
+    height: calc(100vh - 108px);
   }
 
   /* ─── LEFT PANEL ─── */
@@ -1746,7 +1780,7 @@
 
   /* Print styles */
   @media print {
-    header, .left-panel, .quote-header, .quote-footer { display: none !important; }
+    header, .workflow-context-bar, .left-panel, .quote-header, .quote-footer { display: none !important; }
     .app { display: block; height: auto; }
     .right-panel { display: block; }
     .quote-body { overflow: visible; padding: 0; }
@@ -2180,6 +2214,15 @@
     <button class="help-btn" onclick="openHelpModal()" title="Help & Guide">?</button>
   </div>
 </header>
+
+<div class="workflow-context-bar" id="workflowContextBar">
+  <span class="context-chip"><b>Workspace:</b> <span id="contextWorkspace">Launchpad</span></span>
+  <span class="context-separator">›</span>
+  <span class="context-chip"><b>Partner Profile:</b> <span id="contextPartnerProfile">Reseller · Accredited (20%)</span></span>
+  <span class="context-separator">›</span>
+  <span class="context-chip"><b>Quote Ref:</b> <span id="contextQuoteRef">Draft</span></span>
+  <span class="context-chip status">Single contextual session</span>
+</div>
 
 
 <div class="launchpad-overlay" id="launchpadOverlay">
@@ -3049,6 +3092,7 @@ function setFilter(dimension, value) {
   });
 
   renderProductList();
+  persistWorkflowContext();
 }
 
 function productMatchesFilters(p) {
@@ -3089,6 +3133,18 @@ let quoteCounter     = generateQuoteRef();
 let currentBaseRef   = quoteCounter;   // base ref (without version suffix)
 let currentVersion   = 0;              // 0 = unsaved, 1+ = saved version number
 let currentChangeNote = '';            // brief description of what changed
+
+const WORKFLOW_CONTEXT_STORAGE_VERSION = 'v1';
+const WORKFLOW_CONTEXT_KEYS = {
+  profile: 'ipi_workflow_' + WORKFLOW_CONTEXT_STORAGE_VERSION + '_profile',
+  workspace: 'ipi_workflow_' + WORKFLOW_CONTEXT_STORAGE_VERSION + '_workspace',
+  quoteFilters: 'ipi_workflow_' + WORKFLOW_CONTEXT_STORAGE_VERSION + '_quote_filters',
+  priceFilters: 'ipi_workflow_' + WORKFLOW_CONTEXT_STORAGE_VERSION + '_price_filters'
+};
+const workflowSessionState = {
+  quoteFilters: null,
+  priceFilters: null
+};
 
 // ─── PARTNER COMMERCIAL PROFILES ─────────────────────────────────────────────
 const PARTNER_PRICE_PROFILES = {
@@ -3253,6 +3309,105 @@ function applyQuoteProfileDisplay() {
   }
 }
 
+function setStoredJson(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (_) {}
+}
+
+function getStoredJson(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch (_) {
+    return fallback;
+  }
+}
+
+function getQuoteFilterState() {
+  return {
+    category: activeCategory,
+    agent: activeAgentFilter,
+    pay: activePayFilter,
+    search: document.getElementById('searchInput')?.value || ''
+  };
+}
+
+function applyQuoteFilterState(state) {
+  if (!state) return;
+  activeCategory = state.category || 'All';
+  activeAgentFilter = state.agent || 'all';
+  activePayFilter = state.pay || 'all';
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchInput.value = state.search || '';
+  renderCategoryTabs();
+  ['agent', 'pay'].forEach(function(dimension) {
+    const selected = dimension === 'agent' ? activeAgentFilter : activePayFilter;
+    document.querySelectorAll('.filter-pill[data-filter="' + dimension + '"]').forEach(function(pill) {
+      pill.classList.toggle('active', pill.dataset.value === selected);
+    });
+  });
+}
+
+function getPriceListFilterState() {
+  const categoryEl = document.getElementById('priceListCategory');
+  const payEl = document.getElementById('priceListPayType');
+  const agentEl = document.getElementById('priceListAgentType');
+  return {
+    category: getMultiSelectValues(categoryEl),
+    payType: getMultiSelectValues(payEl),
+    agentType: getMultiSelectValues(agentEl),
+    search: document.getElementById('priceListSearch')?.value || '',
+    rrpOnly: !!document.getElementById('priceListRrpOnly')?.checked,
+    filtersCollapsed: !!priceListFiltersCollapsed
+  };
+}
+
+function applyPriceListFilterState(state) {
+  if (!state) return;
+  const categoryEl = document.getElementById('priceListCategory');
+  const payEl = document.getElementById('priceListPayType');
+  const agentEl = document.getElementById('priceListAgentType');
+  const searchEl = document.getElementById('priceListSearch');
+  const rrpOnlyEl = document.getElementById('priceListRrpOnly');
+  [ [categoryEl, state.category], [payEl, state.payType], [agentEl, state.agentType] ].forEach(function(entry) {
+    const el = entry[0];
+    const values = Array.isArray(entry[1]) ? entry[1] : [];
+    if (!el) return;
+    Array.from(el.options).forEach(function(optionEl) {
+      optionEl.selected = values.length ? values.includes(optionEl.value) : true;
+    });
+    renderPriceListMultiSelect(el);
+  });
+  if (searchEl) searchEl.value = state.search || '';
+  if (rrpOnlyEl) rrpOnlyEl.checked = !!state.rrpOnly;
+  togglePriceListFilters(!state.filtersCollapsed);
+}
+
+function persistWorkflowContext() {
+  const profile = getSelectedQuoteProfile();
+  if (profile) setStoredJson(WORKFLOW_CONTEXT_KEYS.profile, { type: profile.type, tier: profile.tier });
+  setStoredJson(WORKFLOW_CONTEXT_KEYS.workspace, { workspace: getCurrentWorkspace() });
+  workflowSessionState.quoteFilters = getQuoteFilterState();
+  workflowSessionState.priceFilters = getPriceListFilterState();
+  setStoredJson(WORKFLOW_CONTEXT_KEYS.quoteFilters, workflowSessionState.quoteFilters);
+  setStoredJson(WORKFLOW_CONTEXT_KEYS.priceFilters, workflowSessionState.priceFilters);
+  updateWorkflowContextBar();
+}
+
+function updateWorkflowContextBar() {
+  const workspaceMap = { launchpad: 'Launchpad', quote: 'Quoting Tool', price: 'Partner Price List' };
+  const workspaceLabel = workspaceMap[getCurrentWorkspace()] || 'Launchpad';
+  const profile = getSelectedQuoteProfile();
+  const ref = (document.getElementById('quoteRef')?.value || '').trim() || 'Draft (not set)';
+  const workspaceEl = document.getElementById('contextWorkspace');
+  const profileEl = document.getElementById('contextPartnerProfile');
+  const refEl = document.getElementById('contextQuoteRef');
+  if (workspaceEl) workspaceEl.textContent = workspaceLabel;
+  if (profileEl) profileEl.textContent = profile ? (profile.typeLabel + ' · ' + profile.tierLabel + ' (' + Math.round(profile.discount * 100) + '%)') : 'Not set';
+  if (refEl) refEl.textContent = ref;
+}
+
 function onPartnerProfileChange() {
   syncQuoteTierOptions();
   const modelEl = document.getElementById('partnerModel');
@@ -3267,6 +3422,8 @@ function onPartnerProfileChange() {
   applyQuoteProfileDisplay();
   renderQuote();
   renderProductList();
+  updateWorkflowContextBar();
+  persistWorkflowContext();
 }
 
 function setQuoteProfile(type, tier) {
@@ -3368,17 +3525,48 @@ function generateQuoteRef() {
   return 'QT-' + year + '-' + suffix;
 }
 
+function restoreWorkflowContext() {
+  const storedProfile = getStoredJson(WORKFLOW_CONTEXT_KEYS.profile, null);
+  if (storedProfile && storedProfile.type && storedProfile.tier) {
+    setQuoteProfile(storedProfile.type, storedProfile.tier);
+  }
+
+  const quoteFilters = getStoredJson(WORKFLOW_CONTEXT_KEYS.quoteFilters, null);
+  if (quoteFilters) {
+    workflowSessionState.quoteFilters = quoteFilters;
+    applyQuoteFilterState(quoteFilters);
+  }
+
+  const priceFilters = getStoredJson(WORKFLOW_CONTEXT_KEYS.priceFilters, null);
+  if (priceFilters) {
+    workflowSessionState.priceFilters = priceFilters;
+    applyPriceListFilterState(priceFilters);
+  }
+
+  const workspaceState = getStoredJson(WORKFLOW_CONTEXT_KEYS.workspace, null);
+  if (workspaceState && workspaceState.workspace) {
+    selectWorkspace(workspaceState.workspace, { rehydrateOnly: true });
+  } else {
+    updateWorkflowContextBar();
+  }
+}
+
 // ─── INIT ────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   loadStoredProductCatalogue();
   populateQuoteProfileControls();
   populatePriceListProfileControls();
+  restoreWorkflowContext();
   refreshProductCatalogueViews();
   currentBaseRef = quoteCounter;
-  document.getElementById('quoteRef').value = quoteCounter;
+  if (!document.getElementById('quoteRef').value) {
+    document.getElementById('quoteRef').value = quoteCounter;
+  }
   setDefaultValidityDate();
   renderTemplatesBody();
   updateVersionIndicator();
+  updateWorkflowContextBar();
+  persistWorkflowContext();
 });
 
 // ─── CATEGORY TABS ───────────────────────────────────────────────────────────
@@ -3396,10 +3584,14 @@ function setCategory(cat) {
   activeCategory = cat;
   renderCategoryTabs();
   renderProductList();
+  persistWorkflowContext();
 }
 
 // ─── PRODUCT LIST ─────────────────────────────────────────────────────────────
-function filterProducts() { renderProductList(); }
+function filterProducts() {
+  renderProductList();
+  persistWorkflowContext();
+}
 
 // ─── FAMILY GROUPING ─────────────────────────────────────────────────────────
 var openFamilies = {}; // key = "cat|familyName" → bool
@@ -3986,6 +4178,8 @@ function onQuoteRefChange() {
   currentBaseRef = document.getElementById('quoteRef').value;
   currentVersion = 0;
   updateVersionIndicator();
+  updateWorkflowContextBar();
+  persistWorkflowContext();
 }
 
 function loadQuote(ref) {
@@ -5230,12 +5424,14 @@ function openLaunchpad() {
   document.getElementById('launchpadOverlay').classList.remove('hidden');
   document.getElementById('priceListOverlay').classList.add('hidden');
   updateToolbarState();
+  updateWorkflowContextBar();
 }
 
 function openQuoteBuilder() {
   document.getElementById('launchpadOverlay').classList.add('hidden');
   document.getElementById('priceListOverlay').classList.add('hidden');
   updateToolbarState();
+  updateWorkflowContextBar();
 }
 
 function openPriceList() {
@@ -5244,6 +5440,7 @@ function openPriceList() {
   syncPriceListFilterOptions();
   renderPartnerPriceList();
   updateToolbarState();
+  updateWorkflowContextBar();
 }
 
 function getCurrentWorkspace() {
@@ -5281,11 +5478,26 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-function selectWorkspace(view) {
+function selectWorkspace(view, options) {
+  const config = options || {};
   closeToolbarMenus();
+  const previousWorkspace = getCurrentWorkspace();
+  if (previousWorkspace === 'quote') workflowSessionState.quoteFilters = getQuoteFilterState();
+  if (previousWorkspace === 'price') workflowSessionState.priceFilters = getPriceListFilterState();
+
   if (view === 'launchpad') openLaunchpad();
   else if (view === 'price') openPriceList();
   else openQuoteBuilder();
+
+  if (view === 'quote') applyQuoteFilterState(workflowSessionState.quoteFilters || getStoredJson(WORKFLOW_CONTEXT_KEYS.quoteFilters, null));
+  if (view === 'price') applyPriceListFilterState(workflowSessionState.priceFilters || getStoredJson(WORKFLOW_CONTEXT_KEYS.priceFilters, null));
+
+  if (!config.rehydrateOnly) {
+    renderProductList();
+    renderPartnerPriceList();
+  }
+  updateWorkflowContextBar();
+  persistWorkflowContext();
 }
 
 function updateToolbarState() {
@@ -5408,6 +5620,8 @@ function onPriceListProfileChange() {
   renderQuote();
   renderProductList();
   renderPartnerPriceList();
+  updateWorkflowContextBar();
+  persistWorkflowContext();
 }
 
 function setSelectOptions(selectEl, options, allLabel) {
@@ -5696,6 +5910,7 @@ function renderPartnerPriceList() {
 
   if (!rows.length) {
     body.innerHTML = '<tr><td colspan="8" style="padding:32px;text-align:center;color:var(--text-muted)">No products match this search.</td></tr>';
+    persistWorkflowContext();
     return;
   }
 
@@ -5724,6 +5939,7 @@ function renderPartnerPriceList() {
     });
   });
   body.innerHTML = html.join('');
+  persistWorkflowContext();
 }
 
 const EXPORT_CATEGORY_ORDER = ['UCAAS', 'CCAAS', 'AI', 'PCI CLOUD', 'SERVICES', 'CONSULTANCY'];
@@ -6001,13 +6217,13 @@ window.addEventListener('DOMContentLoaded', initPartnerPriceList);
     <div class="modal-body" style="padding:24px">
 
       <div class="help-section">
-        <div class="help-section-title"><span class="help-section-icon">🚀</span> Getting Started</div>
+        <div class="help-section-title"><span class="help-section-icon">🚀</span> Unified Workflow (Single Session)</div>
         <ul class="help-steps">
-          <li><span class="help-step-num">1</span><span>Enter the <strong>Partner Name</strong> in the top bar, then explicitly choose the <strong>Partner Model</strong> and <strong>Partner Tier</strong>. Quote pricing and product catalogue pricing update from the same commercial rules.</span></li>
-          <li><span class="help-step-num">2</span><span>Add an <strong>End Customer</strong> name and check or edit the <strong>Quote Reference</strong> and <strong>Valid Until</strong> date (defaults to 30 days).</span></li>
-          <li><span class="help-step-num">3</span><span>Browse the <strong>Product Catalogue</strong> on the left. Use category tabs or the search box to find products. Click <strong>+</strong> to add a product to your quote, or click <strong>ⓘ</strong> to read a full description and see suggested companion products.</span></li>
-          <li><span class="help-step-num">4</span><span>Adjust <strong>quantities</strong> directly in the quote table. Partner prices are calculated automatically — no manual editing needed.</span></li>
-          <li><span class="help-step-num">5</span><span>When ready, click <strong>Save v1</strong> to save your quote. Add a brief note about what the quote covers.</span></li>
+          <li><span class="help-step-num">1</span><span>Use <strong>Workspace</strong> to move between <strong>Launchpad</strong>, <strong>Quoting Tool</strong>, and <strong>Partner Price List</strong>. You stay in one contextual session.</span></li>
+          <li><span class="help-step-num">2</span><span>The header context bar shows your active <strong>workspace</strong>, <strong>partner profile</strong>, and <strong>quote reference</strong> so you always know what session you are in.</span></li>
+          <li><span class="help-step-num">3</span><span><strong>Global settings</strong>: Partner Model + Tier (commercial profile) are shared across all workspaces.</span></li>
+          <li><span class="help-step-num">4</span><span><strong>Workspace-specific settings</strong>: catalogue category/filter/search and price-list filter/search are remembered per workspace, including when you switch views or reload.</span></li>
+          <li><span class="help-step-num">5</span><span>Add an <strong>End Customer</strong>, maintain your <strong>Quote Reference</strong>, and save versions as normal.</span></li>
         </ul>
       </div>
 
