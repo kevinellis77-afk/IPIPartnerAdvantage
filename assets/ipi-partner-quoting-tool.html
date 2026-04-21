@@ -2141,6 +2141,7 @@
       <div class="price-list-title">Partner Price List</div>
       <div class="price-list-header-actions">
         <div class="price-list-profile" id="priceListProfileBadge">Profile: Reseller · Accredited · 20% discount</div>
+        <button class="btn btn-outline btn-sm" type="button" onclick="exportPriceListPdf()">Export PDF</button>
         <button class="price-list-filter-toggle" id="priceListFilterToggleBtn" type="button" onclick="togglePriceListFilters()">Hide filters</button>
       </div>
       <p class="price-list-filter-summary" id="priceListFilterSummary"></p>
@@ -5191,6 +5192,13 @@ function updateToolbarState() {
     actionsBtn.classList.remove('hidden');
     actionsMenu.innerHTML = '' +
       '<div class="toolbar-menu-group">' +
+        '<div class="toolbar-menu-group-title">Export</div>' +
+        '<button class="toolbar-menu-item" onclick="exportPriceListPdf(); closeToolbarMenus();">' +
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>' +
+          'Export Price List PDF' +
+        '</button>' +
+      '</div>' +
+      '<div class="toolbar-menu-group">' +
         '<div class="toolbar-menu-group-title">Product Maintenance</div>' +
         '<button class="toolbar-menu-item" onclick="downloadProductExtractCsv(); closeToolbarMenus();">' +
           '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>' +
@@ -5391,6 +5399,28 @@ function togglePriceListFilters(forceExpanded) {
   toggleBtn.textContent = priceListFiltersCollapsed ? 'Show filters' : 'Hide filters';
 }
 
+function getFilteredPriceListRows(profile) {
+  const activeProfile = profile || getSelectedPriceListProfile();
+  const category = document.getElementById('priceListCategory').value || 'all';
+  const search = (document.getElementById('priceListSearch').value || '').toLowerCase();
+  const payType = document.getElementById('priceListPayType').value || 'all';
+  const agentType = document.getElementById('priceListAgentType').value || 'all';
+  return PRODUCTS.filter(function(p) {
+    if (isHiddenForProfile(p, activeProfile)) return false;
+    const meta = getProductMeta(p);
+    const payLabel = meta.commitment || (p.payType === 'PrePay' ? 'Annual Pre-Pay' : (p.payType === 'PayMonthly' ? 'Monthly' : '—'));
+    const licenseLabel = meta.agentType || p.agentType || '—';
+    const matchCategory = category === 'all' || p.cat === category;
+    const matchSearch = !search ||
+      p.name.toLowerCase().indexOf(search) !== -1 ||
+      p.id.toLowerCase().indexOf(search) !== -1 ||
+      (p.cleanName && p.cleanName.toLowerCase().indexOf(search) !== -1);
+    const matchPayType = payType === 'all' ? true : payLabel === payType;
+    const matchAgentType = agentType === 'all' ? true : licenseLabel === agentType;
+    return matchCategory && matchSearch && matchPayType && matchAgentType;
+  }).sort(function(a, b) { return comparePriceListRows(a, b, activeProfile); });
+}
+
 function renderPartnerPriceList() {
   const body = document.getElementById('priceListBody');
   if (!body || typeof PRODUCTS === 'undefined') return;
@@ -5404,28 +5434,10 @@ function renderPartnerPriceList() {
       ? 'Profile: ' + profile.typeLabel + ' · ' + profile.tierLabel + ' · RRP only (no discount)'
       : 'Profile: ' + profile.typeLabel + ' · ' + profile.tierLabel + ' · ' + Math.round(profile.discount * 100) + '% discount';
   }
-
-  const category = document.getElementById('priceListCategory').value || 'all';
-  const search = (document.getElementById('priceListSearch').value || '').toLowerCase();
-  const payType = document.getElementById('priceListPayType').value || 'all';
-  const agentType = document.getElementById('priceListAgentType').value || 'all';
   updatePriceListSortIndicators();
   updatePriceListFilterSummary();
 
-  const rows = PRODUCTS.filter(function(p) {
-    if (isHiddenForProfile(p, profile)) return false;
-    const meta = getProductMeta(p);
-    const payLabel = meta.commitment || (p.payType === 'PrePay' ? 'Annual Pre-Pay' : (p.payType === 'PayMonthly' ? 'Monthly' : '—'));
-    const licenseLabel = meta.agentType || p.agentType || '—';
-    const matchCategory = category === 'all' || p.cat === category;
-    const matchSearch = !search ||
-      p.name.toLowerCase().indexOf(search) !== -1 ||
-      p.id.toLowerCase().indexOf(search) !== -1 ||
-      (p.cleanName && p.cleanName.toLowerCase().indexOf(search) !== -1);
-    const matchPayType = payType === 'all' ? true : payLabel === payType;
-    const matchAgentType = agentType === 'all' ? true : licenseLabel === agentType;
-    return matchCategory && matchSearch && matchPayType && matchAgentType;
-  }).sort(function(a, b) { return comparePriceListRows(a, b, profile); });
+  const rows = getFilteredPriceListRows(profile);
 
   if (!rows.length) {
     body.innerHTML = '<tr><td colspan="8" style="padding:32px;text-align:center;color:var(--text-muted)">No products match this search.</td></tr>';
@@ -5450,6 +5462,130 @@ function renderPartnerPriceList() {
       '<td class="price-list-icon-cell"><button class="price-list-info-btn" title="View details" onclick="openProductDetail(\'' + p.id + '\')">i</button></td>' +
     '</tr>';
   }).join('');
+}
+
+function exportPriceListPdf() {
+  const profile = getSelectedPriceListProfile();
+  const rows = getFilteredPriceListRows(profile);
+  if (!rows.length) {
+    showToast('No products match the current filters.');
+    return;
+  }
+
+  const showRrpOnly = !!document.getElementById('priceListRrpOnly')?.checked;
+  const generatedOn = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  const titleProfile = showRrpOnly
+    ? profile.typeLabel + ' · ' + profile.tierLabel + ' · RRP only'
+    : profile.typeLabel + ' · ' + profile.tierLabel + ' · ' + Math.round(profile.discount * 100) + '% discount';
+
+  const grouped = rows.reduce(function(acc, product) {
+    const cat = product.cat || 'Uncategorised';
+    const license = getProductMeta(product).agentType || product.agentType || 'Unspecified';
+    if (!acc[cat]) acc[cat] = {};
+    if (!acc[cat][license]) acc[cat][license] = [];
+    acc[cat][license].push(product);
+    return acc;
+  }, {});
+
+  const categorySections = Object.keys(grouped).sort(function(a, b) {
+    return String(a).localeCompare(String(b), undefined, { sensitivity: 'base', numeric: true });
+  }).map(function(category) {
+    const licenseBlocks = Object.keys(grouped[category]).sort(function(a, b) {
+      return String(a).localeCompare(String(b), undefined, { sensitivity: 'base', numeric: true });
+    }).map(function(licenseType) {
+      const items = grouped[category][licenseType];
+      const rowsHtml = items.map(function(p) {
+        const meta = getProductMeta(p);
+        const listPrice = p.list > 0 ? p.list : p.threshold;
+        const partnerPrice = showRrpOnly ? listPrice : getPriceForProductByProfile(p, profile);
+        const payment = meta.commitment || (p.payType === 'PrePay' ? 'Annual Pre-Pay' : (p.payType === 'PayMonthly' ? 'Monthly' : '—'));
+        return '<tr>' +
+          '<td>' + p.id + '</td>' +
+          '<td>' + p.name + '</td>' +
+          '<td>' + payment + '</td>' +
+          '<td class="num">' + fmtGBP(listPrice) + '</td>' +
+          '<td class="num strong">' + fmtGBP(partnerPrice) + '</td>' +
+        '</tr>';
+      }).join('');
+      return '' +
+        '<div class="license-block">' +
+          '<div class="license-header">' + licenseType + ' <span>' + items.length + ' products</span></div>' +
+          '<table><thead><tr><th>SAP ID</th><th>Product</th><th>Payment Type</th><th class="num">List RRP</th><th class="num">Partner Price</th></tr></thead>' +
+          '<tbody>' + rowsHtml + '</tbody></table>' +
+        '</div>';
+    }).join('');
+    return '<section class="category-section"><h2>' + category + '</h2>' + licenseBlocks + '</section>';
+  }).join('');
+
+  const htmlContent = `<!DOCTYPE html><html><head><meta charset='UTF-8'><title>IPI Partner Price List</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',Arial,sans-serif;font-size:11px;color:#263238;background:white;padding:24px 28px}
+    .doc-header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;border-bottom:3px solid #263238;padding-bottom:12px;margin-bottom:14px}
+    .doc-logo{display:flex;align-items:center;gap:10px}
+    .doc-logo-mark{width:34px;height:34px;background:linear-gradient(135deg,#63AB8F,#A37992);border-radius:8px;color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center}
+    .doc-logo-name{font-size:16px;font-weight:700}
+    .doc-logo-sub{font-size:10px;color:#63AB8F;font-weight:700;letter-spacing:0.4px;text-transform:uppercase}
+    .doc-title{text-align:right}
+    .doc-title h1{font-size:19px}
+    .doc-title p{font-size:10px;color:#7a8f9a;margin-top:2px}
+    .meta-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:1px;background:#dde4e8;border:1px solid #dde4e8;border-radius:6px;overflow:hidden;margin-bottom:16px}
+    .meta-cell{background:white;padding:8px 10px}
+    .meta-label{font-size:8px;text-transform:uppercase;letter-spacing:.6px;color:#7a8f9a;margin-bottom:2px;font-weight:700}
+    .meta-value{font-size:11px;font-weight:700}
+    .category-section{margin-bottom:16px;page-break-inside:avoid}
+    .category-section h2{font-size:12px;text-transform:uppercase;letter-spacing:.5px;background:#f5f8fa;border:1px solid #dde4e8;padding:7px 10px;border-radius:6px;color:#36454F}
+    .license-block{margin-top:8px;border:1px solid #e4eaee;border-radius:6px;overflow:hidden}
+    .license-header{background:#36454F;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:6px 10px;display:flex;justify-content:space-between}
+    .license-header span{color:#b5c3cb;font-weight:600}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:6px 8px;border-bottom:1px solid #f0f4f6;vertical-align:top}
+    th{font-size:8.5px;text-transform:uppercase;letter-spacing:.4px;background:#3f5562;color:#edf3f6;font-weight:600;text-align:left}
+    td{font-size:10.5px}
+    .num{text-align:right}
+    .strong{font-weight:700;color:#1f7a57}
+    .footer{margin-top:10px;border-top:1px solid #dde4e8;padding-top:8px;font-size:9px;color:#8c9aa3}
+    @media print{
+      @page{size:A4;margin:12mm 10mm}
+      body{padding:0}
+      .category-section{page-break-inside:avoid}
+    }
+  </style></head><body>
+    <div class="doc-header">
+      <div class="doc-logo">
+        <div class="doc-logo-mark">IPI</div>
+        <div>
+          <div class="doc-logo-name">IP Integration</div>
+          <div class="doc-logo-sub">Partner Channel Pricing</div>
+        </div>
+      </div>
+      <div class="doc-title">
+        <h1>Partner Price List</h1>
+        <p>Confidential &mdash; For Partner Use Only</p>
+      </div>
+    </div>
+
+    <div class="meta-grid">
+      <div class="meta-cell"><div class="meta-label">Profile</div><div class="meta-value">${titleProfile}</div></div>
+      <div class="meta-cell"><div class="meta-label">Products Included</div><div class="meta-value">${rows.length}</div></div>
+      <div class="meta-cell"><div class="meta-label">Generated</div><div class="meta-value">${generatedOn}</div></div>
+    </div>
+
+    ${categorySections}
+
+    <div class="footer">Generated by IPI Partner Quoting Tool &nbsp;&bull;&nbsp; Prices subject to formal agreement and IPI approval.</div>
+    <scr'+'ipt>window.addEventListener('load',function(){window.print();});<\/script>
+  </body></html>`;
+
+  const blob = new Blob([htmlContent], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 10000);
 }
 
 window.addEventListener('DOMContentLoaded', initPartnerPriceList);
