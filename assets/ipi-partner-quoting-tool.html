@@ -1015,28 +1015,11 @@
 
   .hidden { display: none !important; }
 
-  /* Licence filter bar */
-  .filter-bar {
-    padding: 8px 14px 6px;
+  .quote-filter-controls {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+    padding: 10px 14px 8px;
     border-bottom: 1px solid var(--border);
     background: var(--off-white);
-  }
-  .filter-row {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    margin-bottom: 5px;
-    flex-wrap: wrap;
-  }
-  .filter-row:last-child { margin-bottom: 0; }
-  .filter-label {
-    font-size: 9.5px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.7px;
-    color: var(--text-muted);
-    width: 50px;
-    flex-shrink: 0;
   }
   .filter-pill {
     padding: 3px 10px;
@@ -2324,24 +2307,23 @@
     <div class="panel-resizer" id="panelResizer"></div>
     <div class="panel-header">
       <div class="panel-title">Product Catalogue</div>
-      <div class="search-box">
-        <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        <input type="text" id="searchInput" placeholder="Search products or SKU…" oninput="filterProducts()">
-      </div>
     </div>
-    <div class="category-tabs" id="categoryTabs"></div>
-    <div class="filter-bar" id="filterBar">
-      <div class="filter-row">
-        <span class="filter-label">Agent</span>
-        <span class="filter-pill active"       data-filter="agent" data-value="all"         onclick="setFilter('agent','all')">All</span>
-        <span class="filter-pill agent-named"  data-filter="agent" data-value="Named"       onclick="setFilter('agent','Named')">Named</span>
-        <span class="filter-pill agent-conc"   data-filter="agent" data-value="Concurrent"  onclick="setFilter('agent','Concurrent')">Concurrent</span>
+    <div class="price-list-controls quote-filter-controls" id="quoteFilterControls">
+      <div class="meta-field">
+        <label>Category</label>
+        <select id="quoteCategory" class="multi-select-native" multiple onchange="filterProducts()"></select>
       </div>
-      <div class="filter-row">
-        <span class="filter-label">Payment</span>
-        <span class="filter-pill active"       data-filter="pay"   data-value="all"         onclick="setFilter('pay','all')">All</span>
-        <span class="filter-pill pay-prepay"   data-filter="pay"   data-value="PrePay"      onclick="setFilter('pay','PrePay')">Annual Pre-Pay</span>
-        <span class="filter-pill pay-monthly"  data-filter="pay"   data-value="PayMonthly"  onclick="setFilter('pay','PayMonthly')">Pay Monthly</span>
+      <div class="meta-field">
+        <label>Search Products</label>
+        <input type="text" id="searchInput" placeholder="Search by product, SKU or family…" oninput="filterProducts()">
+      </div>
+      <div class="meta-field">
+        <label>Payment Type</label>
+        <select id="quotePayType" class="multi-select-native" multiple onchange="filterProducts()"></select>
+      </div>
+      <div class="meta-field">
+        <label>License Type</label>
+        <select id="quoteAgentType" class="multi-select-native" multiple onchange="filterProducts()"></select>
       </div>
     </div>
     <button class="templates-btn" onclick="openTemplatesModal()">
@@ -3003,7 +2985,7 @@ function refreshProductCatalogueViews() {
   applyDerivedProductAttributes();
   updateCategoryMetadataFromProducts();
   syncQuoteItemsToCurrentProducts();
-  renderCategoryTabs();
+  syncQuoteFilterOptions();
   renderProductList();
   renderQuote();
   syncPriceListFilterOptions();
@@ -3081,33 +3063,32 @@ function handleProductImportFile(event) {
 }
 
 // ─── FILTER STATE ─────────────────────────────────────────────────────────────
-var activeAgentFilter = 'all';
-var activePayFilter   = 'all';
+var activeQuoteCategoryFilters = [];
+var activeQuoteAgentFilters = [];
+var activeQuotePayFilters = [];
 
-function setFilter(dimension, value) {
-  if (dimension === 'agent') activeAgentFilter = value;
-  if (dimension === 'pay')   activePayFilter   = value;
+function getQuoteProductPaymentLabel(product) {
+  return getProductMeta(product).commitment || (product.payType === 'PrePay' ? 'Annual Pre-Pay' : (product.payType === 'PayMonthly' ? 'Monthly' : '—'));
+}
 
-  // Sync pill active states
-  document.querySelectorAll('.filter-pill').forEach(function(pill) {
-    if (pill.dataset.filter === dimension) {
-      pill.classList.toggle('active', pill.dataset.value === value);
-    }
-  });
-
-  renderProductList();
-  persistWorkflowContext();
+function getQuoteProductLicenseLabel(product) {
+  return getProductMeta(product).agentType || product.agentType || '—';
 }
 
 function productMatchesFilters(p) {
   const profile = getSelectedQuoteProfile();
   if (isHiddenForProfile(p, profile)) return false;
 
-  if (activeAgentFilter !== 'all') {
-    if (!p.agentType || p.agentType !== activeAgentFilter) return false;
+  if (activeQuoteCategoryFilters.length && !activeQuoteCategoryFilters.includes(p.cat)) {
+    return false;
   }
-  if (activePayFilter !== 'all') {
-    if (!p.payType || p.payType !== activePayFilter) return false;
+  const paymentLabel = getQuoteProductPaymentLabel(p);
+  if (activeQuotePayFilters.length && !activeQuotePayFilters.includes(paymentLabel)) {
+    return false;
+  }
+  const licenseLabel = getQuoteProductLicenseLabel(p);
+  if (activeQuoteAgentFilters.length && !activeQuoteAgentFilters.includes(licenseLabel)) {
+    return false;
   }
   return true;
 }
@@ -3132,7 +3113,6 @@ const CAT_SLUG = {
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
 let quoteItems       = []; // { product, qty, override }
-let activeCategory   = 'All';
 let quoteCounter     = generateQuoteRef();
 let currentBaseRef   = quoteCounter;   // base ref (without version suffix)
 let currentVersion   = 0;              // 0 = unsaved, 1+ = saved version number
@@ -3404,28 +3384,39 @@ function getStoredJson(key, fallback) {
 }
 
 function getQuoteFilterState() {
+  const categoryEl = document.getElementById('quoteCategory');
+  const payEl = document.getElementById('quotePayType');
+  const agentEl = document.getElementById('quoteAgentType');
   return {
-    category: activeCategory,
-    agent: activeAgentFilter,
-    pay: activePayFilter,
+    category: getMultiSelectValues(categoryEl),
+    payType: getMultiSelectValues(payEl),
+    agentType: getMultiSelectValues(agentEl),
     search: document.getElementById('searchInput')?.value || ''
   };
 }
 
 function applyQuoteFilterState(state) {
   if (!state) return;
-  activeCategory = state.category || 'All';
-  activeAgentFilter = state.agent || 'all';
-  activePayFilter = state.pay || 'all';
+  const categoryEl = document.getElementById('quoteCategory');
+  const payEl = document.getElementById('quotePayType');
+  const agentEl = document.getElementById('quoteAgentType');
+  const normalizedCategory = Array.isArray(state.category) ? state.category : (state.category && state.category !== 'All' ? [state.category] : []);
+  const normalizedPay = Array.isArray(state.payType) ? state.payType : (state.pay && state.pay !== 'all' ? [state.pay === 'PrePay' ? 'Annual Pre-Pay' : 'Monthly'] : []);
+  const normalizedAgent = Array.isArray(state.agentType) ? state.agentType : (state.agent && state.agent !== 'all' ? [state.agent] : []);
+  [ [categoryEl, normalizedCategory], [payEl, normalizedPay], [agentEl, normalizedAgent] ].forEach(function(entry) {
+    const el = entry[0];
+    const values = entry[1];
+    if (!el) return;
+    Array.from(el.options).forEach(function(optionEl) {
+      optionEl.selected = values.length ? values.includes(optionEl.value) : true;
+    });
+    renderPriceListMultiSelect(el);
+  });
+  activeQuoteCategoryFilters = normalizedCategory.slice();
+  activeQuotePayFilters = normalizedPay.slice();
+  activeQuoteAgentFilters = normalizedAgent.slice();
   const searchInput = document.getElementById('searchInput');
   if (searchInput) searchInput.value = state.search || '';
-  renderCategoryTabs();
-  ['agent', 'pay'].forEach(function(dimension) {
-    const selected = dimension === 'agent' ? activeAgentFilter : activePayFilter;
-    document.querySelectorAll('.filter-pill[data-filter="' + dimension + '"]').forEach(function(pill) {
-      pill.classList.toggle('active', pill.dataset.value === selected);
-    });
-  });
 }
 
 function getPriceListFilterState() {
@@ -3492,6 +3483,7 @@ function onPartnerProfileChange() {
   const selectedModel = modelEl ? modelEl.value : 'reseller';
   const selectedTier = tierEl ? tierEl.value : 'accredited';
   setCommercialProfile(selectedModel, selectedTier);
+  syncQuoteFilterOptions();
   syncPriceListFilterOptions();
   renderQuote();
   renderProductList();
@@ -3605,7 +3597,6 @@ function restoreWorkflowContext() {
   const quoteFilters = getStoredJson(WORKFLOW_CONTEXT_KEYS.quoteFilters, null);
   if (quoteFilters) {
     workflowSessionState.quoteFilters = quoteFilters;
-    applyQuoteFilterState(quoteFilters);
   }
 
   const priceFilters = getStoredJson(WORKFLOW_CONTEXT_KEYS.priceFilters, null);
@@ -3625,10 +3616,13 @@ function restoreWorkflowContext() {
 // ─── INIT ────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   loadStoredProductCatalogue();
+  initializeQuoteMultiSelects();
   populateQuoteProfileControls();
   populatePriceListProfileControls();
   restoreWorkflowContext();
   refreshProductCatalogueViews();
+  if (workflowSessionState.quoteFilters) applyQuoteFilterState(workflowSessionState.quoteFilters);
+  filterProducts();
   currentBaseRef = quoteCounter;
   if (!document.getElementById('quoteRef').value) {
     document.getElementById('quoteRef').value = quoteCounter;
@@ -3640,26 +3634,11 @@ window.addEventListener('DOMContentLoaded', () => {
   persistWorkflowContext();
 });
 
-// ─── CATEGORY TABS ───────────────────────────────────────────────────────────
-function renderCategoryTabs() {
-  const cats = ['All', ...Object.keys(CAT_COLOURS)];
-  const container = document.getElementById('categoryTabs');
-  container.innerHTML = cats.map(cat => {
-    const slug = cat === 'All' ? '' : CAT_SLUG[cat] || '';
-    const isActive = activeCategory === cat;
-    return `<div class="cat-tab ${slug} ${isActive ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</div>`;
-  }).join('');
-}
-
-function setCategory(cat) {
-  activeCategory = cat;
-  renderCategoryTabs();
-  renderProductList();
-  persistWorkflowContext();
-}
-
 // ─── PRODUCT LIST ─────────────────────────────────────────────────────────────
 function filterProducts() {
+  activeQuoteCategoryFilters = getMultiSelectValues(document.getElementById('quoteCategory'));
+  activeQuotePayFilters = getMultiSelectValues(document.getElementById('quotePayType'));
+  activeQuoteAgentFilters = getMultiSelectValues(document.getElementById('quoteAgentType'));
   renderProductList();
   persistWorkflowContext();
 }
@@ -3678,7 +3657,7 @@ function renderProductItem(p, isVariant) {
   var priceDisplay = discounted > 0 ? fmtGBP(discounted) : '—';
   var listDisplay  = (!isVariant && p.list > 0) ? '<div class="price-threshold">List: ' + fmtGBP(p.list) + '</div>' : '';
   var variantClass = isVariant ? ' variant' : '';
-  var filtersActive = activeAgentFilter !== 'all' || activePayFilter !== 'all';
+  var filtersActive = activeQuoteCategoryFilters.length > 0 || activeQuotePayFilters.length > 0 || activeQuoteAgentFilters.length > 0;
 
   // Build display name
   var displayName = p.name;
@@ -3727,16 +3706,15 @@ function renderProductItem(p, isVariant) {
 
 function renderProductList() {
   var search        = document.getElementById('searchInput').value.toLowerCase();
-  var filtersActive = activeAgentFilter !== 'all' || activePayFilter !== 'all';
+  var filtersActive = activeQuoteCategoryFilters.length > 0 || activeQuotePayFilters.length > 0 || activeQuoteAgentFilters.length > 0;
 
   var filtered = PRODUCTS.filter(function(p) {
-    var matchCat    = activeCategory === 'All' || p.cat === activeCategory;
     var matchSearch = !search ||
       p.name.toLowerCase().indexOf(search) !== -1 ||
       p.id.toLowerCase().indexOf(search) !== -1 ||
       (p.cleanName && p.cleanName.toLowerCase().indexOf(search) !== -1);
     var matchFilter = productMatchesFilters(p);
-    return matchCat && matchSearch && matchFilter;
+    return matchSearch && matchFilter;
   });
 
   var container = document.getElementById('productList');
@@ -3759,7 +3737,7 @@ function renderProductList() {
     familyMap[key].products.push(p);
   });
 
-  if (isCcaasCategory(activeCategory)) {
+  if (activeQuoteCategoryFilters.length === 1 && isCcaasCategory(activeQuoteCategoryFilters[0])) {
     familyOrder.sort(function(a, b) {
       var fa = familyMap[a];
       var fb = familyMap[b];
@@ -5693,6 +5671,12 @@ function initializePriceListMultiSelects() {
   ensurePriceListMultiSelect('priceListAgentType', 'All license types');
 }
 
+function initializeQuoteMultiSelects() {
+  ensurePriceListMultiSelect('quoteCategory', 'All categories');
+  ensurePriceListMultiSelect('quotePayType', 'All payment types');
+  ensurePriceListMultiSelect('quoteAgentType', 'All license types');
+}
+
 function ensurePriceListMultiSelect(selectId, placeholder) {
   const selectEl = document.getElementById(selectId);
   if (!selectEl || selectEl.dataset.multiSelectBound === 'true') return;
@@ -5790,6 +5774,30 @@ function syncPriceListFilterOptions() {
   setMultiSelectOptions(agentEl, visibleProducts.map(function(product) {
     return getProductMeta(product).agentType || product.agentType || '—';
   }));
+}
+
+function syncQuoteFilterOptions() {
+  const categoryEl = document.getElementById('quoteCategory');
+  const payEl = document.getElementById('quotePayType');
+  const agentEl = document.getElementById('quoteAgentType');
+  if (!categoryEl || !payEl || !agentEl) return;
+
+  const profile = getSelectedQuoteProfile();
+  if (!profile) return;
+  const visibleProducts = PRODUCTS.filter(function(product) {
+    return !isHiddenForProfile(product, profile);
+  });
+
+  setMultiSelectOptions(categoryEl, visibleProducts.map(function(product) { return product.cat; }));
+  setMultiSelectOptions(payEl, visibleProducts.map(function(product) {
+    return getQuoteProductPaymentLabel(product);
+  }));
+  setMultiSelectOptions(agentEl, visibleProducts.map(function(product) {
+    return getQuoteProductLicenseLabel(product);
+  }));
+  activeQuoteCategoryFilters = getMultiSelectValues(categoryEl);
+  activeQuotePayFilters = getMultiSelectValues(payEl);
+  activeQuoteAgentFilters = getMultiSelectValues(agentEl);
 }
 
 function bindPriceListSorting() {
