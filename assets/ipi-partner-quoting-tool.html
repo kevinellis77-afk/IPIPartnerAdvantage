@@ -6395,10 +6395,9 @@ function updatePriceListSortIndicators() {
 function getPriceListSortValue(product, profile, sortKey) {
   const listPrice = product.list > 0 ? product.list : product.threshold;
   const showRrpOnly = !!document.getElementById('priceListRrpOnly')?.checked;
+  const meta = getProductMeta(product);
   const payLabel = getCanonicalPaymentDisplay(product, meta.commitment);
   const licenseLabel = getCanonicalLicenseDisplay(product, meta.agentType);
-  const payLabel = getDisplayPaymentType(product);
-  const licenseLabel = getDisplayLicenseType(product);
   switch (sortKey) {
     case 'id': return product.id;
     case 'name': return product.name;
@@ -6496,9 +6495,6 @@ function getFilteredPriceListRows(profile) {
     const meta = getProductMeta(p);
     const payLabel = getCanonicalPaymentDisplay(p, meta.commitment);
     const licenseLabel = getCanonicalLicenseDisplay(p, meta.agentType);
-    const matchCategory = !category.length || category.includes(p.cat);
-    const payLabel = getCanonicalProductPaymentValue(p);
-    const licenseLabel = getCanonicalProductLicenseValue(p);
     const matchCategory = !category.length || category.includes(getCanonicalCategoryValue(p.cat));
     const matchSearch = !search ||
       p.name.toLowerCase().indexOf(search) !== -1 ||
