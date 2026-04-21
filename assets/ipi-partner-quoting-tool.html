@@ -6418,11 +6418,6 @@ function comparePriceListRows(a, b, profile) {
     const licenseB = getCanonicalLicenseDisplay(b, metaB.agentType || 'N/A');
     const paymentA = getCanonicalPaymentDisplay(a, metaA.commitment);
     const paymentB = getCanonicalPaymentDisplay(b, metaB.commitment);
-    const licenseA = getDisplayLicenseType(a);
-    const licenseB = getDisplayLicenseType(b);
-    const paymentA = getDisplayPaymentType(a);
-    const paymentB = getDisplayPaymentType(b);
-
     const ccaasOrderDiff =
       getLicenseBlockOrder(licenseA) - getLicenseBlockOrder(licenseB) ||
       getCcaasFamilyOrder(a.name) - getCcaasFamilyOrder(b.name) ||
