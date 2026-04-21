@@ -684,6 +684,36 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
   align-items: center;
   gap: 10px;
 }
+.app-topbar__commercial-controls{
+  display:inline-flex;
+  align-items:flex-end;
+  gap:8px;
+  padding:6px 8px;
+  border:1px solid var(--border-soft);
+  border-radius:12px;
+  background:var(--bg-subtle);
+}
+.app-topbar__commercial-controls label{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.app-topbar__commercial-controls label span{
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.07em;
+  font-weight:700;
+  color:var(--text-secondary);
+}
+.app-topbar__commercial-controls select{
+  min-width:132px;
+  border:1px solid var(--border-soft);
+  border-radius:8px;
+  background:var(--bg-surface);
+  color:var(--text-primary);
+  font-size:12px;
+  padding:6px 8px;
+}
 
 .settings-menu {
   position: relative;
@@ -1187,6 +1217,9 @@ small, .meta, .sidebar-nav-sublabel, .ds-page-header__eyebrow { font-size: 12px;
 @media (max-width: 900px) {
   .page-shell { padding: var(--space-4); }
   .app-topbar { padding: var(--space-4); }
+  .app-topbar__commercial-controls{
+    display:none;
+  }
 }
 
 .app-main-inner{min-width:0;}
