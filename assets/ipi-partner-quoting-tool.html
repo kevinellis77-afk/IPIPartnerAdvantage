@@ -124,6 +124,29 @@
     font-weight: 700;
     margin: 0 2px;
   }
+  .inherited-context-badge {
+    border: 1px dashed #c9d5dc;
+    background: #f7fafc;
+    border-radius: 8px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 56px;
+    justify-content: center;
+  }
+  .inherited-context-badge__title {
+    font-size: 11px;
+    color: #5f7380;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .inherited-context-badge__value {
+    font-size: 13px;
+    color: var(--charcoal-dark);
+    font-weight: 600;
+  }
 
   .toolbar-menu {
     position: relative;
@@ -2346,12 +2369,11 @@
           <input type="text" id="endCustomer" placeholder="e.g. Global Corp plc">
         </div>
         <div class="meta-field">
-          <label>Partner Model</label>
-          <select id="partnerModel" onchange="onPartnerProfileChange()"></select>
-        </div>
-        <div class="meta-field">
-          <label>Partner Tier</label>
-          <select id="partnerTier" onchange="onPartnerProfileChange()"></select>
+          <label>Commercial Context</label>
+          <div class="inherited-context-badge" id="inheritedContextBadge">
+            <span class="inherited-context-badge__title">Inherited from Global Header</span>
+            <span class="inherited-context-badge__value" id="inheritedContextText">Reseller · Accredited (20% discount)</span>
+          </div>
         </div>
         <div class="meta-field">
           <label>Commercial Profile</label>
@@ -3151,6 +3173,8 @@ let currentVersion   = 0;              // 0 = unsaved, 1+ = saved version number
 let currentChangeNote = '';            // brief description of what changed
 
 const WORKFLOW_CONTEXT_STORAGE_VERSION = 'v1';
+const HOST_COMMERCIAL_CONTEXT_STORAGE_KEY = 'ipi-host-commercial-context-v1';
+const HOST_COMMERCIAL_CONTEXT_MESSAGE_TYPE = 'ipi:commercial-context';
 const WORKFLOW_CONTEXT_KEYS = {
   profile: 'ipi_workflow_' + WORKFLOW_CONTEXT_STORAGE_VERSION + '_profile',
   workspace: 'ipi_workflow_' + WORKFLOW_CONTEXT_STORAGE_VERSION + '_workspace',
@@ -3392,12 +3416,14 @@ function applyQuoteProfileDisplay() {
   const hidden = document.getElementById('partnerLevel');
   const display = document.getElementById('partnerLevelDisplay');
   const text = document.getElementById('partnerLevelText');
+  const inheritedText = document.getElementById('inheritedContextText');
   if (hidden) hidden.value = profile.tier;
   if (display) display.className = 'partner-level-display ' + getProfileClassName(profile);
   if (text) {
     text.className = 'partner-level-text ' + getProfileClassName(profile);
     text.innerHTML = `${profile.typeLabel} · ${profile.tierLabel} <span style="opacity:0.6;font-weight:400;font-size:11px">(${Math.round(profile.discount * 100)}% discount)</span>`;
   }
+  if (inheritedText) inheritedText.textContent = `${profile.typeLabel} · ${profile.tierLabel} (${Math.round(profile.discount * 100)}% discount)`;
 }
 
 function setStoredJson(key, value) {
@@ -3512,8 +3538,9 @@ function updateWorkflowContextBar() {
 function onPartnerProfileChange() {
   const modelEl = document.getElementById('partnerModel');
   const tierEl = document.getElementById('partnerTier');
-  const selectedModel = modelEl ? modelEl.value : 'reseller';
-  const selectedTier = tierEl ? tierEl.value : 'accredited';
+  const currentProfile = getSelectedQuoteProfile();
+  const selectedModel = modelEl ? modelEl.value : currentProfile.type;
+  const selectedTier = tierEl ? tierEl.value : currentProfile.tier;
   setCommercialProfile(selectedModel, selectedTier);
   syncQuoteFilterOptions();
   syncPriceListFilterOptions();
@@ -3527,6 +3554,59 @@ function onPartnerProfileChange() {
 function setQuoteProfile(type, tier) {
   setCommercialProfile(type, tier);
   onPartnerProfileChange();
+}
+
+function applyGlobalCommercialContext(payload, options) {
+  const data = payload || {};
+  const changed = setCommercialProfile(data.model || data.type, data.tier);
+  if (!changed && !(options && options.forceRender)) return false;
+  syncQuoteFilterOptions();
+  syncPriceListFilterOptions();
+  renderQuote();
+  renderProductList();
+  renderPartnerPriceList();
+  updateWorkflowContextBar();
+  persistWorkflowContext();
+  return true;
+}
+
+function getCommercialContextFromQuery() {
+  try {
+    const params = new URLSearchParams(window.location.search || '');
+    const model = params.get('model') || params.get('type');
+    const tier = params.get('tier');
+    if (!model && !tier) return null;
+    return { model, tier, source: params.get('source') || 'query' };
+  } catch (_) {
+    return null;
+  }
+}
+
+function getCommercialContextFromHostStorage() {
+  try {
+    const raw = localStorage.getItem(HOST_COMMERCIAL_CONTEXT_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || (!parsed.model && !parsed.type && !parsed.tier)) return null;
+    return parsed;
+  } catch (_) {
+    return null;
+  }
+}
+
+function setupGlobalCommercialContextSync() {
+  window.addEventListener('message', function(event) {
+    const data = event && event.data;
+    if (!data || data.type !== HOST_COMMERCIAL_CONTEXT_MESSAGE_TYPE) return;
+    applyGlobalCommercialContext(data.payload || {}, { forceRender: true });
+  });
+
+  window.addEventListener('storage', function(event) {
+    if (event.key !== HOST_COMMERCIAL_CONTEXT_STORAGE_KEY || !event.newValue) return;
+    try {
+      applyGlobalCommercialContext(JSON.parse(event.newValue), { forceRender: true });
+    } catch (_) {}
+  });
 }
 
 function getDiscountedPrice(product) {
@@ -3618,7 +3698,10 @@ function generateQuoteRef() {
 }
 
 function restoreWorkflowContext() {
-  const storedProfile = getStoredJson(WORKFLOW_CONTEXT_KEYS.profile, null);
+  const hostStorageContext = getCommercialContextFromHostStorage();
+  const queryContext = getCommercialContextFromQuery();
+  const hasAuthoritativeContext = !!(hostStorageContext || queryContext);
+  const storedProfile = hasAuthoritativeContext ? null : getStoredJson(WORKFLOW_CONTEXT_KEYS.profile, null);
   if (storedProfile && typeof storedProfile === 'string') {
     setCommercialProfileKey(storedProfile);
   } else if (storedProfile && storedProfile.type && storedProfile.tier) {
@@ -3663,7 +3746,15 @@ function applyUILabelDictionary() {
 // ─── INIT ────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   applyUILabelDictionary();
+  setupGlobalCommercialContextSync();
   loadStoredProductCatalogue();
+  const queryContext = getCommercialContextFromQuery();
+  const hostStorageContext = getCommercialContextFromHostStorage();
+  if (hostStorageContext) {
+    setCommercialProfile(hostStorageContext.model || hostStorageContext.type, hostStorageContext.tier, { render: false });
+  } else if (queryContext) {
+    setCommercialProfile(queryContext.model || queryContext.type, queryContext.tier, { render: false });
+  }
   initializeQuoteMultiSelects();
   populateQuoteProfileControls();
   populatePriceListProfileControls();

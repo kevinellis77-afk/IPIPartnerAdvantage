@@ -690,7 +690,20 @@ function SettingsMenu({ navSections, hiddenPageIds, onTogglePageVisibility, vers
   );
 }
 
-function AppTopBar({ title, sectionTitle, navSections, hiddenPageIds, onTogglePageVisibility, versionInfo }) {
+function AppTopBar({
+  title,
+  sectionTitle,
+  navSections,
+  hiddenPageIds,
+  onTogglePageVisibility,
+  versionInfo,
+  commercialContext,
+  onCommercialContextChange,
+}) {
+  const normalized = normalizeHostCommercialContext(commercialContext?.model, commercialContext?.tier);
+  const modelOptions = Object.keys(HOST_COMMERCIAL_CONTEXT_MODELS);
+  const tierOptions = Object.keys(HOST_COMMERCIAL_CONTEXT_MODELS[normalized.model]?.tiers || {});
+
   return (
     <header className="app-topbar">
       <div>
@@ -699,6 +712,33 @@ function AppTopBar({ title, sectionTitle, navSections, hiddenPageIds, onTogglePa
         <div className="app-topbar__title">{title}</div>
       </div>
       <div className="app-topbar__actions">
+        <div className="app-topbar__commercial-controls">
+          <label>
+            <span>Model</span>
+            <select
+              value={normalized.model}
+              onChange={(event) => onCommercialContextChange?.(event.target.value, null)}
+              aria-label="Global partner model"
+            >
+              {modelOptions.map((key) => (
+                <option key={key} value={key}>{HOST_COMMERCIAL_CONTEXT_MODELS[key].label}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span>Tier</span>
+            <select
+              value={normalized.tier}
+              onChange={(event) => onCommercialContextChange?.(null, event.target.value)}
+              aria-label="Global partner tier"
+            >
+              {tierOptions.map((key) => {
+                const tierCfg = HOST_COMMERCIAL_CONTEXT_MODELS[normalized.model].tiers[key];
+                return <option key={key} value={key}>{tierCfg.label} ({Math.round((tierCfg.discount || 0) * 100)}%)</option>;
+              })}
+            </select>
+          </label>
+        </div>
         <SettingsMenu
           navSections={navSections}
           hiddenPageIds={hiddenPageIds}
@@ -14128,9 +14168,39 @@ function MarketVisionPage({ onNavigate }) {
   );
 }
 
-function PartnerQuoteToolPage() {
+function PartnerQuoteToolPage({ commercialContext }) {
   const containerRef = React.useRef(null);
+  const iframeRef = React.useRef(null);
   const [isFullscreen, setIsFullscreen] = React.useState(false);
+  const normalizedContext = React.useMemo(
+    () => normalizeHostCommercialContext(commercialContext?.model, commercialContext?.tier),
+    [commercialContext?.model, commercialContext?.tier],
+  );
+  const iframeSrc = React.useMemo(() => {
+    const params = new URLSearchParams({
+      model: normalizedContext.model,
+      tier: normalizedContext.tier,
+      source: "host-app",
+    });
+    return `assets/ipi-partner-quoting-tool.html?${params.toString()}`;
+  }, [normalizedContext.model, normalizedContext.tier]);
+
+  const postContextToIframe = React.useCallback(() => {
+    if (!iframeRef.current?.contentWindow) return;
+    iframeRef.current.contentWindow.postMessage(
+      {
+        type: HOST_COMMERCIAL_CONTEXT_MESSAGE_TYPE,
+        payload: {
+          model: normalizedContext.model,
+          tier: normalizedContext.tier,
+          source: "host-app",
+          label: getCommercialContextLabel(normalizedContext),
+          updatedAt: new Date().toISOString(),
+        },
+      },
+      "*",
+    );
+  }, [normalizedContext.model, normalizedContext.tier]);
 
   React.useEffect(() => {
     const handleFullscreenChange = () => {
@@ -14140,6 +14210,10 @@ function PartnerQuoteToolPage() {
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
+
+  React.useEffect(() => {
+    postContextToIframe();
+  }, [postContextToIframe]);
 
   const toggleFullscreen = async () => {
     if (!containerRef.current) return;
@@ -14166,8 +14240,10 @@ function PartnerQuoteToolPage() {
       </div>
       <div ref={containerRef} className="panel-card" style={{ padding: 0, overflow: "hidden", minHeight: "calc(100vh - 320px)", background: "#ffffff" }}>
         <iframe
+          ref={iframeRef}
           title="Partner Quote Tool"
-          src="assets/ipi-partner-quoting-tool.html"
+          src={iframeSrc}
+          onLoad={postContextToIframe}
           style={{ width: "100%", height: "calc(100vh - 320px)", minHeight: "640px", border: "0", background: "#ffffff" }}
         />
       </div>
@@ -14258,6 +14334,50 @@ const APP_VERSION_INFO = {
   version: "1.0.0",
   build: "2026.03.13",
 };
+
+const HOST_COMMERCIAL_CONTEXT_STORAGE_KEY = "ipi-host-commercial-context-v1";
+const HOST_COMMERCIAL_CONTEXT_MESSAGE_TYPE = "ipi:commercial-context";
+const HOST_COMMERCIAL_CONTEXT_MODELS = {
+  reseller: {
+    label: "Reseller",
+    tiers: {
+      accredited: { label: "Accredited", discount: 0.2 },
+      silver: { label: "Silver", discount: 0.3 },
+      gold: { label: "Gold", discount: 0.35 },
+      platinum: { label: "Platinum", discount: 0.4 },
+    },
+  },
+  msp: {
+    label: "MSP",
+    tiers: {
+      silver: { label: "Silver", discount: 0.35 },
+      gold: { label: "Gold", discount: 0.45 },
+      platinum: { label: "Platinum", discount: 0.55 },
+    },
+  },
+  consultant: {
+    label: "Consultant",
+    tiers: {
+      consultant: { label: "Consultant", discount: 0.15 },
+    },
+  },
+};
+
+function normalizeHostCommercialContext(nextModel, nextTier) {
+  const fallbackModel = HOST_COMMERCIAL_CONTEXT_MODELS.reseller ? "reseller" : Object.keys(HOST_COMMERCIAL_CONTEXT_MODELS)[0];
+  const model = HOST_COMMERCIAL_CONTEXT_MODELS[nextModel] ? nextModel : fallbackModel;
+  const tierKeys = Object.keys(HOST_COMMERCIAL_CONTEXT_MODELS[model]?.tiers || {});
+  const tier = tierKeys.includes(nextTier) ? nextTier : (tierKeys[0] || "accredited");
+  return { model, tier };
+}
+
+function getCommercialContextLabel(context) {
+  const normalized = normalizeHostCommercialContext(context?.model, context?.tier);
+  const modelCfg = HOST_COMMERCIAL_CONTEXT_MODELS[normalized.model];
+  const tierCfg = modelCfg?.tiers?.[normalized.tier];
+  if (!modelCfg || !tierCfg) return "Not set";
+  return `${modelCfg.label} · ${tierCfg.label} (${Math.round((tierCfg.discount || 0) * 100)}%)`;
+}
 
 const GH_PAGES_BASENAME = "/IPIPartnerAdvantage";
 
@@ -14482,6 +14602,14 @@ function App() {
     isSidebarVisible: true,
     sidebarWidth: 250,
   });
+  const [commercialContext, setCommercialContext] = React.useState(() => {
+    try {
+      const parsed = JSON.parse(window.localStorage.getItem(HOST_COMMERCIAL_CONTEXT_STORAGE_KEY) || "{}");
+      return normalizeHostCommercialContext(parsed.model, parsed.tier);
+    } catch (error) {
+      return normalizeHostCommercialContext("reseller", "accredited");
+    }
+  });
 
   function PageShell({ children, className = "" }) {
     return (
@@ -14524,6 +14652,40 @@ function App() {
   }, [hiddenPageIds]);
 
   React.useEffect(() => {
+    try {
+      window.localStorage.setItem(HOST_COMMERCIAL_CONTEXT_STORAGE_KEY, JSON.stringify(commercialContext));
+    } catch (error) {
+      // no-op
+    }
+  }, [commercialContext]);
+
+  React.useEffect(() => {
+    const handleStorage = (event) => {
+      if (event.key !== HOST_COMMERCIAL_CONTEXT_STORAGE_KEY || !event.newValue) return;
+      try {
+        const parsed = JSON.parse(event.newValue);
+        setCommercialContext((prev) => {
+          const next = normalizeHostCommercialContext(parsed.model, parsed.tier);
+          if (next.model === prev.model && next.tier === prev.tier) return prev;
+          return next;
+        });
+      } catch (error) {
+        // no-op
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  const updateCommercialContext = React.useCallback((nextModel, nextTier) => {
+    setCommercialContext((prev) => {
+      const next = normalizeHostCommercialContext(nextModel ?? prev.model, nextTier ?? prev.tier);
+      if (next.model === prev.model && next.tier === prev.tier) return prev;
+      return next;
+    });
+  }, []);
+
+  React.useEffect(() => {
     if (!hiddenPageIds.has(page)) return;
     const firstVisiblePage = allPageIds.find((id) => !hiddenPageIds.has(id)) || "main";
     setPage(firstVisiblePage);
@@ -14534,7 +14696,7 @@ function App() {
     if (page === "partner-account-plan") return <PartnerAccountPlanToolPage />;
     if (page === "competitive-matrix") return <CompetitiveMatrixPage />;
     if (page === "cx-discovery") return <CXDiscoveryQuestionnairePage />;
-    if (page === "partner-quote-tool") return <PartnerQuoteToolPage />;
+    if (page === "partner-quote-tool") return <PartnerQuoteToolPage commercialContext={commercialContext} />;
     if (page === "hub")
       return (
         <EnablementHub onBack={() => setPage("main")} onNavigate={setPage} />
@@ -14877,7 +15039,18 @@ function App() {
   return (
     <AppShell
       sidebar={<SharedSidebar page={page} setPage={setPage} onLayoutChange={setSidebarLayout} navSections={visibleNavSections} />}
-      topbar={<AppTopBar title={currentPageMeta?.label || "Dashboard"} sectionTitle={currentSectionMeta?.title || "Overview"} navSections={navSections} hiddenPageIds={hiddenPageIds} onTogglePageVisibility={togglePageVisibility} versionInfo={APP_VERSION_INFO} />}
+      topbar={(
+        <AppTopBar
+          title={currentPageMeta?.label || "Dashboard"}
+          sectionTitle={currentSectionMeta?.title || "Overview"}
+          navSections={navSections}
+          hiddenPageIds={hiddenPageIds}
+          onTogglePageVisibility={togglePageVisibility}
+          versionInfo={APP_VERSION_INFO}
+          commercialContext={commercialContext}
+          onCommercialContextChange={updateCommercialContext}
+        />
+      )}
     >
       <div
         className="app-main-inner with-sidebar page-content"
