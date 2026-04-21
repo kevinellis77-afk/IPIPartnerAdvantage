@@ -2262,11 +2262,11 @@
           <input type="text" id="priceListSearch" placeholder="Search by product, SKU or family…" oninput="renderPartnerPriceList()">
         </div>
         <div class="meta-field">
-          <label>Payment Type</label>
+          <label id="priceListPayTypeLabel">Payment Type</label>
           <select id="priceListPayType" class="multi-select-native" multiple onchange="renderPartnerPriceList()"></select>
         </div>
         <div class="meta-field">
-          <label>License Type</label>
+          <label id="priceListLicenseTypeLabel">License Type</label>
           <select id="priceListAgentType" class="multi-select-native" multiple onchange="renderPartnerPriceList()"></select>
         </div>
         <div class="meta-field meta-field-checkbox">
@@ -2286,8 +2286,8 @@
               <th class="sortable" data-sort-key="id" style="width:120px">SAP ID</th>
               <th class="sortable" data-sort-key="name" style="width:33%">Product</th>
               <th class="sortable" data-sort-key="cat" style="width:130px">Category</th>
-              <th class="sortable" data-sort-key="license" style="width:120px">License</th>
-              <th class="sortable" data-sort-key="payment" style="width:130px">Payment</th>
+              <th class="sortable" data-sort-key="license" style="width:120px" id="priceListLicenseColumnHeader">License Type</th>
+              <th class="sortable" data-sort-key="payment" style="width:130px" id="priceListPaymentColumnHeader">Payment Type</th>
               <th class="sortable" data-sort-key="list" style="width:130px;text-align:right">List RRP</th>
               <th class="sortable" data-sort-key="partner" style="width:140px;text-align:right">Partner Price</th>
               <th style="width:70px;text-align:center">Info</th>
@@ -2318,11 +2318,11 @@
         <input type="text" id="searchInput" placeholder="Search by product, SKU or family…" oninput="filterProducts()">
       </div>
       <div class="meta-field">
-        <label>Payment Type</label>
+        <label id="quotePayTypeLabel">Payment Type</label>
         <select id="quotePayType" class="multi-select-native" multiple onchange="filterProducts()"></select>
       </div>
       <div class="meta-field">
-        <label>License Type</label>
+        <label id="quoteLicenseTypeLabel">License Type</label>
         <select id="quoteAgentType" class="multi-select-native" multiple onchange="filterProducts()"></select>
       </div>
     </div>
@@ -2790,8 +2790,8 @@ const PRODUCT_CSV_HEADER_ALIASES = {
   list_rrp: ['list_rrp', 'list', 'rrp', 'listrrp', 'listprice'],
   cost: ['cost', 'buy', 'buyprice'],
   threshold: ['threshold', 'floor', 'minprice'],
-  license_type: ['license_type', 'agent_type', 'licensetype', 'license', 'agenttype'],
-  payment_type: ['payment_type', 'commitment', 'paymenttype', 'payment', 'term'],
+  license_type: ['license_type', 'license type', 'agent_type', 'licensetype', 'license', 'agenttype'],
+  payment_type: ['payment_type', 'payment type', 'commitment', 'paymenttype', 'payment', 'term'],
   description: ['description', 'desc', 'productdescription'],
   tip: ['tip', 'hint'],
   related_products: ['related_products', 'related', 'relatedproducts']
@@ -3008,7 +3008,7 @@ function downloadProductExtractCsv() {
       cost: p.cost,
       threshold: p.threshold,
       license_type: meta.agentType || '',
-      payment_type: meta.commitment || '',
+      payment_type: getDisplayPaymentType(p),
       description: meta.desc || '',
       tip: meta.tip || '',
       related_products: relatedProducts
@@ -3067,12 +3067,34 @@ var activeQuoteCategoryFilters = [];
 var activeQuoteAgentFilters = [];
 var activeQuotePayFilters = [];
 
+const LABELS = {
+  licenseType: 'License Type',
+  paymentType: 'Payment Type',
+  partnerTier: 'Partner Tier',
+  activeFilters: 'Active filters',
+  noFiltersSelected: 'No filters selected',
+  category: 'Category',
+  search: 'Search',
+  rrpOnly: 'RRP only',
+  modal: {
+    category: 'Category',
+    billing: 'Billing',
+    licenseType: 'License Type',
+    paymentType: 'Payment Type',
+    listPrice: 'List Price'
+  }
+};
+
+function getDisplayLicenseType(product) {
+  return getProductMeta(product).agentType || product.agentType || '—';
+}
+
 function getQuoteProductPaymentLabel(product) {
-  return getProductMeta(product).commitment || (product.payType === 'PrePay' ? 'Annual Pre-Pay' : (product.payType === 'PayMonthly' ? 'Monthly' : '—'));
+  return getDisplayPaymentType(product);
 }
 
 function getQuoteProductLicenseLabel(product) {
-  return getProductMeta(product).agentType || product.agentType || '—';
+  return getDisplayLicenseType(product);
 }
 
 function productMatchesFilters(p) {
@@ -3613,8 +3635,24 @@ function restoreWorkflowContext() {
   }
 }
 
+function applyUILabelDictionary() {
+  const labelMap = {
+    quotePayTypeLabel: LABELS.paymentType,
+    quoteLicenseTypeLabel: LABELS.licenseType,
+    priceListPayTypeLabel: LABELS.paymentType,
+    priceListLicenseTypeLabel: LABELS.licenseType,
+    priceListLicenseColumnHeader: LABELS.licenseType,
+    priceListPaymentColumnHeader: LABELS.paymentType
+  };
+  Object.keys(labelMap).forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = labelMap[id];
+  });
+}
+
 // ─── INIT ────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
+  applyUILabelDictionary();
   loadStoredProductCatalogue();
   initializeQuoteMultiSelects();
   populateQuoteProfileControls();
@@ -3662,17 +3700,18 @@ function renderProductItem(p, isVariant) {
   // Build display name
   var displayName = p.name;
   var qualBadges  = '';
+  var normalizedPaymentType = getDisplayPaymentType(p);
 
   if (isVariant) {
     // Show only the differentiating qualifier as the name
     var parts = [];
     if (p.agentType) parts.push(p.agentType);
-    if (p.payType)   parts.push(p.payType === 'PrePay' ? 'Annual Pre-Pay' : 'Pay Monthly');
+    if (normalizedPaymentType && normalizedPaymentType !== '—') parts.push(normalizedPaymentType);
     displayName = parts.length > 0 ? parts.join(' · ') : (p.cleanName || p.name);
   } else if (filtersActive && p.cleanName && p.cleanName !== p.name) {
     displayName = p.cleanName;
     if (p.agentType) qualBadges += '<span class="product-item-name-qualifier ' + (p.agentType === 'Named' ? 'q-named' : 'q-conc') + '">' + p.agentType + '</span>';
-    if (p.payType)   qualBadges += '<span class="product-item-name-qualifier ' + (p.payType === 'PrePay' ? 'q-prepay' : 'q-monthly') + '">' + (p.payType === 'PrePay' ? 'Pre-Pay' : 'Pay Monthly') + '</span>';
+    if (normalizedPaymentType && normalizedPaymentType !== '—') qualBadges += '<span class="product-item-name-qualifier ' + (p.payType === 'PrePay' ? 'q-prepay' : 'q-monthly') + '">' + normalizedPaymentType + '</span>';
   }
 
   var idStr = p.id;
@@ -5074,12 +5113,12 @@ function openProductDetail(id) {
   document.getElementById('pdSku').textContent = product.id + '  ·  ' + product.cat;
 
   const specs = [
-    { label: 'Category',    value: product.cat },
-    { label: 'Billing',     value: product.billing },
-    { label: 'Agent Type',  value: meta.agentType },
-    { label: 'Commitment',  value: meta.commitment },
+    { label: LABELS.modal.category,    value: product.cat },
+    { label: LABELS.modal.billing,     value: product.billing },
+    { label: LABELS.modal.licenseType, value: getDisplayLicenseType(product) },
+    { label: LABELS.modal.paymentType, value: getDisplayPaymentType(product) },
   ];
-  if (base > 0) specs.push({ label: 'List Price', value: fmtGBP(base) });
+  if (base > 0) specs.push({ label: LABELS.modal.listPrice, value: fmtGBP(base) });
   if (price > 0 && hasPartnerProfile) specs.push({ label: detailProfile.typeLabel + ' · ' + detailProfile.tierLabel + ' Price', value: fmtGBP(price) });
 
   const specsHTML = specs.map(s =>
@@ -5667,14 +5706,14 @@ function getMultiSelectValues(selectEl) {
 
 function initializePriceListMultiSelects() {
   ensurePriceListMultiSelect('priceListCategory', 'All categories');
-  ensurePriceListMultiSelect('priceListPayType', 'All payment types');
-  ensurePriceListMultiSelect('priceListAgentType', 'All license types');
+  ensurePriceListMultiSelect('priceListPayType', 'All ' + LABELS.paymentType.toLowerCase() + 's');
+  ensurePriceListMultiSelect('priceListAgentType', 'All ' + LABELS.licenseType.toLowerCase() + 's');
 }
 
 function initializeQuoteMultiSelects() {
   ensurePriceListMultiSelect('quoteCategory', 'All categories');
-  ensurePriceListMultiSelect('quotePayType', 'All payment types');
-  ensurePriceListMultiSelect('quoteAgentType', 'All license types');
+  ensurePriceListMultiSelect('quotePayType', 'All ' + LABELS.paymentType.toLowerCase() + 's');
+  ensurePriceListMultiSelect('quoteAgentType', 'All ' + LABELS.licenseType.toLowerCase() + 's');
 }
 
 function ensurePriceListMultiSelect(selectId, placeholder) {
@@ -5769,10 +5808,10 @@ function syncPriceListFilterOptions() {
 
   setMultiSelectOptions(catEl, visibleProducts.map(function(product) { return product.cat; }));
   setMultiSelectOptions(payEl, visibleProducts.map(function(product) {
-    return getProductMeta(product).commitment || (product.payType === 'PrePay' ? 'Annual Pre-Pay' : (product.payType === 'PayMonthly' ? 'Monthly' : '—'));
+    return getDisplayPaymentType(product);
   }));
   setMultiSelectOptions(agentEl, visibleProducts.map(function(product) {
-    return getProductMeta(product).agentType || product.agentType || '—';
+    return getDisplayLicenseType(product);
   }));
 }
 
@@ -5829,8 +5868,8 @@ function getPriceListSortValue(product, profile, sortKey) {
   const meta = getProductMeta(product);
   const listPrice = product.list > 0 ? product.list : product.threshold;
   const showRrpOnly = !!document.getElementById('priceListRrpOnly')?.checked;
-  const payLabel = meta.commitment || (product.payType === 'PrePay' ? 'Annual Pre-Pay' : (product.payType === 'PayMonthly' ? 'Monthly' : '—'));
-  const licenseLabel = meta.agentType || product.agentType || '—';
+  const payLabel = getDisplayPaymentType(product);
+  const licenseLabel = getDisplayLicenseType(product);
   switch (sortKey) {
     case 'id': return product.id;
     case 'name': return product.name;
@@ -5847,10 +5886,10 @@ function comparePriceListRows(a, b, profile) {
   if (isCcaasCategory(a.cat) && isCcaasCategory(b.cat)) {
     const metaA = getProductMeta(a);
     const metaB = getProductMeta(b);
-    const licenseA = metaA.agentType || a.agentType || 'N/A';
-    const licenseB = metaB.agentType || b.agentType || 'N/A';
-    const paymentA = metaA.commitment || (a.payType === 'PrePay' ? 'Annual Pre-Pay' : (a.payType === 'PayMonthly' ? 'Monthly' : ''));
-    const paymentB = metaB.commitment || (b.payType === 'PrePay' ? 'Annual Pre-Pay' : (b.payType === 'PayMonthly' ? 'Monthly' : ''));
+    const licenseA = getDisplayLicenseType(a) || 'N/A';
+    const licenseB = getDisplayLicenseType(b) || 'N/A';
+    const paymentA = getDisplayPaymentType(a);
+    const paymentB = getDisplayPaymentType(b);
 
     const ccaasOrderDiff =
       getLicenseBlockOrder(licenseA) - getLicenseBlockOrder(licenseB) ||
@@ -5892,13 +5931,13 @@ function updatePriceListFilterSummary() {
   const selectedCategories = getMultiSelectValues(selectedCategory);
   const selectedPayments = getMultiSelectValues(selectedPayment);
   const selectedLicenses = getMultiSelectValues(selectedLicense);
-  if (selectedCategories.length && selectedCategories.length !== selectedCategory.options.length) filters.push('Category: ' + selectedCategories.join(', '));
-  if (selectedPayments.length && selectedPayments.length !== selectedPayment.options.length) filters.push('Payment: ' + selectedPayments.join(', '));
-  if (selectedLicenses.length && selectedLicenses.length !== selectedLicense.options.length) filters.push('License: ' + selectedLicenses.join(', '));
-  if (showRrpOnly) filters.push('RRP only');
-  if (searchValue) filters.push('Search: "' + searchValue + '"');
+  if (selectedCategories.length && selectedCategories.length !== selectedCategory.options.length) filters.push(LABELS.category + ': ' + selectedCategories.join(', '));
+  if (selectedPayments.length && selectedPayments.length !== selectedPayment.options.length) filters.push(LABELS.paymentType + ': ' + selectedPayments.join(', '));
+  if (selectedLicenses.length && selectedLicenses.length !== selectedLicense.options.length) filters.push(LABELS.licenseType + ': ' + selectedLicenses.join(', '));
+  if (showRrpOnly) filters.push(LABELS.rrpOnly);
+  if (searchValue) filters.push(LABELS.search + ': "' + searchValue + '"');
 
-  summaryEl.textContent = filters.length ? 'Active filters: ' + filters.join(' · ') : 'No filters selected';
+  summaryEl.textContent = filters.length ? LABELS.activeFilters + ': ' + filters.join(' · ') : LABELS.noFiltersSelected;
 }
 
 function togglePriceListFilters(forceExpanded) {
@@ -5922,9 +5961,8 @@ function getFilteredPriceListRows(profile) {
   const agentType = getMultiSelectValues(document.getElementById('priceListAgentType'));
   return PRODUCTS.filter(function(p) {
     if (isHiddenForProfile(p, activeProfile)) return false;
-    const meta = getProductMeta(p);
-    const payLabel = meta.commitment || (p.payType === 'PrePay' ? 'Annual Pre-Pay' : (p.payType === 'PayMonthly' ? 'Monthly' : '—'));
-    const licenseLabel = meta.agentType || p.agentType || '—';
+    const payLabel = getDisplayPaymentType(p);
+    const licenseLabel = getDisplayLicenseType(p);
     const matchCategory = !category.length || category.includes(p.cat);
     const matchSearch = !search ||
       p.name.toLowerCase().indexOf(search) !== -1 ||
@@ -6154,7 +6192,7 @@ function exportPriceListPdf() {
       return '' +
         '<div class="license-block">' +
           '<div class="license-header">' + block.licenseType + ' <span>' + items.length + ' products</span></div>' +
-          '<table class="export-lines"><colgroup><col class="col-sap"><col class="col-product"><col class="col-pay"><col class="col-list"><col class="col-partner"></colgroup><thead><tr><th>SAP ID</th><th>Product</th><th>Payment Type</th><th class="num">List RRP</th><th class="num">Partner Price</th></tr></thead>' +
+          '<table class="export-lines"><colgroup><col class="col-sap"><col class="col-product"><col class="col-pay"><col class="col-list"><col class="col-partner"></colgroup><thead><tr><th>SAP ID</th><th>Product</th><th>' + LABELS.paymentType + '</th><th class="num">List RRP</th><th class="num">Partner Price</th></tr></thead>' +
           '<tbody>' + rowsHtml + '</tbody></table>' +
         '</div>';
     }).join('');
