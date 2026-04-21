@@ -346,6 +346,7 @@
   }
 
   .cat-tab {
+    appearance: none;
     padding: 4px 10px;
     border-radius: 20px;
     font-size: 11.5px;
@@ -356,8 +357,15 @@
     color: var(--text-muted);
     transition: all 0.15s;
     white-space: nowrap;
+    font-family: inherit;
+    line-height: 1.2;
   }
   .cat-tab:hover { border-color: var(--charcoal); color: var(--charcoal); }
+  .cat-tab:focus-visible {
+    outline: none;
+    border-color: var(--green);
+    box-shadow: 0 0 0 2px rgba(99,171,143,0.22);
+  }
   .cat-tab.active {
     background: var(--charcoal-dark);
     border-color: var(--charcoal-dark);
@@ -1041,6 +1049,7 @@
     flex-shrink: 0;
   }
   .filter-pill {
+    appearance: none;
     padding: 3px 10px;
     border-radius: 12px;
     font-size: 11.5px;
@@ -1052,8 +1061,15 @@
     transition: all 0.12s;
     white-space: nowrap;
     user-select: none;
+    font-family: inherit;
+    line-height: 1.2;
   }
   .filter-pill:hover { border-color: var(--charcoal); }
+  .filter-pill:focus-visible {
+    outline: none;
+    border-color: var(--green);
+    box-shadow: 0 0 0 2px rgba(99,171,143,0.22);
+  }
   .filter-pill.active { background: var(--charcoal-dark); border-color: var(--charcoal-dark); color: white; }
   .filter-pill.active.agent-named  { background: var(--green);  border-color: var(--green); }
   .filter-pill.active.agent-conc   { background: var(--mauve);  border-color: var(--mauve); }
@@ -2324,6 +2340,20 @@
         <input type="text" id="searchInput" placeholder="Search products or SKU…" oninput="filterProducts()">
       </div>
     </div>
+    <div class="category-tabs" id="categoryTabs" role="tablist" aria-label="Product categories"></div>
+    <div class="filter-bar" id="filterBar">
+      <div class="filter-row" role="group" aria-label="Filter by license type">
+        <span class="filter-label">Agent</span>
+        <button class="filter-pill active" type="button" data-filter="agent" data-value="all"        aria-pressed="true"  onclick="setFilter('agent','all')">All</button>
+        <button class="filter-pill agent-named" type="button" data-filter="agent" data-value="Named"      aria-pressed="false" onclick="setFilter('agent','Named')">Named</button>
+        <button class="filter-pill agent-conc" type="button" data-filter="agent" data-value="Concurrent" aria-pressed="false" onclick="setFilter('agent','Concurrent')">Concurrent</button>
+      </div>
+      <div class="filter-row" role="group" aria-label="Filter by payment type">
+        <span class="filter-label">Payment</span>
+        <button class="filter-pill active" type="button" data-filter="pay" data-value="all"        aria-pressed="true"  onclick="setFilter('pay','all')">All</button>
+        <button class="filter-pill pay-prepay" type="button" data-filter="pay" data-value="PrePay"     aria-pressed="false" onclick="setFilter('pay','PrePay')">Annual Pre-Pay</button>
+        <button class="filter-pill pay-monthly" type="button" data-filter="pay" data-value="PayMonthly" aria-pressed="false" onclick="setFilter('pay','PayMonthly')">Pay Monthly</button>
+      </div>
     <div class="category-tabs" id="categoryTabs" data-control-mode="segmented"></div>
     <div class="filter-bar" id="filterBar">
       <div id="sharedQuoteFilterControls"></div>
@@ -3101,6 +3131,14 @@ const FILTER_SCHEMA = {
   search: { key: 'search', label: 'Search', defaultValue: '' }
 };
 
+  // Sync pill active states and announce selected item
+  document.querySelectorAll('.filter-pill').forEach(function(pill) {
+    if (pill.dataset.filter === dimension) {
+      const isActive = pill.dataset.value === value;
+      pill.classList.toggle('active', isActive);
+      pill.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      pill.tabIndex = isActive ? 0 : -1;
+    }
 const FILTER_PARITY_REGRESSION_CHECKLIST = [
   'Select one category + one payment + one license in Product Catalogue; verify same subset in Product Price List.',
   'Repeat with search text and ensure IDs shown in catalogue match IDs shown in Product Price List.',
@@ -3133,6 +3171,50 @@ function getMappedFilterLabel(type, value) {
   return option ? option.label : normalized;
 }
 
+function moveSegmentedFocus(currentEl, groupSelector, itemSelector, direction) {
+  if (!currentEl) return null;
+  const group = currentEl.closest(groupSelector);
+  if (!group) return null;
+  const options = Array.from(group.querySelectorAll(itemSelector));
+  if (!options.length) return null;
+  const currentIndex = options.findIndex(function(option) { return option === currentEl; });
+  if (currentIndex < 0) return null;
+  const nextIndex = (currentIndex + direction + options.length) % options.length;
+  return options[nextIndex];
+}
+
+function onCategoryTabKeydown(event) {
+  if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+  const nextTab = moveSegmentedFocus(event.currentTarget, '#categoryTabs', '.cat-tab', event.key === 'ArrowRight' ? 1 : -1);
+  if (!nextTab) return;
+  event.preventDefault();
+  nextTab.click();
+  nextTab.focus();
+}
+
+function onFilterPillKeydown(event) {
+  if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+  const nextPill = moveSegmentedFocus(event.currentTarget, '.filter-row', '.filter-pill', event.key === 'ArrowRight' ? 1 : -1);
+  if (!nextPill) return;
+  event.preventDefault();
+  nextPill.click();
+  nextPill.focus();
+}
+
+function bindSegmentedControlKeyboardHandlers() {
+  document.querySelectorAll('#categoryTabs .cat-tab').forEach(function(tab) {
+    tab.removeEventListener('keydown', onCategoryTabKeydown);
+    tab.addEventListener('keydown', onCategoryTabKeydown);
+  });
+  document.querySelectorAll('.filter-pill').forEach(function(pill) {
+    pill.removeEventListener('keydown', onFilterPillKeydown);
+    pill.addEventListener('keydown', onFilterPillKeydown);
+  });
+}
+
+function productMatchesFilters(p) {
+  const profile = getSelectedQuoteProfile();
+  if (isHiddenForProfile(p, profile)) return false;
 function getCanonicalProductPaymentValue(product) {
   const meta = getProductMeta(product);
   const paymentRaw = meta.commitment || product.payType || '';
@@ -3742,6 +3824,9 @@ window.addEventListener('DOMContentLoaded', () => {
   populateGlobalProfileControls();
   applyQuoteProfileDisplay();
   refreshProductCatalogueViews();
+  setFilter('agent', activeAgentFilter);
+  setFilter('pay', activePayFilter);
+  bindSegmentedControlKeyboardHandlers();
   currentBaseRef = quoteCounter;
   document.getElementById('quoteRef').value = quoteCounter;
   setDefaultValidityDate();
@@ -3756,8 +3841,9 @@ function renderCategoryTabs() {
   container.innerHTML = cats.map(cat => {
     const slug = cat === CANONICAL_DICTIONARY.labels.allCategories ? '' : CAT_SLUG[cat] || '';
     const isActive = activeCategory === cat;
-    return `<div class="cat-tab ${slug} ${isActive ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</div>`;
+    return `<button class="cat-tab ${slug} ${isActive ? 'active' : ''}" type="button" role="tab" data-category="${cat}" aria-selected="${isActive ? 'true' : 'false'}" tabindex="${isActive ? '0' : '-1'}" onclick="setCategory('${cat}')">${cat}</button>`;
   }).join('');
+  bindSegmentedControlKeyboardHandlers();
 }
 
 function setCategory(cat) {
