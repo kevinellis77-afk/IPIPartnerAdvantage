@@ -2216,15 +2216,15 @@
       <p class="price-list-filter-summary" id="priceListFilterSummary"></p>
       <div class="price-list-controls" id="priceListControls">
         <div class="meta-field">
-          <label>Partner Model</label>
+          <label id="labelPriceListPartnerModel">Partner Model</label>
           <select id="priceListPartnerType" onchange="onPriceListProfileChange()"></select>
         </div>
         <div class="meta-field">
-          <label>Tier</label>
+          <label id="labelPriceListPartnerTier">Partner Tier</label>
           <select id="priceListPartnerTier" onchange="onPriceListProfileChange()"></select>
         </div>
         <div class="meta-field">
-          <label>Category</label>
+          <label id="labelPriceListCategory">Category</label>
           <select id="priceListCategory" class="multi-select-native" multiple onchange="renderPartnerPriceList()"></select>
         </div>
         <div class="meta-field">
@@ -2232,11 +2232,11 @@
           <input type="text" id="priceListSearch" placeholder="Search by product, SKU or family…" oninput="renderPartnerPriceList()">
         </div>
         <div class="meta-field">
-          <label>Payment Type</label>
+          <label id="labelPriceListPaymentType">Payment Type</label>
           <select id="priceListPayType" class="multi-select-native" multiple onchange="renderPartnerPriceList()"></select>
         </div>
         <div class="meta-field">
-          <label>License Type</label>
+          <label id="labelPriceListLicenseType">License Type</label>
           <select id="priceListAgentType" class="multi-select-native" multiple onchange="renderPartnerPriceList()"></select>
         </div>
         <div class="meta-field meta-field-checkbox">
@@ -2255,9 +2255,9 @@
             <tr>
               <th class="sortable" data-sort-key="id" style="width:120px">SAP ID</th>
               <th class="sortable" data-sort-key="name" style="width:33%">Product</th>
-              <th class="sortable" data-sort-key="cat" style="width:130px">Category</th>
-              <th class="sortable" data-sort-key="license" style="width:120px">License</th>
-              <th class="sortable" data-sort-key="payment" style="width:130px">Payment</th>
+              <th class="sortable" id="thPriceListCategory" data-sort-key="cat" style="width:130px">Category</th>
+              <th class="sortable" id="thPriceListLicense" data-sort-key="license" style="width:120px">License</th>
+              <th class="sortable" id="thPriceListPayment" data-sort-key="payment" style="width:130px">Payment</th>
               <th class="sortable" data-sort-key="list" style="width:130px;text-align:right">List RRP</th>
               <th class="sortable" data-sort-key="partner" style="width:140px;text-align:right">Partner Price</th>
               <th style="width:70px;text-align:center">Info</th>
@@ -2317,11 +2317,11 @@
           <input type="text" id="endCustomer" placeholder="e.g. Global Corp plc">
         </div>
         <div class="meta-field">
-          <label>Partner Model</label>
+          <label id="labelQuotePartnerModel">Partner Model</label>
           <select id="partnerModel" onchange="onPartnerProfileChange()"></select>
         </div>
         <div class="meta-field">
-          <label>Partner Tier</label>
+          <label id="labelQuotePartnerTier">Partner Tier</label>
           <select id="partnerTier" onchange="onPartnerProfileChange()"></select>
         </div>
         <div class="meta-field">
@@ -2628,8 +2628,8 @@ function stripBracketedProductText(name) {
 function normalizeAgentType(value) {
   const raw = String(value || '').trim();
   if (!raw) return null;
-  if (/^nam/i.test(raw)) return 'Named';
-  if (/^conc/i.test(raw)) return 'Concurrent';
+  if (/^nam/i.test(raw)) return CANONICAL_DICTIONARY.licenseTypes.named;
+  if (/^conc/i.test(raw)) return CANONICAL_DICTIONARY.licenseTypes.concurrent;
   return raw;
 }
 
@@ -2639,6 +2639,19 @@ function normalizePaymentType(value) {
   if (/annual pre.?pay|ann(?:ual)?\s*pre|pre-?pay/i.test(raw)) return 'PrePay';
   if (/pay monthly|monthly pay|ann(?:ual)?\s*pay|pay m(?:on|thly)|annpaym/i.test(raw)) return 'PayMonthly';
   return null;
+}
+
+function getCanonicalPaymentDisplay(product, explicit) {
+  if (explicit) return normalizeImportedDisplayValue('payment', explicit);
+  if (product && product.payType === 'PrePay') return CANONICAL_DICTIONARY.paymentTypes.prepay;
+  if (product && product.payType === 'PayMonthly') return CANONICAL_DICTIONARY.paymentTypes.monthly;
+  return CANONICAL_DICTIONARY.paymentTypes.na;
+}
+
+function getCanonicalLicenseDisplay(product, explicit) {
+  if (explicit) return normalizeImportedDisplayValue('license', explicit);
+  if (product && product.agentType) return normalizeImportedDisplayValue('license', product.agentType);
+  return CANONICAL_DICTIONARY.licenseTypes.dash;
 }
 
 function normalizeBillingType(value) {
@@ -2876,13 +2889,13 @@ function parseProductCsv(text) {
     return {
       id: r.product_id,
       name: r.product_e,
-      cat: r.category || 'Uncategorised',
+      cat: normalizeImportedDisplayValue('category', r.category) || 'Uncategorised',
       billing: r.billing || 'Monthly',
       list: parseNumericValue(r.list_rrp),
       cost: parseNumericValue(r.cost),
       threshold: parseNumericValue(r.threshold),
-      license_type: licenseType,
-      payment_type: paymentType,
+      license_type: normalizeImportedDisplayValue('license', licenseType),
+      payment_type: normalizeImportedDisplayValue('payment', paymentType),
       description: r.description || '',
       tip: r.tip || '',
       related_products: r.related_products || ''
@@ -3082,9 +3095,59 @@ const CAT_SLUG = {
   'Networking':'cat-networking','UCaaS':'cat-ucaas','Consultancy':'cat-consultancy'
 };
 
+const CANONICAL_DICTIONARY = {
+  labels: {
+    partnerModel: 'Partner Model',
+    partnerTier: 'Partner Tier',
+    category: 'Category',
+    paymentType: 'Payment Type',
+    licenseType: 'License Type',
+    allCategories: 'All Categories',
+    allPaymentTypes: 'All Payment Types',
+    allLicenseTypes: 'All License Types'
+  },
+  partnerModels: {
+    reseller: 'Reseller',
+    msp: 'MSP',
+    consultant: 'Consultant'
+  },
+  partnerTiers: {
+    accredited: 'Accredited',
+    silver: 'Silver',
+    gold: 'Gold',
+    platinum: 'Platinum',
+    consultant: 'Consultant'
+  },
+  paymentTypes: {
+    prepay: 'Annual Pre-Pay',
+    paymonthly: 'Pay Monthly',
+    monthly: 'Monthly',
+    ondemand: 'On Demand',
+    na: '—'
+  },
+  licenseTypes: {
+    named: 'Named',
+    concurrent: 'Concurrent',
+    namedLicenses: 'Named Licenses',
+    concurrentLicenses: 'Concurrent Licenses',
+    na: 'N/A',
+    dash: '—'
+  },
+  categories: [
+    'UCaaS',
+    'CCaaS',
+    'AI',
+    'PCI Cloud',
+    'Services',
+    'Consultancy',
+    'Inbound Telephony',
+    'Networking'
+  ]
+};
+
 // ─── STATE ───────────────────────────────────────────────────────────────────
 let quoteItems       = []; // { product, qty, override }
-let activeCategory   = 'All';
+let activeCategory   = CANONICAL_DICTIONARY.labels.allCategories;
 let quoteCounter     = generateQuoteRef();
 let currentBaseRef   = quoteCounter;   // base ref (without version suffix)
 let currentVersion   = 0;              // 0 = unsaved, 1+ = saved version number
@@ -3093,26 +3156,26 @@ let currentChangeNote = '';            // brief description of what changed
 // ─── PARTNER COMMERCIAL PROFILES ─────────────────────────────────────────────
 const PARTNER_PRICE_PROFILES = {
   reseller: {
-    label: 'Reseller',
+    label: CANONICAL_DICTIONARY.partnerModels.reseller,
     tiers: {
-      accredited: { label: 'Accredited', discount: 0.20 },
-      silver:     { label: 'Silver',     discount: 0.30 },
-      gold:       { label: 'Gold',       discount: 0.35 },
-      platinum:   { label: 'Platinum',   discount: 0.40 }
+      accredited: { label: CANONICAL_DICTIONARY.partnerTiers.accredited, discount: 0.20 },
+      silver:     { label: CANONICAL_DICTIONARY.partnerTiers.silver,     discount: 0.30 },
+      gold:       { label: CANONICAL_DICTIONARY.partnerTiers.gold,       discount: 0.35 },
+      platinum:   { label: CANONICAL_DICTIONARY.partnerTiers.platinum,   discount: 0.40 }
     }
   },
   msp: {
-    label: 'MSP',
+    label: CANONICAL_DICTIONARY.partnerModels.msp,
     tiers: {
-      silver:     { label: 'Silver',     discount: 0.35 },
-      gold:       { label: 'Gold',       discount: 0.45 },
-      platinum:   { label: 'Platinum',   discount: 0.55 }
+      silver:     { label: CANONICAL_DICTIONARY.partnerTiers.silver,     discount: 0.35 },
+      gold:       { label: CANONICAL_DICTIONARY.partnerTiers.gold,       discount: 0.45 },
+      platinum:   { label: CANONICAL_DICTIONARY.partnerTiers.platinum,   discount: 0.55 }
     }
   },
   consultant: {
-    label: 'Consultant',
+    label: CANONICAL_DICTIONARY.partnerModels.consultant,
     tiers: {
-      consultant: { label: 'Consultant', discount: 0.15 }
+      consultant: { label: CANONICAL_DICTIONARY.partnerTiers.consultant, discount: 0.15 }
     }
   }
 };
@@ -3294,6 +3357,56 @@ function normalizeCategory(category) {
   return String(category || '').trim().toLowerCase().replace(/\s+/g, '');
 }
 
+function normalizeImportedDisplayValue(type, value) {
+  const raw = String(value == null ? '' : value).trim();
+  const token = normalizeCategory(raw);
+  if (!raw) return '';
+
+  if (type === 'category') {
+    const lookup = {
+      ucaas: 'UCaaS',
+      ccaas: 'CCaaS',
+      ai: 'AI',
+      pcicloud: 'PCI Cloud',
+      pci: 'PCI Cloud',
+      services: 'Services',
+      consultancy: 'Consultancy',
+      inboundtelephony: 'Inbound Telephony',
+      networking: 'Networking'
+    };
+    return lookup[token] || raw;
+  }
+  if (type === 'payment') {
+    if (/annual pre.?pay|ann(?:ual)?\s*pre|pre-?pay/i.test(raw) || token === 'prepay') return CANONICAL_DICTIONARY.paymentTypes.prepay;
+    if (/pay monthly|monthly pay|ann(?:ual)?\s*pay|pay m(?:on|thly)|annpaym/i.test(raw) || token === 'paymonthly') return CANONICAL_DICTIONARY.paymentTypes.paymonthly;
+    if (/on[\s-]?demand/i.test(raw) || token === 'ondemand') return CANONICAL_DICTIONARY.paymentTypes.ondemand;
+    if (/^n\s*\/?\s*a$/i.test(raw) || raw === '—') return CANONICAL_DICTIONARY.paymentTypes.na;
+    return raw;
+  }
+  if (type === 'license') {
+    if (/^nam/i.test(raw)) return CANONICAL_DICTIONARY.licenseTypes.named;
+    if (/^conc/i.test(raw)) return CANONICAL_DICTIONARY.licenseTypes.concurrent;
+    if (/^n\s*\/?\s*a$/i.test(raw) || raw === '—') return CANONICAL_DICTIONARY.licenseTypes.na;
+    return raw;
+  }
+  return raw;
+}
+
+function getCategorySortOrder(category = '') {
+  const normalized = normalizeCategory(normalizeImportedDisplayValue('category', category));
+  const order = CANONICAL_DICTIONARY.categories.map(function(cat) { return normalizeCategory(cat); });
+  const index = order.indexOf(normalized);
+  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+}
+
+function sortByCategoryOrder(values) {
+  return values.slice().sort(function(a, b) {
+    const orderDiff = getCategorySortOrder(a) - getCategorySortOrder(b);
+    if (orderDiff !== 0) return orderDiff;
+    return String(a).localeCompare(String(b), undefined, { sensitivity: 'base', numeric: true });
+  });
+}
+
 function isCcaasCategory(category) {
   return normalizeCategory(category) === 'ccaas';
 }
@@ -3368,8 +3481,54 @@ function generateQuoteRef() {
   return 'QT-' + year + '-' + suffix;
 }
 
+function applyUILabelDictionary() {
+  const labels = CANONICAL_DICTIONARY.labels;
+  const map = {
+    labelQuotePartnerModel: labels.partnerModel,
+    labelQuotePartnerTier: labels.partnerTier,
+    labelPriceListPartnerModel: labels.partnerModel,
+    labelPriceListPartnerTier: labels.partnerTier,
+    labelPriceListCategory: labels.category,
+    labelPriceListPaymentType: labels.paymentType,
+    labelPriceListLicenseType: labels.licenseType,
+    thPriceListCategory: labels.category,
+    thPriceListLicense: 'License',
+    thPriceListPayment: 'Payment'
+  };
+  Object.keys(map).forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = map[id];
+  });
+}
+
+function renderHelpModalContent() {
+  const host = document.getElementById('helpModalDynamic');
+  if (!host) return;
+  host.innerHTML = `
+    <div class="help-section">
+      <div class="help-section-title"><span class="help-section-icon">🚀</span> Getting Started</div>
+      <ul class="help-steps">
+        <li><span class="help-step-num">1</span><span>Enter the <strong>Partner Name</strong>, then choose the <strong>${CANONICAL_DICTIONARY.labels.partnerModel}</strong> and <strong>${CANONICAL_DICTIONARY.labels.partnerTier}</strong>. Quote and pricing views use the same commercial rules.</span></li>
+        <li><span class="help-step-num">2</span><span>Add an <strong>End Customer</strong> name and check or edit the <strong>Quote Reference</strong> and <strong>Valid Until</strong> date (defaults to 30 days).</span></li>
+        <li><span class="help-step-num">3</span><span>Browse the <strong>Product Catalogue</strong> and filter by <strong>${CANONICAL_DICTIONARY.labels.category}</strong>, <strong>${CANONICAL_DICTIONARY.labels.paymentType}</strong>, or <strong>${CANONICAL_DICTIONARY.labels.licenseType}</strong> to find products quickly.</span></li>
+      </ul>
+    </div>
+    <div class="help-section">
+      <div class="help-section-title"><span class="help-section-icon">💰</span> Partner Pricing</div>
+      <div class="help-tips">
+        <div class="help-tip"><strong>${CANONICAL_DICTIONARY.partnerModels.reseller}</strong> ${CANONICAL_DICTIONARY.partnerTiers.accredited} 20%, ${CANONICAL_DICTIONARY.partnerTiers.silver} 30%, ${CANONICAL_DICTIONARY.partnerTiers.gold} 35%, ${CANONICAL_DICTIONARY.partnerTiers.platinum} 40%.</div>
+        <div class="help-tip"><strong>${CANONICAL_DICTIONARY.partnerModels.msp}</strong> ${CANONICAL_DICTIONARY.partnerTiers.silver} 35%, ${CANONICAL_DICTIONARY.partnerTiers.gold} 45%, ${CANONICAL_DICTIONARY.partnerTiers.platinum} 55%.</div>
+        <div class="help-tip"><strong>${CANONICAL_DICTIONARY.partnerModels.consultant}</strong> Single commercial tier at 15% discount.</div>
+        <div class="help-tip"><strong>One pricing matrix</strong>The quote builder and partner price list use identical discount logic and terminology.</div>
+      </div>
+    </div>
+  `;
+}
+
 // ─── INIT ────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
+  applyUILabelDictionary();
+  renderHelpModalContent();
   loadStoredProductCatalogue();
   populateQuoteProfileControls();
   populatePriceListProfileControls();
@@ -3383,10 +3542,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // ─── CATEGORY TABS ───────────────────────────────────────────────────────────
 function renderCategoryTabs() {
-  const cats = ['All', ...Object.keys(CAT_COLOURS)];
+  const cats = [CANONICAL_DICTIONARY.labels.allCategories, ...sortByCategoryOrder(Object.keys(CAT_COLOURS))];
   const container = document.getElementById('categoryTabs');
   container.innerHTML = cats.map(cat => {
-    const slug = cat === 'All' ? '' : CAT_SLUG[cat] || '';
+    const slug = cat === CANONICAL_DICTIONARY.labels.allCategories ? '' : CAT_SLUG[cat] || '';
     const isActive = activeCategory === cat;
     return `<div class="cat-tab ${slug} ${isActive ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</div>`;
   }).join('');
@@ -3467,7 +3626,7 @@ function renderProductList() {
   var filtersActive = activeAgentFilter !== 'all' || activePayFilter !== 'all';
 
   var filtered = PRODUCTS.filter(function(p) {
-    var matchCat    = activeCategory === 'All' || p.cat === activeCategory;
+    var matchCat    = activeCategory === CANONICAL_DICTIONARY.labels.allCategories || p.cat === activeCategory;
     var matchSearch = !search ||
       p.name.toLowerCase().indexOf(search) !== -1 ||
       p.id.toLowerCase().indexOf(search) !== -1 ||
@@ -5435,9 +5594,9 @@ function getMultiSelectValues(selectEl) {
 }
 
 function initializePriceListMultiSelects() {
-  ensurePriceListMultiSelect('priceListCategory', 'All categories');
-  ensurePriceListMultiSelect('priceListPayType', 'All payment types');
-  ensurePriceListMultiSelect('priceListAgentType', 'All license types');
+  ensurePriceListMultiSelect('priceListCategory', CANONICAL_DICTIONARY.labels.allCategories);
+  ensurePriceListMultiSelect('priceListPayType', CANONICAL_DICTIONARY.labels.allPaymentTypes);
+  ensurePriceListMultiSelect('priceListAgentType', CANONICAL_DICTIONARY.labels.allLicenseTypes);
 }
 
 function ensurePriceListMultiSelect(selectId, placeholder) {
@@ -5505,9 +5664,10 @@ function closePriceListMultiDropdowns() {
 function setMultiSelectOptions(selectEl, options) {
   if (!selectEl) return;
   const currentSelections = getMultiSelectValues(selectEl);
-  const safeOptions = Array.from(new Set(options.filter(Boolean))).sort(function(a, b) {
-    return String(a).localeCompare(String(b));
-  });
+  const safeOptionsRaw = Array.from(new Set(options.filter(Boolean)));
+  const safeOptions = selectEl.id === 'priceListCategory'
+    ? sortByCategoryOrder(safeOptionsRaw)
+    : safeOptionsRaw.sort(function(a, b) { return String(a).localeCompare(String(b)); });
   selectEl.innerHTML = safeOptions.map(function(option) {
     return '<option value="' + option + '">' + option + '</option>';
   }).join('');
@@ -5532,10 +5692,10 @@ function syncPriceListFilterOptions() {
 
   setMultiSelectOptions(catEl, visibleProducts.map(function(product) { return product.cat; }));
   setMultiSelectOptions(payEl, visibleProducts.map(function(product) {
-    return getProductMeta(product).commitment || (product.payType === 'PrePay' ? 'Annual Pre-Pay' : (product.payType === 'PayMonthly' ? 'Monthly' : '—'));
+    return getCanonicalPaymentDisplay(product, getProductMeta(product).commitment);
   }));
   setMultiSelectOptions(agentEl, visibleProducts.map(function(product) {
-    return getProductMeta(product).agentType || product.agentType || '—';
+    return getCanonicalLicenseDisplay(product, getProductMeta(product).agentType);
   }));
 }
 
@@ -5568,8 +5728,8 @@ function getPriceListSortValue(product, profile, sortKey) {
   const meta = getProductMeta(product);
   const listPrice = product.list > 0 ? product.list : product.threshold;
   const showRrpOnly = !!document.getElementById('priceListRrpOnly')?.checked;
-  const payLabel = meta.commitment || (product.payType === 'PrePay' ? 'Annual Pre-Pay' : (product.payType === 'PayMonthly' ? 'Monthly' : '—'));
-  const licenseLabel = meta.agentType || product.agentType || '—';
+  const payLabel = getCanonicalPaymentDisplay(product, meta.commitment);
+  const licenseLabel = getCanonicalLicenseDisplay(product, meta.agentType);
   switch (sortKey) {
     case 'id': return product.id;
     case 'name': return product.name;
@@ -5586,10 +5746,10 @@ function comparePriceListRows(a, b, profile) {
   if (isCcaasCategory(a.cat) && isCcaasCategory(b.cat)) {
     const metaA = getProductMeta(a);
     const metaB = getProductMeta(b);
-    const licenseA = metaA.agentType || a.agentType || 'N/A';
-    const licenseB = metaB.agentType || b.agentType || 'N/A';
-    const paymentA = metaA.commitment || (a.payType === 'PrePay' ? 'Annual Pre-Pay' : (a.payType === 'PayMonthly' ? 'Monthly' : ''));
-    const paymentB = metaB.commitment || (b.payType === 'PrePay' ? 'Annual Pre-Pay' : (b.payType === 'PayMonthly' ? 'Monthly' : ''));
+    const licenseA = getCanonicalLicenseDisplay(a, metaA.agentType || 'N/A');
+    const licenseB = getCanonicalLicenseDisplay(b, metaB.agentType || 'N/A');
+    const paymentA = getCanonicalPaymentDisplay(a, metaA.commitment);
+    const paymentB = getCanonicalPaymentDisplay(b, metaB.commitment);
 
     const ccaasOrderDiff =
       getLicenseBlockOrder(licenseA) - getLicenseBlockOrder(licenseB) ||
@@ -5663,8 +5823,8 @@ function getFilteredPriceListRows(profile) {
   return PRODUCTS.filter(function(p) {
     if (isHiddenForProfile(p, activeProfile)) return false;
     const meta = getProductMeta(p);
-    const payLabel = meta.commitment || (p.payType === 'PrePay' ? 'Annual Pre-Pay' : (p.payType === 'PayMonthly' ? 'Monthly' : '—'));
-    const licenseLabel = meta.agentType || p.agentType || '—';
+    const payLabel = getCanonicalPaymentDisplay(p, meta.commitment);
+    const licenseLabel = getCanonicalLicenseDisplay(p, meta.agentType);
     const matchCategory = !category.length || category.includes(p.cat);
     const matchSearch = !search ||
       p.name.toLowerCase().indexOf(search) !== -1 ||
@@ -5726,36 +5886,17 @@ function renderPartnerPriceList() {
   body.innerHTML = html.join('');
 }
 
-const EXPORT_CATEGORY_ORDER = ['UCAAS', 'CCAAS', 'AI', 'PCI CLOUD', 'SERVICES', 'CONSULTANCY'];
 const EXPORT_LICENSE_ORDER = ['NAMED LICENSES', 'CONCURRENT LICENSES', 'N/A'];
 
 function normalizeCategoryLabel(value) {
-  const normalized = normalizeCategory(value).toUpperCase();
-  if (normalized === 'UCAAS') return 'UCaaS';
-  if (normalized === 'CCAAS') return 'CCaaS';
-  if (normalized === 'AI') return 'AI';
-  if (normalized === 'PCICLOUD') return 'PCI Cloud';
-  if (normalized === 'SERVICES') return 'Services';
-  if (normalized === 'CONSULTANCY') return 'Consultancy';
-  return String(value || 'Uncategorised').trim() || 'Uncategorised';
-}
-
-function getCategorySortOrder(category = '') {
-  const value = normalizeCategory(category).toUpperCase();
-  if (value === 'UCAAS') return 1;
-  if (value === 'CCAAS') return 2;
-  if (value === 'AI') return 3;
-  if (value === 'PCICLOUD') return 4;
-  if (value === 'SERVICES') return 5;
-  if (value === 'CONSULTANCY') return 6;
-  return 999;
+  return normalizeImportedDisplayValue('category', value) || 'Uncategorised';
 }
 
 function normalizeLicenseType(value) {
   const raw = String(value == null ? '' : value).trim();
-  if (!raw || raw === '—' || /^n\s*\/?\s*a$/i.test(raw)) return 'N/A';
-  if (/^nam/i.test(raw)) return 'Named Licenses';
-  if (/^conc/i.test(raw)) return 'Concurrent Licenses';
+  if (!raw || raw === '—' || /^n\s*\/?\s*a$/i.test(raw)) return CANONICAL_DICTIONARY.licenseTypes.na;
+  if (/^nam/i.test(raw)) return CANONICAL_DICTIONARY.licenseTypes.namedLicenses;
+  if (/^conc/i.test(raw)) return CANONICAL_DICTIONARY.licenseTypes.concurrentLicenses;
   return raw;
 }
 
@@ -5786,7 +5927,7 @@ function getPaymentTypeOrder(paymentType, productName = '') {
 
 function getDisplayPaymentType(product) {
   const meta = getProductMeta(product);
-  return meta.commitment || (product.payType === 'PrePay' ? 'Annual Pre-Pay' : (product.payType === 'PayMonthly' ? 'Monthly' : '—'));
+  return getCanonicalPaymentDisplay(product, meta.commitment);
 }
 
 function sortRowsForCategory(rows, category) {
@@ -6000,26 +6141,7 @@ window.addEventListener('DOMContentLoaded', initPartnerPriceList);
     </div>
     <div class="modal-body" style="padding:24px">
 
-      <div class="help-section">
-        <div class="help-section-title"><span class="help-section-icon">🚀</span> Getting Started</div>
-        <ul class="help-steps">
-          <li><span class="help-step-num">1</span><span>Enter the <strong>Partner Name</strong> in the top bar, then explicitly choose the <strong>Partner Model</strong> and <strong>Partner Tier</strong>. Quote pricing and product catalogue pricing update from the same commercial rules.</span></li>
-          <li><span class="help-step-num">2</span><span>Add an <strong>End Customer</strong> name and check or edit the <strong>Quote Reference</strong> and <strong>Valid Until</strong> date (defaults to 30 days).</span></li>
-          <li><span class="help-step-num">3</span><span>Browse the <strong>Product Catalogue</strong> on the left. Use category tabs or the search box to find products. Click <strong>+</strong> to add a product to your quote, or click <strong>ⓘ</strong> to read a full description and see suggested companion products.</span></li>
-          <li><span class="help-step-num">4</span><span>Adjust <strong>quantities</strong> directly in the quote table. Partner prices are calculated automatically — no manual editing needed.</span></li>
-          <li><span class="help-step-num">5</span><span>When ready, click <strong>Save v1</strong> to save your quote. Add a brief note about what the quote covers.</span></li>
-        </ul>
-      </div>
-
-      <div class="help-section">
-        <div class="help-section-title"><span class="help-section-icon">💰</span> Partner Pricing</div>
-        <div class="help-tips">
-          <div class="help-tip"><strong>Reseller</strong>Accredited 20%, Silver 30%, Gold 35%, Platinum 40%.</div>
-          <div class="help-tip"><strong>MSP</strong>Silver 35%, Gold 45%, Platinum 55%.</div>
-          <div class="help-tip"><strong>Consultant</strong>Single commercial tier at 15% discount.</div>
-          <div class="help-tip"><strong>One pricing matrix</strong>The quote builder and the partner price list now use the same commercial rules, so there is no drift between views.</div>
-        </div>
-      </div>
+      <div id="helpModalDynamic"></div>
 
       <div class="help-section">
         <div class="help-section-title"><span class="help-section-icon">📋</span> Quote Organisation</div>
