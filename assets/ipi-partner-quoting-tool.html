@@ -2649,6 +2649,8 @@ const PRODUCTS = [
   {id:"S100973",name:"Consult - ECX CCaaS Consultancy Services",cat:"Consultancy",billing:"One Off",list:156.25,cost:0,threshold:109.38}
 ];
 
+var NORMALIZED_PRODUCT_CACHE = {};
+
 // ─── PRODUCT ATTRIBUTE DERIVATION ────────────────────────────────────────────
 function stripBracketedProductText(name) {
   return name.replace(/\s*\([^)]*\)/g, '').replace(/\s+/g, ' ').trim();
@@ -2983,6 +2985,11 @@ function syncQuoteItemsToCurrentProducts() {
 
 function refreshProductCatalogueViews() {
   applyDerivedProductAttributes();
+  NORMALIZED_PRODUCT_CACHE = {};
+  PRODUCTS.forEach(function(product) {
+    if (!product || !product.id) return;
+    NORMALIZED_PRODUCT_CACHE[product.id] = buildNormalizedProduct(product);
+  });
   updateCategoryMetadataFromProducts();
   syncQuoteItemsToCurrentProducts();
   syncQuoteFilterOptions();
@@ -3086,11 +3093,13 @@ const LABELS = {
 };
 
 function getDisplayLicenseType(product) {
-  return getProductMeta(product).agentType || product.agentType || '—';
+  const normalized = getNormalizedProduct(product);
+  return normalized.licenseType || 'N/A';
 }
 
 function getQuoteProductPaymentLabel(product) {
-  return getDisplayPaymentType(product);
+  const normalized = getNormalizedProduct(product);
+  return normalized.billingLabel || 'N/A';
 }
 
 function getQuoteProductLicenseLabel(product) {
@@ -3100,15 +3109,16 @@ function getQuoteProductLicenseLabel(product) {
 function productMatchesFilters(p) {
   const profile = getSelectedQuoteProfile();
   if (isHiddenForProfile(p, profile)) return false;
+  const normalized = getNormalizedProduct(p);
 
-  if (activeQuoteCategoryFilters.length && !activeQuoteCategoryFilters.includes(p.cat)) {
+  if (activeQuoteCategoryFilters.length && !activeQuoteCategoryFilters.includes(normalized.category)) {
     return false;
   }
-  const paymentLabel = getQuoteProductPaymentLabel(p);
+  const paymentLabel = normalized.billingLabel;
   if (activeQuotePayFilters.length && !activeQuotePayFilters.includes(paymentLabel)) {
     return false;
   }
-  const licenseLabel = getQuoteProductLicenseLabel(p);
+  const licenseLabel = normalized.licenseType;
   if (activeQuoteAgentFilters.length && !activeQuoteAgentFilters.includes(licenseLabel)) {
     return false;
   }
@@ -3690,28 +3700,26 @@ function toggleFamily(key) {
 }
 
 function renderProductItem(p, isVariant) {
-  var colour       = CAT_COLOURS[p.cat] || '#888';
+  var normalized   = getNormalizedProduct(p);
+  var colour       = CAT_COLOURS[normalized.category] || '#888';
   var discounted   = getDiscountedPrice(p);
   var priceDisplay = discounted > 0 ? fmtGBP(discounted) : '—';
   var listDisplay  = (!isVariant && p.list > 0) ? '<div class="price-threshold">List: ' + fmtGBP(p.list) + '</div>' : '';
   var variantClass = isVariant ? ' variant' : '';
   var filtersActive = activeQuoteCategoryFilters.length > 0 || activeQuotePayFilters.length > 0 || activeQuoteAgentFilters.length > 0;
 
-  // Build display name
-  var displayName = p.name;
+  var displayName = normalized.displayName;
   var qualBadges  = '';
-  var normalizedPaymentType = getDisplayPaymentType(p);
 
   if (isVariant) {
-    // Show only the differentiating qualifier as the name
     var parts = [];
-    if (p.agentType) parts.push(p.agentType);
-    if (normalizedPaymentType && normalizedPaymentType !== '—') parts.push(normalizedPaymentType);
-    displayName = parts.length > 0 ? parts.join(' · ') : (p.cleanName || p.name);
-  } else if (filtersActive && p.cleanName && p.cleanName !== p.name) {
-    displayName = p.cleanName;
-    if (p.agentType) qualBadges += '<span class="product-item-name-qualifier ' + (p.agentType === 'Named' ? 'q-named' : 'q-conc') + '">' + p.agentType + '</span>';
-    if (normalizedPaymentType && normalizedPaymentType !== '—') qualBadges += '<span class="product-item-name-qualifier ' + (p.payType === 'PrePay' ? 'q-prepay' : 'q-monthly') + '">' + normalizedPaymentType + '</span>';
+    if (normalized.licenseType && normalized.licenseType !== 'N/A') parts.push(normalized.licenseType);
+    if (normalized.billingLabel && normalized.billingLabel !== 'N/A') parts.push(normalized.billingLabel);
+    displayName = parts.length > 0 ? parts.join(' · ') : normalized.cleanName;
+  } else if (filtersActive && normalized.cleanName && normalized.cleanName !== normalized.displayName) {
+    displayName = normalized.cleanName;
+    if (normalized.licenseType && normalized.licenseType !== 'N/A') qualBadges += '<span class="product-item-name-qualifier ' + (normalized.licenseType === 'Named' ? 'q-named' : 'q-conc') + '">' + normalized.licenseType + '</span>';
+    if (normalized.billingLabel && normalized.billingLabel !== 'N/A') qualBadges += '<span class="product-item-name-qualifier ' + (normalized.paymentType === 'PrePay' ? 'q-prepay' : 'q-monthly') + '">' + normalized.billingLabel + '</span>';
   }
 
   var idStr = p.id;
@@ -3720,7 +3728,7 @@ function renderProductItem(p, isVariant) {
   var metaHTML = isVariant
     ? '<div style="font-size:10px;color:var(--text-muted);font-family:DM Mono,monospace;margin-top:2px">' + idStr + '</div>'
     : '<div class="product-item-meta">' +
-        '<span class="tag" style="background:' + colour + '18;color:' + colour + '">' + p.cat + '</span>' +
+        '<span class="tag" style="background:' + colour + '18;color:' + colour + '">' + normalized.category + '</span>' +
         billingTag +
         '<span style="font-size:10.5px;color:var(--text-muted);font-family:DM Mono,monospace">' + idStr + '</span>' +
       '</div>';
@@ -3748,10 +3756,11 @@ function renderProductList() {
   var filtersActive = activeQuoteCategoryFilters.length > 0 || activeQuotePayFilters.length > 0 || activeQuoteAgentFilters.length > 0;
 
   var filtered = PRODUCTS.filter(function(p) {
+    var normalized = getNormalizedProduct(p);
     var matchSearch = !search ||
-      p.name.toLowerCase().indexOf(search) !== -1 ||
+      normalized.displayName.toLowerCase().indexOf(search) !== -1 ||
       p.id.toLowerCase().indexOf(search) !== -1 ||
-      (p.cleanName && p.cleanName.toLowerCase().indexOf(search) !== -1);
+      (normalized.cleanName && normalized.cleanName.toLowerCase().indexOf(search) !== -1);
     var matchFilter = productMatchesFilters(p);
     return matchSearch && matchFilter;
   });
@@ -3767,10 +3776,11 @@ function renderProductList() {
   var familyOrder = [];
 
   filtered.forEach(function(p) {
-    var key = p.cat + '|' + (p.cleanName || p.name);
+    var normalized = getNormalizedProduct(p);
+    var key = normalized.category + '|' + normalized.cleanName;
     if (!familyMap[key]) {
-      familyMap[key] = { name: p.cleanName || p.name, cat: p.cat,
-                         colour: CAT_COLOURS[p.cat] || '#888', products: [] };
+      familyMap[key] = { name: normalized.cleanName, cat: normalized.category,
+                         colour: CAT_COLOURS[normalized.category] || '#888', products: [] };
       familyOrder.push(key);
     }
     familyMap[key].products.push(p);
@@ -5064,34 +5074,94 @@ const PRODUCT_META = {
   'S100935': { desc: 'IPI custom consultancy services, charged at an hourly rate. Engages senior IPI consultants for strategic contact centre advice, technology roadmap development, solution architecture, vendor assessment, or bespoke integration design. Scope agreed in advance with a statement of work.', agentType: 'N/A', commitment: 'Per Hour (One-Off)', related: [['S101069','PM - PCI'],['S101061','PM - UCaaS']], tip: 'Consultancy engagements are most valuable at the start of a transformation programme to define the right architecture.' },
 };
 
-// Fallback description generator for products without specific metadata
-function getProductMeta(product) {
-  const inlineRelated = String(product.related_products || '').split('|').map(function(part) {
+function parseInlineRelatedProducts(value) {
+  return String(value || '').split('|').map(function(part) {
     const trimmed = String(part || '').trim();
     if (!trimmed) return null;
     const match = trimmed.match(/^([A-Za-z0-9_-]+)\s*\((.*)\)$/);
     return match ? [match[1], match[2]] : [trimmed, ''];
   }).filter(Boolean);
-  const hasInlineMeta = !!(product.description || product.tip || product.license_type || product.payment_type || inlineRelated.length);
-  if (hasInlineMeta) {
-    return {
-      desc: product.description || '',
-      agentType: product.license_type || 'N/A',
-      commitment: product.payment_type || (product.billing === 'One Off' ? 'One-Off' : 'Monthly'),
-      related: inlineRelated,
-      tip: product.tip || ''
-    };
+}
+
+function normalizeDisplayText(value, fallback) {
+  const raw = String(value == null ? '' : value).trim();
+  if (!raw || /^n\s*\/?\s*a$/i.test(raw) || raw === '—') return fallback;
+  return raw;
+}
+
+function getBillingLabelFromPaymentType(paymentType, billing) {
+  if (paymentType === 'PrePay') return 'Annual Pre-Pay';
+  if (paymentType === 'PayMonthly') return 'Monthly';
+  return billing === 'One Off' ? 'One-Off' : 'Monthly';
+}
+
+function buildNormalizedProduct(product) {
+  const safeProduct = product || {};
+  const rawName = normalizeDisplayText(safeProduct.name, 'N/A');
+  const category = normalizeDisplayText(safeProduct.cat, 'Uncategorised');
+  const billing = normalizeBillingType(safeProduct.billing);
+  const cleanName = normalizeDisplayText(safeProduct.cleanName || stripBracketedProductText(rawName), rawName);
+
+  const lowerName = rawName.toLowerCase();
+  const inferredLicenseType = (/(named|nam-)/.test(lowerName) || lowerName.indexOf('(nam') !== -1)
+    ? 'Named'
+    : ((/(conc|concurrent)/.test(lowerName) || lowerName.indexOf('(conc') !== -1) ? 'Concurrent' : 'N/A');
+  const csvLicenseType = normalizeAgentType(safeProduct.license_type);
+  const meta = PRODUCT_META[safeProduct.id] || {};
+  const licenseType = normalizeDisplayText(csvLicenseType || normalizeAgentType(meta.agentType) || safeProduct.agentType || inferredLicenseType, 'N/A');
+
+  const csvPaymentType = normalizePaymentType(safeProduct.payment_type);
+  const inferredPaymentType = /annual pre.?pay|ann pre|anprepay|pre-pay|prepay|pre pay/i.test(lowerName)
+    ? 'PrePay'
+    : (/annual pay m|ann pay m|annpaym|paymon|pay monthly|pay m\)|pay mthly|pay mon/i.test(lowerName) ? 'PayMonthly' : null);
+  const metaPaymentType = normalizePaymentType(meta.commitment);
+  const paymentType = csvPaymentType || safeProduct.payType || metaPaymentType || inferredPaymentType || 'N/A';
+
+  const inlineRelated = parseInlineRelatedProducts(safeProduct.related_products);
+  const relatedProducts = inlineRelated.length ? inlineRelated : (Array.isArray(meta.related) ? meta.related : []);
+
+  const metaDescription = normalizeDisplayText(safeProduct.description, normalizeDisplayText(meta.desc,
+    (lowerName.includes('overage')
+      ? 'Overage charge for ' + rawName.replace(/overage/i, '').trim() + ' when usage exceeds the contracted monthly volume. Ensures uninterrupted service during peak periods without hard caps.'
+      : rawName + ' — part of the IPI ' + category + ' portfolio. ' + (billing === 'One Off' ? 'One-off implementation or professional services charge.' : 'Monthly recurring charge per ' + (licenseType !== 'N/A' ? licenseType.toLowerCase() + ' agent licence.' : 'unit of usage.')))
+  ));
+
+  const billingLabel = normalizeDisplayText(safeProduct.payment_type, normalizeDisplayText(meta.commitment, getBillingLabelFromPaymentType(paymentType, billing)));
+  const basePrice = safeProduct.list > 0 ? safeProduct.list : safeProduct.threshold;
+
+  return {
+    category: category,
+    licenseType: licenseType,
+    paymentType: paymentType,
+    billingLabel: billingLabel,
+    cleanName: cleanName,
+    displayName: rawName,
+    basePrice: Number(basePrice || 0),
+    metaDescription: metaDescription,
+    relatedProducts: relatedProducts,
+    tip: normalizeDisplayText(safeProduct.tip, normalizeDisplayText(meta.tip, ''))
+  };
+}
+
+function getNormalizedProduct(productOrId) {
+  const productId = typeof productOrId === 'string' ? productOrId : (productOrId && productOrId.id);
+  if (!productId) return buildNormalizedProduct({});
+  if (!NORMALIZED_PRODUCT_CACHE[productId]) {
+    const source = typeof productOrId === 'object' ? productOrId : PRODUCTS.find(function(p) { return p.id === productId; });
+    NORMALIZED_PRODUCT_CACHE[productId] = buildNormalizedProduct(source || {});
   }
-  if (PRODUCT_META[product.id]) return PRODUCT_META[product.id];
-  // Generate sensible fallback based on product attributes
-  const isNamed = product.name.toLowerCase().includes('named') || product.name.toLowerCase().includes('nam');
-  const isConc  = product.name.toLowerCase().includes('conc') || product.name.toLowerCase().includes('concurrent');
-  const isOverage = product.name.toLowerCase().includes('overage');
-  const agentType = isNamed ? 'Named' : isConc ? 'Concurrent' : 'N/A';
-  const desc = isOverage
-    ? `Overage charge for ${product.name.replace(/overage/i,'').trim()} when usage exceeds the contracted monthly volume. Ensures uninterrupted service during peak periods without hard caps.`
-    : `${product.name} — part of the IPI ${product.cat} portfolio. ${product.billing === 'One Off' ? 'One-off implementation or professional services charge.' : 'Monthly recurring charge per ' + (agentType !== 'N/A' ? agentType.toLowerCase() + ' agent licence.' : 'unit of usage.')}`;
-  return { desc, agentType, commitment: product.billing === 'One Off' ? 'One-Off' : 'Monthly', related: [], tip: '' };
+  return NORMALIZED_PRODUCT_CACHE[productId];
+}
+
+function getProductMeta(product) {
+  const normalized = getNormalizedProduct(product);
+  return {
+    desc: normalized.metaDescription,
+    agentType: normalized.licenseType,
+    commitment: normalized.billingLabel,
+    related: normalized.relatedProducts,
+    tip: normalized.tip || ''
+  };
 }
 
 let currentDetailProductId = null;
@@ -5101,22 +5171,23 @@ function openProductDetail(id) {
   if (!product) return;
   currentDetailProductId = id;
 
+  const normalized = getNormalizedProduct(product);
   const meta   = getProductMeta(product);
-  const colour = CAT_COLOURS[product.cat] || '#888';
+  const colour = CAT_COLOURS[normalized.category] || '#888';
   const detailProfile = getActiveDetailProfile();
   const price  = getPriceForProductByProfile(product, detailProfile);
   const base   = product.list > 0 ? product.list : product.threshold;
   const hasPartnerProfile = !!detailProfile;
 
   document.getElementById('pdCatDot').style.background = colour;
-  document.getElementById('pdTitle').textContent = product.name;
-  document.getElementById('pdSku').textContent = product.id + '  ·  ' + product.cat;
+  document.getElementById('pdTitle').textContent = normalized.displayName;
+  document.getElementById('pdSku').textContent = product.id + '  ·  ' + normalized.category;
 
   const specs = [
-    { label: LABELS.modal.category,    value: product.cat },
+    { label: LABELS.modal.category,    value: normalized.category },
     { label: LABELS.modal.billing,     value: product.billing },
-    { label: LABELS.modal.licenseType, value: getDisplayLicenseType(product) },
-    { label: LABELS.modal.paymentType, value: getDisplayPaymentType(product) },
+    { label: LABELS.modal.licenseType, value: normalized.licenseType },
+    { label: LABELS.modal.paymentType, value: normalized.billingLabel },
   ];
   if (base > 0) specs.push({ label: LABELS.modal.listPrice, value: fmtGBP(base) });
   if (price > 0 && hasPartnerProfile) specs.push({ label: detailProfile.typeLabel + ' · ' + detailProfile.tierLabel + ' Price', value: fmtGBP(price) });
@@ -5160,7 +5231,7 @@ function openProductDetail(id) {
 
   document.getElementById('pdBody').innerHTML =
     '<div class="pd-badges">' +
-      '<span class="tag" style="background:' + colour + '18;color:' + colour + '">' + product.cat + '</span>' +
+      '<span class="tag" style="background:' + colour + '18;color:' + colour + '">' + normalized.category + '</span>' +
       '<span class="tag tag-billing ' + (product.billing === 'Monthly' ? 'monthly' : '') + '">' + (product.billing === 'Monthly' ? 'Recurring' : product.billing) + '</span>' +
       (meta.agentType && meta.agentType !== 'N/A' ? '<span class="tag" style="background:#f4f7fa;color:var(--charcoal)">' + meta.agentType + '</span>' : '') +
     '</div>' +
@@ -5806,12 +5877,12 @@ function syncPriceListFilterOptions() {
     return !isHiddenForProfile(product, profile);
   });
 
-  setMultiSelectOptions(catEl, visibleProducts.map(function(product) { return product.cat; }));
+  setMultiSelectOptions(catEl, visibleProducts.map(function(product) { return getNormalizedProduct(product).category; }));
   setMultiSelectOptions(payEl, visibleProducts.map(function(product) {
-    return getDisplayPaymentType(product);
+    return getNormalizedProduct(product).billingLabel;
   }));
   setMultiSelectOptions(agentEl, visibleProducts.map(function(product) {
-    return getDisplayLicenseType(product);
+    return getNormalizedProduct(product).licenseType;
   }));
 }
 
@@ -5827,7 +5898,7 @@ function syncQuoteFilterOptions() {
     return !isHiddenForProfile(product, profile);
   });
 
-  setMultiSelectOptions(categoryEl, visibleProducts.map(function(product) { return product.cat; }));
+  setMultiSelectOptions(categoryEl, visibleProducts.map(function(product) { return getNormalizedProduct(product).category; }));
   setMultiSelectOptions(payEl, visibleProducts.map(function(product) {
     return getQuoteProductPaymentLabel(product);
   }));
@@ -5961,13 +6032,14 @@ function getFilteredPriceListRows(profile) {
   const agentType = getMultiSelectValues(document.getElementById('priceListAgentType'));
   return PRODUCTS.filter(function(p) {
     if (isHiddenForProfile(p, activeProfile)) return false;
-    const payLabel = getDisplayPaymentType(p);
-    const licenseLabel = getDisplayLicenseType(p);
-    const matchCategory = !category.length || category.includes(p.cat);
+    const normalized = getNormalizedProduct(p);
+    const payLabel = normalized.billingLabel;
+    const licenseLabel = normalized.licenseType;
+    const matchCategory = !category.length || category.includes(normalized.category);
     const matchSearch = !search ||
-      p.name.toLowerCase().indexOf(search) !== -1 ||
+      normalized.displayName.toLowerCase().indexOf(search) !== -1 ||
       p.id.toLowerCase().indexOf(search) !== -1 ||
-      (p.cleanName && p.cleanName.toLowerCase().indexOf(search) !== -1);
+      normalized.cleanName.toLowerCase().indexOf(search) !== -1;
     const matchPayType = !payType.length ? true : payType.includes(payLabel);
     const matchAgentType = !agentType.length ? true : agentType.includes(licenseLabel);
     return matchCategory && matchSearch && matchPayType && matchAgentType;
@@ -6005,16 +6077,16 @@ function renderPartnerPriceList() {
     section.licenses.forEach(function(block) {
       html.push('<tr class="subgroup-row"><td colspan="8">' + block.licenseType + ' <span style="opacity:.8;font-weight:600">(' + block.items.length + ' products)</span></td></tr>');
       block.items.forEach(function(p) {
-        const base = p.list > 0 ? p.list : p.threshold;
+        const normalized = getNormalizedProduct(p);
+        const base = normalized.basePrice;
         const net = showRrpOnly ? base : getPriceForProductByProfile(p, profile);
         const billing = p.billing === 'Monthly' ? 'Recurring' : p.billing;
-        const payLabel = getDisplayPaymentType(p);
         html.push('<tr>' +
           '<td><div class="price-list-sku">' + p.id + '</div></td>' +
-          '<td><div class="price-list-product">' + p.name + '</div><div class="price-list-product-sub">' + (p.cleanName && p.cleanName !== p.name ? p.cleanName + ' · ' : '') + billing + '</div></td>' +
+          '<td><div class="price-list-product">' + normalized.displayName + '</div><div class="price-list-product-sub">' + (normalized.cleanName && normalized.cleanName !== normalized.displayName ? normalized.cleanName + ' · ' : '') + billing + '</div></td>' +
           '<td>' + section.category + '</td>' +
           '<td>' + block.licenseType + '</td>' +
-          '<td>' + payLabel + '</td>' +
+          '<td>' + normalized.billingLabel + '</td>' +
           '<td class="price-list-money">' + fmtGBP(base) + '</td>' +
           '<td class="price-list-money net">' + fmtGBP(net) + '</td>' +
           '<td class="price-list-icon-cell"><button class="price-list-info-btn" title="View details" onclick="openProductDetail(\'' + p.id + '\')">i</button></td>' +
@@ -6085,8 +6157,8 @@ function getPaymentTypeOrder(paymentType, productName = '') {
 }
 
 function getDisplayPaymentType(product) {
-  const meta = getProductMeta(product);
-  return meta.commitment || (product.payType === 'PrePay' ? 'Annual Pre-Pay' : (product.payType === 'PayMonthly' ? 'Monthly' : '—'));
+  const normalized = getNormalizedProduct(product);
+  return normalized.billingLabel || 'N/A';
 }
 
 function sortRowsForCategory(rows, category) {
