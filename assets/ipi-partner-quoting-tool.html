@@ -2156,7 +2156,7 @@
         </div>
         <div class="meta-field">
           <label>Category</label>
-          <select id="priceListCategory" onchange="renderPartnerPriceList()"></select>
+          <select id="priceListCategory" multiple onchange="renderPartnerPriceList()"></select>
         </div>
         <div class="meta-field">
           <label>Search Products</label>
@@ -2164,19 +2164,11 @@
         </div>
         <div class="meta-field">
           <label>Payment Type</label>
-          <select id="priceListPayType" onchange="renderPartnerPriceList()">
-            <option value="all">All</option>
-            <option value="PrePay">Annual Pre-Pay</option>
-            <option value="PayMonthly">Monthly</option>
-          </select>
+          <select id="priceListPayType" multiple onchange="renderPartnerPriceList()"></select>
         </div>
         <div class="meta-field">
           <label>License Type</label>
-          <select id="priceListAgentType" onchange="renderPartnerPriceList()">
-            <option value="all">All</option>
-            <option value="Named">Named</option>
-            <option value="Concurrent">Concurrent</option>
-          </select>
+          <select id="priceListAgentType" multiple onchange="renderPartnerPriceList()"></select>
         </div>
         <div class="meta-field meta-field-checkbox">
           <label class="meta-checkbox-label">
@@ -5284,6 +5276,28 @@ function setSelectOptions(selectEl, options, allLabel) {
   selectEl.value = safeOptions.includes(preferred) || preferred === allValue ? preferred : allValue;
 }
 
+function getMultiSelectValues(selectEl) {
+  if (!selectEl) return [];
+  return Array.from(selectEl.selectedOptions || []).map(function(option) {
+    return option.value;
+  }).filter(Boolean);
+}
+
+function setMultiSelectOptions(selectEl, options) {
+  if (!selectEl) return;
+  const currentSelections = getMultiSelectValues(selectEl);
+  const safeOptions = Array.from(new Set(options.filter(Boolean))).sort(function(a, b) {
+    return String(a).localeCompare(String(b));
+  });
+  selectEl.innerHTML = safeOptions.map(function(option) {
+    return '<option value="' + option + '">' + option + '</option>';
+  }).join('');
+  const selectionsToApply = currentSelections.length ? currentSelections : safeOptions;
+  Array.from(selectEl.options).forEach(function(optionEl) {
+    optionEl.selected = selectionsToApply.includes(optionEl.value);
+  });
+}
+
 function syncPriceListFilterOptions() {
   const catEl = document.getElementById('priceListCategory');
   const payEl = document.getElementById('priceListPayType');
@@ -5296,13 +5310,13 @@ function syncPriceListFilterOptions() {
     return !isHiddenForProfile(product, profile);
   });
 
-  setSelectOptions(catEl, visibleProducts.map(function(product) { return product.cat; }), 'All categories');
-  setSelectOptions(payEl, visibleProducts.map(function(product) {
+  setMultiSelectOptions(catEl, visibleProducts.map(function(product) { return product.cat; }));
+  setMultiSelectOptions(payEl, visibleProducts.map(function(product) {
     return getProductMeta(product).commitment || (product.payType === 'PrePay' ? 'Annual Pre-Pay' : (product.payType === 'PayMonthly' ? 'Monthly' : '—'));
-  }), 'All payment types');
-  setSelectOptions(agentEl, visibleProducts.map(function(product) {
+  }));
+  setMultiSelectOptions(agentEl, visibleProducts.map(function(product) {
     return getProductMeta(product).agentType || product.agentType || '—';
-  }), 'All license types');
+  }));
 }
 
 function bindPriceListSorting() {
@@ -5377,9 +5391,12 @@ function updatePriceListFilterSummary() {
 
   if (selectedModel?.value) filters.push(selectedModel.options[selectedModel.selectedIndex]?.text || selectedModel.value);
   if (selectedTier?.value) filters.push(selectedTier.options[selectedTier.selectedIndex]?.text || selectedTier.value);
-  if (selectedCategory?.value && selectedCategory.value !== 'all') filters.push('Category: ' + selectedCategory.value);
-  if (selectedPayment?.value && selectedPayment.value !== 'all') filters.push('Payment: ' + selectedPayment.value);
-  if (selectedLicense?.value && selectedLicense.value !== 'all') filters.push('License: ' + selectedLicense.value);
+  const selectedCategories = getMultiSelectValues(selectedCategory);
+  const selectedPayments = getMultiSelectValues(selectedPayment);
+  const selectedLicenses = getMultiSelectValues(selectedLicense);
+  if (selectedCategories.length && selectedCategories.length !== selectedCategory.options.length) filters.push('Category: ' + selectedCategories.join(', '));
+  if (selectedPayments.length && selectedPayments.length !== selectedPayment.options.length) filters.push('Payment: ' + selectedPayments.join(', '));
+  if (selectedLicenses.length && selectedLicenses.length !== selectedLicense.options.length) filters.push('License: ' + selectedLicenses.join(', '));
   if (showRrpOnly) filters.push('RRP only');
   if (searchValue) filters.push('Search: "' + searchValue + '"');
 
@@ -5401,22 +5418,22 @@ function togglePriceListFilters(forceExpanded) {
 
 function getFilteredPriceListRows(profile) {
   const activeProfile = profile || getSelectedPriceListProfile();
-  const category = document.getElementById('priceListCategory').value || 'all';
+  const category = getMultiSelectValues(document.getElementById('priceListCategory'));
   const search = (document.getElementById('priceListSearch').value || '').toLowerCase();
-  const payType = document.getElementById('priceListPayType').value || 'all';
-  const agentType = document.getElementById('priceListAgentType').value || 'all';
+  const payType = getMultiSelectValues(document.getElementById('priceListPayType'));
+  const agentType = getMultiSelectValues(document.getElementById('priceListAgentType'));
   return PRODUCTS.filter(function(p) {
     if (isHiddenForProfile(p, activeProfile)) return false;
     const meta = getProductMeta(p);
     const payLabel = meta.commitment || (p.payType === 'PrePay' ? 'Annual Pre-Pay' : (p.payType === 'PayMonthly' ? 'Monthly' : '—'));
     const licenseLabel = meta.agentType || p.agentType || '—';
-    const matchCategory = category === 'all' || p.cat === category;
+    const matchCategory = !category.length || category.includes(p.cat);
     const matchSearch = !search ||
       p.name.toLowerCase().indexOf(search) !== -1 ||
       p.id.toLowerCase().indexOf(search) !== -1 ||
       (p.cleanName && p.cleanName.toLowerCase().indexOf(search) !== -1);
-    const matchPayType = payType === 'all' ? true : payLabel === payType;
-    const matchAgentType = agentType === 'all' ? true : licenseLabel === agentType;
+    const matchPayType = !payType.length ? true : payType.includes(payLabel);
+    const matchAgentType = !agentType.length ? true : agentType.includes(licenseLabel);
     return matchCategory && matchSearch && matchPayType && matchAgentType;
   }).sort(function(a, b) { return comparePriceListRows(a, b, activeProfile); });
 }
