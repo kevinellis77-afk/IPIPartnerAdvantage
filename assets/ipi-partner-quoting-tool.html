@@ -2053,6 +2053,20 @@
   }
 
   .price-list-table tbody tr:hover td { background: #fafcfd; }
+  .price-list-table tbody tr.group-row td {
+    background: #36454F;
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+    font-size: 12px;
+  }
+  .price-list-table tbody tr.subgroup-row td {
+    background: #edf2f5;
+    color: #2b3a42;
+    font-weight: 700;
+    font-size: 12px;
+  }
 
   .price-list-sku {
     font-family: 'DM Mono', monospace;
@@ -5659,7 +5673,7 @@ function getFilteredPriceListRows(profile) {
     const matchPayType = !payType.length ? true : payType.includes(payLabel);
     const matchAgentType = !agentType.length ? true : agentType.includes(licenseLabel);
     return matchCategory && matchSearch && matchPayType && matchAgentType;
-  }).sort(function(a, b) { return comparePriceListRows(a, b, activeProfile); });
+  });
 }
 
 function renderPartnerPriceList() {
@@ -5685,79 +5699,164 @@ function renderPartnerPriceList() {
     return;
   }
 
-  body.innerHTML = rows.map(function(p) {
-    const meta = getProductMeta(p);
-    const base = p.list > 0 ? p.list : p.threshold;
-    const net = showRrpOnly ? base : getPriceForProductByProfile(p, profile);
-    const billing = p.billing === 'Monthly' ? 'Recurring' : p.billing;
-    const licenseLabel = meta.agentType || p.agentType || '—';
-    const payLabel = meta.commitment || (p.payType === 'PrePay' ? 'Annual Pre-Pay' : (p.payType === 'PayMonthly' ? 'Monthly' : '—'));
-    return '<tr>' +
-      '<td><div class="price-list-sku">' + p.id + '</div></td>' +
-      '<td><div class="price-list-product">' + p.name + '</div><div class="price-list-product-sub">' + (p.cleanName && p.cleanName !== p.name ? p.cleanName + ' · ' : '') + billing + '</div></td>' +
-      '<td>' + p.cat + '</td>' +
-      '<td>' + licenseLabel + '</td>' +
-      '<td>' + payLabel + '</td>' +
-      '<td class="price-list-money">' + fmtGBP(base) + '</td>' +
-      '<td class="price-list-money net">' + fmtGBP(net) + '</td>' +
-      '<td class="price-list-icon-cell"><button class="price-list-info-btn" title="View details" onclick="openProductDetail(\'' + p.id + '\')">i</button></td>' +
-    '</tr>';
-  }).join('');
+  const sections = groupRowsForDisplay(rows);
+  const html = [];
+  sections.forEach(function(section) {
+    html.push('<tr class="group-row"><td colspan="8">' + section.category + '</td></tr>');
+    section.licenses.forEach(function(block) {
+      html.push('<tr class="subgroup-row"><td colspan="8">' + block.licenseType + ' <span style="opacity:.8;font-weight:600">(' + block.items.length + ' products)</span></td></tr>');
+      block.items.forEach(function(p) {
+        const base = p.list > 0 ? p.list : p.threshold;
+        const net = showRrpOnly ? base : getPriceForProductByProfile(p, profile);
+        const billing = p.billing === 'Monthly' ? 'Recurring' : p.billing;
+        const payLabel = getDisplayPaymentType(p);
+        html.push('<tr>' +
+          '<td><div class="price-list-sku">' + p.id + '</div></td>' +
+          '<td><div class="price-list-product">' + p.name + '</div><div class="price-list-product-sub">' + (p.cleanName && p.cleanName !== p.name ? p.cleanName + ' · ' : '') + billing + '</div></td>' +
+          '<td>' + section.category + '</td>' +
+          '<td>' + block.licenseType + '</td>' +
+          '<td>' + payLabel + '</td>' +
+          '<td class="price-list-money">' + fmtGBP(base) + '</td>' +
+          '<td class="price-list-money net">' + fmtGBP(net) + '</td>' +
+          '<td class="price-list-icon-cell"><button class="price-list-info-btn" title="View details" onclick="openProductDetail(\'' + p.id + '\')">i</button></td>' +
+        '</tr>');
+      });
+    });
+  });
+  body.innerHTML = html.join('');
 }
 
 const EXPORT_CATEGORY_ORDER = ['UCAAS', 'CCAAS', 'AI', 'PCI CLOUD', 'SERVICES', 'CONSULTANCY'];
-const EXPORT_LICENSE_ORDER = ['NAMED', 'CONCURRENT', 'N/A'];
-const PCI_PRODUCT_FAMILY_ORDER = ['PAUSEABLE', 'CLOUD PCI STANDARD', 'CLOUD PCI DIGITAL', 'CLOUD PCI PREMIUM'];
-const PCI_PAYMENT_ORDER = ['ANNUAL PRE-PAY', 'MONTHLY', 'ON DEMAND'];
+const EXPORT_LICENSE_ORDER = ['NAMED LICENSES', 'CONCURRENT LICENSES', 'N/A'];
 
 function normalizeCategoryLabel(value) {
-  const normalized = String(value || '').trim().toUpperCase().replace(/[^A-Z0-9]+/g, ' ');
+  const normalized = normalizeCategory(value).toUpperCase();
   if (normalized === 'UCAAS') return 'UCaaS';
   if (normalized === 'CCAAS') return 'CCaaS';
   if (normalized === 'AI') return 'AI';
-  if (normalized === 'PCI CLOUD') return 'PCI Cloud';
+  if (normalized === 'PCICLOUD') return 'PCI Cloud';
   if (normalized === 'SERVICES') return 'Services';
   if (normalized === 'CONSULTANCY') return 'Consultancy';
   return String(value || 'Uncategorised').trim() || 'Uncategorised';
 }
 
-function getCategorySortOrder(category) {
-  const normalized = String(category || '').trim().toUpperCase().replace(/[^A-Z0-9]+/g, ' ');
-  const index = EXPORT_CATEGORY_ORDER.indexOf(normalized);
-  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+function getCategorySortOrder(category = '') {
+  const value = normalizeCategory(category).toUpperCase();
+  if (value === 'UCAAS') return 1;
+  if (value === 'CCAAS') return 2;
+  if (value === 'AI') return 3;
+  if (value === 'PCICLOUD') return 4;
+  if (value === 'SERVICES') return 5;
+  if (value === 'CONSULTANCY') return 6;
+  return 999;
 }
 
 function normalizeLicenseType(value) {
   const raw = String(value == null ? '' : value).trim();
   if (!raw || raw === '—' || /^n\s*\/?\s*a$/i.test(raw)) return 'N/A';
-  if (/^nam/i.test(raw)) return 'NAMED';
-  if (/^conc/i.test(raw)) return 'CONCURRENT';
-  return raw.toUpperCase();
+  if (/^nam/i.test(raw)) return 'Named Licenses';
+  if (/^conc/i.test(raw)) return 'Concurrent Licenses';
+  return raw;
 }
 
 function getLicenseSortOrder(type) {
-  const normalized = normalizeLicenseType(type);
+  const normalized = String(normalizeLicenseType(type) || '').toUpperCase();
   const index = EXPORT_LICENSE_ORDER.indexOf(normalized);
   return index === -1 ? Number.MAX_SAFE_INTEGER : index;
 }
 
-function getPciProductFamilyOrder(productName) {
-  const name = String(productName || '').toUpperCase();
-  if (name.includes('PAUSEABLE')) return 0;
-  if (name.includes('CLOUD PCI STANDARD')) return 1;
-  if (name.includes('CLOUD PCI DIGITAL')) return 2;
-  if (name.includes('CLOUD PCI PREMIUM')) return 3;
-  return Number.MAX_SAFE_INTEGER;
+function getPciProductFamilyOrder(productName = '') {
+  const name = String(productName || '').toLowerCase();
+  if (name.includes('pauseable')) return 1;
+  if (name.includes('cloud pci standard')) return 2;
+  if (name.includes('cloud pci digital')) return 3;
+  if (name.includes('cloud pci premium')) return 4;
+  return 999;
 }
 
-function normalizePaymentTypeForExport(paymentType) {
-  return String(paymentType || '').trim().toUpperCase().replace(/\s+/g, ' ');
+function getPaymentTypeOrder(paymentType, productName = '') {
+  const payment = String(paymentType || '').toLowerCase().trim();
+  const name = String(productName || '').toLowerCase().trim();
+  if (name.includes('overage') || payment.includes('overage')) return 4;
+  if (payment === 'prepay' || /annual pre.?pay|ann(?:ual)?\s*pre|pre-?pay/.test(payment)) return 1;
+  if (payment === 'paymonthly' || /monthly|pay monthly|ann(?:ual)?\s*pay|pay m(?:on|thly)|annpaym/.test(payment)) return 2;
+  if (/on[\s-]?demand/.test(payment) || /on[\s-]?demand/.test(name)) return 3;
+  return 100;
 }
 
-function getPaymentTypeOrder(paymentType) {
-  const normalized = normalizePaymentTypeForExport(paymentType);
-  const index = PCI_PAYMENT_ORDER.indexOf(normalized);
-  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+function getDisplayPaymentType(product) {
+  const meta = getProductMeta(product);
+  return meta.commitment || (product.payType === 'PrePay' ? 'Annual Pre-Pay' : (product.payType === 'PayMonthly' ? 'Monthly' : '—'));
+}
+
+function sortRowsForCategory(rows, category) {
+  if (!Array.isArray(rows)) return [];
+  const categoryLabel = normalizeCategoryLabel(category);
+  const isCcaas = normalizeCategory(categoryLabel) === 'ccaas';
+  const isPciCloud = normalizeCategory(categoryLabel) === 'pcicloud';
+  if (!isCcaas && !isPciCloud) return rows.slice();
+
+  return rows.slice().sort(function(a, b) {
+    const paymentA = getDisplayPaymentType(a);
+    const paymentB = getDisplayPaymentType(b);
+    if (isCcaas) {
+      const familyDiff = getCcaasFamilyOrder(a.name) - getCcaasFamilyOrder(b.name);
+      if (familyDiff !== 0) return familyDiff;
+    }
+    if (isPciCloud) {
+      const familyDiff = getPciProductFamilyOrder(a.name) - getPciProductFamilyOrder(b.name);
+      if (familyDiff !== 0) return familyDiff;
+    }
+    const paymentDiff = getPaymentTypeOrder(paymentA, a.name) - getPaymentTypeOrder(paymentB, b.name);
+    if (paymentDiff !== 0) return paymentDiff;
+    const paymentLabelDiff = String(paymentA).localeCompare(String(paymentB), undefined, { sensitivity: 'base', numeric: true });
+    if (paymentLabelDiff !== 0) return paymentLabelDiff;
+    return String(a.name || '').localeCompare(String(b.name || ''), undefined, { sensitivity: 'base', numeric: true }) ||
+      String(a.id || '').localeCompare(String(b.id || ''), undefined, { sensitivity: 'base', numeric: true });
+  });
+}
+
+function groupRowsForDisplay(rows) {
+  const grouped = (rows || []).reduce(function(acc, product) {
+    const categoryLabel = normalizeCategoryLabel(product.cat);
+    const licenseLabel = normalizeLicenseType(getProductMeta(product).agentType || product.agentType);
+    if (!acc[categoryLabel]) acc[categoryLabel] = {};
+    if (!acc[categoryLabel][licenseLabel]) acc[categoryLabel][licenseLabel] = [];
+    acc[categoryLabel][licenseLabel].push(product);
+    return acc;
+  }, {});
+
+  return Object.keys(grouped)
+    .filter(function(categoryLabel) {
+      return Object.values(grouped[categoryLabel] || {}).some(function(items) { return items && items.length; });
+    })
+    .sort(function(a, b) {
+      const orderDiff = getCategorySortOrder(a) - getCategorySortOrder(b);
+      if (orderDiff !== 0) return orderDiff;
+      return String(a).localeCompare(String(b), undefined, { sensitivity: 'base', numeric: true });
+    })
+    .map(function(category) {
+      const licenses = Object.keys(grouped[category] || {})
+        .filter(function(licenseType) {
+          const items = grouped[category][licenseType];
+          return Array.isArray(items) && items.length > 0;
+        })
+        .sort(function(a, b) {
+          const orderDiff = getLicenseSortOrder(a) - getLicenseSortOrder(b);
+          if (orderDiff !== 0) return orderDiff;
+          return String(a).localeCompare(String(b), undefined, { sensitivity: 'base', numeric: true });
+        })
+        .map(function(licenseType) {
+          return {
+            licenseType: licenseType,
+            items: sortRowsForCategory(grouped[category][licenseType], category)
+          };
+        })
+        .filter(function(block) { return block.items.length > 0; });
+
+      return { category: category, licenses: licenses };
+    })
+    .filter(function(section) { return section.licenses.length > 0; });
 }
 
 function exportPriceListPdf() {
@@ -5774,71 +5873,14 @@ function exportPriceListPdf() {
     ? profile.typeLabel + ' · ' + profile.tierLabel + ' · RRP only'
     : profile.typeLabel + ' · ' + profile.tierLabel + ' · ' + Math.round(profile.discount * 100) + '% discount';
 
-  const grouped = rows.reduce(function(acc, product) {
-    const categoryLabel = normalizeCategoryLabel(product.cat);
-    const licenseLabel = normalizeLicenseType(getProductMeta(product).agentType || product.agentType);
-    if (!acc[categoryLabel]) acc[categoryLabel] = {};
-    if (!acc[categoryLabel][licenseLabel]) acc[categoryLabel][licenseLabel] = [];
-    acc[categoryLabel][licenseLabel].push(product);
-    return acc;
-  }, {});
-
-  const sortedCategories = Object.keys(grouped)
-    .filter(function(categoryLabel) {
-      return Object.values(grouped[categoryLabel] || {}).some(function(items) { return items && items.length; });
-    })
-    .sort(function(a, b) {
-      const orderDiff = getCategorySortOrder(a) - getCategorySortOrder(b);
-      if (orderDiff !== 0) return orderDiff;
-      return String(a).localeCompare(String(b), undefined, { sensitivity: 'base', numeric: true });
-    });
-
-  const categorySections = sortedCategories.map(function(category) {
-    const sortedLicenses = Object.keys(grouped[category] || {})
-      .filter(function(licenseType) {
-        const items = grouped[category][licenseType];
-        return Array.isArray(items) && items.length > 0;
-      })
-      .sort(function(a, b) {
-        const orderDiff = getLicenseSortOrder(a) - getLicenseSortOrder(b);
-        if (orderDiff !== 0) return orderDiff;
-        return String(a).localeCompare(String(b), undefined, { sensitivity: 'base', numeric: true });
-      });
-
-    if (!sortedLicenses.length) return '';
-
-    const licenseBlocks = sortedLicenses.map(function(licenseType) {
-      const items = [...grouped[category][licenseType]];
-      items.sort(function(a, b) {
-        if (normalizeCategoryLabel(category).toUpperCase() === 'CCAAS') {
-          const paymentA = getProductMeta(a).commitment || (a.payType === 'PrePay' ? 'Annual Pre-Pay' : (a.payType === 'PayMonthly' ? 'Monthly' : ''));
-          const paymentB = getProductMeta(b).commitment || (b.payType === 'PrePay' ? 'Annual Pre-Pay' : (b.payType === 'PayMonthly' ? 'Monthly' : ''));
-          const familyDiff = getCcaasFamilyOrder(a.name) - getCcaasFamilyOrder(b.name);
-          if (familyDiff !== 0) return familyDiff;
-          const paymentDiff = getCcaasPaymentTypeOrder(paymentA, a.name) - getCcaasPaymentTypeOrder(paymentB, b.name);
-          if (paymentDiff !== 0) return paymentDiff;
-          const paymentLabelDiff = String(paymentA).localeCompare(String(paymentB), undefined, { sensitivity: 'base', numeric: true });
-          if (paymentLabelDiff !== 0) return paymentLabelDiff;
-        }
-        if (normalizeCategoryLabel(category).toUpperCase() === 'PCI CLOUD') {
-          const familyDiff = getPciProductFamilyOrder(a.name) - getPciProductFamilyOrder(b.name);
-          if (familyDiff !== 0) return familyDiff;
-          const paymentA = getProductMeta(a).commitment || (a.payType === 'PrePay' ? 'Annual Pre-Pay' : (a.payType === 'PayMonthly' ? 'Monthly' : '—'));
-          const paymentB = getProductMeta(b).commitment || (b.payType === 'PrePay' ? 'Annual Pre-Pay' : (b.payType === 'PayMonthly' ? 'Monthly' : '—'));
-          const paymentDiff = getPaymentTypeOrder(paymentA) - getPaymentTypeOrder(paymentB);
-          if (paymentDiff !== 0) return paymentDiff;
-          const paymentLabelDiff = String(paymentA).localeCompare(String(paymentB), undefined, { sensitivity: 'base', numeric: true });
-          if (paymentLabelDiff !== 0) return paymentLabelDiff;
-        }
-        return String(a.name || '').localeCompare(String(b.name || ''), undefined, { sensitivity: 'base', numeric: true }) ||
-          String(a.id || '').localeCompare(String(b.id || ''), undefined, { sensitivity: 'base', numeric: true });
-      });
-
+  const groupedSections = groupRowsForDisplay(rows);
+  const categorySections = groupedSections.map(function(section) {
+    const licenseBlocks = section.licenses.map(function(block) {
+      const items = block.items;
       const rowsHtml = items.map(function(p) {
-        const meta = getProductMeta(p);
         const listPrice = p.list > 0 ? p.list : p.threshold;
         const partnerPrice = showRrpOnly ? listPrice : getPriceForProductByProfile(p, profile);
-        const payment = meta.commitment || (p.payType === 'PrePay' ? 'Annual Pre-Pay' : (p.payType === 'PayMonthly' ? 'Monthly' : '—'));
+        const payment = getDisplayPaymentType(p);
         return '<tr>' +
           '<td>' + p.id + '</td>' +
           '<td>' + p.name + '</td>' +
@@ -5849,12 +5891,12 @@ function exportPriceListPdf() {
       }).join('');
       return '' +
         '<div class="license-block">' +
-          '<div class="license-header">' + licenseType + ' <span>' + items.length + ' products</span></div>' +
+          '<div class="license-header">' + block.licenseType + ' <span>' + items.length + ' products</span></div>' +
           '<table class="export-lines"><colgroup><col class="col-sap"><col class="col-product"><col class="col-pay"><col class="col-list"><col class="col-partner"></colgroup><thead><tr><th>SAP ID</th><th>Product</th><th>Payment Type</th><th class="num">List RRP</th><th class="num">Partner Price</th></tr></thead>' +
           '<tbody>' + rowsHtml + '</tbody></table>' +
         '</div>';
     }).join('');
-    return '<section class="category-section"><h2>' + category + '</h2>' + licenseBlocks + '</section>';
+    return '<section class="category-section"><h2>' + section.category + '</h2>' + licenseBlocks + '</section>';
   }).join('');
 
   const htmlContent = `<!DOCTYPE html><html><head><meta charset='UTF-8'><title>IPI Partner Price List</title>
