@@ -118,6 +118,31 @@
     border-color: #c9dbf8;
     color: #2a52b0;
   }
+  .context-profile-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid #d4dde2;
+  }
+  .context-profile-controls label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #5f7380;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .context-profile-controls select {
+    border: 1px solid #c9d5dc;
+    border-radius: 999px;
+    padding: 4px 22px 4px 10px;
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    background: #fff;
+    color: var(--charcoal-dark);
+  }
   .context-separator {
     color: #9aa9b3;
     font-size: 12px;
@@ -2225,6 +2250,14 @@
   <span class="context-chip"><b>Workspace:</b> <span id="contextWorkspace">Launchpad</span></span>
   <span class="context-separator">›</span>
   <span class="context-chip"><b>Partner Profile:</b> <span id="contextPartnerProfile">Reseller · Accredited (20%)</span></span>
+  <span class="context-profile-controls">
+    <label for="partnerModel">Model</label>
+    <select id="partnerModel" onchange="syncQuoteTierOptions(); onPartnerProfileChange();"></select>
+  </span>
+  <span class="context-profile-controls">
+    <label for="partnerTier">Tier</label>
+    <select id="partnerTier" onchange="onPartnerProfileChange();"></select>
+  </span>
   <span class="context-separator">›</span>
   <span class="context-chip"><b>Quote Ref:</b> <span id="contextQuoteRef">Draft</span></span>
   <span class="context-chip status">Single contextual session</span>
@@ -2371,7 +2404,7 @@
         <div class="meta-field">
           <label>Commercial Context</label>
           <div class="inherited-context-badge" id="inheritedContextBadge">
-            <span class="inherited-context-badge__title">Inherited from Global Header</span>
+            <span class="inherited-context-badge__title" id="inheritedContextTitle">Global profile (editable)</span>
             <span class="inherited-context-badge__value" id="inheritedContextText">Reseller · Accredited (20% discount)</span>
           </div>
         </div>
@@ -3408,7 +3441,7 @@ function populateQuoteProfileControls() {
   const tierEl = document.getElementById('partnerTier');
   if (!modelEl || !tierEl) return;
   populateProfileControls(modelEl, tierEl, 'reseller');
-  setCommercialProfile(modelEl.value, tierEl.value);
+  syncCommercialProfileToQuoteControls();
 }
 
 function applyQuoteProfileDisplay() {
@@ -3416,12 +3449,20 @@ function applyQuoteProfileDisplay() {
   const hidden = document.getElementById('partnerLevel');
   const display = document.getElementById('partnerLevelDisplay');
   const text = document.getElementById('partnerLevelText');
+  const inheritedTitle = document.getElementById('inheritedContextTitle');
   const inheritedText = document.getElementById('inheritedContextText');
+  const hasHostContext = !!getCommercialContextFromHostStorage();
+  const hasQueryContext = !!getCommercialContextFromQuery();
   if (hidden) hidden.value = profile.tier;
   if (display) display.className = 'partner-level-display ' + getProfileClassName(profile);
   if (text) {
     text.className = 'partner-level-text ' + getProfileClassName(profile);
     text.innerHTML = `${profile.typeLabel} · ${profile.tierLabel} <span style="opacity:0.6;font-weight:400;font-size:11px">(${Math.round(profile.discount * 100)}% discount)</span>`;
+  }
+  if (inheritedTitle) {
+    inheritedTitle.textContent = hasHostContext
+      ? 'Inherited from host context (editable)'
+      : (hasQueryContext ? 'Inherited from URL context (editable)' : 'Global profile (editable)');
   }
   if (inheritedText) inheritedText.textContent = `${profile.typeLabel} · ${profile.tierLabel} (${Math.round(profile.discount * 100)}% discount)`;
 }
