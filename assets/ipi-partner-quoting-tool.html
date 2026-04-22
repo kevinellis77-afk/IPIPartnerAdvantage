@@ -4132,51 +4132,76 @@ function getCategoryFamilyOrder(category, productName = '') {
   return 999;
 }
 
+function getCategoryFamilyName(category, productName = '', fallbackName = '') {
+  const normalizedCategory = normalizeCategory(category);
+  if (normalizedCategory === 'ccaas') return getCcaasFamilySortName(productName);
+  if (normalizedCategory === 'pcicloud') return getPciFamilySortName(productName);
+  if (normalizedCategory === 'ai') return getProductDisplayName({ name: productName, cleanName: fallbackName || productName });
+  return fallbackName || productName || '';
+}
+
+function getComparableProductRecord(product, categoryOverride) {
+  const normalized = getNormalizedProduct(product || {});
+  const categoryLabel = categoryOverride || normalized.category || product.cat || '';
+  const displayName = normalized.displayName || getProductDisplayName(product || {});
+  return {
+    id: product.id || '',
+    category: categoryLabel,
+    name: displayName || '',
+    agentType: normalized.licenseType || product.agentType || product.license_type || 'N/A',
+    payType: normalized.billingLabel || product.payType || product.payment_type || ''
+  };
+}
+
+// Shared business comparator used by quote catalogue + price list.
+// Ordering rules (in priority order):
+// 1) Category priority (CCaaS, AI, PCI Cloud, ...)
+// 2) Licence block (Named before Concurrent before N/A)
+// 3) Category family ranking (CCaaS/AI/PCI-specific family rules)
+// 4) Payment type progression (Annual Pre-Pay, Monthly, On Demand, Overage)
+// 5) Alphabetical fallback (name, then SKU)
+function compareProductsForBusinessOrder(left, right, categoryOverride) {
+  const a = getComparableProductRecord(left, categoryOverride);
+  const b = getComparableProductRecord(right, categoryOverride);
+
+  const categoryDelta = compareCategoryLabels(a.category, b.category);
+  if (categoryDelta !== 0) return categoryDelta;
+
+  const licenseDelta = getLicenseBlockOrder(a.agentType) - getLicenseBlockOrder(b.agentType);
+  if (licenseDelta !== 0) return licenseDelta;
+
+  const familyDelta = getCategoryFamilyOrder(a.category, a.name) - getCategoryFamilyOrder(b.category, b.name);
+  if (familyDelta !== 0) return familyDelta;
+
+  const familyNameDelta = getCategoryFamilyName(a.category, a.name, a.name).localeCompare(
+    getCategoryFamilyName(b.category, b.name, b.name),
+    undefined,
+    { sensitivity: 'base', numeric: true }
+  );
+  if (familyNameDelta !== 0) return familyNameDelta;
+
+  const paymentDelta = getPaymentTypeOrder(a.payType, a.name) - getPaymentTypeOrder(b.payType, b.name);
+  if (paymentDelta !== 0) return paymentDelta;
+
+  const paymentLabelDelta = String(a.payType || '').localeCompare(String(b.payType || ''), undefined, {
+    sensitivity: 'base',
+    numeric: true
+  });
+  if (paymentLabelDelta !== 0) return paymentLabelDelta;
+
+  const nameDelta = String(a.name || '').localeCompare(String(b.name || ''), undefined, {
+    sensitivity: 'base',
+    numeric: true
+  });
+  if (nameDelta !== 0) return nameDelta;
+
+  return String(a.id || '').localeCompare(String(b.id || ''), undefined, { sensitivity: 'base', numeric: true });
+}
+
 function sortRowsWithinCategory(rows, category) {
   if (!Array.isArray(rows)) return [];
-
-  return rows.slice().sort((a, b) => {
-    const ap = getRowProduct(a) || {};
-    const bp = getRowProduct(b) || {};
-
-    const licenseDelta = getLicenseBlockOrder(ap.agentType) - getLicenseBlockOrder(bp.agentType);
-    if (licenseDelta !== 0) return licenseDelta;
-
-    const familyDelta = getCategoryFamilyOrder(category, ap.name) - getCategoryFamilyOrder(category, bp.name);
-    if (familyDelta !== 0) return familyDelta;
-
-    if (isCcaasCategory(category)) {
-      const familyNameDelta = getCcaasFamilySortName(ap.name).localeCompare(getCcaasFamilySortName(bp.name), undefined, {
-        sensitivity: 'base',
-        numeric: true
-      });
-      if (familyNameDelta !== 0) return familyNameDelta;
-    }
-    if (normalizeCategory(category) === 'pcicloud') {
-      const pciFamilyNameDelta = getPciFamilySortName(ap.name).localeCompare(getPciFamilySortName(bp.name), undefined, {
-        sensitivity: 'base',
-        numeric: true
-      });
-      if (pciFamilyNameDelta !== 0) return pciFamilyNameDelta;
-    }
-    if (normalizeCategory(category) === 'ai') {
-      const aiFamilyNameDelta = getProductDisplayName(ap).localeCompare(getProductDisplayName(bp), undefined, {
-        sensitivity: 'base',
-        numeric: true
-      });
-      if (aiFamilyNameDelta !== 0) return aiFamilyNameDelta;
-    }
-
-    const paymentDelta = getCcaasPaymentTypeOrder(ap.payType, ap.name) - getCcaasPaymentTypeOrder(bp.payType, bp.name);
-    if (paymentDelta !== 0) return paymentDelta;
-
-    const paymentLabelDelta = String(ap.payType || '').localeCompare(String(bp.payType || ''), undefined, { sensitivity: 'base' });
-    if (paymentLabelDelta !== 0) return paymentLabelDelta;
-
-    const nameDelta = String(ap.name || '').localeCompare(String(bp.name || ''), undefined, { sensitivity: 'base' });
-    if (nameDelta !== 0) return nameDelta;
-
-    return String(ap.id || '').localeCompare(String(bp.id || ''), undefined, { sensitivity: 'base' });
+  return rows.slice().sort(function(a, b) {
+    return compareProductsForBusinessOrder(getRowProduct(a) || {}, getRowProduct(b) || {}, category);
   });
 }
 
@@ -4388,36 +4413,9 @@ function renderProductList() {
     var fa = familyMap[a];
     var fb = familyMap[b];
     if (!fa || !fb) return 0;
-
-    var catDelta = compareCategoryLabels(fa.cat, fb.cat);
-    if (catDelta !== 0) return catDelta;
-
-    if (isCcaasCategory(fa.cat) && isCcaasCategory(fb.cat)) {
-      var ccFamilyDelta = getCcaasFamilyOrder(fa.name) - getCcaasFamilyOrder(fb.name);
-      if (ccFamilyDelta !== 0) return ccFamilyDelta;
-
-      var ccFamilyNameDelta = getCcaasFamilySortName(fa.name).localeCompare(getCcaasFamilySortName(fb.name), undefined, {
-        sensitivity: 'base',
-        numeric: true
-      });
-      if (ccFamilyNameDelta !== 0) return ccFamilyNameDelta;
-    }
-
-    if (normalizeCategory(fa.cat) === 'pcicloud' && normalizeCategory(fb.cat) === 'pcicloud') {
-      var pciFamilyDelta = getPciProductFamilyOrder(fa.name) - getPciProductFamilyOrder(fb.name);
-      if (pciFamilyDelta !== 0) return pciFamilyDelta;
-
-      var pciFamilyNameDelta = getPciFamilySortName(fa.name).localeCompare(getPciFamilySortName(fb.name), undefined, {
-        sensitivity: 'base',
-        numeric: true
-      });
-      if (pciFamilyNameDelta !== 0) return pciFamilyNameDelta;
-    }
-
-    return String(fa.name || '').localeCompare(String(fb.name || ''), undefined, {
-      sensitivity: 'base',
-      numeric: true
-    });
+    var anchorA = sortRowsWithinCategory(fa.products || [], fa.cat)[0] || { name: fa.name, cat: fa.cat };
+    var anchorB = sortRowsWithinCategory(fb.products || [], fb.cat)[0] || { name: fb.name, cat: fb.cat };
+    return compareProductsForBusinessOrder(anchorA, anchorB);
   });
 
   // ── Render families — data-* attributes, no inline onclick ─────────────
@@ -6851,6 +6849,7 @@ function renderPartnerPriceList() {
   updatePriceListFilterSummary();
 
   const rows = getFilteredPriceListRows(profile);
+  validateQuoteAndPriceOrdering(rows);
 
   if (!rows.length) {
     body.innerHTML = '<tr><td colspan="8" style="padding:32px;text-align:center;color:var(--text-muted)">No products match this search.</td></tr>';
@@ -6930,51 +6929,8 @@ function getDisplayPaymentType(product) {
 
 function sortRowsForCategory(rows, category) {
   if (!Array.isArray(rows)) return [];
-  const categoryLabel = normalizeCategoryLabel(category);
-  const isCcaas = normalizeCategory(categoryLabel) === 'ccaas';
-  const isAi = normalizeCategory(categoryLabel) === 'ai';
-  const isPciCloud = normalizeCategory(categoryLabel) === 'pcicloud';
-  if (!isCcaas && !isAi && !isPciCloud) return rows.slice();
-
   return rows.slice().sort(function(a, b) {
-    const paymentA = getDisplayPaymentType(a);
-    const paymentB = getDisplayPaymentType(b);
-    if (isCcaas) {
-      const familyDiff = getCcaasFamilyOrder(getProductDisplayName(a)) - getCcaasFamilyOrder(getProductDisplayName(b));
-      if (familyDiff !== 0) return familyDiff;
-
-      const familyNameDiff = getCcaasFamilySortName(getProductDisplayName(a)).localeCompare(getCcaasFamilySortName(getProductDisplayName(b)), undefined, {
-        sensitivity: 'base',
-        numeric: true
-      });
-      if (familyNameDiff !== 0) return familyNameDiff;
-    }
-    if (isPciCloud) {
-      const familyDiff = getPciProductFamilyOrder(getProductDisplayName(a)) - getPciProductFamilyOrder(getProductDisplayName(b));
-      if (familyDiff !== 0) return familyDiff;
-
-      const familyNameDiff = getPciFamilySortName(getProductDisplayName(a)).localeCompare(getPciFamilySortName(getProductDisplayName(b)), undefined, {
-        sensitivity: 'base',
-        numeric: true
-      });
-      if (familyNameDiff !== 0) return familyNameDiff;
-    }
-    if (isAi) {
-      const familyDiff = getAiFamilyOrder(getProductDisplayName(a)) - getAiFamilyOrder(getProductDisplayName(b));
-      if (familyDiff !== 0) return familyDiff;
-
-      const familyNameDiff = getProductDisplayName(a).localeCompare(getProductDisplayName(b), undefined, {
-        sensitivity: 'base',
-        numeric: true
-      });
-      if (familyNameDiff !== 0) return familyNameDiff;
-    }
-    const paymentDiff = getPaymentTypeOrder(paymentA, a.name) - getPaymentTypeOrder(paymentB, b.name);
-    if (paymentDiff !== 0) return paymentDiff;
-    const paymentLabelDiff = String(paymentA).localeCompare(String(paymentB), undefined, { sensitivity: 'base', numeric: true });
-    if (paymentLabelDiff !== 0) return paymentLabelDiff;
-    return String(a.name || '').localeCompare(String(b.name || ''), undefined, { sensitivity: 'base', numeric: true }) ||
-      String(a.id || '').localeCompare(String(b.id || ''), undefined, { sensitivity: 'base', numeric: true });
+    return compareProductsForBusinessOrder(a, b, category);
   });
 }
 
@@ -7017,6 +6973,65 @@ function groupRowsForDisplay(rows) {
       return { category: category, licenses: licenses };
     })
     .filter(function(section) { return section.licenses.length > 0; });
+}
+
+function getQuoteRelativeOrderFromRows(rows) {
+  const familyMap = {};
+  const familyKeys = [];
+
+  (rows || []).forEach(function(product) {
+    const normalized = getNormalizedProduct(product);
+    const key = normalized.category + '|' + normalized.cleanName;
+    if (!familyMap[key]) {
+      familyMap[key] = { cat: normalized.category, products: [] };
+      familyKeys.push(key);
+    }
+    familyMap[key].products.push(product);
+  });
+
+  familyKeys.sort(function(a, b) {
+    const leftFamily = familyMap[a];
+    const rightFamily = familyMap[b];
+    const leftAnchor = sortRowsWithinCategory(leftFamily.products || [], leftFamily.cat)[0] || {};
+    const rightAnchor = sortRowsWithinCategory(rightFamily.products || [], rightFamily.cat)[0] || {};
+    return compareProductsForBusinessOrder(leftAnchor, rightAnchor);
+  });
+
+  return familyKeys.reduce(function(acc, familyKey) {
+    const family = familyMap[familyKey];
+    const ordered = sortRowsWithinCategory(family.products || [], family.cat);
+    ordered.forEach(function(product) {
+      acc.push(String(product.id || ''));
+    });
+    return acc;
+  }, []);
+}
+
+function getPriceListRelativeOrderFromRows(rows) {
+  return groupRowsForDisplay(rows).reduce(function(acc, section) {
+    section.licenses.forEach(function(block) {
+      block.items.forEach(function(product) {
+        acc.push(String(product.id || ''));
+      });
+    });
+    return acc;
+  }, []);
+}
+
+function validateQuoteAndPriceOrdering(rows) {
+  const expected = getQuoteRelativeOrderFromRows(rows);
+  const actual = getPriceListRelativeOrderFromRows(rows);
+  const maxLen = Math.max(expected.length, actual.length);
+  for (let i = 0; i < maxLen; i++) {
+    if (expected[i] !== actual[i]) {
+      console.warn('Ordering mismatch between quote and price list render paths at index', i, {
+        quoteId: expected[i] || null,
+        priceId: actual[i] || null
+      });
+      return false;
+    }
+  }
+  return true;
 }
 
 function exportPriceListPdf() {
