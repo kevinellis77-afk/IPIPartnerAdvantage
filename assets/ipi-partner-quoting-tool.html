@@ -5626,7 +5626,12 @@ function buildNormalizedProduct(product) {
   const paymentType = csvPaymentType || safeProduct.payType || metaPaymentType || inferredPaymentType || 'N/A';
 
   const inlineRelated = parseInlineRelatedProducts(safeProduct.related_products);
-  const relatedProducts = inlineRelated.length ? inlineRelated : (Array.isArray(meta.related) ? meta.related : []);
+  const importedRelated = Array.isArray(safeProduct.related)
+    ? safeProduct.related.filter(Array.isArray)
+    : [];
+  const relatedProducts = inlineRelated.length
+    ? inlineRelated
+    : (importedRelated.length ? importedRelated : (Array.isArray(meta.related) ? meta.related : []));
 
   const metaDescription = normalizeDisplayText(safeProduct.description, normalizeDisplayText(meta.desc,
     (lowerName.includes('overage')
@@ -5634,7 +5639,10 @@ function buildNormalizedProduct(product) {
       : rawName + ' — part of the IPI ' + category + ' portfolio. ' + (billing === 'One Off' ? 'One-off implementation or professional services charge.' : 'Monthly recurring charge per ' + (licenseType !== 'N/A' ? licenseType.toLowerCase() + ' agent licence.' : 'unit of usage.')))
   ));
 
-  const billingLabel = normalizeDisplayText(meta.commitment, getCanonicalDisplayPaymentLabel(paymentType, billing));
+  const importedBillingLabel = normalizeDisplayText(safeProduct.commitment, '');
+  const canonicalBillingLabel = normalizeDisplayText(getCanonicalDisplayPaymentLabel(paymentType, billing), '');
+  const metaBillingLabel = normalizeDisplayText(meta.commitment, '');
+  const billingLabel = importedBillingLabel || canonicalBillingLabel || metaBillingLabel || 'N/A';
   const basePrice = safeProduct.list > 0 ? safeProduct.list : safeProduct.threshold;
 
   return {
