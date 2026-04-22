@@ -2761,11 +2761,26 @@ function normalizeAgentType(value) {
   return raw;
 }
 
+const PAYMENT_TYPE_NORMALIZATION_MATRIX = [
+  { canonical: 'Monthly', pattern: /^(monthly|pay monthly|monthly pay|ann(?:ual)?\s*pay|pay m(?:on|thly)|annpaym|paymon|pay mthly|pay mon)$/i },
+  { canonical: 'On Demand', pattern: /^on[\s-]?demand$/i },
+  { canonical: 'Annual Pre-Pay', pattern: /^(annual pre.?pay|ann(?:ual)?\s*pre|ann pre|anprepay|pre-?pay|pre pay|prepay)$/i },
+  { canonical: 'One-Off', pattern: /^(one[\s-]?off|one[\s-]?time|otc|non[\s-]?recurring)$/i },
+  { canonical: 'Per Hour', pattern: /^per[\s-]?hour$/i },
+  { canonical: 'Per Session', pattern: /^per[\s-]?session$/i },
+  { canonical: 'Per Minute', pattern: /^per[\s-]?minutes?$/i },
+  { canonical: 'Per Transaction', pattern: /^per[\s-]?transaction$/i },
+  { canonical: 'Per Channel', pattern: /^per[\s-]?channel$/i }
+];
+
 function normalizePaymentType(value) {
   const raw = String(value || '').trim();
   if (!raw) return null;
-  if (/annual pre.?pay|ann(?:ual)?\s*pre|pre-?pay/i.test(raw)) return 'PrePay';
-  if (/pay monthly|monthly pay|ann(?:ual)?\s*pay|pay m(?:on|thly)|annpaym/i.test(raw)) return 'PayMonthly';
+  if (/^prepay$/i.test(raw)) return 'Annual Pre-Pay';
+  if (/^paymonthly$/i.test(raw)) return 'Monthly';
+  for (const mapping of PAYMENT_TYPE_NORMALIZATION_MATRIX) {
+    if (mapping.pattern.test(raw)) return mapping.canonical;
+  }
   return null;
 }
 
@@ -2814,12 +2829,15 @@ function removeLegacyCommercialSuffixes(name) {
 function deriveCanonicalProductFields(name, licenseTypeValue, paymentTypeValue) {
   const rawName = String(name || '').trim();
   const lowerName = rawName.toLowerCase();
+  const rawPaymentType = String(paymentTypeValue || '').trim();
   const canonicalLicense = normalizeAgentType(licenseTypeValue) ||
     ((/(named|nam-)/.test(lowerName) || lowerName.indexOf('(nam') !== -1) ? 'Named' :
       ((/(conc|concurrent)/.test(lowerName) || lowerName.indexOf('(conc') !== -1) ? 'Concurrent' : ''));
-  const canonicalPayment = normalizePaymentType(paymentTypeValue) ||
-    (/annual pre.?pay|ann pre|anprepay|pre-pay|prepay|pre pay/.test(lowerName) ? 'PrePay' :
-      (/annual pay m|ann pay m|annpaym|paymon|pay monthly|pay m\)|pay mthly|pay mon/.test(lowerName) ? 'PayMonthly' : ''));
+  const inferredPaymentFromName = normalizePaymentType(rawName);
+  const canonicalPayment = normalizePaymentType(rawPaymentType) ||
+    inferredPaymentFromName ||
+    (/annual pay m|ann pay m|annpaym|paymon|pay monthly|pay m\)|pay mthly|pay mon/.test(lowerName) ? 'Monthly' : '') ||
+    rawPaymentType;
   const strippedName = removeLegacyCommercialSuffixes(stripBracketedProductText(rawName));
   const canonicalName = strippedName || rawName;
   return {
@@ -2830,8 +2848,9 @@ function deriveCanonicalProductFields(name, licenseTypeValue, paymentTypeValue) 
 }
 
 function getCanonicalDisplayPaymentLabel(paymentType, billing) {
-  if (paymentType === 'PrePay') return 'Annual Pre-Pay';
-  if (paymentType === 'PayMonthly') return 'Monthly';
+  const canonicalPayment = normalizePaymentType(paymentType);
+  if (canonicalPayment) return canonicalPayment;
+  if (paymentType) return paymentType;
   return billing === 'One Off' ? 'One-Off' : 'Monthly';
 }
 
@@ -2868,9 +2887,9 @@ function applyDerivedProductAttributes() {
     if (importedPaymentType) {
       p.payType = importedPaymentType;
     } else if (/annual pre.?pay|ann pre|anprepay|pre-pay|prepay|pre pay/.test(n)) {
-      p.payType = 'PrePay';
+      p.payType = 'Annual Pre-Pay';
     } else if (/annual pay m|ann pay m|annpaym|paymon|pay monthly|pay m\)|pay mthly|pay mon/.test(n)) {
-      p.payType = 'PayMonthly';
+      p.payType = 'Monthly';
     } else {
       p.payType = null;
     }
@@ -3712,7 +3731,7 @@ function applyQuoteFilterState(state) {
   const payEl = document.getElementById('quotePayType');
   const agentEl = document.getElementById('quoteAgentType');
   const normalizedCategory = Array.isArray(state.category) ? state.category : (state.category && state.category !== 'All' ? [state.category] : []);
-  const normalizedPay = Array.isArray(state.payType) ? state.payType : (state.pay && state.pay !== 'all' ? [state.pay === 'PrePay' ? 'Annual Pre-Pay' : 'Monthly'] : []);
+  const normalizedPay = Array.isArray(state.payType) ? state.payType : (state.pay && state.pay !== 'all' ? [normalizePaymentType(state.pay) || state.pay] : []);
   const normalizedAgent = Array.isArray(state.agentType) ? state.agentType : (state.agent && state.agent !== 'all' ? [state.agent] : []);
   [ [categoryEl, normalizedCategory], [payEl, normalizedPay], [agentEl, normalizedAgent] ].forEach(function(entry) {
     const el = entry[0];
@@ -4103,7 +4122,7 @@ function renderProductItem(p, isVariant) {
   } else if (filtersActive && normalized.cleanName && normalized.cleanName !== normalized.displayName) {
     displayName = normalized.cleanName;
     if (normalized.licenseType && normalized.licenseType !== 'N/A') qualBadges += '<span class="product-item-name-qualifier ' + (normalized.licenseType === 'Named' ? 'q-named' : 'q-conc') + '">' + normalized.licenseType + '</span>';
-    if (normalized.billingLabel && normalized.billingLabel !== 'N/A') qualBadges += '<span class="product-item-name-qualifier ' + (normalized.paymentType === 'PrePay' ? 'q-prepay' : 'q-monthly') + '">' + normalized.billingLabel + '</span>';
+    if (normalized.billingLabel && normalized.billingLabel !== 'N/A') qualBadges += '<span class="product-item-name-qualifier ' + (normalizePaymentType(normalized.paymentType) === 'Annual Pre-Pay' ? 'q-prepay' : 'q-monthly') + '">' + normalized.billingLabel + '</span>';
   }
 
   var idStr = p.id;
