@@ -2790,17 +2790,73 @@ function normalizeBillingType(value) {
   return 'Monthly';
 }
 
+function removeLegacyCommercialSuffixes(name) {
+  var value = String(name || '');
+  if (!value.trim()) return '';
+  var cleaned = value;
+  cleaned = cleaned.replace(/\s*\((nam|conc)[^)]*\)/gi, '');
+  cleaned = cleaned.replace(/\s*\bNAMED\b/gi, '');
+  cleaned = cleaned.replace(/\s*\bCONC\b/gi, '');
+  cleaned = cleaned.replace(/\s*\bCONCURRENT\b/gi, '');
+  cleaned = cleaned.replace(/\s*\bAnnual Pre.?Pay\b/gi, '');
+  cleaned = cleaned.replace(/\s*\bAnn Pre.?Pay\b/gi, '');
+  cleaned = cleaned.replace(/\s*\bAnPrePay\b/gi, '');
+  cleaned = cleaned.replace(/\s*\bPre-?Pay\b/gi, '');
+  cleaned = cleaned.replace(/\s*\bAnnual Pay\s*M\w*/gi, '');
+  cleaned = cleaned.replace(/\s*\bAnn Pay\s*M\w*/gi, '');
+  cleaned = cleaned.replace(/\s*\bAnnPayM\b/gi, '');
+  cleaned = cleaned.replace(/\s*\bPayMon\b/gi, '');
+  cleaned = cleaned.replace(/\s*\bPay Monthly\b/gi, '');
+  cleaned = cleaned.replace(/\s*\bPay Mthly\b/gi, '');
+  cleaned = cleaned.replace(/\s*\bPay Mon\b/gi, '');
+  cleaned = cleaned.replace(/\s*\bPrePay\b/gi, '');
+  cleaned = cleaned.replace(/\s*\([^a-zA-Z0-9]*\)/g, '');
+  cleaned = cleaned.replace(/[\s\-]+$/, '');
+  return cleaned.replace(/\s+/g, ' ').trim();
+}
+
+function deriveCanonicalProductFields(name, licenseTypeValue, paymentTypeValue) {
+  const rawName = String(name || '').trim();
+  const lowerName = rawName.toLowerCase();
+  const canonicalLicense = normalizeAgentType(licenseTypeValue) ||
+    ((/(named|nam-)/.test(lowerName) || lowerName.indexOf('(nam') !== -1) ? 'Named' :
+      ((/(conc|concurrent)/.test(lowerName) || lowerName.indexOf('(conc') !== -1) ? 'Concurrent' : ''));
+  const canonicalPayment = normalizePaymentType(paymentTypeValue) ||
+    (/annual pre.?pay|ann pre|anprepay|pre-pay|prepay|pre pay/.test(lowerName) ? 'PrePay' :
+      (/annual pay m|ann pay m|annpaym|paymon|pay monthly|pay m\)|pay mthly|pay mon/.test(lowerName) ? 'PayMonthly' : ''));
+  const strippedName = removeLegacyCommercialSuffixes(stripBracketedProductText(rawName));
+  const canonicalName = strippedName || rawName;
+  return {
+    name: canonicalName,
+    license_type: canonicalLicense || '',
+    payment_type: canonicalPayment || ''
+  };
+}
+
+function getCanonicalDisplayPaymentLabel(paymentType, billing) {
+  if (paymentType === 'PrePay') return 'Annual Pre-Pay';
+  if (paymentType === 'PayMonthly') return 'Monthly';
+  return billing === 'One Off' ? 'One-Off' : 'Monthly';
+}
+
+function buildCanonicalDisplayName(baseName) {
+  return normalizeDisplayText(baseName, 'N/A');
+}
+
 function applyDerivedProductAttributes() {
   PRODUCTS.forEach(function(p) {
     var originalName = (p.name || '').trim();
     var n = originalName.toLowerCase();
+    var canonical = deriveCanonicalProductFields(originalName, p.license_type, p.payment_type);
 
     p.billing = normalizeBillingType(p.billing);
 
-    p.name = stripBracketedProductText(originalName);
+    p.name = canonical.name;
+    p.license_type = canonical.license_type;
+    p.payment_type = canonical.payment_type;
 
     // Agent type — prefer imported CSV value, then infer from product name.
-    const importedAgentType = normalizeAgentType(p.license_type);
+    const importedAgentType = normalizeAgentType(canonical.license_type);
     if (importedAgentType) {
       p.agentType = importedAgentType;
     } else if (/(named|nam-)/.test(n) || n.indexOf('(nam') !== -1) {
@@ -2812,7 +2868,7 @@ function applyDerivedProductAttributes() {
     }
 
     // Payment type — prefer imported CSV value, then infer from product name.
-    const importedPaymentType = normalizePaymentType(p.payment_type);
+    const importedPaymentType = normalizePaymentType(canonical.payment_type);
     if (importedPaymentType) {
       p.payType = importedPaymentType;
     } else if (/annual pre.?pay|ann pre|anprepay|pre-pay|prepay|pre pay/.test(n)) {
@@ -2824,26 +2880,7 @@ function applyDerivedProductAttributes() {
     }
 
     // Clean name: strip agent/payment qualifiers for display when filters are active
-    var cn = p.name || originalName;
-    cn = cn.replace(/\s*\((nam|conc)[^)]*\)/gi, '');
-    cn = cn.replace(/\s*\bNAMED\b/gi, '');
-    cn = cn.replace(/\s*\bCONC\b/gi, '');
-    cn = cn.replace(/\s*\bCONCURRENT\b/gi, '');
-    cn = cn.replace(/\s*\bAnnual Pre.?Pay\b/gi, '');
-    cn = cn.replace(/\s*\bAnn Pre.?Pay\b/gi, '');
-    cn = cn.replace(/\s*\bAnPrePay\b/gi, '');
-    cn = cn.replace(/\s*\bPre-?Pay\b/gi, '');
-    cn = cn.replace(/\s*\bAnnual Pay\s*M\w*/gi, '');
-    cn = cn.replace(/\s*\bAnn Pay\s*M\w*/gi, '');
-    cn = cn.replace(/\s*\bAnnPayM\b/gi, '');
-    cn = cn.replace(/\s*\bPayMon\b/gi, '');
-    cn = cn.replace(/\s*\bPay Monthly\b/gi, '');
-    cn = cn.replace(/\s*\bPay Mthly\b/gi, '');
-    cn = cn.replace(/\s*\bPay Mon\b/gi, '');
-    cn = cn.replace(/\s*\bPrePay\b/gi, '');
-    cn = cn.replace(/\s*\([^a-zA-Z0-9]*\)/g, '');
-    cn = cn.replace(/[\s\-]+$/, '');
-    cn = cn.replace(/\s+/g, ' ').trim();
+    var cn = removeLegacyCommercialSuffixes(p.name || originalName);
     p.cleanName = (cn && cn.length > 2) ? cn : p.name;
   });
 }
@@ -2993,17 +3030,18 @@ function parseProductCsv(text) {
     throw new Error('Missing required columns: ' + missing.join(', '));
   }
 
-  const mapped = rows.slice(1).map(function(cells) {
+  const mapped = rows.slice(1).map(function(cells, index) {
     const out = {};
     PRODUCT_CSV_HEADERS.forEach(function(header) {
       const idx = headerIndex[header];
       out[header] = idx == null ? '' : (cells[idx] == null ? '' : String(cells[idx]).trim());
     });
     out.license_payment = combinedLicensePaymentIdx === -1 ? '' : (cells[combinedLicensePaymentIdx] == null ? '' : String(cells[combinedLicensePaymentIdx]).trim());
+    out._row_number = index + 2;
     return out;
   }).filter(function(r) { return r.product_id && r.product_e; });
 
-  return mapped.map(function(r) {
+  const parsedRows = mapped.map(function(r) {
     let licenseType = r.license_type || '';
     let paymentType = r.payment_type || '';
     if ((!licenseType || !paymentType) && r.license_payment) {
@@ -3011,21 +3049,54 @@ function parseProductCsv(text) {
       if (!licenseType) licenseType = split.license_type;
       if (!paymentType) paymentType = split.payment_type;
     }
+    const canonical = deriveCanonicalProductFields(r.product_e, licenseType, paymentType);
 
     return {
       id: r.product_id,
-      name: r.product_e,
+      name: canonical.name,
       cat: r.category || 'Uncategorised',
       billing: r.billing || 'Monthly',
       list: parseNumericValue(r.list_rrp),
       cost: parseNumericValue(r.cost),
       threshold: parseNumericValue(r.threshold),
-      license_type: licenseType,
-      payment_type: paymentType,
+      license_type: canonical.license_type,
+      payment_type: canonical.payment_type,
       description: r.description || '',
       tip: r.tip || '',
-      related_products: r.related_products || ''
+      related_products: r.related_products || '',
+      _row_number: r._row_number
     };
+  });
+
+  const canonicalById = {};
+  const conflicts = [];
+  parsedRows.forEach(function(row) {
+    const signature = JSON.stringify({
+      name: row.name,
+      license_type: row.license_type || '',
+      payment_type: row.payment_type || ''
+    });
+    if (!canonicalById[row.id]) {
+      canonicalById[row.id] = { signature: signature, row: row };
+      return;
+    }
+    if (canonicalById[row.id].signature !== signature) {
+      const first = canonicalById[row.id].row;
+      conflicts.push(
+        'product_id "' + row.id + '" has conflicting canonical values: ' +
+        'row ' + first._row_number + ' => {name="' + first.name + '", license_type="' + (first.license_type || '') + '", payment_type="' + (first.payment_type || '') + '"} vs ' +
+        'row ' + row._row_number + ' => {name="' + row.name + '", license_type="' + (row.license_type || '') + '", payment_type="' + (row.payment_type || '') + '"}'
+      );
+    }
+  });
+  if (conflicts.length) {
+    throw new Error('Duplicate product_id canonical conflicts detected:\n- ' + conflicts.join('\n- '));
+  }
+
+  return parsedRows.map(function(row) {
+    const out = Object.assign({}, row);
+    delete out._row_number;
+    return out;
   });
 }
 
@@ -3173,19 +3244,20 @@ function downloadProductExtractCsv() {
   const lines = [PRODUCT_CSV_HEADERS.map(csvEscape).join(',')];
   PRODUCTS.forEach(function(p) {
     const meta = getProductMeta(p);
+    const normalized = getNormalizedProduct(p);
     const relatedProducts = (meta.related || []).map(function(entry) {
       return entry && entry[0] ? (entry[1] ? (entry[0] + ' (' + entry[1] + ')') : entry[0]) : '';
     }).filter(Boolean).join(' | ');
     const exportRow = {
       product_id: p.id,
-      product_e: p.name,
+      product_e: normalized.cleanName || normalized.displayName || p.name,
       category: p.cat,
       billing: p.billing,
       list_rrp: p.list,
       cost: p.cost,
       threshold: p.threshold,
-      license_type: meta.agentType || '',
-      payment_type: getDisplayPaymentType(p),
+      license_type: normalized.licenseType === 'N/A' ? '' : normalized.licenseType,
+      payment_type: (normalized.paymentType && normalized.paymentType !== 'N/A') ? normalized.paymentType : '',
       description: meta.desc || '',
       tip: meta.tip || '',
       related_products: relatedProducts
@@ -3289,6 +3361,11 @@ function getQuoteProductPaymentLabel(product) {
 
 function getQuoteProductLicenseLabel(product) {
   return getDisplayLicenseType(product);
+}
+
+function getProductDisplayName(product) {
+  const normalized = getNormalizedProduct(product);
+  return normalized.displayName || normalizeDisplayText(product && product.name, 'N/A');
 }
 
 function productMatchesFilters(p) {
@@ -4204,7 +4281,7 @@ function addToQuote(id) {
     quoteItems.push({ product, qty: 1, override: null });
   }
   renderQuote();
-  showToast(`✓ Added: ${product.name}`);
+  showToast(`✓ Added: ${getProductDisplayName(product)}`);
 }
 
 // ─── RENDER QUOTE ─────────────────────────────────────────────────────────────
@@ -5101,7 +5178,7 @@ function openExportModal() {
         const disc  = base > 0 && ep < base ? Math.round((base - ep) / base * 100) : null;
         return `<tr>
           <td style="color:#7a8f9a;font-size:10px;white-space:nowrap">${item.product.id}</td>
-          <td>${item.product.name}</td>
+          <td>${getProductDisplayName(item.product)}</td>
           <td style="text-align:right;color:#888">${item.qty}</td>
           <td style="text-align:right;color:#888">${base > 0 ? fmtGBP(base) : '—'}</td>
           <td style="text-align:right;color:#27ae60;font-weight:600">
@@ -5202,7 +5279,7 @@ function printQuote() {
         const disc = base > 0 && ep > 0 && ep < base ? Math.round((base - ep) / base * 100) : null;
         return `<tr>
           <td class="sku">${item.product.id}</td>
-          <td>${item.product.name}</td>
+          <td>${getProductDisplayName(item.product)}</td>
           <td class="num">${item.qty}</td>
           <td class="num muted">${base > 0 ? fmtGBP(base) : '—'}</td>
           <td class="num grn">${ep > 0 ? fmtGBP(ep) : '—'}${disc !== null ? ` <span class="disc">-${disc}%</span>` : ''}</td>
@@ -5363,7 +5440,7 @@ function copyCSV() {
   quoteItems.forEach(item => {
     const ep = getEffectivePrice(item);
     const base = item.product.list > 0 ? item.product.list : item.product.threshold;
-    csv += `${item.product.id},"${item.product.name}",${item.product.cat},${item.product.billing === 'Monthly' ? 'Recurring' : item.product.billing},${item.qty},${base.toFixed(2)},${ep.toFixed(2)},${(ep*item.qty).toFixed(2)}\n`;
+    csv += `${item.product.id},"${getProductDisplayName(item.product)}",${item.product.cat},${item.product.billing === 'Monthly' ? 'Recurring' : item.product.billing},${item.qty},${base.toFixed(2)},${ep.toFixed(2)},${(ep*item.qty).toFixed(2)}\n`;
   });
   let mrc = 0, otc = 0;
   quoteItems.forEach(i => { const p = getEffectivePrice(i)*i.qty; if(i.product.billing==='Monthly') mrc+=p; else otc+=p; });
@@ -5461,31 +5538,22 @@ function normalizeDisplayText(value, fallback) {
   return raw;
 }
 
-function getBillingLabelFromPaymentType(paymentType, billing) {
-  if (paymentType === 'PrePay') return 'Annual Pre-Pay';
-  if (paymentType === 'PayMonthly') return 'Monthly';
-  return billing === 'One Off' ? 'One-Off' : 'Monthly';
-}
-
 function buildNormalizedProduct(product) {
   const safeProduct = product || {};
-  const rawName = normalizeDisplayText(safeProduct.name, 'N/A');
+  const canonical = deriveCanonicalProductFields(safeProduct.name, safeProduct.license_type, safeProduct.payment_type);
+  const rawName = normalizeDisplayText(canonical.name, 'N/A');
   const category = normalizeDisplayText(safeProduct.cat, 'Uncategorised');
   const billing = normalizeBillingType(safeProduct.billing);
-  const cleanName = normalizeDisplayText(safeProduct.cleanName || stripBracketedProductText(rawName), rawName);
+  const cleanName = normalizeDisplayText(removeLegacyCommercialSuffixes(safeProduct.cleanName || rawName), rawName);
 
   const lowerName = rawName.toLowerCase();
-  const inferredLicenseType = (/(named|nam-)/.test(lowerName) || lowerName.indexOf('(nam') !== -1)
-    ? 'Named'
-    : ((/(conc|concurrent)/.test(lowerName) || lowerName.indexOf('(conc') !== -1) ? 'Concurrent' : 'N/A');
-  const csvLicenseType = normalizeAgentType(safeProduct.license_type);
+  const inferredLicenseType = canonical.license_type || 'N/A';
+  const csvLicenseType = normalizeAgentType(canonical.license_type);
   const meta = PRODUCT_META[safeProduct.id] || {};
   const licenseType = normalizeDisplayText(csvLicenseType || normalizeAgentType(meta.agentType) || safeProduct.agentType || inferredLicenseType, 'N/A');
 
-  const csvPaymentType = normalizePaymentType(safeProduct.payment_type);
-  const inferredPaymentType = /annual pre.?pay|ann pre|anprepay|pre-pay|prepay|pre pay/i.test(lowerName)
-    ? 'PrePay'
-    : (/annual pay m|ann pay m|annpaym|paymon|pay monthly|pay m\)|pay mthly|pay mon/i.test(lowerName) ? 'PayMonthly' : null);
+  const csvPaymentType = normalizePaymentType(canonical.payment_type);
+  const inferredPaymentType = canonical.payment_type || null;
   const metaPaymentType = normalizePaymentType(meta.commitment);
   const paymentType = csvPaymentType || safeProduct.payType || metaPaymentType || inferredPaymentType || 'N/A';
 
@@ -5498,7 +5566,7 @@ function buildNormalizedProduct(product) {
       : rawName + ' — part of the IPI ' + category + ' portfolio. ' + (billing === 'One Off' ? 'One-off implementation or professional services charge.' : 'Monthly recurring charge per ' + (licenseType !== 'N/A' ? licenseType.toLowerCase() + ' agent licence.' : 'unit of usage.')))
   ));
 
-  const billingLabel = normalizeDisplayText(safeProduct.payment_type, normalizeDisplayText(meta.commitment, getBillingLabelFromPaymentType(paymentType, billing)));
+  const billingLabel = normalizeDisplayText(meta.commitment, getCanonicalDisplayPaymentLabel(paymentType, billing));
   const basePrice = safeProduct.list > 0 ? safeProduct.list : safeProduct.threshold;
 
   return {
@@ -5507,7 +5575,7 @@ function buildNormalizedProduct(product) {
     paymentType: paymentType,
     billingLabel: billingLabel,
     cleanName: cleanName,
-    displayName: rawName,
+    displayName: buildCanonicalDisplayName(cleanName),
     basePrice: Number(basePrice || 0),
     metaDescription: metaDescription,
     relatedProducts: relatedProducts,
@@ -5707,7 +5775,7 @@ function openEmailModal() {
       g.items.forEach(function(item) {
         var ep    = getEffectivePrice(item);
         var total = ep * item.qty;
-        summaryRows += '<div class="email-summary-row"><span>' + item.product.name + ' <span style="color:#aaa">×' + item.qty + '</span></span><span style="font-family:monospace;font-weight:600">' + fmtGBP(total) + '</span></div>';
+        summaryRows += '<div class="email-summary-row"><span>' + getProductDisplayName(item.product) + ' <span style="color:#aaa">×' + item.qty + '</span></span><span style="font-family:monospace;font-weight:600">' + fmtGBP(total) + '</span></div>';
       });
     });
   }
@@ -5749,7 +5817,7 @@ function buildEmailHTML() {
       html += '<tr><td colspan="3" style="padding:4px 14px 2px;font-size:11px;font-weight:700;color:#36454F;background:#fafcfd">' + g.cat + '</td></tr>';
       g.items.forEach(function(item) {
         var ep = getEffectivePrice(item);
-        html += '<tr><td style="padding:5px 14px;font-size:12px;color:#36454F">' + item.product.name + '</td>' +
+        html += '<tr><td style="padding:5px 14px;font-size:12px;color:#36454F">' + getProductDisplayName(item.product) + '</td>' +
           '<td style="padding:5px 8px;text-align:center;font-size:12px;color:#888">×' + item.qty + '</td>' +
           '<td style="padding:5px 14px;text-align:right;font-size:12px;font-weight:600;font-family:monospace">' + fmtGBP(ep * item.qty) + '</td></tr>';
       });
@@ -6331,13 +6399,13 @@ function getPriceListSortValue(product, profile, sortKey) {
   const licenseLabel = getDisplayLicenseType(product);
   switch (sortKey) {
     case 'id': return product.id;
-    case 'name': return product.name;
+    case 'name': return getProductDisplayName(product);
     case 'cat': return product.cat;
     case 'license': return licenseLabel;
     case 'payment': return payLabel;
     case 'list': return Number(listPrice || 0);
     case 'partner': return Number(showRrpOnly ? listPrice : (getPriceForProductByProfile(product, profile) || 0));
-    default: return product.name;
+    default: return getProductDisplayName(product);
   }
 }
 
@@ -6352,7 +6420,7 @@ function comparePriceListRows(a, b, profile) {
 
     const ccaasOrderDiff =
       getLicenseBlockOrder(licenseA) - getLicenseBlockOrder(licenseB) ||
-      getCcaasFamilyOrder(a.name) - getCcaasFamilyOrder(b.name) ||
+      getCcaasFamilyOrder(getProductDisplayName(a)) - getCcaasFamilyOrder(getProductDisplayName(b)) ||
       getCcaasPaymentTypeOrder(paymentA, a.name) - getCcaasPaymentTypeOrder(paymentB, b.name) ||
       String(paymentA).localeCompare(String(paymentB), undefined, { sensitivity: 'base', numeric: true }) ||
       String(a.name || '').localeCompare(String(b.name || ''), undefined, { sensitivity: 'base', numeric: true }) ||
@@ -6471,7 +6539,7 @@ function renderPartnerPriceList() {
         const billing = p.billing === 'Monthly' ? 'Recurring' : p.billing;
         html.push('<tr>' +
           '<td><div class="price-list-sku">' + p.id + '</div></td>' +
-          '<td><div class="price-list-product">' + normalized.displayName + '</div><div class="price-list-product-sub">' + (normalized.cleanName && normalized.cleanName !== normalized.displayName ? normalized.cleanName + ' · ' : '') + billing + '</div></td>' +
+          '<td><div class="price-list-product">' + getProductDisplayName(p) + '</div><div class="price-list-product-sub">' + billing + '</div></td>' +
           '<td>' + section.category + '</td>' +
           '<td>' + block.licenseType + '</td>' +
           '<td>' + normalized.billingLabel + '</td>' +
@@ -6560,11 +6628,11 @@ function sortRowsForCategory(rows, category) {
     const paymentA = getDisplayPaymentType(a);
     const paymentB = getDisplayPaymentType(b);
     if (isCcaas) {
-      const familyDiff = getCcaasFamilyOrder(a.name) - getCcaasFamilyOrder(b.name);
+      const familyDiff = getCcaasFamilyOrder(getProductDisplayName(a)) - getCcaasFamilyOrder(getProductDisplayName(b));
       if (familyDiff !== 0) return familyDiff;
     }
     if (isPciCloud) {
-      const familyDiff = getPciProductFamilyOrder(a.name) - getPciProductFamilyOrder(b.name);
+      const familyDiff = getPciProductFamilyOrder(getProductDisplayName(a)) - getPciProductFamilyOrder(getProductDisplayName(b));
       if (familyDiff !== 0) return familyDiff;
     }
     const paymentDiff = getPaymentTypeOrder(paymentA, a.name) - getPaymentTypeOrder(paymentB, b.name);
