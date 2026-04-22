@@ -4018,6 +4018,27 @@ function normalizeCategory(category) {
   return String(category || '').trim().toLowerCase().replace(/\s+/g, '');
 }
 
+const CATEGORY_PRIORITY = ['UCaaS', 'CCaaS', 'AI', 'PCI Cloud', 'Services', 'Consultancy'];
+
+function getCategoryPriorityIndex(category) {
+  const normalizedCategory = normalizeCategory(category);
+  const index = CATEGORY_PRIORITY.findIndex(function(label) {
+    return normalizeCategory(label) === normalizedCategory;
+  });
+  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+}
+
+function compareCategoryLabels(a, b) {
+  const aPriority = getCategoryPriorityIndex(a);
+  const bPriority = getCategoryPriorityIndex(b);
+  if (aPriority !== bPriority) return aPriority - bPriority;
+
+  return String(normalizeCategoryLabel(a)).localeCompare(String(normalizeCategoryLabel(b)), undefined, {
+    sensitivity: 'base',
+    numeric: true
+  });
+}
+
 function isCcaasCategory(category) {
   return normalizeCategory(category) === 'ccaas';
 }
@@ -4268,7 +4289,7 @@ function renderProductList() {
     return;
   }
 
-  // ── Group by (cat, cleanName) maintaining catalogue order ─────────────────
+  // ── Group by (cat, cleanName) then apply explicit category priority sorting ─
   var familyMap   = {};
   var familyOrder = [];
 
@@ -4283,16 +4304,24 @@ function renderProductList() {
     familyMap[key].products.push(p);
   });
 
-  if (activeQuoteCategoryFilters.length === 1 && isCcaasCategory(activeQuoteCategoryFilters[0])) {
-    familyOrder.sort(function(a, b) {
-      var fa = familyMap[a];
-      var fb = familyMap[b];
-      if (!fa || !fb) return 0;
-      var famDelta = getCcaasFamilyOrder(fa.name) - getCcaasFamilyOrder(fb.name);
-      if (famDelta !== 0) return famDelta;
-      return String(fa.name || '').localeCompare(String(fb.name || ''), undefined, { sensitivity: 'base' });
+  familyOrder.sort(function(a, b) {
+    var fa = familyMap[a];
+    var fb = familyMap[b];
+    if (!fa || !fb) return 0;
+
+    var catDelta = compareCategoryLabels(fa.cat, fb.cat);
+    if (catDelta !== 0) return catDelta;
+
+    if (isCcaasCategory(fa.cat) && isCcaasCategory(fb.cat)) {
+      var ccFamilyDelta = getCcaasFamilyOrder(fa.name) - getCcaasFamilyOrder(fb.name);
+      if (ccFamilyDelta !== 0) return ccFamilyDelta;
+    }
+
+    return String(fa.name || '').localeCompare(String(fb.name || ''), undefined, {
+      sensitivity: 'base',
+      numeric: true
     });
-  }
+  });
 
   // ── Render families — data-* attributes, no inline onclick ─────────────
   var html = familyOrder.map(function(key, keyIdx) {
@@ -6740,7 +6769,6 @@ function renderPartnerPriceList() {
   persistWorkflowContext();
 }
 
-const EXPORT_CATEGORY_ORDER = ['UCAAS', 'CCAAS', 'AI', 'PCI CLOUD', 'SERVICES', 'CONSULTANCY'];
 const EXPORT_LICENSE_ORDER = ['NAMED LICENSES', 'CONCURRENT LICENSES', 'N/A'];
 
 function normalizeCategoryLabel(value) {
@@ -6752,17 +6780,6 @@ function normalizeCategoryLabel(value) {
   if (normalized === 'SERVICES') return 'Services';
   if (normalized === 'CONSULTANCY') return 'Consultancy';
   return String(value || 'Uncategorised').trim() || 'Uncategorised';
-}
-
-function getCategorySortOrder(category = '') {
-  const value = normalizeCategory(category).toUpperCase();
-  if (value === 'UCAAS') return 1;
-  if (value === 'CCAAS') return 2;
-  if (value === 'AI') return 3;
-  if (value === 'PCICLOUD') return 4;
-  if (value === 'SERVICES') return 5;
-  if (value === 'CONSULTANCY') return 6;
-  return 999;
 }
 
 function normalizeLicenseType(value) {
@@ -6845,9 +6862,7 @@ function groupRowsForDisplay(rows) {
       return Object.values(grouped[categoryLabel] || {}).some(function(items) { return items && items.length; });
     })
     .sort(function(a, b) {
-      const orderDiff = getCategorySortOrder(a) - getCategorySortOrder(b);
-      if (orderDiff !== 0) return orderDiff;
-      return String(a).localeCompare(String(b), undefined, { sensitivity: 'base', numeric: true });
+      return compareCategoryLabels(a, b);
     })
     .map(function(category) {
       const licenses = Object.keys(grouped[category] || {})
