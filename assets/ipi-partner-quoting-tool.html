@@ -369,6 +369,9 @@
   .panel-header {
     padding: 18px 20px 14px;
     border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
   }
 
   .panel-title {
@@ -377,7 +380,11 @@
     color: var(--charcoal);
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    margin-bottom: 10px;
+    margin-bottom: 0;
+  }
+
+  .panel-header .catalogue-source-badge {
+    margin-top: 0;
   }
 
   .search-box {
@@ -2425,8 +2432,8 @@
     <div class="panel-resizer" id="panelResizer"></div>
     <div class="panel-header">
       <div class="panel-title">Product Catalogue</div>
+      <div class="catalogue-source-badge" id="quoteCatalogueSourceBadge">Catalogue source: Embedded baseline</div>
     </div>
-    <div class="catalogue-source-badge" id="quoteCatalogueSourceBadge">Catalogue source: Embedded baseline</div>
     <div class="price-list-controls quote-filter-controls" id="quoteFilterControls">
       <div class="meta-field">
         <label>Category</label>
