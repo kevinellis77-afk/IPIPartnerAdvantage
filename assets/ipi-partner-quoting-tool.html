@@ -149,6 +149,9 @@
     font-weight: 700;
     margin: 0 2px;
   }
+  .toolbar-hidden {
+    display: none !important;
+  }
   .inherited-context-badge {
     border: 1px dashed #c9d5dc;
     background: #f7fafc;
@@ -2306,8 +2309,7 @@
 
 <div class="workflow-context-bar" id="workflowContextBar">
   <span class="context-chip"><b>Workspace:</b> <span id="contextWorkspace">Launchpad</span></span>
-  <span class="context-separator">›</span>
-  <span class="context-chip"><b>Partner Profile:</b> <span id="contextPartnerProfile">Global Partner Profile (applies to Price List + Quoting Tool): Reseller · Accredited (20%)</span></span>
+  <span class="context-chip toolbar-hidden"><b>Partner Profile:</b> <span id="contextPartnerProfile">Global Partner Profile (applies to Price List + Quoting Tool): Reseller · Accredited (20%)</span></span>
   <span class="context-profile-controls">
     <label for="partnerModel">Model</label>
     <select id="partnerModel" onchange="syncQuoteTierOptions(); onPartnerProfileChange();"></select>
@@ -2316,8 +2318,7 @@
     <label for="partnerTier">Tier</label>
     <select id="partnerTier" onchange="onPartnerProfileChange();"></select>
   </span>
-  <span class="context-separator">›</span>
-  <span class="context-chip"><b>Quote Ref:</b> <span id="contextQuoteRef">Draft</span></span>
+  <span class="context-chip toolbar-hidden"><b>Quote Ref:</b> <span id="contextQuoteRef">Draft</span></span>
 </div>
 
 
