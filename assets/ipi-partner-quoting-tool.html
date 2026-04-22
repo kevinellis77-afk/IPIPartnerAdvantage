@@ -4064,6 +4064,34 @@ function getCcaasFamilySortName(productName = '') {
   return name;
 }
 
+function getPciFamilyDetails(productName = '') {
+  const name = String(productName || '').trim();
+  const lowered = name.toLowerCase();
+
+  if (lowered.includes('pauseable')) {
+    return { order: 1, sortName: 'Pausable' };
+  }
+  if (lowered.includes('cloud pci standard')) {
+    return { order: 2, sortName: 'Cloud PCI Standard' };
+  }
+  if (lowered.includes('cloud pci digital')) {
+    return { order: 3, sortName: 'Cloud PCI Digital' };
+  }
+  if (lowered.includes('cloud pci premium')) {
+    return { order: 4, sortName: 'Cloud PCI Premium' };
+  }
+
+  return { order: 999, sortName: name };
+}
+
+function getPciProductFamilyOrder(productName = '') {
+  return getPciFamilyDetails(productName).order;
+}
+
+function getPciFamilySortName(productName = '') {
+  return getPciFamilyDetails(productName).sortName;
+}
+
 function getAiFamilyOrder(productName = '') {
   const name = String(productName || '').toLowerCase().trim();
   if (name.includes('ai side-kick') || name.includes('ai sidekick')) return 1;
@@ -4123,6 +4151,13 @@ function sortRowsWithinCategory(rows, category) {
         numeric: true
       });
       if (familyNameDelta !== 0) return familyNameDelta;
+    }
+    if (normalizeCategory(category) === 'pcicloud') {
+      const pciFamilyNameDelta = getPciFamilySortName(ap.name).localeCompare(getPciFamilySortName(bp.name), undefined, {
+        sensitivity: 'base',
+        numeric: true
+      });
+      if (pciFamilyNameDelta !== 0) return pciFamilyNameDelta;
     }
     if (normalizeCategory(category) === 'ai') {
       const aiFamilyNameDelta = getProductDisplayName(ap).localeCompare(getProductDisplayName(bp), undefined, {
@@ -4366,6 +4401,17 @@ function renderProductList() {
         numeric: true
       });
       if (ccFamilyNameDelta !== 0) return ccFamilyNameDelta;
+    }
+
+    if (normalizeCategory(fa.cat) === 'pcicloud' && normalizeCategory(fb.cat) === 'pcicloud') {
+      var pciFamilyDelta = getPciProductFamilyOrder(fa.name) - getPciProductFamilyOrder(fb.name);
+      if (pciFamilyDelta !== 0) return pciFamilyDelta;
+
+      var pciFamilyNameDelta = getPciFamilySortName(fa.name).localeCompare(getPciFamilySortName(fb.name), undefined, {
+        sensitivity: 'base',
+        numeric: true
+      });
+      if (pciFamilyNameDelta !== 0) return pciFamilyNameDelta;
     }
 
     return String(fa.name || '').localeCompare(String(fb.name || ''), undefined, {
@@ -6867,15 +6913,6 @@ function getLicenseSortOrder(type) {
   return index === -1 ? Number.MAX_SAFE_INTEGER : index;
 }
 
-function getPciProductFamilyOrder(productName = '') {
-  const name = String(productName || '').toLowerCase();
-  if (name.includes('pauseable')) return 1;
-  if (name.includes('cloud pci standard')) return 2;
-  if (name.includes('cloud pci digital')) return 3;
-  if (name.includes('cloud pci premium')) return 4;
-  return 999;
-}
-
 function getPaymentTypeOrder(paymentType, productName = '') {
   const payment = String(paymentType || '').toLowerCase().trim();
   const name = String(productName || '').toLowerCase().trim();
@@ -6915,6 +6952,12 @@ function sortRowsForCategory(rows, category) {
     if (isPciCloud) {
       const familyDiff = getPciProductFamilyOrder(getProductDisplayName(a)) - getPciProductFamilyOrder(getProductDisplayName(b));
       if (familyDiff !== 0) return familyDiff;
+
+      const familyNameDiff = getPciFamilySortName(getProductDisplayName(a)).localeCompare(getPciFamilySortName(getProductDisplayName(b)), undefined, {
+        sensitivity: 'base',
+        numeric: true
+      });
+      if (familyNameDiff !== 0) return familyNameDiff;
     }
     if (isAi) {
       const familyDiff = getAiFamilyOrder(getProductDisplayName(a)) - getAiFamilyOrder(getProductDisplayName(b));
