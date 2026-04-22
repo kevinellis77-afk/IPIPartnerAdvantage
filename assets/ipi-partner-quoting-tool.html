@@ -4064,6 +4064,16 @@ function getCcaasFamilySortName(productName = '') {
   return name;
 }
 
+function getAiFamilyOrder(productName = '') {
+  const name = String(productName || '').toLowerCase().trim();
+  if (name.includes('ai side-kick') || name.includes('ai sidekick')) return 1;
+  if (name.includes('ai insights') || name.includes('ai insight')) return 2;
+  if (name.includes('cloud ai - id me') || name.includes('cloud ai id me') || name.includes('id me')) return 3;
+  if (name.includes('cloud ai - q4 me') || name.includes('cloud ai q4 me') || name.includes('q4 me')) return 4;
+  if (name.includes('cloud ai bot')) return 5;
+  return 999;
+}
+
 function getCcaasPaymentTypeOrder(paymentType, productName = '') {
   const payment = String(paymentType || '').toLowerCase().trim();
   const name = String(productName || '').toLowerCase().trim();
@@ -4089,6 +4099,7 @@ function getRowProduct(row) {
 function getCategoryFamilyOrder(category, productName = '') {
   const normalizedCategory = normalizeCategory(category);
   if (normalizedCategory === 'ccaas') return getCcaasFamilyOrder(productName);
+  if (normalizedCategory === 'ai') return getAiFamilyOrder(productName);
   if (normalizedCategory === 'pcicloud') return getPciProductFamilyOrder(productName);
   return 999;
 }
@@ -4112,6 +4123,13 @@ function sortRowsWithinCategory(rows, category) {
         numeric: true
       });
       if (familyNameDelta !== 0) return familyNameDelta;
+    }
+    if (normalizeCategory(category) === 'ai') {
+      const aiFamilyNameDelta = getProductDisplayName(ap).localeCompare(getProductDisplayName(bp), undefined, {
+        sensitivity: 'base',
+        numeric: true
+      });
+      if (aiFamilyNameDelta !== 0) return aiFamilyNameDelta;
     }
 
     const paymentDelta = getCcaasPaymentTypeOrder(ap.payType, ap.name) - getCcaasPaymentTypeOrder(bp.payType, bp.name);
@@ -6665,6 +6683,22 @@ function comparePriceListRows(a, b, profile) {
       String(a.id || '').localeCompare(String(b.id || ''), undefined, { sensitivity: 'base', numeric: true });
     if (ccaasOrderDiff !== 0) return ccaasOrderDiff;
   }
+  if (normalizeCategory(a.cat) === 'ai' && normalizeCategory(b.cat) === 'ai') {
+    const licenseA = getDisplayLicenseType(a) || 'N/A';
+    const licenseB = getDisplayLicenseType(b) || 'N/A';
+    const aiFamilyA = getAiFamilyOrder(getProductDisplayName(a));
+    const aiFamilyB = getAiFamilyOrder(getProductDisplayName(b));
+
+    const aiOrderDiff =
+      getLicenseBlockOrder(licenseA) - getLicenseBlockOrder(licenseB) ||
+      aiFamilyA - aiFamilyB ||
+      getProductDisplayName(a).localeCompare(getProductDisplayName(b), undefined, {
+        sensitivity: 'base',
+        numeric: true
+      }) ||
+      String(a.id || '').localeCompare(String(b.id || ''), undefined, { sensitivity: 'base', numeric: true });
+    if (aiOrderDiff !== 0) return aiOrderDiff;
+  }
 
   const direction = priceListSortState.direction === 'desc' ? -1 : 1;
   const left = getPriceListSortValue(a, profile, priceListSortState.key);
@@ -6861,8 +6895,9 @@ function sortRowsForCategory(rows, category) {
   if (!Array.isArray(rows)) return [];
   const categoryLabel = normalizeCategoryLabel(category);
   const isCcaas = normalizeCategory(categoryLabel) === 'ccaas';
+  const isAi = normalizeCategory(categoryLabel) === 'ai';
   const isPciCloud = normalizeCategory(categoryLabel) === 'pcicloud';
-  if (!isCcaas && !isPciCloud) return rows.slice();
+  if (!isCcaas && !isAi && !isPciCloud) return rows.slice();
 
   return rows.slice().sort(function(a, b) {
     const paymentA = getDisplayPaymentType(a);
@@ -6880,6 +6915,16 @@ function sortRowsForCategory(rows, category) {
     if (isPciCloud) {
       const familyDiff = getPciProductFamilyOrder(getProductDisplayName(a)) - getPciProductFamilyOrder(getProductDisplayName(b));
       if (familyDiff !== 0) return familyDiff;
+    }
+    if (isAi) {
+      const familyDiff = getAiFamilyOrder(getProductDisplayName(a)) - getAiFamilyOrder(getProductDisplayName(b));
+      if (familyDiff !== 0) return familyDiff;
+
+      const familyNameDiff = getProductDisplayName(a).localeCompare(getProductDisplayName(b), undefined, {
+        sensitivity: 'base',
+        numeric: true
+      });
+      if (familyNameDiff !== 0) return familyNameDiff;
     }
     const paymentDiff = getPaymentTypeOrder(paymentA, a.name) - getPaymentTypeOrder(paymentB, b.name);
     if (paymentDiff !== 0) return paymentDiff;
