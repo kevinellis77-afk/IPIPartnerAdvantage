@@ -304,7 +304,7 @@
     border-right: none;
     display: flex;
     flex-direction: column;
-    overflow: visible;
+    overflow: hidden;
     position: relative;
     container-type: inline-size;
   }
@@ -1072,14 +1072,16 @@
   .hidden { display: none !important; }
 
   .quote-filter-controls {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
     gap: 10px;
     padding: 10px 14px 8px;
     border-bottom: 1px solid var(--border);
     background: var(--off-white);
   }
   .quote-filter-controls .meta-field {
-    min-width: 0;
+    width: 100%;
     padding: 8px 10px;
     border: 1px solid #dfe7ec;
     border-radius: 8px;
@@ -1087,6 +1089,13 @@
   }
   .quote-filter-controls .meta-field label {
     margin-bottom: 6px;
+  }
+  .quote-filter-controls .meta-field input,
+  .quote-filter-controls .meta-field select,
+  .quote-filter-controls .multi-select-toggle {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
   }
   @container (min-width: 620px) {
     .quote-filter-controls {
