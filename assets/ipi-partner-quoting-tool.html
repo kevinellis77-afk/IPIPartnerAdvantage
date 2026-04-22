@@ -2963,7 +2963,60 @@ function splitLicensePayment(value) {
   return { license_type: raw, payment_type: '' };
 }
 
-function parseCsvRows(text) {
+const MOJIBAKE_REPLACEMENTS = [
+  ['â€”', '—'],
+  ['â€“', '–'],
+  ['â€˜', '‘'],
+  ['â€™', '’'],
+  ['â€œ', '“'],
+  ['â€\u009d', '”'],
+  ['â€¦', '…'],
+  ['Â£', '£'],
+  ['Â®', '®'],
+  ['Â©', '©'],
+  ['Â°', '°'],
+  ['Ã—', '×'],
+  ['Ã·', '÷'],
+  ['â€¢', '•'],
+  ['\u00A0', ' ']
+];
+
+function cleanupMojibakeText(value) {
+  let out = String(value == null ? '' : value);
+  MOJIBAKE_REPLACEMENTS.forEach(function(entry) {
+    out = out.split(entry[0]).join(entry[1]);
+  });
+  return out.normalize('NFC');
+}
+
+function normalizeImportText(rawText) {
+  let text = cleanupMojibakeText(rawText);
+  text = text
+    .replace(/^\uFEFF/, '')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n');
+  return text;
+}
+
+function maybeDecodeEscapedLiteralBlock(rawText) {
+  const text = String(rawText == null ? '' : rawText);
+  const newlineCount = (text.match(/\n/g) || []).length;
+  const escapedNewlineCount = (text.match(/\\n/g) || []).length;
+  if (!escapedNewlineCount) return text;
+  if (newlineCount > 5 && escapedNewlineCount < newlineCount) return text;
+  return text
+    .replace(/\\r\\n/g, '\n')
+    .replace(/\\n/g, '\n')
+    .replace(/\\t/g, '\t');
+}
+
+function detectDelimiter(headerLine) {
+  const commaCount = (headerLine.match(/,/g) || []).length;
+  const tabCount = (headerLine.match(/\t/g) || []).length;
+  return tabCount > commaCount ? '\t' : ',';
+}
+
+function parseCsvRows(text, delimiter) {
   const rows = [];
   let row = [];
   let cell = '';
@@ -2981,7 +3034,7 @@ function parseCsvRows(text) {
       }
       continue;
     }
-    if (!inQuotes && ch === ',') {
+    if (!inQuotes && ch === delimiter) {
       row.push(cell);
       cell = '';
       continue;
@@ -2996,13 +3049,20 @@ function parseCsvRows(text) {
     }
     cell += ch;
   }
+  if (inQuotes) {
+    throw new Error('Unbalanced quote detected in product import text. Please escape embedded quotes as "". ');
+  }
   row.push(cell);
   if (row.some(function(c) { return String(c).trim().length > 0; })) rows.push(row);
   return rows;
 }
 
 function parseProductCsv(text) {
-  const rows = parseCsvRows(text);
+  const normalizedRaw = normalizeImportText(text);
+  const textWithLiteralFix = maybeDecodeEscapedLiteralBlock(normalizedRaw);
+  const headerLine = (textWithLiteralFix.split('\n').find(function(line) { return String(line || '').trim(); }) || '');
+  const delimiter = detectDelimiter(headerLine);
+  const rows = parseCsvRows(textWithLiteralFix, delimiter);
   if (!rows.length) return [];
   const headers = rows[0].map(normalizeHeaderName);
   const headerIndex = {};
@@ -3026,9 +3086,9 @@ function parseProductCsv(text) {
     const out = {};
     PRODUCT_CSV_HEADERS.forEach(function(header) {
       const idx = headerIndex[header];
-      out[header] = idx == null ? '' : (cells[idx] == null ? '' : String(cells[idx]).trim());
+      out[header] = idx == null ? '' : cleanupMojibakeText(cells[idx] == null ? '' : String(cells[idx]).trim());
     });
-    out.license_payment = combinedLicensePaymentIdx === -1 ? '' : (cells[combinedLicensePaymentIdx] == null ? '' : String(cells[combinedLicensePaymentIdx]).trim());
+    out.license_payment = combinedLicensePaymentIdx === -1 ? '' : cleanupMojibakeText(cells[combinedLicensePaymentIdx] == null ? '' : String(cells[combinedLicensePaymentIdx]).trim());
     out._row_number = index + 2;
     return out;
   }).filter(function(r) { return r.product_id && r.product_e; });
@@ -3327,7 +3387,7 @@ function handleProductImportFile(event) {
     alert('Unable to read selected CSV file.');
     if (input) input.value = '';
   };
-  reader.readAsText(file);
+  reader.readAsText(file, 'UTF-8');
 }
 
 // ─── FILTER STATE ─────────────────────────────────────────────────────────────
@@ -5571,7 +5631,7 @@ function parseInlineRelatedProducts(value) {
 }
 
 function normalizeDisplayText(value, fallback) {
-  const raw = String(value == null ? '' : value).trim();
+  const raw = cleanupMojibakeText(value).trim();
   if (!raw || /^n\s*\/?\s*a$/i.test(raw) || raw === '—') return fallback;
   return raw;
 }
