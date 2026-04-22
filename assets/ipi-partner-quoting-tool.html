@@ -172,6 +172,11 @@
     color: var(--charcoal-dark);
     font-weight: 600;
   }
+  .inherited-context-badge__helper {
+    font-size: 11px;
+    color: #5f7380;
+    font-weight: 500;
+  }
 
   .toolbar-menu {
     position: relative;
@@ -2268,7 +2273,7 @@
 <div class="workflow-context-bar" id="workflowContextBar">
   <span class="context-chip"><b>Workspace:</b> <span id="contextWorkspace">Launchpad</span></span>
   <span class="context-separator">›</span>
-  <span class="context-chip"><b>Partner Profile:</b> <span id="contextPartnerProfile">Reseller · Accredited (20%)</span></span>
+  <span class="context-chip"><b>Partner Profile:</b> <span id="contextPartnerProfile">Global Partner Profile (applies to Price List + Quoting Tool): Reseller · Accredited (20%)</span></span>
   <span class="context-profile-controls">
     <label for="partnerModel">Model</label>
     <select id="partnerModel" onchange="syncQuoteTierOptions(); onPartnerProfileChange();"></select>
@@ -2423,8 +2428,9 @@
         <div class="meta-field">
           <label>Commercial Context</label>
           <div class="inherited-context-badge" id="inheritedContextBadge">
-            <span class="inherited-context-badge__title" id="inheritedContextTitle">Global profile (editable)</span>
+            <span class="inherited-context-badge__title" id="inheritedContextTitle">Global Partner Profile (applies to Price List + Quoting Tool)</span>
             <span class="inherited-context-badge__value" id="inheritedContextText">Reseller · Accredited (20% discount)</span>
+            <span class="inherited-context-badge__helper" id="inheritedContextHelper"></span>
           </div>
         </div>
         <div class="meta-field">
@@ -3470,20 +3476,22 @@ function applyQuoteProfileDisplay() {
   const text = document.getElementById('partnerLevelText');
   const inheritedTitle = document.getElementById('inheritedContextTitle');
   const inheritedText = document.getElementById('inheritedContextText');
-  const hasHostContext = !!getCommercialContextFromHostStorage();
-  const hasQueryContext = !!getCommercialContextFromQuery();
+  const inheritedHelper = document.getElementById('inheritedContextHelper');
+  const editableOnPage = isCommercialProfileEditableOnPage();
   if (hidden) hidden.value = profile.tier;
   if (display) display.className = 'partner-level-display ' + getProfileClassName(profile);
   if (text) {
     text.className = 'partner-level-text ' + getProfileClassName(profile);
     text.innerHTML = `${profile.typeLabel} · ${profile.tierLabel} <span style="opacity:0.6;font-weight:400;font-size:11px">(${Math.round(profile.discount * 100)}% discount)</span>`;
   }
-  if (inheritedTitle) {
-    inheritedTitle.textContent = hasHostContext
-      ? 'Inherited from host context (editable)'
-      : (hasQueryContext ? 'Inherited from URL context (editable)' : 'Global profile (editable)');
-  }
+  if (inheritedTitle) inheritedTitle.textContent = getCommercialProfileModeLabel();
   if (inheritedText) inheritedText.textContent = `${profile.typeLabel} · ${profile.tierLabel} (${Math.round(profile.discount * 100)}% discount)`;
+  if (inheritedHelper) {
+    inheritedHelper.textContent = editableOnPage
+      ? ''
+      : 'Change this in the host application partner profile settings and refresh this page.';
+    inheritedHelper.style.display = inheritedHelper.textContent ? 'block' : 'none';
+  }
 }
 
 function setStoredJson(key, value) {
@@ -3591,8 +3599,24 @@ function updateWorkflowContextBar() {
   const profileEl = document.getElementById('contextPartnerProfile');
   const refEl = document.getElementById('contextQuoteRef');
   if (workspaceEl) workspaceEl.textContent = workspaceLabel;
-  if (profileEl) profileEl.textContent = profile ? (profile.typeLabel + ' · ' + profile.tierLabel + ' (' + Math.round(profile.discount * 100) + '%)') : 'Not set';
+  if (profileEl) {
+    profileEl.textContent = profile
+      ? `${getCommercialProfileModeLabel()}: ${profile.typeLabel} · ${profile.tierLabel} (${Math.round(profile.discount * 100)}%)`
+      : 'Not set';
+  }
   if (refEl) refEl.textContent = ref;
+}
+
+function isCommercialProfileEditableOnPage() {
+  const modelEl = document.getElementById('partnerModel');
+  const tierEl = document.getElementById('partnerTier');
+  return !!(modelEl && tierEl && !modelEl.disabled && !tierEl.disabled);
+}
+
+function getCommercialProfileModeLabel() {
+  return isCommercialProfileEditableOnPage()
+    ? 'Global Partner Profile (applies to Price List + Quoting Tool)'
+    : 'Read-only: synced from host app';
 }
 
 function onPartnerProfileChange() {
@@ -6528,7 +6552,7 @@ window.addEventListener('DOMContentLoaded', initPartnerPriceList);
         <ul class="help-steps">
           <li><span class="help-step-num">1</span><span>Use <strong>Workspace</strong> to move between <strong>Launchpad</strong>, <strong>Quoting Tool</strong>, and <strong>Partner Price List</strong>. You stay in one contextual session.</span></li>
           <li><span class="help-step-num">2</span><span>The header context bar shows your active <strong>workspace</strong>, <strong>partner profile</strong>, and <strong>quote reference</strong> so you always know what session you are in.</span></li>
-          <li><span class="help-step-num">3</span><span><strong>Global settings</strong>: Partner Model + Tier (commercial profile) are shared across all workspaces.</span></li>
+          <li><span class="help-step-num">3</span><span><strong>Partner profile scope</strong>: the Partner Model + Tier in the context bar act as one global profile for both <strong>Quoting Tool</strong> and <strong>Partner Price List</strong> during your current session.</span></li>
           <li><span class="help-step-num">4</span><span><strong>Workspace-specific settings</strong>: catalogue category/filter/search and price-list filter/search are remembered per workspace, including when you switch views or reload.</span></li>
           <li><span class="help-step-num">5</span><span>Add an <strong>End Customer</strong>, maintain your <strong>Quote Reference</strong>, and save versions as normal.</span></li>
         </ul>
