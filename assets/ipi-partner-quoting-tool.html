@@ -2362,7 +2362,6 @@
         <div class="price-list-profile" id="priceListProfileBadge">Profile: Reseller · Accredited · 20% discount</div>
         <button class="price-list-filter-toggle" id="priceListFilterToggleBtn" type="button" onclick="togglePriceListFilters()">Hide filters</button>
       </div>
-      <div class="catalogue-source-badge" id="priceListCatalogueSourceBadge">Catalogue source: Embedded baseline</div>
       <p class="price-list-filter-summary" id="priceListFilterSummary"></p>
       <div class="price-list-controls" id="priceListControls">
         <div class="meta-field">
@@ -3140,13 +3139,20 @@ function formatCatalogueDate(value) {
   return parsed.toISOString().slice(0, 10);
 }
 
-function updateCatalogueSourceBadge() {
+function getCatalogueSourceDisplayText(options) {
+  const settings = options || {};
   const dateSuffix = productCatalogueState.sourceDate ? ' (' + formatCatalogueDate(productCatalogueState.sourceDate) + ')' : '';
-  const text = 'Catalogue source: ' + (productCatalogueState.sourceLabel || 'Embedded baseline') + dateSuffix;
+  const sourceText = (productCatalogueState.sourceLabel || 'Embedded baseline') + dateSuffix;
+  return settings.includePrefix === false ? sourceText : ('Catalogue source: ' + sourceText);
+}
+
+function updateCatalogueSourceBadge() {
+  const text = getCatalogueSourceDisplayText();
   ['quoteCatalogueSourceBadge', 'priceListCatalogueSourceBadge'].forEach(function(id) {
     const el = document.getElementById(id);
     if (el) el.textContent = text;
   });
+  updateToolbarState();
 }
 
 function setProductCatalogueSource(state, options) {
@@ -6189,6 +6195,7 @@ function updateToolbarState() {
         '</button>' +
       '</div>';
   } else if (workspace === 'price') {
+    const catalogueSourceText = getCatalogueSourceDisplayText({ includePrefix: false });
     actionsBtn.classList.remove('hidden');
     actionsMenu.innerHTML = '' +
       '<div class="toolbar-menu-group">' +
@@ -6216,6 +6223,12 @@ function updateToolbarState() {
           '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M8 6v12"></path><path d="M16 6v12"></path><path d="M5 6l1 14h12l1-14"></path></svg>' +
           'Clear workflow/session context' +
         '</button>' +
+      '</div>' +
+      '<div class="toolbar-menu-group">' +
+        '<div class="toolbar-menu-group-title">Catalogue</div>' +
+        '<div class="toolbar-menu-item" aria-label="Catalogue source">' +
+          catalogueSourceText +
+        '</div>' +
       '</div>';
   } else {
     actionsBtn.classList.remove('hidden');
