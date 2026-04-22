@@ -299,8 +299,9 @@
     border-right: none;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: visible;
     position: relative;
+    container-type: inline-size;
   }
 
   /* Drag handle on right edge of left panel */
@@ -431,7 +432,9 @@
   /* Product list */
   .product-list {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 6px 0;
   }
 
@@ -1064,10 +1067,26 @@
   .hidden { display: none !important; }
 
   .quote-filter-controls {
-    grid-template-columns: repeat(2, minmax(180px, 1fr));
+    grid-template-columns: 1fr;
+    gap: 10px;
     padding: 10px 14px 8px;
     border-bottom: 1px solid var(--border);
     background: var(--off-white);
+  }
+  .quote-filter-controls .meta-field {
+    min-width: 0;
+    padding: 8px 10px;
+    border: 1px solid #dfe7ec;
+    border-radius: 8px;
+    background: #fff;
+  }
+  .quote-filter-controls .meta-field label {
+    margin-bottom: 6px;
+  }
+  @container (min-width: 620px) {
+    .quote-filter-controls {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
   .filter-pill {
     padding: 3px 10px;
