@@ -2163,6 +2163,22 @@
   }
 
   .price-list-controls.hidden { display: none; }
+  .quote-filter-toggle-wrap {
+    padding: 10px 20px 0;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .quote-filter-toggle {
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--charcoal);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 11px;
+    cursor: pointer;
+  }
+  .quote-filter-toggle:hover { background: var(--off-white); }
 
   .price-list-table-wrap {
     background: white;
@@ -2451,6 +2467,9 @@
     <div class="panel-header">
       <div class="panel-title">Product Catalogue</div>
       <div class="catalogue-source-badge" id="quoteCatalogueSourceBadge">Catalogue source: Embedded baseline</div>
+    </div>
+    <div class="quote-filter-toggle-wrap">
+      <button class="quote-filter-toggle" id="quoteFilterToggleBtn" type="button" onclick="toggleQuoteFilters()">Show filters</button>
     </div>
     <div class="price-list-controls quote-filter-controls" id="quoteFilterControls">
       <div class="meta-field">
@@ -3788,11 +3807,14 @@ function getQuoteFilterState() {
     category: getMultiSelectValues(categoryEl),
     payType: getMultiSelectValues(payEl),
     agentType: getMultiSelectValues(agentEl),
-    search: document.getElementById('searchInput')?.value || ''
+    search: document.getElementById('searchInput')?.value || '',
+    filtersCollapsed: !!quoteFiltersCollapsed
   };
 }
 
 function applyQuoteFilterState(state) {
+  const hasCollapsedPreference = !!(state && Object.prototype.hasOwnProperty.call(state, 'filtersCollapsed'));
+  toggleQuoteFilters(hasCollapsedPreference ? !state.filtersCollapsed : false);
   if (!state) return;
   const categoryEl = document.getElementById('quoteCategory');
   const payEl = document.getElementById('quotePayType');
@@ -3870,7 +3892,7 @@ function clearWorkflowSessionContext() {
   workflowSessionState.quoteFilters = null;
   workflowSessionState.priceFilters = null;
   setCommercialProfile('reseller', 'accredited');
-  applyQuoteFilterState({ category: [], payType: [], agentType: [], search: '' });
+  applyQuoteFilterState({ category: [], payType: [], agentType: [], search: '', filtersCollapsed: true });
   applyPriceListFilterState({ category: [], payType: [], agentType: [], search: '', rrpOnly: false, filtersCollapsed: false });
   renderProductList();
   renderPartnerPriceList();
@@ -6132,6 +6154,7 @@ function showConfirmBanner(message, actionLabel, onConfirm) {
 
 // ─── TOAST ────────────────────────────────────────────────────────────────────
 let toastTimer;
+let quoteFiltersCollapsed = true;
 let priceListFiltersCollapsed = false;
 let priceListSortState = { key: 'cat', direction: 'asc' };
 
@@ -6627,6 +6650,20 @@ function togglePriceListFilters(forceExpanded) {
   }
   controls.classList.toggle('hidden', priceListFiltersCollapsed);
   toggleBtn.textContent = priceListFiltersCollapsed ? 'Show filters' : 'Hide filters';
+}
+
+function toggleQuoteFilters(forceExpanded) {
+  const controls = document.getElementById('quoteFilterControls');
+  const toggleBtn = document.getElementById('quoteFilterToggleBtn');
+  if (!controls || !toggleBtn) return;
+  if (typeof forceExpanded === 'boolean') {
+    quoteFiltersCollapsed = !forceExpanded;
+  } else {
+    quoteFiltersCollapsed = !quoteFiltersCollapsed;
+  }
+  controls.classList.toggle('hidden', quoteFiltersCollapsed);
+  toggleBtn.textContent = quoteFiltersCollapsed ? 'Show filters' : 'Hide filters';
+  persistWorkflowContext();
 }
 
 function getFilteredPriceListRows(profile) {
