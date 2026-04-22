@@ -5197,9 +5197,13 @@ function openExportModal() {
         const base  = item.product.list > 0 ? item.product.list : item.product.threshold;
         const total = ep * item.qty;
         const disc  = base > 0 && ep < base ? Math.round((base - ep) / base * 100) : null;
+        const licenseType = getQuoteProductLicenseLabel(item.product);
+        const paymentType = getQuoteProductPaymentLabel(item.product);
         return `<tr>
           <td style="color:#7a8f9a;font-size:10px;white-space:nowrap">${item.product.id}</td>
           <td>${getProductDisplayName(item.product)}</td>
+          <td>${licenseType}</td>
+          <td>${paymentType}</td>
           <td style="text-align:right;color:#888">${item.qty}</td>
           <td style="text-align:right;color:#888">${base > 0 ? fmtGBP(base) : '—'}</td>
           <td style="text-align:right;color:#27ae60;font-weight:600">
@@ -5211,7 +5215,7 @@ function openExportModal() {
       }).join('');
       return `
         <tr class="cat-header-row">
-          <td colspan="6" style="padding:6px 8px;background:#f0f4f6;border-top:2px solid #dde4e8">
+          <td colspan="8" style="padding:6px 8px;background:#f0f4f6;border-top:2px solid #dde4e8">
             <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${colour};margin-right:6px;vertical-align:middle"></span>
             <strong style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#36454F">${cat}</strong>
             <span style="float:right;font-size:11px;font-weight:600;color:#36454F">${fmtGBP(catTotal)}</span>
@@ -5229,6 +5233,8 @@ function openExportModal() {
         <table class="preview-table">
           <thead><tr>
             <th>SKU</th><th>Product</th>
+            <th>License Type</th>
+            <th>Payment Type</th>
             <th style="text-align:right">Qty</th>
             <th style="text-align:right">List Price</th>
             <th style="text-align:right">Partner Price</th>
@@ -5298,9 +5304,13 @@ function printQuote() {
         const ep   = getEffectivePrice(item);
         const base = item.product.list > 0 ? item.product.list : item.product.threshold;
         const disc = base > 0 && ep > 0 && ep < base ? Math.round((base - ep) / base * 100) : null;
+        const licenseType = getQuoteProductLicenseLabel(item.product);
+        const paymentType = getQuoteProductPaymentLabel(item.product);
         return `<tr>
           <td class="sku">${item.product.id}</td>
           <td>${getProductDisplayName(item.product)}</td>
+          <td class="meta">${licenseType}</td>
+          <td class="meta">${paymentType}</td>
           <td class="num">${item.qty}</td>
           <td class="num muted">${base > 0 ? fmtGBP(base) : '—'}</td>
           <td class="num grn">${ep > 0 ? fmtGBP(ep) : '—'}${disc !== null ? ` <span class="disc">-${disc}%</span>` : ''}</td>
@@ -5309,7 +5319,7 @@ function printQuote() {
       }).join('');
       return `
         <tr class="cat-row">
-          <td colspan="6">
+          <td colspan="8">
             <span class="cat-dot" style="background:${colour}"></span>
             <strong>${cat}</strong>
             <span class="cat-sub">${fmtGBP(catTotal)}</span>
@@ -5327,6 +5337,8 @@ function printQuote() {
         <table>
           <thead><tr>
             <th>SKU</th><th>Product</th>
+            <th>License Type</th>
+            <th>Payment Type</th>
             <th class="num">Qty</th>
             <th class="num">List Price</th>
             <th class="num">Partner Price</th>
@@ -5369,6 +5381,7 @@ function printQuote() {
     td{padding:6px 10px;border-bottom:1px solid #f0f4f6;font-size:11px;vertical-align:middle}
     td.num{text-align:right}
     td.muted{color:#888}
+    td.meta{color:#586d79;font-size:10px}
     td.grn{color:#27ae60;font-weight:600}
     td.bold{font-weight:700}
     td.sku{color:#7a8f9a;font-size:9.5px;white-space:nowrap;font-family:monospace}
@@ -5377,6 +5390,14 @@ function printQuote() {
     tr.cat-row td{background:#f5f8fa;border-top:1.5px solid #dde4e8;border-bottom:1px solid #dde4e8;padding:5px 10px}
     .cat-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
     .cat-sub{float:right;font-weight:700;font-size:11px;color:#36454F}
+    thead th:nth-child(1){width:10%}
+    thead th:nth-child(2){width:24%}
+    thead th:nth-child(3){width:14%}
+    thead th:nth-child(4){width:14%}
+    thead th:nth-child(5){width:6%}
+    thead th:nth-child(6){width:11%}
+    thead th:nth-child(7){width:11%}
+    thead th:nth-child(8){width:10%}
     /* Totals */
     .totals-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#dde4e8;border:1.5px solid #dde4e8;border-radius:6px;overflow:hidden;margin-bottom:20px}
     .total-cell{background:#f5f8fa;padding:12px 16px;text-align:center}
@@ -5457,11 +5478,13 @@ function copyCSV() {
   const validUntilCSV = validUntilIso ? new Date(validUntilIso).toLocaleDateString('en-GB', {day:'2-digit',month:'long',year:'numeric'}) : '';
 
   let csv = `Quote Reference,${ref}\nPartner,${partner}\nEnd Customer,${customer}\nPartner Profile,${profileCSV.typeLabel} · ${profileCSV.tierLabel} (${Math.round(profileCSV.discount * 100)}%)\nDate,${date}\nValid Until,${validUntilCSV}\n\n`;
-  csv += `SAP ID,Product Name,Category,Charge Type,Qty,List Price,Partner Price,Total\n`;
+  csv += `SAP ID,Product Name,Category,Charge Type,License Type,Payment Type,Qty,List Price,Partner Price,Total\n`;
   quoteItems.forEach(item => {
     const ep = getEffectivePrice(item);
     const base = item.product.list > 0 ? item.product.list : item.product.threshold;
-    csv += `${item.product.id},"${getProductDisplayName(item.product)}",${item.product.cat},${item.product.billing === 'Monthly' ? 'Recurring' : item.product.billing},${item.qty},${base.toFixed(2)},${ep.toFixed(2)},${(ep*item.qty).toFixed(2)}\n`;
+    const licenseType = getQuoteProductLicenseLabel(item.product);
+    const paymentType = getQuoteProductPaymentLabel(item.product);
+    csv += `${item.product.id},"${getProductDisplayName(item.product)}",${item.product.cat},${item.product.billing === 'Monthly' ? 'Recurring' : item.product.billing},"${licenseType}","${paymentType}",${item.qty},${base.toFixed(2)},${ep.toFixed(2)},${(ep*item.qty).toFixed(2)}\n`;
   });
   let mrc = 0, otc = 0;
   quoteItems.forEach(i => { const p = getEffectivePrice(i)*i.qty; if(i.product.billing==='Monthly') mrc+=p; else otc+=p; });
@@ -5833,12 +5856,16 @@ function buildEmailHTML() {
 
   function buildTableSection(groups, label) {
     if (!groups.length) return '';
-    let html = '<tr><td colspan="3" style="padding:10px 14px 4px;background:#f5f7f8;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;color:#7a8f9a;border-top:2px solid #dde4e8">' + label + '</td></tr>';
+    let html = '<tr><td colspan="5" style="padding:10px 14px 4px;background:#f5f7f8;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;color:#7a8f9a;border-top:2px solid #dde4e8">' + label + '</td></tr>';
     groups.forEach(function(g) {
-      html += '<tr><td colspan="3" style="padding:4px 14px 2px;font-size:11px;font-weight:700;color:#36454F;background:#fafcfd">' + g.cat + '</td></tr>';
+      html += '<tr><td colspan="5" style="padding:4px 14px 2px;font-size:11px;font-weight:700;color:#36454F;background:#fafcfd">' + g.cat + '</td></tr>';
       g.items.forEach(function(item) {
         var ep = getEffectivePrice(item);
+        var licenseType = getQuoteProductLicenseLabel(item.product);
+        var paymentType = getQuoteProductPaymentLabel(item.product);
         html += '<tr><td style="padding:5px 14px;font-size:12px;color:#36454F">' + getProductDisplayName(item.product) + '</td>' +
+          '<td style="padding:5px 8px;font-size:11px;color:#586d79">' + licenseType + '</td>' +
+          '<td style="padding:5px 8px;font-size:11px;color:#586d79">' + paymentType + '</td>' +
           '<td style="padding:5px 8px;text-align:center;font-size:12px;color:#888">×' + item.qty + '</td>' +
           '<td style="padding:5px 14px;text-align:right;font-size:12px;font-weight:600;font-family:monospace">' + fmtGBP(ep * item.qty) + '</td></tr>';
       });
@@ -5866,6 +5893,8 @@ function buildEmailHTML() {
     '<table style="width:100%;border-collapse:collapse">' +
       '<thead><tr>' +
         '<th style="padding:8px 14px;background:#263238;color:rgba(255,255,255,0.75);font-size:10px;text-align:left;text-transform:uppercase;letter-spacing:0.5px">Product</th>' +
+        '<th style="padding:8px 8px;background:#263238;color:rgba(255,255,255,0.75);font-size:10px;text-align:left;text-transform:uppercase;letter-spacing:0.5px">License Type</th>' +
+        '<th style="padding:8px 8px;background:#263238;color:rgba(255,255,255,0.75);font-size:10px;text-align:left;text-transform:uppercase;letter-spacing:0.5px">Payment Type</th>' +
         '<th style="padding:8px 8px;background:#263238;color:rgba(255,255,255,0.75);font-size:10px;text-align:center;text-transform:uppercase;letter-spacing:0.5px">Qty</th>' +
         '<th style="padding:8px 14px;background:#263238;color:rgba(255,255,255,0.75);font-size:10px;text-align:right;text-transform:uppercase;letter-spacing:0.5px">Total</th>' +
       '</tr></thead><tbody>' +
@@ -5873,9 +5902,9 @@ function buildEmailHTML() {
       buildTableSection(oneOffGroups,  'One-Off Charges') +
       '</tbody>' +
       '<tfoot>' +
-        '<tr><td colspan="2" style="padding:8px 14px;font-size:12px;font-weight:700;background:#f5f7f8">Recurring Subscriptions</td><td style="padding:8px 14px;text-align:right;font-size:14px;font-weight:700;color:#27ae60;font-family:monospace;background:#f5f7f8">' + fmtGBP(mrc) + '</td></tr>' +
-        (otc > 0 ? '<tr><td colspan="2" style="padding:6px 14px;font-size:12px;color:#666">One-Off Charges</td><td style="padding:6px 14px;text-align:right;font-size:12px;font-weight:600;color:#A37992;font-family:monospace">' + fmtGBP(otc) + '</td></tr>' : '') +
-        '<tr><td colspan="2" style="padding:6px 14px;font-size:12px;color:#666">Annual Contract Value</td><td style="padding:6px 14px;text-align:right;font-size:12px;font-weight:700;font-family:monospace">' + fmtGBP(acv) + '</td></tr>' +
+        '<tr><td colspan="4" style="padding:8px 14px;font-size:12px;font-weight:700;background:#f5f7f8">Recurring Subscriptions</td><td style="padding:8px 14px;text-align:right;font-size:14px;font-weight:700;color:#27ae60;font-family:monospace;background:#f5f7f8">' + fmtGBP(mrc) + '</td></tr>' +
+        (otc > 0 ? '<tr><td colspan="4" style="padding:6px 14px;font-size:12px;color:#666">One-Off Charges</td><td style="padding:6px 14px;text-align:right;font-size:12px;font-weight:600;color:#A37992;font-family:monospace">' + fmtGBP(otc) + '</td></tr>' : '') +
+        '<tr><td colspan="4" style="padding:6px 14px;font-size:12px;color:#666">Annual Contract Value</td><td style="padding:6px 14px;text-align:right;font-size:12px;font-weight:700;font-family:monospace">' + fmtGBP(acv) + '</td></tr>' +
       '</tfoot>' +
     '</table>' +
     // Footer
