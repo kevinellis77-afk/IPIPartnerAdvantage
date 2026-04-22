@@ -4104,6 +4104,11 @@ function renderProductItem(p, isVariant) {
   }
 
   var idStr = p.id;
+  var safeId = String(p.id)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
   var billingTag = '<span class="tag tag-billing ' + (p.billing === 'Monthly' ? 'monthly' : '') + '">' + (p.billing === 'Monthly' ? 'Recurring' : p.billing) + '</span>';
 
   var metaHTML = isVariant
@@ -4116,7 +4121,7 @@ function renderProductItem(p, isVariant) {
 
   var namePrefix = isVariant ? '' : '<span class="cat-dot" style="background:' + colour + '"></span>';
 
-  return '<div class="product-item' + variantClass + '" onclick="addToQuote(\'" + p.id + "\')">' +
+  return '<div class="product-item' + variantClass + '" data-add-id="' + safeId + '">' +
     '<div class="product-item-info">' +
       '<div class="product-item-name">' + namePrefix + displayName + qualBadges + '</div>' +
       metaHTML +
@@ -4126,8 +4131,8 @@ function renderProductItem(p, isVariant) {
       listDisplay +
     '</div>' +
     '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">' +
-      '<button class="add-btn" title="Add to quote" onclick="event.stopPropagation();addToQuote(\'" + p.id + "\')">+</button>' +
-      '<button class="info-btn" title="View details" onclick="event.stopPropagation();openProductDetail(\'" + p.id + "\')">i</button>' +
+      '<button class="add-btn" data-add-id="' + safeId + '" title="Add to quote">+</button>' +
+      '<button class="info-btn" data-info-id="' + safeId + '" title="View details">i</button>' +
     '</div>' +
   '</div>';
 }
