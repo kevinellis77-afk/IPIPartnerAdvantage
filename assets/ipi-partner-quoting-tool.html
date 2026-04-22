@@ -616,6 +616,11 @@
     transition: border-color 0.15s;
   }
   .meta-field input:focus, .meta-field select:focus { border-color: var(--green); }
+  .meta-field-helper {
+    margin-top: 5px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
   .multi-select {
     position: relative;
   }
@@ -2440,7 +2445,8 @@
         </div>
         <div class="meta-field">
           <label>Expiry Date</label>
-          <select id="validUntil"></select>
+          <select id="validUntilPreset"></select>
+          <div id="validUntilHelper" class="meta-field-helper">Calculated from today</div>
         </div>
       </div>
     </div>
@@ -3844,6 +3850,10 @@ window.addEventListener('DOMContentLoaded', () => {
   if (!document.getElementById('quoteRef').value) {
     document.getElementById('quoteRef').value = quoteCounter;
   }
+  const validUntilPresetEl = document.getElementById('validUntilPreset');
+  if (validUntilPresetEl) {
+    validUntilPresetEl.addEventListener('change', syncValidUntilFromPreset);
+  }
   setDefaultValidityDate();
   renderTemplatesBody();
   updateVersionIndicator();
@@ -4343,10 +4353,8 @@ function resetQuote() {
 }
 
 function setDefaultValidityDate() {
-  populateExpiryOptions();
-  const d = new Date();
-  d.setDate(d.getDate() + 30);
-  document.getElementById('validUntil').value = d.toISOString().split('T')[0];
+  populateValidityPresets(30);
+  syncValidUntilFromPreset();
 }
 
 function getExpiryDateIso(daysFromNow) {
@@ -4355,32 +4363,61 @@ function getExpiryDateIso(daysFromNow) {
   return d.toISOString().split('T')[0];
 }
 
-function formatExpiryLabel(daysFromNow) {
-  const target = new Date();
-  target.setDate(target.getDate() + daysFromNow);
-  const dateText = target.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
-  return daysFromNow + ' days (' + dateText + ')';
+const VALID_UNTIL_PRESETS = [30, 60, 90];
+
+function calculateValidUntilDateFromPreset(presetDays) {
+  return getExpiryDateIso(presetDays);
 }
 
-function populateExpiryOptions(selectedValue) {
-  const validUntilSelect = document.getElementById('validUntil');
-  if (!validUntilSelect) return;
-  const expiryOffsets = [14, 30, 60, 90];
-  const desiredValue = selectedValue || validUntilSelect.value || getExpiryDateIso(30);
-  validUntilSelect.innerHTML = '';
-  expiryOffsets.forEach(function(days) {
+function populateValidityPresets(selectedPresetDays) {
+  const validUntilPresetSelect = document.getElementById('validUntilPreset');
+  if (!validUntilPresetSelect) return;
+  const desiredPreset = Number(selectedPresetDays || validUntilPresetSelect.value || 30);
+  validUntilPresetSelect.innerHTML = '';
+  VALID_UNTIL_PRESETS.forEach(function(days) {
     const option = document.createElement('option');
-    option.value = getExpiryDateIso(days);
-    option.textContent = formatExpiryLabel(days);
-    validUntilSelect.appendChild(option);
+    option.value = String(days);
+    option.textContent = days + ' days';
+    validUntilPresetSelect.appendChild(option);
   });
-  if (![...validUntilSelect.options].some(function(option) { return option.value === desiredValue; })) {
-    const customOption = document.createElement('option');
-    customOption.value = desiredValue;
-    customOption.textContent = 'Custom date (' + new Date(desiredValue).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) + ')';
-    validUntilSelect.appendChild(customOption);
+  if (![...validUntilPresetSelect.options].some(function(option) { return Number(option.value) === desiredPreset; })) {
+    const fallbackOption = document.createElement('option');
+    fallbackOption.value = '30';
+    fallbackOption.textContent = '30 days';
+    validUntilPresetSelect.appendChild(fallbackOption);
   }
-  validUntilSelect.value = desiredValue;
+  validUntilPresetSelect.value = VALID_UNTIL_PRESETS.includes(desiredPreset) ? String(desiredPreset) : '30';
+}
+
+function getSelectedValidityDetails() {
+  const presetEl = document.getElementById('validUntilPreset');
+  const presetDays = Number(presetEl ? presetEl.value : 30) || 30;
+  const validUntil = calculateValidUntilDateFromPreset(presetDays);
+  return {
+    presetDays,
+    presetLabel: presetDays + ' days',
+    validUntil
+  };
+}
+
+function syncValidUntilFromPreset() {
+  const details = getSelectedValidityDetails();
+  const helper = document.getElementById('validUntilHelper');
+  if (helper) {
+    const formattedDate = new Date(details.validUntil).toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' });
+    helper.textContent = 'Calculated from today · Expires on ' + formattedDate;
+  }
+}
+
+function inferPresetFromDate(validUntilIso) {
+  if (!validUntilIso) return 30;
+  const target = new Date(validUntilIso);
+  if (Number.isNaN(target.getTime())) return 30;
+  const now = new Date();
+  const midnightNow = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const midnightTarget = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+  const diffDays = Math.round((midnightTarget - midnightNow) / 86400000);
+  return VALID_UNTIL_PRESETS.includes(diffDays) ? diffDays : 30;
 }
 
 // ─── SAVE / LOAD QUOTES ───────────────────────────────────────────────────────
@@ -4398,7 +4435,8 @@ function buildQuoteData(baseRef, version, changeNote) {
   const level      = profile.tier || '';
   const partnerModel = profile.type || 'reseller';
   const notes      = document.getElementById('quoteNotes').value.trim();
-  const validUntil = document.getElementById('validUntil').value;
+  const validityDetails = getSelectedValidityDetails();
+  const validUntil = validityDetails.validUntil;
   let mrc = 0, otc = 0;
   quoteItems.forEach(i => {
     const p = getEffectivePrice(i) * i.qty;
@@ -4407,6 +4445,8 @@ function buildQuoteData(baseRef, version, changeNote) {
   return {
     baseRef, version, ref: baseRef + ' v' + version,
     partner, customer, level, partnerModel, notes, validUntil,
+    validUntilPreset: validityDetails.presetDays,
+    validUntilLabel: validityDetails.presetLabel,
     changeNote: changeNote || '', status: 'draft',
     savedAt: new Date().toISOString(),
     mrc, otc, acv: mrc * 12 + otc,
@@ -4513,7 +4553,8 @@ function doLoadQuote(ref) {
 
   setQuoteProfile(q.partnerModel || 'reseller', q.level || 'accredited');
   document.getElementById('quoteNotes').value = q.notes || '';
-  populateExpiryOptions(q.validUntil || getExpiryDateIso(30));
+  populateValidityPresets(q.validUntilPreset || inferPresetFromDate(q.validUntil));
+  syncValidUntilFromPreset();
   updateNotesToggle();
   if (q.notes) {
     document.getElementById('notesBody').style.display = 'block';
@@ -5013,7 +5054,7 @@ function printQuote() {
   const printProfile = getSelectedQuoteProfile();
   const levelStr    = printProfile.typeLabel + ' · ' + printProfile.tierLabel;
   const discPctStr  = ` &nbsp;&bull;&nbsp; ${Math.round(printProfile.discount * 100)}% Partner Discount`;
-  const validRaw    = document.getElementById('validUntil').value;
+  const validRaw    = getSelectedValidityDetails().validUntil;
   const validUntilStr = validRaw ? new Date(validRaw).toLocaleDateString('en-GB', {day:'2-digit',month:'long',year:'numeric'}) : 'Not specified';
   const quoteNotes  = document.getElementById('quoteNotes').value.trim();
 
@@ -5189,8 +5230,10 @@ function copyCSV() {
   const customer = document.getElementById('endCustomer').value || '';
   const date = new Date().toLocaleDateString('en-GB');
   const profileCSV = getSelectedQuoteProfile();
+  const validUntilIso = getSelectedValidityDetails().validUntil;
+  const validUntilCSV = validUntilIso ? new Date(validUntilIso).toLocaleDateString('en-GB', {day:'2-digit',month:'long',year:'numeric'}) : '';
 
-  let csv = `Quote Reference,${ref}\nPartner,${partner}\nEnd Customer,${customer}\nPartner Profile,${profileCSV.typeLabel} · ${profileCSV.tierLabel} (${Math.round(profileCSV.discount * 100)}%)\nDate,${date}\n\n`;
+  let csv = `Quote Reference,${ref}\nPartner,${partner}\nEnd Customer,${customer}\nPartner Profile,${profileCSV.typeLabel} · ${profileCSV.tierLabel} (${Math.round(profileCSV.discount * 100)}%)\nDate,${date}\nValid Until,${validUntilCSV}\n\n`;
   csv += `SAP ID,Product Name,Category,Charge Type,Qty,List Price,Partner Price,Total\n`;
   quoteItems.forEach(item => {
     const ep = getEffectivePrice(item);
@@ -5506,7 +5549,7 @@ function openEmailModal() {
   const partner   = document.getElementById('partnerName').value || 'Partner';
   const customer  = document.getElementById('endCustomer').value || 'End Customer';
   const ref       = document.getElementById('quoteRef').value;
-  const validRaw  = document.getElementById('validUntil').value;
+  const validRaw  = getSelectedValidityDetails().validUntil;
   const validStr  = validRaw ? new Date(validRaw).toLocaleDateString('en-GB', {day:'2-digit',month:'long',year:'numeric'}) : '';
   const emailProfile = getSelectedQuoteProfile();
   const levelStr  = emailProfile.typeLabel + ' · ' + emailProfile.tierLabel;
@@ -5567,7 +5610,7 @@ function buildEmailHTML() {
   const partner   = document.getElementById('partnerName').value || 'Partner';
   const customer  = document.getElementById('endCustomer').value || 'End Customer';
   const ref       = document.getElementById('quoteRef').value;
-  const validRaw  = document.getElementById('validUntil').value;
+  const validRaw  = getSelectedValidityDetails().validUntil;
   const validStr  = validRaw ? new Date(validRaw).toLocaleDateString('en-GB', {day:'2-digit',month:'long',year:'numeric'}) : '';
   const emailHTMLProfile = getSelectedQuoteProfile();
   const levelStr  = emailHTMLProfile.typeLabel + ' · ' + emailHTMLProfile.tierLabel + ' Partner Pricing';
