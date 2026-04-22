@@ -3624,7 +3624,7 @@ function isServicesLikeCategory(product) {
 }
 
 function isHiddenForProfile(product, profile) {
-  return !!(product && profile && profile.type === 'msp' && product.cat === 'Services');
+  return false;
 }
 
 function getProfileDiscountForProduct(profile, product) {
