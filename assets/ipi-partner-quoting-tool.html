@@ -3279,9 +3279,14 @@ function downloadProductExtractCsv() {
   PRODUCTS.forEach(function(p) {
     const meta = getProductMeta(p);
     const normalized = getNormalizedProduct(p);
-    const relatedProducts = (meta.related || []).map(function(entry) {
+    const relatedProductsFallback = (meta.related || []).map(function(entry) {
       return entry && entry[0] ? (entry[1] ? (entry[0] + ' (' + entry[1] + ')') : entry[0]) : '';
     }).filter(Boolean).join(' | ');
+    const rowDescription = normalizeDisplayText(p.description, '');
+    const rowTip = normalizeDisplayText(p.tip, '');
+    const rowRelatedProducts = normalizeDisplayText(p.related_products, '');
+    const rowLicenseType = normalizeDisplayText(p.license_type, '');
+    const rowPaymentType = normalizeDisplayText(p.payment_type, '');
     const exportRow = {
       product_id: p.id,
       product_e: normalized.cleanName || normalized.displayName || p.name,
@@ -3290,11 +3295,11 @@ function downloadProductExtractCsv() {
       list_rrp: p.list,
       cost: p.cost,
       threshold: p.threshold,
-      license_type: normalized.licenseType === 'N/A' ? '' : normalized.licenseType,
-      payment_type: (normalized.paymentType && normalized.paymentType !== 'N/A') ? normalized.paymentType : '',
-      description: meta.desc || '',
-      tip: meta.tip || '',
-      related_products: relatedProducts
+      license_type: rowLicenseType || (normalized.licenseType === 'N/A' ? '' : normalized.licenseType),
+      payment_type: rowPaymentType || ((normalized.paymentType && normalized.paymentType !== 'N/A') ? normalized.paymentType : ''),
+      description: rowDescription || meta.desc || '',
+      tip: rowTip || meta.tip || '',
+      related_products: rowRelatedProducts || relatedProductsFallback
     };
     const row = PRODUCT_CSV_HEADERS.map(function(h) {
       const value = exportRow[h];
