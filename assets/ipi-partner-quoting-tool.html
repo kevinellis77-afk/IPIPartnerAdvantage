@@ -4048,8 +4048,20 @@ function getCcaasFamilyOrder(productName = '') {
   if (name.includes('ecx voice')) return 1;
   if (name.includes('ecx omni')) return 2;
   if (name.includes('ecx max')) return 3;
-  if (name.includes('ecx ai insight')) return 4;
+  if (name.includes('ecx ms teams')) return 4;
+  if (name.includes('ecx ccaas crm')) return 5;
   return 999;
+}
+
+function getCcaasFamilySortName(productName = '') {
+  const name = String(productName || '').trim();
+  const lowered = name.toLowerCase();
+  if (lowered.includes('ecx voice')) return 'ECX Voice';
+  if (lowered.includes('ecx omni')) return 'ECX Omni';
+  if (lowered.includes('ecx max')) return 'ECX Max';
+  if (lowered.includes('ecx ms teams')) return 'ECX MS Teams';
+  if (lowered.includes('ecx ccaas crm')) return 'ECX CCaaS CRM';
+  return name;
 }
 
 function getCcaasPaymentTypeOrder(paymentType, productName = '') {
@@ -4093,6 +4105,14 @@ function sortRowsWithinCategory(rows, category) {
 
     const familyDelta = getCategoryFamilyOrder(category, ap.name) - getCategoryFamilyOrder(category, bp.name);
     if (familyDelta !== 0) return familyDelta;
+
+    if (isCcaasCategory(category)) {
+      const familyNameDelta = getCcaasFamilySortName(ap.name).localeCompare(getCcaasFamilySortName(bp.name), undefined, {
+        sensitivity: 'base',
+        numeric: true
+      });
+      if (familyNameDelta !== 0) return familyNameDelta;
+    }
 
     const paymentDelta = getCcaasPaymentTypeOrder(ap.payType, ap.name) - getCcaasPaymentTypeOrder(bp.payType, bp.name);
     if (paymentDelta !== 0) return paymentDelta;
@@ -4322,6 +4342,12 @@ function renderProductList() {
     if (isCcaasCategory(fa.cat) && isCcaasCategory(fb.cat)) {
       var ccFamilyDelta = getCcaasFamilyOrder(fa.name) - getCcaasFamilyOrder(fb.name);
       if (ccFamilyDelta !== 0) return ccFamilyDelta;
+
+      var ccFamilyNameDelta = getCcaasFamilySortName(fa.name).localeCompare(getCcaasFamilySortName(fb.name), undefined, {
+        sensitivity: 'base',
+        numeric: true
+      });
+      if (ccFamilyNameDelta !== 0) return ccFamilyNameDelta;
     }
 
     return String(fa.name || '').localeCompare(String(fb.name || ''), undefined, {
@@ -6629,6 +6655,10 @@ function comparePriceListRows(a, b, profile) {
     const ccaasOrderDiff =
       getLicenseBlockOrder(licenseA) - getLicenseBlockOrder(licenseB) ||
       getCcaasFamilyOrder(getProductDisplayName(a)) - getCcaasFamilyOrder(getProductDisplayName(b)) ||
+      getCcaasFamilySortName(getProductDisplayName(a)).localeCompare(getCcaasFamilySortName(getProductDisplayName(b)), undefined, {
+        sensitivity: 'base',
+        numeric: true
+      }) ||
       getCcaasPaymentTypeOrder(paymentA, a.name) - getCcaasPaymentTypeOrder(paymentB, b.name) ||
       String(paymentA).localeCompare(String(paymentB), undefined, { sensitivity: 'base', numeric: true }) ||
       String(a.name || '').localeCompare(String(b.name || ''), undefined, { sensitivity: 'base', numeric: true }) ||
@@ -6840,6 +6870,12 @@ function sortRowsForCategory(rows, category) {
     if (isCcaas) {
       const familyDiff = getCcaasFamilyOrder(getProductDisplayName(a)) - getCcaasFamilyOrder(getProductDisplayName(b));
       if (familyDiff !== 0) return familyDiff;
+
+      const familyNameDiff = getCcaasFamilySortName(getProductDisplayName(a)).localeCompare(getCcaasFamilySortName(getProductDisplayName(b)), undefined, {
+        sensitivity: 'base',
+        numeric: true
+      });
+      if (familyNameDiff !== 0) return familyNameDiff;
     }
     if (isPciCloud) {
       const familyDiff = getPciProductFamilyOrder(getProductDisplayName(a)) - getPciProductFamilyOrder(getProductDisplayName(b));
