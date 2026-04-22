@@ -2788,6 +2788,9 @@ function normalizeBillingType(value) {
   const raw = String(value || '').trim();
   if (!raw) return 'Monthly';
   const lower = raw.toLowerCase();
+
+  // Charge-type semantics: this field is used only for recurring vs one-off grouping.
+  // Inputs such as "Annual" remain part of payment_type, and are normalized to recurring here.
   if (
     /one[\s-]?off|one[\s-]?time|otc|non[\s-]?recurring|setup|implementation|professional services|project/i.test(lower)
   ) {
@@ -2799,6 +2802,15 @@ function normalizeBillingType(value) {
     return 'Monthly';
   }
   return 'Monthly';
+}
+
+
+function isOneOffBilling(value) {
+  return normalizeBillingType(value) === 'One Off';
+}
+
+function isRecurringBilling(value) {
+  return !isOneOffBilling(value);
 }
 
 function removeLegacyCommercialSuffixes(name) {
@@ -2924,7 +2936,7 @@ const PRODUCT_CSV_HEADERS = [
   'product_id',
   'product_e',
   'category',
-  'billing',
+  'charge_type',
   'list_rrp',
   'cost',
   'threshold',
@@ -2934,7 +2946,7 @@ const PRODUCT_CSV_HEADERS = [
   'tip',
   'related_products'
 ];
-const PRODUCT_CSV_REQUIRED_HEADERS = ['product_id', 'product_e', 'category', 'billing', 'list_rrp', 'cost', 'threshold'];
+const PRODUCT_CSV_REQUIRED_HEADERS = ['product_id', 'product_e', 'category', 'charge_type', 'list_rrp', 'cost', 'threshold'];
 const PRODUCT_CATALOGUE_STORAGE_KEY = 'ipi-partner-quote-products-v1';
 const PRODUCT_CATALOGUE_META_STORAGE_KEY = 'ipi-partner-quote-products-meta-v1';
 const EMBEDDED_PRODUCT_CATALOGUE = PRODUCTS.map(function(product) { return Object.assign({}, product); });
@@ -2948,7 +2960,7 @@ const PRODUCT_CSV_HEADER_ALIASES = {
   product_id: ['product_id', 'id', 'sku', 'productcode'],
   product_e: ['product_e', 'name', 'productname', 'product'],
   category: ['category', 'cat', 'productcategory'],
-  billing: ['billing', 'billingtype'],
+  charge_type: ['charge_type', 'charge type', 'billing', 'billingtype'],
   list_rrp: ['list_rrp', 'list', 'rrp', 'listrrp', 'listprice'],
   cost: ['cost', 'buy', 'buyprice'],
   threshold: ['threshold', 'floor', 'minprice'],
@@ -3070,7 +3082,7 @@ function parseProductCsv(text) {
       id: r.product_id,
       name: canonical.name,
       cat: r.category || 'Uncategorised',
-      billing: r.billing || 'Monthly',
+      billing: r.charge_type || 'Monthly',
       list: parseNumericValue(r.list_rrp),
       cost: parseNumericValue(r.cost),
       threshold: parseNumericValue(r.threshold),
@@ -3274,7 +3286,7 @@ function downloadProductExtractCsv() {
       product_id: p.id,
       product_e: normalized.cleanName || normalized.displayName || p.name,
       category: p.cat,
-      billing: p.billing,
+      charge_type: p.billing,
       list_rrp: p.list,
       cost: p.cost,
       threshold: p.threshold,
@@ -3364,7 +3376,7 @@ const LABELS = {
   rrpOnly: 'RRP only',
   modal: {
     category: 'Category',
-    billing: 'Billing',
+    billing: 'Charge Type',
     licenseType: 'License Type',
     paymentType: 'Payment Type',
     listPrice: 'List Price'
@@ -4131,7 +4143,7 @@ function renderProductItem(p, isVariant) {
     .replace(/"/g, '&quot;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
-  var billingTag = '<span class="tag tag-billing ' + (p.billing === 'Monthly' ? 'monthly' : '') + '">' + (p.billing === 'Monthly' ? 'Recurring' : p.billing) + '</span>';
+  var billingTag = '<span class="tag tag-billing ' + (isRecurringBilling(p.billing) ? 'monthly' : '') + '">' + (isRecurringBilling(p.billing) ? 'Recurring' : p.billing) + '</span>';
 
   var metaHTML = isVariant
     ? '<div style="font-size:10px;color:var(--text-muted);font-family:DM Mono,monospace;margin-top:2px">' + idStr + '</div>'
@@ -4327,8 +4339,8 @@ function renderQuote() {
   }
   empty.style.display = 'none';
 
-  const monthly = quoteItems.filter(i => i.product.billing === 'Monthly');
-  const oneOff  = quoteItems.filter(i => i.product.billing === 'One Off');
+  const monthly = quoteItems.filter(i => isRecurringBilling(i.product.billing));
+  const oneOff  = quoteItems.filter(i => isOneOffBilling(i.product.billing));
 
   let html = '';
 
@@ -4549,7 +4561,7 @@ function updateTotals() {
   let mrc = 0, otc = 0;
   quoteItems.forEach(item => {
     const price = getEffectivePrice(item) * item.qty;
-    if (item.product.billing === 'Monthly') mrc += price;
+    if (isRecurringBilling(item.product.billing)) mrc += price;
     else otc += price;
   });
   const acv = mrc * 12 + otc;
@@ -4675,7 +4687,7 @@ function buildQuoteData(baseRef, version, changeNote) {
   let mrc = 0, otc = 0;
   quoteItems.forEach(i => {
     const p = getEffectivePrice(i) * i.qty;
-    if (i.product.billing === 'Monthly') mrc += p; else otc += p;
+    if (isRecurringBilling(i.product.billing)) mrc += p; else otc += p;
   });
   return {
     baseRef, version, ref: baseRef + ' v' + version,
@@ -5098,7 +5110,7 @@ function renderTemplatesBody() {
     let indMRC = 0;
     t.items.forEach(ti => {
       const p = PRODUCTS.find(pr => pr.id === ti.id);
-      if (p && p.billing === 'Monthly') {
+      if (p && isRecurringBilling(p.billing)) {
         const base = p.list > 0 ? p.list : p.threshold;
         indMRC += base * ti.qty;
       }
@@ -5157,8 +5169,8 @@ function closeTemplatesModal(e) {
 // ─── SHARED GROUPED QUOTE BUILDER ────────────────────────────────────────────
 // Returns { monthly, oneOff, mrc, otc, acv } with items grouped by CAT_ORDER
 function getGroupedQuoteData() {
-  const monthly = quoteItems.filter(i => i.product.billing === 'Monthly');
-  const oneOff  = quoteItems.filter(i => i.product.billing === 'One Off');
+  const monthly = quoteItems.filter(i => isRecurringBilling(i.product.billing));
+  const oneOff  = quoteItems.filter(i => isOneOffBilling(i.product.billing));
 
   function groupByCat(items) {
     const map = {};
@@ -5175,7 +5187,7 @@ function getGroupedQuoteData() {
   let mrc = 0, otc = 0;
   quoteItems.forEach(i => {
     const p = getEffectivePrice(i) * i.qty;
-    if (i.product.billing === 'Monthly') mrc += p; else otc += p;
+    if (isRecurringBilling(i.product.billing)) mrc += p; else otc += p;
   });
 
   return {
@@ -5496,10 +5508,10 @@ function copyCSV() {
     const base = item.product.list > 0 ? item.product.list : item.product.threshold;
     const licenseType = getQuoteProductLicenseLabel(item.product);
     const paymentType = getQuoteProductPaymentLabel(item.product);
-    csv += `${item.product.id},"${getProductDisplayName(item.product)}",${item.product.cat},${item.product.billing === 'Monthly' ? 'Recurring' : item.product.billing},"${licenseType}","${paymentType}",${item.qty},${base.toFixed(2)},${ep.toFixed(2)},${(ep*item.qty).toFixed(2)}\n`;
+    csv += `${item.product.id},"${getProductDisplayName(item.product)}",${item.product.cat},${isRecurringBilling(item.product.billing) ? 'Recurring' : item.product.billing},"${licenseType}","${paymentType}",${item.qty},${base.toFixed(2)},${ep.toFixed(2)},${(ep*item.qty).toFixed(2)}\n`;
   });
   let mrc = 0, otc = 0;
-  quoteItems.forEach(i => { const p = getEffectivePrice(i)*i.qty; if(i.product.billing==='Monthly') mrc+=p; else otc+=p; });
+  quoteItems.forEach(i => { const p = getEffectivePrice(i)*i.qty; if (isRecurringBilling(i.product.billing)) mrc+=p; else otc+=p; });
   csv += `\n,,,,,,\nRecurring Total,,${mrc.toFixed(2)}\nOne-Off Total,,${otc.toFixed(2)}\nACV (Recurring×12 + One-Off),,${(mrc*12+otc).toFixed(2)}\n`;
 
   navigator.clipboard.writeText(csv).then(() => showToast('✓ CSV copied to clipboard'));
@@ -5728,7 +5740,7 @@ function openProductDetail(id) {
   document.getElementById('pdBody').innerHTML =
     '<div class="pd-badges">' +
       '<span class="tag" style="background:' + colour + '18;color:' + colour + '">' + normalized.category + '</span>' +
-      '<span class="tag tag-billing ' + (product.billing === 'Monthly' ? 'monthly' : '') + '">' + (product.billing === 'Monthly' ? 'Recurring' : product.billing) + '</span>' +
+      '<span class="tag tag-billing ' + (isRecurringBilling(product.billing) ? 'monthly' : '') + '">' + (isRecurringBilling(product.billing) ? 'Recurring' : product.billing) + '</span>' +
       (meta.agentType && meta.agentType !== 'N/A' ? '<span class="tag" style="background:#f4f7fa;color:var(--charcoal)">' + meta.agentType + '</span>' : '') +
     '</div>' +
     priceHTML +
@@ -6605,7 +6617,7 @@ function renderPartnerPriceList() {
         const normalized = getNormalizedProduct(p);
         const base = normalized.basePrice;
         const net = showRrpOnly ? base : getPriceForProductByProfile(p, profile);
-        const billing = p.billing === 'Monthly' ? 'Recurring' : p.billing;
+        const billing = isRecurringBilling(p.billing) ? 'Recurring' : p.billing;
         html.push('<tr>' +
           '<td><div class="price-list-sku">' + p.id + '</div></td>' +
           '<td><div class="price-list-product">' + getProductDisplayName(p) + '</div><div class="price-list-product-sub">' + billing + '</div></td>' +
