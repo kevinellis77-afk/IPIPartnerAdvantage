@@ -550,7 +550,7 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 12px;
     flex: 1;
-    min-width: 600px;
+    min-width: 0;
   }
 
   .partner-level-display {
@@ -1466,7 +1466,7 @@
   .notes-textarea::placeholder { color: var(--text-muted); }
 
   /* Validity date in meta */
-  .quote-meta { grid-template-columns: repeat(5, 1fr) !important; min-width: 700px !important; }
+  .quote-meta { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
 
   /* Status badges */
   .status-badge {
@@ -2435,27 +2435,12 @@
           <input type="text" id="endCustomer" placeholder="e.g. Global Corp plc">
         </div>
         <div class="meta-field">
-          <label>Commercial Context</label>
-          <div class="inherited-context-badge" id="inheritedContextBadge">
-            <span class="inherited-context-badge__title" id="inheritedContextTitle">Global Partner Profile (applies to Price List + Quoting Tool)</span>
-            <span class="inherited-context-badge__value" id="inheritedContextText">Reseller · Accredited (20% discount)</span>
-            <span class="inherited-context-badge__helper" id="inheritedContextHelper"></span>
-          </div>
-        </div>
-        <div class="meta-field">
-          <label>Commercial Profile</label>
-          <div id="partnerLevelDisplay" class="partner-level-display accredited">
-            <span id="partnerLevelText" class="partner-level-text accredited">Reseller · Accredited <span style="opacity:0.6;font-weight:400;font-size:11px">(20% discount)</span></span>
-          </div>
-          <input type="hidden" id="partnerLevel" value="accredited">
-        </div>
-        <div class="meta-field">
           <label>Quote Reference <span id="versionIndicator" class="version-indicator unsaved" style="display:none"></span></label>
           <input type="text" id="quoteRef" placeholder="e.g. QT-2025-001" oninput="onQuoteRefChange()">
         </div>
         <div class="meta-field">
-          <label>Valid Until</label>
-          <input type="date" id="validUntil">
+          <label>Expiry Date</label>
+          <select id="validUntil"></select>
         </div>
       </div>
     </div>
@@ -4358,9 +4343,44 @@ function resetQuote() {
 }
 
 function setDefaultValidityDate() {
+  populateExpiryOptions();
   const d = new Date();
   d.setDate(d.getDate() + 30);
   document.getElementById('validUntil').value = d.toISOString().split('T')[0];
+}
+
+function getExpiryDateIso(daysFromNow) {
+  const d = new Date();
+  d.setDate(d.getDate() + daysFromNow);
+  return d.toISOString().split('T')[0];
+}
+
+function formatExpiryLabel(daysFromNow) {
+  const target = new Date();
+  target.setDate(target.getDate() + daysFromNow);
+  const dateText = target.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  return daysFromNow + ' days (' + dateText + ')';
+}
+
+function populateExpiryOptions(selectedValue) {
+  const validUntilSelect = document.getElementById('validUntil');
+  if (!validUntilSelect) return;
+  const expiryOffsets = [14, 30, 60, 90];
+  const desiredValue = selectedValue || validUntilSelect.value || getExpiryDateIso(30);
+  validUntilSelect.innerHTML = '';
+  expiryOffsets.forEach(function(days) {
+    const option = document.createElement('option');
+    option.value = getExpiryDateIso(days);
+    option.textContent = formatExpiryLabel(days);
+    validUntilSelect.appendChild(option);
+  });
+  if (![...validUntilSelect.options].some(function(option) { return option.value === desiredValue; })) {
+    const customOption = document.createElement('option');
+    customOption.value = desiredValue;
+    customOption.textContent = 'Custom date (' + new Date(desiredValue).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) + ')';
+    validUntilSelect.appendChild(customOption);
+  }
+  validUntilSelect.value = desiredValue;
 }
 
 // ─── SAVE / LOAD QUOTES ───────────────────────────────────────────────────────
@@ -4493,7 +4513,7 @@ function doLoadQuote(ref) {
 
   setQuoteProfile(q.partnerModel || 'reseller', q.level || 'accredited');
   document.getElementById('quoteNotes').value = q.notes || '';
-  document.getElementById('validUntil').value  = q.validUntil || '';
+  populateExpiryOptions(q.validUntil || getExpiryDateIso(30));
   updateNotesToggle();
   if (q.notes) {
     document.getElementById('notesBody').style.display = 'block';
