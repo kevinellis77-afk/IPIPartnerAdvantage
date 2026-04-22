@@ -805,6 +805,15 @@
   .line-items-table tr:last-child td { border-bottom: none; }
   .line-items-table tbody tr:hover td { background: #fafcfd; }
 
+  .line-items-table.cat-table th:nth-child(1),
+  .line-items-table.cat-table td:nth-child(1) { width: 28%; }
+  .line-items-table.cat-table th:nth-child(2),
+  .line-items-table.cat-table td:nth-child(2),
+  .line-items-table.cat-table th:nth-child(3),
+  .line-items-table.cat-table td:nth-child(3) { white-space: nowrap; }
+  .line-items-table.cat-table th:nth-child(8),
+  .line-items-table.cat-table td:nth-child(8) { width: 44px; text-align: right; }
+
   .item-name-cell {
     max-width: 220px;
   }
@@ -4368,6 +4377,8 @@ function renderCatGroup(cat, items) {
     const computedPrice = getDiscountedPrice(p);
     const lineTotal = computedPrice * item.qty;
     const globalIdx = quoteItems.indexOf(item);
+    const licenseLabel = getQuoteProductLicenseLabel(p);
+    const paymentLabel = getQuoteProductPaymentLabel(p);
     const baseForBadge = p.list > 0 ? p.list : p.threshold;
 
     let discBadge = '';
@@ -4386,6 +4397,8 @@ function renderCatGroup(cat, items) {
           <input class="qty-input" type="number" min="1" value="${item.qty}"
             onchange="updateQty(${globalIdx}, this.value)" oninput="updateQty(${globalIdx}, this.value)">
         </td>
+        <td>${licenseLabel}</td>
+        <td>${paymentLabel}</td>
         <td class="price-cell">${baseForBadge > 0 ? fmtGBP(baseForBadge) : '<span style="color:var(--text-muted)">POA</span>'}</td>
         <td>
           <span class="price-display ${computedPrice > 0 && baseForBadge > computedPrice ? 'discounted' : ''}">
@@ -4415,6 +4428,8 @@ function renderCatGroup(cat, items) {
           <tr>
             <th>Product</th>
             <th>Qty</th>
+            <th>License Type</th>
+            <th>Payment Type</th>
             <th>List Price</th>
             <th>Partner Price</th>
             <th style="text-align:right">Total</th>
