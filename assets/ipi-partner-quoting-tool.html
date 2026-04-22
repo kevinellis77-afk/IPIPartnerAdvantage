@@ -1107,20 +1107,24 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     min-width: 0;
-    gap: 10px;
-    padding: 10px 14px 8px;
+    gap: 8px 10px;
+    padding: 8px 14px 6px;
     border-bottom: 1px solid var(--border);
     background: var(--off-white);
+    align-items: end;
   }
   .quote-filter-controls .meta-field {
     width: 100%;
-    padding: 8px 10px;
-    border: 1px solid #dfe7ec;
-    border-radius: 8px;
-    background: #fff;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
   }
   .quote-filter-controls .meta-field label {
-    margin-bottom: 6px;
+    margin-bottom: 3px;
+    font-size: 10px;
+    letter-spacing: 0.6px;
+    line-height: 1.2;
   }
   .quote-filter-controls .meta-field input,
   .quote-filter-controls .meta-field select,
@@ -1128,10 +1132,24 @@
     min-width: 0;
     width: 100%;
     max-width: 100%;
+    min-height: 34px;
+    padding-top: 6px;
+    padding-bottom: 6px;
   }
-  @container (min-width: 620px) {
+  @container (min-width: 640px) {
     .quote-filter-controls {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .quote-filter-controls .meta-field.search-field {
+      grid-column: 1 / -1;
+    }
+  }
+  @container (min-width: 1040px) {
+    .quote-filter-controls {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(280px, 1.35fr);
+    }
+    .quote-filter-controls .meta-field.search-field {
+      grid-column: auto;
     }
   }
   .filter-pill {
@@ -2440,16 +2458,16 @@
         <select id="quoteCategory" class="multi-select-native" multiple onchange="filterProducts()"></select>
       </div>
       <div class="meta-field">
-        <label>Search Products</label>
-        <input type="text" id="searchInput" placeholder="Search by product, SKU or family…" oninput="filterProducts()">
+        <label id="quoteLicenseTypeLabel">License Type</label>
+        <select id="quoteAgentType" class="multi-select-native" multiple onchange="filterProducts()"></select>
       </div>
       <div class="meta-field">
         <label id="quotePayTypeLabel">Payment Type</label>
         <select id="quotePayType" class="multi-select-native" multiple onchange="filterProducts()"></select>
       </div>
-      <div class="meta-field">
-        <label id="quoteLicenseTypeLabel">License Type</label>
-        <select id="quoteAgentType" class="multi-select-native" multiple onchange="filterProducts()"></select>
+      <div class="meta-field search-field">
+        <label>Search Products</label>
+        <input type="text" id="searchInput" placeholder="Search by product, SKU or family…" oninput="filterProducts()">
       </div>
     </div>
     <button class="templates-btn" onclick="openTemplatesModal()">
