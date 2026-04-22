@@ -4074,8 +4074,15 @@ function getRowProduct(row) {
   return row && row.product ? row.product : row;
 }
 
+function getCategoryFamilyOrder(category, productName = '') {
+  const normalizedCategory = normalizeCategory(category);
+  if (normalizedCategory === 'ccaas') return getCcaasFamilyOrder(productName);
+  if (normalizedCategory === 'pcicloud') return getPciProductFamilyOrder(productName);
+  return 999;
+}
+
 function sortRowsWithinCategory(rows, category) {
-  if (!Array.isArray(rows) || !isCcaasCategory(category)) return Array.isArray(rows) ? rows.slice() : [];
+  if (!Array.isArray(rows)) return [];
 
   return rows.slice().sort((a, b) => {
     const ap = getRowProduct(a) || {};
@@ -4084,7 +4091,7 @@ function sortRowsWithinCategory(rows, category) {
     const licenseDelta = getLicenseBlockOrder(ap.agentType) - getLicenseBlockOrder(bp.agentType);
     if (licenseDelta !== 0) return licenseDelta;
 
-    const familyDelta = getCcaasFamilyOrder(ap.name) - getCcaasFamilyOrder(bp.name);
+    const familyDelta = getCategoryFamilyOrder(category, ap.name) - getCategoryFamilyOrder(category, bp.name);
     if (familyDelta !== 0) return familyDelta;
 
     const paymentDelta = getCcaasPaymentTypeOrder(ap.payType, ap.name) - getCcaasPaymentTypeOrder(bp.payType, bp.name);
@@ -4326,7 +4333,7 @@ function renderProductList() {
   // ── Render families — data-* attributes, no inline onclick ─────────────
   var html = familyOrder.map(function(key, keyIdx) {
     var family   = familyMap[key];
-    var prods    = isCcaasCategory(family.cat) ? sortRowsWithinCategory(family.products, family.cat) : family.products;
+    var prods    = sortRowsWithinCategory(family.products, family.cat);
     var isSingle = prods.length === 1;
     var colour   = family.colour;
 
