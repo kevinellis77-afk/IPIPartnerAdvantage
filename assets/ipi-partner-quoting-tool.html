@@ -1728,7 +1728,7 @@
   }
   .saved-quotes-toolbar {
     display: grid;
-    grid-template-columns: minmax(220px, 1fr) auto auto;
+    grid-template-columns: minmax(220px, 1fr) auto auto auto;
     gap: 10px;
     align-items: center;
     padding: 12px 16px;
@@ -1742,6 +1742,12 @@
     font-size: 11px;
     color: var(--text-muted);
     white-space: nowrap;
+    font-weight: 600;
+  }
+  .saved-quotes-clear {
+    color: #2a52b0;
+    text-decoration: underline;
+    cursor: pointer;
     font-weight: 600;
   }
   .saved-quotes-list-region { min-height: 0; }
@@ -5347,7 +5353,27 @@ const STATUS_META = {
   won:   { label: 'Won',    icon: '✅',  cls: 'won'   },
   lost:  { label: 'Lost',   icon: '❌',  cls: 'lost'  }
 };
-const savedQuotesViewState = { search: '', status: 'all' };
+const SAVED_QUOTES_PREFS_KEY = 'ipi_saved_quotes_ui_prefs';
+const savedQuotesViewState = (function loadSavedQuotesViewState() {
+  const defaults = { search: '', status: 'all', sort: 'recent' };
+  const raw = localStorage.getItem(SAVED_QUOTES_PREFS_KEY);
+  if (!raw) return defaults;
+  let parsed = null;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (e) {
+    return defaults;
+  }
+  return {
+    search: typeof parsed.search === 'string' ? parsed.search : defaults.search,
+    status: ['all', 'draft', 'sent', 'won', 'lost'].includes(parsed.status) ? parsed.status : defaults.status,
+    sort: ['recent', 'acv_desc', 'ref_az', 'valid_until_asc'].includes(parsed.sort) ? parsed.sort : defaults.sort
+  };
+})();
+
+function persistSavedQuotesViewState() {
+  localStorage.setItem(SAVED_QUOTES_PREFS_KEY, JSON.stringify(savedQuotesViewState));
+}
 
 function updateQuoteStatus(baseRef, newStatus) {
   const saved = getSavedQuotes();
@@ -5406,42 +5432,69 @@ function openSavedQuotesModal() {
     ].join(' ').toLowerCase();
     return haystack.indexOf(q) !== -1;
   });
+  const filteredSortedSaved = filteredSaved.slice().sort(function(a, b) {
+    const sortMode = savedQuotesViewState.sort || 'recent';
+    if (sortMode === 'acv_desc') return (b.acv || 0) - (a.acv || 0);
+    if (sortMode === 'ref_az') {
+      return (a.baseRef || a.ref || '').localeCompare((b.baseRef || b.ref || ''), undefined, { sensitivity: 'base' });
+    }
+    if (sortMode === 'valid_until_asc') {
+      const aTime = a.validUntil ? new Date(a.validUntil).getTime() : Number.POSITIVE_INFINITY;
+      const bTime = b.validUntil ? new Date(b.validUntil).getTime() : Number.POSITIVE_INFINITY;
+      return aTime - bTime;
+    }
+    return new Date(b.savedAt || 0).getTime() - new Date(a.savedAt || 0).getTime();
+  });
 
   const toolbarHTML = '<div class="saved-quotes-top-region">' +
     pipelineHTML +
     '<div class="saved-quotes-toolbar">' +
       '<div class="meta-field">' +
         '<label for="savedQuotesSearchInput">Search</label>' +
-        '<input id="savedQuotesSearchInput" type="text" placeholder="Quote ref, partner, customer…" value="' + savedQuotesViewState.search.replace(/"/g, '&quot;') + '">' +
+        '<input id="savedQuotesSearchInput" type="text" placeholder="Ref, partner, customer, change note…" value="' + savedQuotesViewState.search.replace(/"/g, '&quot;') + '">' +
       '</div>' +
       '<div class="meta-field">' +
         '<label for="savedQuotesStatusFilter">Status</label>' +
         '<select id="savedQuotesStatusFilter">' +
-          '<option value="all"'   + (savedQuotesViewState.status === 'all' ? ' selected' : '') + '>All statuses</option>' +
+          '<option value="all"'   + (savedQuotesViewState.status === 'all' ? ' selected' : '') + '>All</option>' +
           '<option value="draft"' + (savedQuotesViewState.status === 'draft' ? ' selected' : '') + '>Draft</option>' +
           '<option value="sent"'  + (savedQuotesViewState.status === 'sent' ? ' selected' : '') + '>Sent</option>' +
           '<option value="won"'   + (savedQuotesViewState.status === 'won' ? ' selected' : '') + '>Won</option>' +
           '<option value="lost"'  + (savedQuotesViewState.status === 'lost' ? ' selected' : '') + '>Lost</option>' +
         '</select>' +
       '</div>' +
-      '<div class="saved-quotes-results">' + filteredSaved.length + ' result' + (filteredSaved.length !== 1 ? 's' : '') + '</div>' +
+      '<div class="meta-field">' +
+        '<label for="savedQuotesSortFilter">Sort</label>' +
+        '<select id="savedQuotesSortFilter">' +
+          '<option value="recent"' + (savedQuotesViewState.sort === 'recent' ? ' selected' : '') + '>Most recent</option>' +
+          '<option value="acv_desc"' + (savedQuotesViewState.sort === 'acv_desc' ? ' selected' : '') + '>Highest ACV</option>' +
+          '<option value="ref_az"' + (savedQuotesViewState.sort === 'ref_az' ? ' selected' : '') + '>A–Z ref</option>' +
+          '<option value="valid_until_asc"' + (savedQuotesViewState.sort === 'valid_until_asc' ? ' selected' : '') + '>Valid-until soonest</option>' +
+        '</select>' +
+      '</div>' +
+      '<div class="saved-quotes-results">' + filteredSortedSaved.length + ' result' + (filteredSortedSaved.length !== 1 ? 's' : '') + '</div>' +
     '</div>' +
   '</div>';
 
   let listHTML = '';
-  if (filteredSaved.length === 0) {
+  if (filteredSortedSaved.length === 0) {
+    const hasFilters = !!savedQuotesViewState.search.trim() || savedQuotesViewState.status !== 'all';
+    const emptyTitle = saved.length === 0 ? 'No saved quotes' : (hasFilters ? 'No matches — clear filters' : 'No matching quotes');
+    const emptyBody = saved.length === 0
+      ? 'Build a quote and click <strong>Save v1</strong> to store it here.'
+      : (hasFilters
+        ? 'No saved quotes match your current search/filter settings. <span class="saved-quotes-clear" id="savedQuotesClearFilters">Clear filters</span>'
+        : 'Try a different search term or status filter.');
     listHTML = '<div class="saved-quotes-empty">' +
       '<div style="font-size:32px;margin-bottom:12px">📂</div>' +
-      '<div style="font-weight:600;margin-bottom:4px">' + (saved.length === 0 ? 'No saved quotes' : 'No matching quotes') + '</div>' +
-      '<div>' + (saved.length === 0
-        ? 'Build a quote and click <strong>Save v1</strong> to store it here.'
-        : 'Try a different search term or status filter.') + '</div>' +
+      '<div style="font-weight:600;margin-bottom:4px">' + emptyTitle + '</div>' +
+      '<div>' + emptyBody + '</div>' +
       '</div>';
   } else {
     // Group by baseRef (fall back to ref for legacy quotes without baseRef)
     const groups = {};
     const groupOrder = [];
-    filteredSaved.forEach(q => {
+    filteredSortedSaved.forEach(q => {
       const base = q.baseRef || q.ref;
       if (!groups[base]) { groups[base] = []; groupOrder.push(base); }
       groups[base].push(q);
@@ -5536,6 +5589,7 @@ function openSavedQuotesModal() {
   if (searchInput) {
     searchInput.addEventListener('input', function() {
       savedQuotesViewState.search = this.value;
+      persistSavedQuotesViewState();
       openSavedQuotesModal();
     });
   }
@@ -5543,6 +5597,24 @@ function openSavedQuotesModal() {
   if (statusInput) {
     statusInput.addEventListener('change', function() {
       savedQuotesViewState.status = this.value;
+      persistSavedQuotesViewState();
+      openSavedQuotesModal();
+    });
+  }
+  const sortInput = document.getElementById('savedQuotesSortFilter');
+  if (sortInput) {
+    sortInput.addEventListener('change', function() {
+      savedQuotesViewState.sort = this.value;
+      persistSavedQuotesViewState();
+      openSavedQuotesModal();
+    });
+  }
+  const clearFiltersBtn = document.getElementById('savedQuotesClearFilters');
+  if (clearFiltersBtn) {
+    clearFiltersBtn.addEventListener('click', function() {
+      savedQuotesViewState.search = '';
+      savedQuotesViewState.status = 'all';
+      persistSavedQuotesViewState();
       openSavedQuotesModal();
     });
   }
