@@ -4944,7 +4944,9 @@ function renderCatGroup(cat, items) {
         </td>
         <td>
           <input class="qty-input" type="number" min="1" value="${item.qty}"
-            onchange="updateQty(${globalIdx}, this.value)" oninput="updateQty(${globalIdx}, this.value)">
+            onchange="commitQtyFromInput(${globalIdx}, this)"
+            onblur="commitQtyFromInput(${globalIdx}, this)"
+            onkeydown="handleQtyInputKeydown(event, ${globalIdx}, this)">
         </td>
         <td>${licenseLabel}</td>
         <td>${paymentLabel}</td>
@@ -4955,7 +4957,7 @@ function renderCatGroup(cat, items) {
           </span>
           ${discBadge}
         </td>
-        <td class="line-total">${computedPrice > 0 ? fmtGBP(lineTotal) : '<span style="color:var(--text-muted)">—</span>'}</td>
+        <td class="line-total" data-line-total-idx="${globalIdx}">${computedPrice > 0 ? fmtGBP(lineTotal) : '<span style="color:var(--text-muted)">—</span>'}</td>
         <td>
           <button class="remove-btn" onclick="removeItem(${globalIdx})" title="Remove">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -4970,7 +4972,7 @@ function renderCatGroup(cat, items) {
         <span class="cat-dot" style="background:${colour};width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:7px"></span>
         <span class="cat-group-label">${cat}</span>
         <div class="cat-group-divider"></div>
-        <span class="cat-group-subtotal">${fmtGBP(subtotal)}</span>
+        <span class="cat-group-subtotal" data-cat-subtotal="${cat}">${fmtGBP(subtotal)}</span>
       </div>
       <table class="line-items-table cat-table">
         <thead>
@@ -5020,7 +5022,9 @@ function renderSection(title, items) {
         <td><span class="tag" style="background:${colour}18;color:${colour};font-size:10px;">${p.cat}</span></td>
         <td>
           <input class="qty-input" type="number" min="1" value="${item.qty}"
-            onchange="updateQty(${globalIdx}, this.value)" oninput="updateQty(${globalIdx}, this.value)">
+            onchange="commitQtyFromInput(${globalIdx}, this)"
+            onblur="commitQtyFromInput(${globalIdx}, this)"
+            onkeydown="handleQtyInputKeydown(event, ${globalIdx}, this)">
         </td>
         <td class="price-cell">
           ${baseForBadge > 0 ? fmtGBP(baseForBadge) : '—'}
@@ -5031,7 +5035,7 @@ function renderSection(title, items) {
           </span>
           ${discBadge}
         </td>
-        <td class="line-total">${fmtGBP(lineTotal)}</td>
+        <td class="line-total" data-line-total-idx="${globalIdx}">${fmtGBP(lineTotal)}</td>
         <td>
           <button class="remove-btn" onclick="removeItem(${globalIdx})" title="Remove">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -5066,10 +5070,69 @@ function renderSection(title, items) {
     </div>`;
 }
 
-function updateQty(idx, val) {
+function setQtyValue(idx, val) {
+  if (!quoteItems[idx]) return false;
   const qty = Math.max(1, parseInt(val) || 1);
+  if (quoteItems[idx].qty === qty) return false;
   quoteItems[idx].qty = qty;
-  renderQuote();
+  return true;
+}
+
+function updateQty(idx, val, rerender = true) {
+  const didUpdate = setQtyValue(idx, val);
+  if (!didUpdate) return;
+  if (rerender) renderQuote();
+  else refreshQuoteTotals(idx);
+}
+
+function commitQtyFromInput(idx, inputEl) {
+  if (!inputEl) return;
+  const qty = Math.max(1, parseInt(inputEl.value) || 1);
+  inputEl.value = qty;
+  updateQty(idx, qty, false);
+}
+
+function handleQtyInputKeydown(event, idx, inputEl) {
+  if (event.key !== 'Enter') return;
+  event.preventDefault();
+  commitQtyFromInput(idx, inputEl);
+  inputEl.blur();
+}
+
+function refreshQuoteTotals(changedIdx = null) {
+  if (changedIdx !== null && quoteItems[changedIdx]) {
+    const item = quoteItems[changedIdx];
+    const price = getEffectivePrice(item);
+    const lineTotalEl = document.querySelector(`[data-line-total-idx="${changedIdx}"]`);
+    if (lineTotalEl) {
+      lineTotalEl.innerHTML = price > 0 ? fmtGBP(price * item.qty) : '<span style="color:var(--text-muted)">—</span>';
+    }
+  }
+
+  const catSubtotalEls = document.querySelectorAll('[data-cat-subtotal]');
+  catSubtotalEls.forEach(el => {
+    const cat = el.getAttribute('data-cat-subtotal');
+    const catSubtotal = quoteItems.reduce((sum, quoteItem) => {
+      if (quoteItem.product.cat !== cat) return sum;
+      return sum + getEffectivePrice(quoteItem) * quoteItem.qty;
+    }, 0);
+    el.textContent = fmtGBP(catSubtotal);
+  });
+
+  const billingBlocks = document.querySelectorAll('.billing-block');
+  billingBlocks.forEach(block => {
+    const titleEl = block.querySelector('.billing-block-title');
+    const totalEl = block.querySelector('.billing-block-total');
+    if (!titleEl || !totalEl) return;
+    const isRecurring = titleEl.textContent.trim() === 'Recurring Subscriptions';
+    const blockTotal = quoteItems.reduce((sum, quoteItem) => {
+      if (isRecurring !== isRecurringBilling(quoteItem.product.billing)) return sum;
+      return sum + getEffectivePrice(quoteItem) * quoteItem.qty;
+    }, 0);
+    totalEl.textContent = fmtGBP(blockTotal);
+  });
+
+  updateTotals();
 }
 
 function removeItem(idx) {
