@@ -2731,6 +2731,12 @@
       </div>
       <button class="modal-close" onclick="closeTemplatesModal()">✕</button>
     </div>
+    <div style="padding:0 20px 8px;display:flex;justify-content:flex-end">
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-muted);cursor:pointer">
+        <input type="checkbox" id="showArchivedTemplatesToggle" onchange="handleTemplateArchiveToggle(event)">
+        Show archived templates
+      </label>
+    </div>
     <div class="modal-body" style="padding:0" id="templatesBody"></div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeTemplatesModal()">Close</button>
@@ -5456,6 +5462,10 @@ function closeSavedQuotesModal(e) {
 // ─── TEMPLATES ───────────────────────────────────────────────────────────────
 const TEMPLATES = [
   {
+    key: 'voice_starter',
+    version: 'v1',
+    active: false,
+    updatedAt: '2025-11-15',
     name: '50-Seat CCaaS Voice Starter',
     desc: 'Named agent voice with MS Teams, CRM, and professional services',
     icon: '📞',
@@ -5468,6 +5478,26 @@ const TEMPLATES = [
     ]
   },
   {
+    key: 'voice_starter',
+    version: 'v2',
+    active: true,
+    updatedAt: '2026-04-23',
+    name: '50-Seat CCaaS Voice Starter',
+    desc: 'Named agent voice with MS Teams, CRM, and professional services',
+    icon: '📞',
+    items: [
+      { id: 'S100937', qty: 50 },  // ECX Voice Named Annual PrePay
+      { id: 'S100951', qty: 50 },  // ECX MS Teams Annual Pre-Pay
+      { id: 'S100953', qty: 50 },  // ECX CCaaS CRM Annual Pre Pay
+      { id: 'S101117', qty: 1  },  // PS Package - ECX CCaaS Voice
+      { id: 'S101116', qty: 1  },  // PS Package - Rapid 50 Agents
+    ]
+  },
+  {
+    key: 'omni_channel',
+    version: 'v1',
+    active: false,
+    updatedAt: '2025-11-15',
     name: '100-Seat Omni-Channel CCaaS',
     desc: 'Full omni-channel with AI Insight, SMS, and training & enablement',
     icon: '🌐',
@@ -5482,6 +5512,28 @@ const TEMPLATES = [
     ]
   },
   {
+    key: 'omni_channel',
+    version: 'v2',
+    active: true,
+    updatedAt: '2026-04-23',
+    name: '100-Seat Omni-Channel CCaaS',
+    desc: 'Full omni-channel with AI Insight, SMS, and training & enablement',
+    icon: '🌐',
+    items: [
+      { id: 'S100941', qty: 100 }, // ECX Omni Named Annual PrePay
+      { id: 'S100906', qty: 100 }, // ECX CCaaS AI Insight NAMED Ann Pre-Pay
+      { id: 'S101122', qty: 1   }, // PS Package - CCaaS SMS Queue
+      { id: 'S101134', qty: 1   }, // PS Package - Extra SMS Queue
+      { id: 'S101116', qty: 1   }, // PS Package - Rapid 50 Agents
+      { id: 'S101118', qty: 1   }, // PS Package - Email
+      { id: 'S101119', qty: 1   }, // PS Package - Chat
+    ]
+  },
+  {
+    key: 'max_sidekick',
+    version: 'v1',
+    active: false,
+    updatedAt: '2025-11-15',
     name: '25-Seat CCaaS Max with AI Side-Kick',
     desc: 'Premium Max tier with AI Side-Kick assistant for agent augmentation',
     icon: '🤖',
@@ -5493,6 +5545,25 @@ const TEMPLATES = [
     ]
   },
   {
+    key: 'max_sidekick',
+    version: 'v2',
+    active: true,
+    updatedAt: '2026-04-23',
+    name: '25-Seat CCaaS Max with AI Side-Kick',
+    desc: 'Premium Max tier with AI Side-Kick assistant for agent augmentation',
+    icon: '🤖',
+    items: [
+      { id: 'S100945', qty: 25 },  // ECX Max Named Annual PrePay
+      { id: 'S100984', qty: 25 },  // ECX AI Side-Kick NAMED Pay Mthly
+      { id: 'S100906', qty: 25 },  // ECX CCaaS AI Insight NAMED Ann Pre-Pay
+      { id: 'S101115', qty: 1  },  // PS Package - Rapid 20 Agents
+    ]
+  },
+  {
+    key: 'pci_cloud_named',
+    version: 'v1',
+    active: false,
+    updatedAt: '2025-11-15',
     name: 'PCI Cloud – Named Agent Bundle',
     desc: 'PCI-compliant cloud with pauseable and premium tiers for payment handling',
     icon: '🔒',
@@ -5504,6 +5575,25 @@ const TEMPLATES = [
     ]
   },
   {
+    key: 'pci_cloud_named',
+    version: 'v2',
+    active: true,
+    updatedAt: '2026-04-23',
+    name: 'PCI Cloud – Named Agent Bundle',
+    desc: 'PCI-compliant cloud with pauseable and premium tiers for payment handling',
+    icon: '🔒',
+    items: [
+      { id: 'S101019', qty: 20 },  // Cloud PCI Premium Named AnPrePay
+      { id: 'S100841', qty: 30 },  // Pauseable Named Ann PrePay
+      { id: 'S101069', qty: 1  },  // PM - PCI
+      { id: 'S100935', qty: 1  },  // Consultancy Services
+    ]
+  },
+  {
+    key: 'ucaas_ccaas_voice',
+    version: 'v1',
+    active: false,
+    updatedAt: '2025-11-15',
     name: 'UCaaS + CCaaS Voice Bundle',
     desc: 'Combined unified comms and contact centre for mid-market customers',
     icon: '📡',
@@ -5515,6 +5605,43 @@ const TEMPLATES = [
     ]
   },
   {
+    key: 'ucaas_ccaas_voice',
+    version: 'v2',
+    active: true,
+    updatedAt: '2026-04-23',
+    name: 'UCaaS + CCaaS Voice Bundle',
+    desc: 'Combined unified comms and contact centre for mid-market customers',
+    icon: '📡',
+    items: [
+      { id: 'S100949', qty: 100 }, // ECX UCX Named Annual PrePay
+      { id: 'S100937', qty: 30  }, // ECX Voice Named Annual PrePay
+      { id: 'S100951', qty: 30  }, // ECX MS Teams Annual Pre-Pay
+      { id: 'S101061', qty: 1   }, // PM - ECX UCaaS
+    ]
+  },
+  {
+    key: 'ai_first_contact_centre',
+    version: 'v1',
+    active: false,
+    updatedAt: '2025-11-15',
+    name: 'AI-First Contact Centre',
+    desc: 'Autopilot voice bot, batch transcription, AI Insight and Side-Kick',
+    icon: '✨',
+    items: [
+      { id: 'S100941', qty: 50  }, // ECX Omni Named Annual PrePay
+      { id: 'S100991', qty: 1   }, // ECX Autopilot AI Voice Bot P/Min
+      { id: 'S100976', qty: 1   }, // ECX Real-Time Transcriptions Hrs
+      { id: 'S100970', qty: 1   }, // ECX Batch Transcription Hours
+      { id: 'S100984', qty: 50  }, // ECX AI Side-Kick NAMED Pay Mthly
+      { id: 'S100906', qty: 50  }, // ECX CCaaS AI Insight NAMED Ann Pre-Pay
+      { id: 'S101116', qty: 1   }, // PS Package - Rapid 50 Agents
+    ]
+  },
+  {
+    key: 'ai_first_contact_centre',
+    version: 'v2',
+    active: true,
+    updatedAt: '2026-04-23',
     name: 'AI-First Contact Centre',
     desc: 'Autopilot voice bot, batch transcription, AI Insight and Side-Kick',
     icon: '✨',
@@ -5530,10 +5657,24 @@ const TEMPLATES = [
   }
 ];
 
+let showArchivedTemplates = false;
+
+function handleTemplateArchiveToggle(event) {
+  showArchivedTemplates = !!event?.target?.checked;
+  renderTemplatesBody();
+}
+
+function formatTemplateTitle(template) {
+  const showBadge = template?.version && (!template.active || template.version !== 'v1');
+  if (!showBadge) return template.name;
+  return template.name + ' <span style="display:inline-block;padding:2px 7px;border-radius:999px;font-size:11px;font-weight:700;background:' + (template.active ? 'rgba(59,130,246,0.12)' : 'rgba(107,114,128,0.12)') + ';color:' + (template.active ? '#1d4ed8' : '#4b5563') + ';margin-left:6px;vertical-align:middle">' + template.version.toUpperCase() + '</span>';
+}
+
 function renderTemplatesBody() {
   const container = document.getElementById('templatesBody');
   if (!container) return;
-  container.innerHTML = TEMPLATES.map((t, idx) => {
+  const templatesToRender = showArchivedTemplates ? TEMPLATES : TEMPLATES.filter(t => t.active);
+  container.innerHTML = templatesToRender.map((t, idx) => {
     // Calculate indicative MRC at no discount
     let indMRC = 0;
     t.items.forEach(ti => {
@@ -5548,20 +5689,20 @@ function renderTemplatesBody() {
       '<div style="display:flex;align-items:center;gap:10px">' +
         '<span style="font-size:22px">' + t.icon + '</span>' +
         '<div>' +
-          '<div class="template-name">' + t.name + '</div>' +
+          '<div class="template-name">' + formatTemplateTitle(t) + '</div>' +
           '<div class="template-desc">' + t.desc + '</div>' +
-          '<div class="template-meta">' + t.items.length + ' products' + (mrcStr ? ' &nbsp;·&nbsp; ' + mrcStr : '') + '</div>' +
+          '<div class="template-meta">' + t.items.length + ' products' + (mrcStr ? ' &nbsp;·&nbsp; ' + mrcStr : '') + ' &nbsp;·&nbsp; Updated ' + t.updatedAt + (t.active ? '' : ' &nbsp;·&nbsp; Archived') + '</div>' +
         '</div>' +
       '</div>' +
     '</div>';
   }).join('');
   container.querySelectorAll('.tmpl-apply-btn').forEach(el => {
-    el.addEventListener('click', () => applyTemplate(parseInt(el.dataset.idx)));
+    el.addEventListener('click', () => applyTemplate(templatesToRender[parseInt(el.dataset.idx, 10)]));
   });
 }
 
-function applyTemplate(idx) {
-  const t = TEMPLATES[idx];
+function applyTemplate(template) {
+  const t = template;
   if (!t) return;
   const newItems = t.items.map(ti => {
     const product = PRODUCTS.find(p => p.id === ti.id);
@@ -5584,6 +5725,8 @@ function applyTemplate(idx) {
 }
 
 function openTemplatesModal() {
+  const archivedToggle = document.getElementById('showArchivedTemplatesToggle');
+  if (archivedToggle) archivedToggle.checked = showArchivedTemplates;
   renderTemplatesBody();
   document.getElementById('templatesModal').classList.remove('hidden');
 }
