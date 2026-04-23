@@ -307,6 +307,8 @@
     display: grid;
     grid-template-columns: var(--panel-width, 360px) 1fr;
     height: calc(100vh - 108px);
+    min-width: 0;
+    overflow: hidden;
   }
 
   /* ─── LEFT PANEL ─── */
@@ -318,6 +320,8 @@
     overflow: hidden;
     position: relative;
     container-type: inline-size;
+    min-width: 0;
+    max-width: 100%;
   }
 
   /* Drag handle on right edge of left panel */
@@ -549,6 +553,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    min-width: 0;
   }
 
   /* Quote Header */
@@ -1105,13 +1110,15 @@
 
   .quote-filter-bar {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) minmax(112px, auto);
     gap: 10px;
     padding: 10px 14px 8px;
     border-bottom: 1px solid var(--border);
     background: var(--off-white);
     align-items: end;
+    min-width: 0;
   }
+  .quote-filter-bar .search-field { min-width: 0; }
   .quote-filter-bar .meta-field {
     width: 100%;
     padding: 0;
@@ -1129,7 +1136,8 @@
     min-width: 0;
     width: 100%;
     max-width: 100%;
-    min-height: 34px;
+    min-height: 36px;
+    height: 36px;
     padding-top: 6px;
     padding-bottom: 6px;
   }
@@ -1144,6 +1152,12 @@
     cursor: pointer;
     white-space: nowrap;
     align-self: end;
+    min-width: 112px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
   }
   .quote-filter-bar-btn:hover { background: var(--off-white); }
 
@@ -1156,6 +1170,16 @@
     border-bottom: 1px solid var(--border);
     background: var(--off-white);
     align-items: end;
+    container-type: inline-size;
+  }
+  .quote-filter-controls .quote-filter-drawer-head {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex-wrap: wrap;
   }
   .quote-filter-controls .meta-field {
     width: 100%;
@@ -1163,6 +1187,7 @@
     border: 0;
     border-radius: 0;
     background: transparent;
+    min-width: 0;
   }
   .quote-filter-controls .meta-field label {
     margin-bottom: 3px;
@@ -1176,23 +1201,17 @@
     min-width: 0;
     width: 100%;
     max-width: 100%;
-    min-height: 34px;
+    min-height: 36px;
+    height: 36px;
     padding-top: 6px;
     padding-bottom: 6px;
   }
-  @container (min-width: 640px) {
+  @container (min-width: 700px) {
     .quote-filter-controls {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-    .quote-filter-controls .meta-field.search-field {
-      grid-column: 1 / -1;
-    }
   }
-  @container (min-width: 1040px) {
-    .quote-filter-controls {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-  }
+  .left-panel.quote-filters-collapsed .product-list { padding-top: 2px; }
   .filter-pill {
     padding: 3px 10px;
     border-radius: 12px;
@@ -2564,7 +2583,7 @@
         <label>Search Products</label>
         <input type="text" id="searchInput" placeholder="Search by product, SKU or family…" oninput="filterProducts()">
       </div>
-      <button class="quote-filter-bar-btn" id="quoteFilterToggleBtn" type="button" onclick="toggleQuoteFilters()">Filters</button>
+      <button class="quote-filter-bar-btn" id="quoteFilterToggleBtn" type="button" aria-controls="quoteFilterControls" aria-expanded="false" onclick="toggleQuoteFilters()">Filters</button>
     </div>
     <div class="price-list-controls quote-filter-controls hidden" id="quoteFilterControls">
       <div class="quote-filter-drawer-head">
@@ -7112,6 +7131,8 @@ function clearQuoteFilters() {
 
 function toggleQuoteFilters(forceExpanded) {
   const controls = document.getElementById('quoteFilterControls');
+  const leftPanel = document.getElementById('leftPanel');
+  const toggleBtn = document.getElementById('quoteFilterToggleBtn');
   if (!controls) return;
   if (typeof forceExpanded === 'boolean') {
     quoteFiltersCollapsed = !forceExpanded;
@@ -7119,6 +7140,13 @@ function toggleQuoteFilters(forceExpanded) {
     quoteFiltersCollapsed = !quoteFiltersCollapsed;
   }
   controls.classList.toggle('hidden', quoteFiltersCollapsed);
+  if (leftPanel) {
+    leftPanel.classList.toggle('quote-filters-collapsed', quoteFiltersCollapsed);
+    leftPanel.classList.toggle('quote-filters-expanded', !quoteFiltersCollapsed);
+  }
+  if (toggleBtn) {
+    toggleBtn.setAttribute('aria-expanded', String(!quoteFiltersCollapsed));
+  }
   updateQuoteFilterToggleLabel();
   persistWorkflowContext();
 }
