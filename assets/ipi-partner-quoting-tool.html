@@ -997,7 +997,9 @@
     max-width: 700px;
     width: 100%;
     max-height: 90vh;
-    overflow-y: auto;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
     animation: modalIn 0.2s ease;
   }
 
@@ -1035,7 +1037,7 @@
   }
   .modal-close:hover { background: var(--border); color: var(--charcoal); }
 
-  .modal-body { padding: 20px 24px; }
+  .modal-body { padding: 20px 24px; flex: 1; min-height: 0; overflow-y: auto; }
   .modal-footer {
     padding: 16px 24px;
     border-top: 1px solid var(--border);
@@ -1703,6 +1705,46 @@
   .pv-sent { color: #2a52b0; }
   .pv-draft { color: var(--charcoal); }
   .pv-lost { color: #a02020; }
+
+  #savedQuotesModal .modal {
+    width: min(1200px, 94vw);
+    height: min(88vh, 900px);
+    max-width: none;
+    max-height: none;
+  }
+  #savedQuotesBody {
+    padding: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .saved-quotes-top-region {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: white;
+    border-bottom: 1px solid var(--border);
+  }
+  .saved-quotes-toolbar {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) auto auto;
+    gap: 10px;
+    align-items: center;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    background: #fbfcfd;
+  }
+  .saved-quotes-toolbar .meta-field { margin: 0; }
+  .saved-quotes-toolbar input,
+  .saved-quotes-toolbar select { width: 100%; }
+  .saved-quotes-results {
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    font-weight: 600;
+  }
+  .saved-quotes-list-region { min-height: 0; }
 
   /* Product Detail Panel */
   .product-detail-overlay {
@@ -2439,6 +2481,22 @@
     .price-list-controls {
       grid-template-columns: 1fr;
     }
+
+    #savedQuotesModal .modal {
+      width: 100%;
+      height: min(92vh, 100%);
+    }
+    .saved-quotes-toolbar {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .saved-quotes-results {
+      justify-self: start;
+      white-space: normal;
+    }
+    .pipeline-bar {
+      grid-template-columns: repeat(2, 1fr);
+    }
   }
 
 </style>
@@ -2705,7 +2763,7 @@
 
 <!-- Saved Quotes Modal -->
 <div class="modal-overlay hidden" id="savedQuotesModal" onclick="closeSavedQuotesModal(event)">
-  <div class="modal" onclick="event.stopPropagation()" style="max-width:780px">
+  <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-header">
       <div>
         <div class="modal-title">Saved Quotes</div>
@@ -2713,7 +2771,7 @@
       </div>
       <button class="modal-close" onclick="closeSavedQuotesModal()">✕</button>
     </div>
-    <div class="modal-body" id="savedQuotesBody" style="padding:0"></div>
+    <div class="modal-body" id="savedQuotesBody"></div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeSavedQuotesModal()">Close</button>
     </div>
@@ -5272,6 +5330,7 @@ const STATUS_META = {
   won:   { label: 'Won',    icon: '✅',  cls: 'won'   },
   lost:  { label: 'Lost',   icon: '❌',  cls: 'lost'  }
 };
+const savedQuotesViewState = { search: '', status: 'all' };
 
 function updateQuoteStatus(baseRef, newStatus) {
   const saved = getSavedQuotes();
@@ -5315,18 +5374,57 @@ function openSavedQuotesModal() {
     </div>`;
   }
 
+  const q = savedQuotesViewState.search.trim().toLowerCase();
+  const statusFilter = savedQuotesViewState.status;
+  const filteredSaved = saved.filter(function(item) {
+    const statusMatch = statusFilter === 'all' || (item.status || 'draft') === statusFilter;
+    if (!statusMatch) return false;
+    if (!q) return true;
+    const haystack = [
+      item.baseRef || item.ref || '',
+      item.ref || '',
+      item.partner || '',
+      item.customer || '',
+      item.changeNote || ''
+    ].join(' ').toLowerCase();
+    return haystack.indexOf(q) !== -1;
+  });
+
+  const toolbarHTML = '<div class="saved-quotes-top-region">' +
+    pipelineHTML +
+    '<div class="saved-quotes-toolbar">' +
+      '<div class="meta-field">' +
+        '<label for="savedQuotesSearchInput">Search</label>' +
+        '<input id="savedQuotesSearchInput" type="text" placeholder="Quote ref, partner, customer…" value="' + savedQuotesViewState.search.replace(/"/g, '&quot;') + '">' +
+      '</div>' +
+      '<div class="meta-field">' +
+        '<label for="savedQuotesStatusFilter">Status</label>' +
+        '<select id="savedQuotesStatusFilter">' +
+          '<option value="all"'   + (savedQuotesViewState.status === 'all' ? ' selected' : '') + '>All statuses</option>' +
+          '<option value="draft"' + (savedQuotesViewState.status === 'draft' ? ' selected' : '') + '>Draft</option>' +
+          '<option value="sent"'  + (savedQuotesViewState.status === 'sent' ? ' selected' : '') + '>Sent</option>' +
+          '<option value="won"'   + (savedQuotesViewState.status === 'won' ? ' selected' : '') + '>Won</option>' +
+          '<option value="lost"'  + (savedQuotesViewState.status === 'lost' ? ' selected' : '') + '>Lost</option>' +
+        '</select>' +
+      '</div>' +
+      '<div class="saved-quotes-results">' + filteredSaved.length + ' result' + (filteredSaved.length !== 1 ? 's' : '') + '</div>' +
+    '</div>' +
+  '</div>';
+
   let listHTML = '';
-  if (saved.length === 0) {
+  if (filteredSaved.length === 0) {
     listHTML = '<div class="saved-quotes-empty">' +
       '<div style="font-size:32px;margin-bottom:12px">📂</div>' +
-      '<div style="font-weight:600;margin-bottom:4px">No saved quotes</div>' +
-      '<div>Build a quote and click <strong>Save v1</strong> to store it here.</div>' +
+      '<div style="font-weight:600;margin-bottom:4px">' + (saved.length === 0 ? 'No saved quotes' : 'No matching quotes') + '</div>' +
+      '<div>' + (saved.length === 0
+        ? 'Build a quote and click <strong>Save v1</strong> to store it here.'
+        : 'Try a different search term or status filter.') + '</div>' +
       '</div>';
   } else {
     // Group by baseRef (fall back to ref for legacy quotes without baseRef)
     const groups = {};
     const groupOrder = [];
-    saved.forEach(q => {
+    filteredSaved.forEach(q => {
       const base = q.baseRef || q.ref;
       if (!groups[base]) { groups[base] = []; groupOrder.push(base); }
       groups[base].push(q);
@@ -5403,8 +5501,23 @@ function openSavedQuotesModal() {
     }).join('');
   }
 
-  document.getElementById('savedQuotesBody').innerHTML = pipelineHTML + listHTML;
+  document.getElementById('savedQuotesBody').innerHTML = toolbarHTML + '<div class="saved-quotes-list-region">' + listHTML + '</div>';
   const body = document.getElementById('savedQuotesBody');
+
+  const searchInput = document.getElementById('savedQuotesSearchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      savedQuotesViewState.search = this.value;
+      openSavedQuotesModal();
+    });
+  }
+  const statusInput = document.getElementById('savedQuotesStatusFilter');
+  if (statusInput) {
+    statusInput.addEventListener('change', function() {
+      savedQuotesViewState.status = this.value;
+      openSavedQuotesModal();
+    });
+  }
 
   // Group header: click to expand/collapse (ignore clicks on controls inside)
   body.querySelectorAll('.sq-group-header').forEach(function(hdr) {
