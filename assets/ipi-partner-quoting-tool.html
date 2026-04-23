@@ -5327,7 +5327,8 @@ function doLoadQuote(ref) {
   showToast('Loaded quote ' + ref);
 }
 
-function deleteQuote(ref) {
+function deleteQuote(ref, sourceEl) {
+  var uiState = captureSavedQuotesUiState(sourceEl);
   var body = document.getElementById('savedQuotesBody');
   var existing = body.querySelector('.confirm-banner');
   if (existing) existing.remove();
@@ -5342,7 +5343,7 @@ function deleteQuote(ref) {
     var saved = getSavedQuotes().filter(function(q) { return q.ref !== ref; });
     localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
     if (ref === (currentBaseRef + ' v' + currentVersion)) { currentVersion = 0; updateVersionIndicator(); }
-    openSavedQuotesModal();
+    openSavedQuotesModal({ uiState: uiState });
     showToast('Deleted ' + ref);
   });
 }
@@ -5375,27 +5376,96 @@ function persistSavedQuotesViewState() {
   localStorage.setItem(SAVED_QUOTES_PREFS_KEY, JSON.stringify(savedQuotesViewState));
 }
 
-function updateQuoteStatus(baseRef, newStatus) {
+function captureSavedQuotesUiState(focusSource) {
+  const body = document.getElementById('savedQuotesBody');
+  const state = { expandedBases: [], scrollTop: 0, focus: null };
+  if (!body) return state;
+
+  state.expandedBases = Array.from(body.querySelectorAll('.sq-group .sq-versions-list.open'))
+    .map(function(list) {
+      const group = list.closest('.sq-group');
+      return group ? group.dataset.base : '';
+    })
+    .filter(Boolean);
+  state.scrollTop = body.scrollTop || 0;
+
+  const focusEl = focusSource || document.activeElement;
+  if (!focusEl || !body.contains(focusEl)) return state;
+
+  const statusSelect = focusEl.closest('.sq-status-change');
+  if (statusSelect && statusSelect.dataset.base) {
+    state.focus = { type: 'status', base: statusSelect.dataset.base };
+    return state;
+  }
+  const deleteBtn = focusEl.closest('.sq-delete-btn');
+  if (deleteBtn && deleteBtn.dataset.ref) {
+    const deleteGroup = deleteBtn.closest('.sq-group');
+    state.focus = { type: 'delete', ref: deleteBtn.dataset.ref, base: deleteGroup ? deleteGroup.dataset.base : '' };
+    return state;
+  }
+  const duplicateBtn = focusEl.closest('.sq-duplicate-btn');
+  if (duplicateBtn && duplicateBtn.dataset.ref) {
+    const duplicateGroup = duplicateBtn.closest('.sq-group');
+    state.focus = { type: 'duplicate', ref: duplicateBtn.dataset.ref, base: duplicateGroup ? duplicateGroup.dataset.base : '' };
+  }
+  return state;
+}
+
+function restoreSavedQuotesUiState(state) {
+  if (!state) return;
+  const body = document.getElementById('savedQuotesBody');
+  if (!body) return;
+
+  (state.expandedBases || []).forEach(function(base) {
+    const group = body.querySelector('.sq-group[data-base="' + base + '"]');
+    if (!group) return;
+    const list = group.querySelector('.sq-versions-list');
+    const chev = group.querySelector('.sq-group-chevron');
+    if (list) list.classList.add('open');
+    if (chev) chev.classList.add('open');
+  });
+
+  body.scrollTop = Number.isFinite(state.scrollTop) ? state.scrollTop : 0;
+
+  if (!state.focus) return;
+  let focusTarget = null;
+  if (state.focus.type === 'status' && state.focus.base) {
+    focusTarget = body.querySelector('.sq-status-change[data-base="' + state.focus.base + '"]');
+  } else if (state.focus.type === 'delete' && state.focus.ref) {
+    focusTarget = body.querySelector('.sq-delete-btn[data-ref="' + state.focus.ref + '"]');
+  } else if (state.focus.type === 'duplicate' && state.focus.ref) {
+    focusTarget = body.querySelector('.sq-duplicate-btn[data-ref="' + state.focus.ref + '"]');
+  }
+  if (!focusTarget && state.focus.base) {
+    focusTarget = body.querySelector('.sq-status-change[data-base="' + state.focus.base + '"]')
+      || body.querySelector('.sq-group[data-base="' + state.focus.base + '"] .sq-more-btn');
+  }
+  if (focusTarget && typeof focusTarget.focus === 'function') focusTarget.focus();
+}
+
+function updateQuoteStatus(baseRef, newStatus, sourceEl) {
   const saved = getSavedQuotes();
   saved.forEach(q => { if ((q.baseRef || q.ref) === baseRef) q.status = newStatus; });
   localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
-  openSavedQuotesModal();
+  openSavedQuotesModal({ uiState: captureSavedQuotesUiState(sourceEl) });
 }
 
-function duplicateQuote(ref) {
+function duplicateQuote(ref, sourceEl) {
   const saved = getSavedQuotes();
   const q = saved.find(s => s.ref === ref);
   if (!q) return;
+  const uiState = captureSavedQuotesUiState(sourceEl);
   const newBase = generateQuoteRef();
   const copy = Object.assign({}, q, { baseRef: newBase, version: 1, ref: newBase + ' v1',
     status: 'draft', changeNote: 'Duplicated from ' + (q.baseRef || q.ref), savedAt: new Date().toISOString() });
   saved.unshift(copy);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
-  openSavedQuotesModal();
+  openSavedQuotesModal({ uiState: uiState });
   showToast('Duplicated as ' + newBase);
 }
 
-function openSavedQuotesModal() {
+function openSavedQuotesModal(options) {
+  const uiState = (options && options.uiState) || captureSavedQuotesUiState();
   const saved = getSavedQuotes();
   
   const subtitle = document.getElementById('savedQuotesSubtitle');
@@ -5636,6 +5706,7 @@ function openSavedQuotesModal() {
       hdr.querySelector('.sq-group-chevron').classList.add('open');
     }
   });
+  restoreSavedQuotesUiState(uiState);
 
   // Load, delete, duplicate buttons
   body.querySelectorAll('.sq-load-latest-btn').forEach(function(btn) {
@@ -5645,10 +5716,10 @@ function openSavedQuotesModal() {
     btn.addEventListener('click', function() { loadQuote(this.dataset.ref); });
   });
   body.querySelectorAll('.sq-delete-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() { deleteQuote(this.dataset.ref); });
+    btn.addEventListener('click', function() { deleteQuote(this.dataset.ref, this); });
   });
   body.querySelectorAll('.sq-duplicate-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() { duplicateQuote(this.dataset.ref); });
+    btn.addEventListener('click', function() { duplicateQuote(this.dataset.ref, this); });
   });
 
   function closeHeaderActionMenus() {
@@ -5678,12 +5749,7 @@ function openSavedQuotesModal() {
     sel.addEventListener('change', function() {
       const base   = this.dataset.base;
       const newVal = this.value;
-      const allSaved = getSavedQuotes();
-      allSaved.forEach(function(q) {
-        if ((q.baseRef || q.ref) === base) q.status = newVal;
-      });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(allSaved));
-      openSavedQuotesModal();
+      updateQuoteStatus(base, newVal, this);
     });
   });
 
