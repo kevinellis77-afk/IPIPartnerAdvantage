@@ -1854,8 +1854,19 @@
   /* Version management */
   .sq-group { border-bottom: 1px solid var(--border); }
   .sq-group:last-child { border-bottom: none; }
-  .sq-group-header { padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; transition: background 0.1s; user-select: none; }
+  .sq-group-header { width: 100%; border: 0; text-align: left; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; transition: background 0.1s; user-select: none; background: transparent; font: inherit; }
   .sq-group-header:hover { background: var(--off-white); }
+  .sq-group-header:focus-visible,
+  .sq-status-select:focus-visible,
+  .sq-load-latest-btn:focus-visible,
+  .sq-load-btn:focus-visible,
+  .sq-delete-btn:focus-visible,
+  .sq-duplicate-btn:focus-visible,
+  .sq-icon-btn:focus-visible,
+  .sq-action-menu-item:focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: 2px;
+  }
   .sq-group-main { flex: 1; min-width: 0; }
   .sq-group-baseref { font-size: 15px; font-weight: 800; color: var(--charcoal); line-height: 1.15; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .sq-group-meta { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.35; }
@@ -5369,6 +5380,7 @@ const STATUS_META = {
   won:   { label: 'Won',    icon: '✅',  cls: 'won'   },
   lost:  { label: 'Lost',   icon: '❌',  cls: 'lost'  }
 };
+let savedQuotesModalOpener = null;
 const SAVED_QUOTES_PREFS_KEY = 'ipi_saved_quotes_ui_prefs';
 const savedQuotesViewState = (function loadSavedQuotesViewState() {
   const defaults = { search: '', status: 'all', sort: 'recent' };
@@ -5435,9 +5447,8 @@ function restoreSavedQuotesUiState(state) {
     const group = body.querySelector('.sq-group[data-base="' + base + '"]');
     if (!group) return;
     const list = group.querySelector('.sq-versions-list');
-    const chev = group.querySelector('.sq-group-chevron');
     if (list) list.classList.add('open');
-    if (chev) chev.classList.add('open');
+    syncSavedQuoteGroupAria(group);
   });
 
   body.scrollTop = Number.isFinite(state.scrollTop) ? state.scrollTop : 0;
@@ -5456,6 +5467,16 @@ function restoreSavedQuotesUiState(state) {
       || body.querySelector('.sq-group[data-base="' + state.focus.base + '"] .sq-more-btn');
   }
   if (focusTarget && typeof focusTarget.focus === 'function') focusTarget.focus();
+}
+
+function syncSavedQuoteGroupAria(groupEl) {
+  if (!groupEl) return;
+  const list = groupEl.querySelector('.sq-versions-list');
+  const header = groupEl.querySelector('.sq-group-header');
+  const chevron = groupEl.querySelector('.sq-group-chevron');
+  const isOpen = !!(list && list.classList.contains('open'));
+  if (header) header.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  if (chevron) chevron.classList.toggle('open', isOpen);
 }
 
 function updateQuoteStatus(baseRef, newStatus, sourceEl) {
@@ -5480,6 +5501,9 @@ function duplicateQuote(ref, sourceEl) {
 }
 
 function openSavedQuotesModal(options) {
+  if (document.getElementById('savedQuotesModal').classList.contains('hidden')) {
+    savedQuotesModalOpener = document.activeElement;
+  }
   const uiState = (options && options.uiState) || captureSavedQuotesUiState();
   const saved = getSavedQuotes();
   
@@ -5590,6 +5614,8 @@ function openSavedQuotesModal(options) {
       const latest   = versions[0];
       const vCount   = versions.length;
       const status   = latest.status || 'draft';
+      const safeBaseId = base.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'quote';
+      const versionsListId = 'sq-versions-' + safeBaseId;
       const levelBadge = latest.level
         ? '<span class="sq-level-badge ' + (latest.level || '') + '">' + getStoredProfileLabel(latest.partnerModel || 'reseller', latest.level) + '</span>' : '';
       const validStr = latest.validUntil
@@ -5599,7 +5625,7 @@ function openSavedQuotesModal(options) {
       const statusSelect =
         '<label class="sq-status-control sq-header-control" title="Deal stage">' +
         '<span class="sq-status-label">Stage</span>' +
-        '<select class="sq-status-select sq-status-change" data-base="' + base + '" title="Change stage">' +
+        '<select class="sq-status-select sq-status-change" data-base="' + base + '" title="Change stage" aria-label="Change stage for ' + base + '">' +
         '<option value="draft"' + (status === 'draft' ? ' selected' : '') + '>✏️ Draft</option>' +
         '<option value="sent"'  + (status === 'sent'  ? ' selected' : '') + '>📤 Sent</option>'  +
         '<option value="won"'   + (status === 'won'   ? ' selected' : '') + '>✅ Won</option>'   +
@@ -5623,8 +5649,8 @@ function openSavedQuotesModal(options) {
             '<div class="sq-version-acv">ACV ' + fmtGBP(v.acv) + '</div>' +
           '</div>' +
           '<div class="sq-version-actions">' +
-            '<button class="btn btn-outline btn-sm sq-load-btn" data-ref="' + v.ref + '">Load</button>' +
-            '<button class="btn btn-danger btn-sm sq-delete-btn" data-ref="' + v.ref + '" title="Delete version">' +
+            '<button class="btn btn-outline btn-sm sq-load-btn" data-ref="' + v.ref + '" aria-label="Load quote ' + v.ref + '">Load</button>' +
+            '<button class="btn btn-danger btn-sm sq-delete-btn" data-ref="' + v.ref + '" title="Delete version" aria-label="Delete quote ' + v.ref + '">' +
               '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
               '<polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14H6L5 6"></path>' +
               '<path d="M10 11v6"></path><path d="M14 11v6"></path></svg>' +
@@ -5635,7 +5661,7 @@ function openSavedQuotesModal(options) {
 
       return '<div class="sq-group" data-base="' + base + '">' +
         // Group header (click to expand)
-        '<div class="sq-group-header">' +
+        '<div class="sq-group-header" role="button" tabindex="0" aria-expanded="false" aria-controls="' + versionsListId + '">' +
           '<div class="sq-group-main">' +
             '<div class="sq-group-baseref">' + base + ' ' + levelBadge + '</div>' +
             '<div class="sq-group-meta">' + (latest.partner || '—') + ' → ' + (latest.customer || '—') + validStr + '</div>' +
@@ -5648,13 +5674,13 @@ function openSavedQuotesModal(options) {
               '<div class="sq-group-acv">ACV ' + fmtGBP(latest.acv) + '</div>' +
             '</div>' +
             '<div class="sq-group-actions">' +
-              '<button class="btn btn-sm sq-load-latest-btn sq-header-control" data-ref="' + latest.ref + '" title="Load latest version">Load latest</button>' +
+              '<button class="btn btn-sm sq-load-latest-btn sq-header-control" data-ref="' + latest.ref + '" title="Load latest version" aria-label="Load latest version for ' + base + '">Load latest</button>' +
               statusSelect +
               '<span class="sq-version-count">' + vCount + ' ver' + (vCount > 1 ? 's' : '') + '</span>' +
               '<div class="sq-action-menu-wrap">' +
                 '<button class="sq-icon-btn sq-more-btn sq-header-control" title="More actions" aria-label="More actions" aria-expanded="false">⋯</button>' +
                 '<div class="sq-action-menu">' +
-                  '<button class="sq-action-menu-item sq-duplicate-btn" data-ref="' + latest.ref + '">Copy quote</button>' +
+                  '<button class="sq-action-menu-item sq-duplicate-btn" data-ref="' + latest.ref + '" aria-label="Copy quote ' + latest.ref + '">Copy quote</button>' +
                 '</div>' +
               '</div>' +
               '<span class="sq-group-chevron">▶</span>' +
@@ -5662,7 +5688,7 @@ function openSavedQuotesModal(options) {
           '</div>' +
         '</div>' +
         // Expandable versions list
-        '<div class="sq-versions-list">' + versionRows + '</div>' +
+        '<div class="sq-versions-list" id="' + versionsListId + '">' + versionRows + '</div>' +
       '</div>';
     }).join('');
   }
@@ -5706,19 +5732,25 @@ function openSavedQuotesModal(options) {
 
   // Group header: click to expand/collapse (ignore clicks on controls inside)
   body.querySelectorAll('.sq-group-header').forEach(function(hdr) {
-    hdr.addEventListener('click', function(e) {
+    const toggleGroup = function(e) {
       if (e.target.closest('.sq-group-actions') || e.target.closest('select') || e.target.closest('button')) return;
-      const group = this.closest('.sq-group');
+      const group = hdr.closest('.sq-group');
       const list  = group.querySelector('.sq-versions-list');
-      const chev  = this.querySelector('.sq-group-chevron');
-      const open  = list.classList.toggle('open');
-      chev.classList.toggle('open', open);
+      if (!list) return;
+      list.classList.toggle('open');
+      syncSavedQuoteGroupAria(group);
+    };
+    hdr.addEventListener('click', toggleGroup);
+    hdr.addEventListener('keydown', function(e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      toggleGroup(e);
     });
     // Auto-expand the currently loaded quote
     const group = hdr.closest('.sq-group');
     if (group && group.dataset.base === currentBaseRef) {
       group.querySelector('.sq-versions-list').classList.add('open');
-      hdr.querySelector('.sq-group-chevron').classList.add('open');
+      syncSavedQuoteGroupAria(group);
     }
   });
   restoreSavedQuotesUiState(uiState);
@@ -5774,6 +5806,10 @@ function openSavedQuotesModal(options) {
 function closeSavedQuotesModal(e) {
   if (!e || e.target === document.getElementById('savedQuotesModal')) {
     document.getElementById('savedQuotesModal').classList.add('hidden');
+    if (savedQuotesModalOpener && typeof savedQuotesModalOpener.focus === 'function' && document.contains(savedQuotesModalOpener)) {
+      savedQuotesModalOpener.focus();
+    }
+    savedQuotesModalOpener = null;
   }
 }
 
@@ -7247,6 +7283,11 @@ document.addEventListener('click', function(e) {
 
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
+    const savedQuotesModal = document.getElementById('savedQuotesModal');
+    if (savedQuotesModal && !savedQuotesModal.classList.contains('hidden')) {
+      closeSavedQuotesModal();
+      return;
+    }
     closeToolbarMenus();
     closePriceListMultiDropdowns();
   }
