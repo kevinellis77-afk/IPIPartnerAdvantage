@@ -5952,10 +5952,10 @@ function buildNormalizedProduct(product) {
   const meta = PRODUCT_META[safeProduct.id] || {};
   const licenseType = normalizeDisplayText(csvLicenseType || normalizeAgentType(meta.agentType) || safeProduct.agentType || inferredLicenseType, 'N/A');
 
-  const csvPaymentType = normalizePaymentType(canonical.payment_type);
+  const csvPaymentType = normalizePaymentType(safeProduct.payment_type || safeProduct.payType);
   const inferredPaymentType = canonical.payment_type || null;
   const metaPaymentType = normalizePaymentType(meta.commitment);
-  const paymentType = csvPaymentType || safeProduct.payType || metaPaymentType || inferredPaymentType || 'N/A';
+  const paymentType = csvPaymentType || safeProduct.payType || inferredPaymentType || metaPaymentType || 'N/A';
 
   const inlineRelated = parseInlineRelatedProducts(safeProduct.related_products);
   const importedRelated = Array.isArray(safeProduct.related)
@@ -5965,14 +5965,16 @@ function buildNormalizedProduct(product) {
     ? inlineRelated
     : (importedRelated.length ? importedRelated : (Array.isArray(meta.related) ? meta.related : []));
 
-  const metaDescription = normalizeDisplayText(safeProduct.description, normalizeDisplayText(meta.desc,
+  const importedDescription = normalizeDisplayText(safeProduct.description, '');
+  const metaDescription = importedDescription || normalizeDisplayText(meta.desc,
     (lowerName.includes('overage')
       ? 'Overage charge for ' + rawName.replace(/overage/i, '').trim() + ' when usage exceeds the contracted monthly volume. Ensures uninterrupted service during peak periods without hard caps.'
       : rawName + ' — part of the IPI ' + category + ' portfolio. ' + (billing === 'One Off' ? 'One-off implementation or professional services charge.' : 'Monthly recurring charge per ' + (licenseType !== 'N/A' ? licenseType.toLowerCase() + ' agent licence.' : 'unit of usage.')))
-  ));
+  );
 
   const importedBillingLabel = normalizeDisplayText(safeProduct.commitment, '');
-  const canonicalBillingLabel = normalizeDisplayText(getCanonicalDisplayPaymentLabel(paymentType, billing), '');
+  const importedPaymentLabel = normalizeDisplayText(safeProduct.payment_type || safeProduct.payType, '');
+  const canonicalBillingLabel = normalizeDisplayText(getCanonicalDisplayPaymentLabel(importedPaymentLabel || paymentType, billing), '');
   const metaBillingLabel = normalizeDisplayText(meta.commitment, '');
   const billingLabel = importedBillingLabel || canonicalBillingLabel || metaBillingLabel || 'N/A';
   const basePrice = safeProduct.list > 0 ? safeProduct.list : safeProduct.threshold;
@@ -5987,7 +5989,7 @@ function buildNormalizedProduct(product) {
     basePrice: Number(basePrice || 0),
     metaDescription: metaDescription,
     relatedProducts: relatedProducts,
-    tip: normalizeDisplayText(safeProduct.tip, normalizeDisplayText(meta.tip, ''))
+    tip: normalizeDisplayText(safeProduct.tip, '') || normalizeDisplayText(meta.tip, '')
   };
 }
 
