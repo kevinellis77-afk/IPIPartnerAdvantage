@@ -6647,7 +6647,8 @@ function sendEmailViaMailto() {
 
   if (!to) { showToast('⚠ Please enter a recipient email address'); return; }
 
-  // Build plain text summary for mailto (HTML not supported in mailto body)
+  // mailto body fields are plain text only; rich HTML cannot be reliably preloaded across email clients.
+  // Keep this plain-text summary as the fallback content when opening a draft email via mailto.
   const { mrc, otc, acv } = getGroupedQuoteData();
   const summaryText = [
     '--- QUOTE SUMMARY ---',
@@ -6674,7 +6675,7 @@ function sendEmailViaMailto() {
   document.body.removeChild(a);
 
   // Also offer HTML copy
-  showToast('✓ Opening email client — use "Copy Email Content" for HTML version');
+  showToast('✓ Opened plain-text draft. For formatted HTML, click "Copy Email Content" and paste into your email client.');
 }
 
 function copyEmailHTML() {
@@ -7928,7 +7929,7 @@ window.addEventListener('DOMContentLoaded', initPartnerPriceList);
       </button>
       <button class="btn btn-primary" onclick="sendEmailViaMailto()">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-        Open in Email Client
+        Open Draft Email (Plain Text)
       </button>
     </div>
   </div>
