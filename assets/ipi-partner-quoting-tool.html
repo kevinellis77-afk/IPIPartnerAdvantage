@@ -5701,11 +5701,43 @@ function renderTemplatesBody() {
   });
 }
 
+function validateTemplatesAgainstProducts() {
+  const knownProductIds = new Set(PRODUCTS.map(function(product) { return product.id; }));
+  const missingByTemplate = [];
+  const missingSkuSet = new Set();
+
+  TEMPLATES.forEach(function(template) {
+    const missingSkus = template.items
+      .map(function(item) { return item.id; })
+      .filter(function(sku, index, allSkus) {
+        return !knownProductIds.has(sku) && allSkus.indexOf(sku) === index;
+      });
+
+    if (missingSkus.length > 0) {
+      missingSkus.forEach(function(sku) { missingSkuSet.add(sku); });
+      missingByTemplate.push({
+        key: template.key,
+        name: template.name,
+        version: template.version,
+        missingSkus: missingSkus,
+      });
+    }
+  });
+
+  return {
+    isValid: missingByTemplate.length === 0,
+    missingSkus: Array.from(missingSkuSet).sort(),
+    missingByTemplate: missingByTemplate,
+  };
+}
+
 function applyTemplate(template) {
   const t = template;
   if (!t) return;
+  const missingSkus = [];
   const newItems = t.items.map(ti => {
     const product = PRODUCTS.find(p => p.id === ti.id);
+    if (!product) missingSkus.push(ti.id);
     return product ? { product, qty: ti.qty, override: null } : null;
   }).filter(Boolean);
 
@@ -5721,10 +5753,20 @@ function applyTemplate(template) {
   }
   closeTemplatesModal();
   renderQuote();
+  if (missingSkus.length > 0) {
+    const uniqueMissingSkus = Array.from(new Set(missingSkus)).sort();
+    showToast('⚠ ' + t.icon + ' Template partially applied: ' + t.name + ' (missing SKUs: ' + uniqueMissingSkus.join(', ') + ')');
+    return;
+  }
+
   showToast(t.icon + ' Template applied: ' + t.name);
 }
 
 function openTemplatesModal() {
+  const templateValidation = validateTemplatesAgainstProducts();
+  if (!templateValidation.isValid) {
+    showToast('⚠ Template catalogue drift detected. Missing SKUs: ' + templateValidation.missingSkus.join(', '));
+  }
   const archivedToggle = document.getElementById('showArchivedTemplatesToggle');
   if (archivedToggle) archivedToggle.checked = showArchivedTemplates;
   renderTemplatesBody();
