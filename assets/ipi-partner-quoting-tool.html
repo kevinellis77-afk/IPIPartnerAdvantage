@@ -5406,6 +5406,15 @@ function persistSavedQuotesViewState() {
 function captureSavedQuotesUiState(focusSource) {
   const body = document.getElementById('savedQuotesBody');
   const state = { expandedBases: [], scrollTop: 0, focus: null };
+  const focusEl = focusSource || document.activeElement;
+  const searchInput = document.getElementById('savedQuotesSearchInput');
+  if (focusEl === searchInput) {
+    state.focus = {
+      type: 'search',
+      selectionStart: Number.isFinite(searchInput.selectionStart) ? searchInput.selectionStart : null,
+      selectionEnd: Number.isFinite(searchInput.selectionEnd) ? searchInput.selectionEnd : null
+    };
+  }
   if (!body) return state;
 
   state.expandedBases = Array.from(body.querySelectorAll('.sq-group .sq-versions-list.open'))
@@ -5416,7 +5425,6 @@ function captureSavedQuotesUiState(focusSource) {
     .filter(Boolean);
   state.scrollTop = body.scrollTop || 0;
 
-  const focusEl = focusSource || document.activeElement;
   if (!focusEl || !body.contains(focusEl)) return state;
 
   const statusSelect = focusEl.closest('.sq-status-change');
@@ -5455,7 +5463,19 @@ function restoreSavedQuotesUiState(state) {
 
   if (!state.focus) return;
   let focusTarget = null;
-  if (state.focus.type === 'status' && state.focus.base) {
+  if (state.focus.type === 'search') {
+    requestAnimationFrame(function() {
+      const searchInput = document.getElementById('savedQuotesSearchInput');
+      if (!searchInput || typeof searchInput.focus !== 'function') return;
+      searchInput.focus();
+      if (typeof searchInput.setSelectionRange === 'function'
+        && Number.isFinite(state.focus.selectionStart)
+        && Number.isFinite(state.focus.selectionEnd)) {
+        searchInput.setSelectionRange(state.focus.selectionStart, state.focus.selectionEnd);
+      }
+    });
+    return;
+  } else if (state.focus.type === 'status' && state.focus.base) {
     focusTarget = body.querySelector('.sq-status-change[data-base="' + state.focus.base + '"]');
   } else if (state.focus.type === 'delete' && state.focus.ref) {
     focusTarget = body.querySelector('.sq-delete-btn[data-ref="' + state.focus.ref + '"]');
