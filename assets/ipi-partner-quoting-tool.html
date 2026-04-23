@@ -1103,12 +1103,56 @@
 
   .hidden { display: none !important; }
 
+  .quote-filter-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 10px 14px 8px;
+    border-bottom: 1px solid var(--border);
+    background: var(--off-white);
+    align-items: end;
+  }
+  .quote-filter-bar .meta-field {
+    width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+  .quote-filter-bar .meta-field label {
+    margin-bottom: 3px;
+    font-size: 10px;
+    letter-spacing: 0.6px;
+    line-height: 1.2;
+  }
+  .quote-filter-bar .meta-field input {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    min-height: 34px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+  .quote-filter-bar-btn {
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--charcoal);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    align-self: end;
+  }
+  .quote-filter-bar-btn:hover { background: var(--off-white); }
+
   .quote-filter-controls {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     min-width: 0;
     gap: 8px 10px;
-    padding: 8px 14px 6px;
+    padding: 8px 14px 10px;
     border-bottom: 1px solid var(--border);
     background: var(--off-white);
     align-items: end;
@@ -1146,10 +1190,7 @@
   }
   @container (min-width: 1040px) {
     .quote-filter-controls {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(280px, 1.35fr);
-    }
-    .quote-filter-controls .meta-field.search-field {
-      grid-column: auto;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
   .filter-pill {
@@ -2183,22 +2224,24 @@
   }
 
   .price-list-controls.hidden { display: none; }
-  .quote-filter-toggle-wrap {
-    padding: 10px 20px 0;
+  .quote-filter-drawer-head {
     display: flex;
+    align-items: center;
     justify-content: flex-end;
+    margin-bottom: 2px;
   }
-  .quote-filter-toggle {
-    border: 1px solid var(--border);
-    background: white;
-    color: var(--charcoal);
-    border-radius: 999px;
+  .quote-filter-close {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
     font-size: 12px;
     font-weight: 700;
-    padding: 6px 11px;
     cursor: pointer;
+    padding: 2px 4px;
   }
-  .quote-filter-toggle:hover { background: var(--off-white); }
+  .quote-filter-close:hover {
+    color: var(--charcoal);
+  }
 
   .price-list-table-wrap {
     background: white;
@@ -2488,10 +2531,17 @@
       <div class="panel-title">Product Catalogue</div>
       <div class="catalogue-source-badge" id="quoteCatalogueSourceBadge">Catalogue source: Embedded baseline</div>
     </div>
-    <div class="quote-filter-toggle-wrap">
-      <button class="quote-filter-toggle" id="quoteFilterToggleBtn" type="button" onclick="toggleQuoteFilters()">Show filters</button>
+    <div class="quote-filter-bar" id="quoteFilterBar">
+      <div class="meta-field search-field">
+        <label>Search Products</label>
+        <input type="text" id="searchInput" placeholder="Search by product, SKU or family…" oninput="filterProducts()">
+      </div>
+      <button class="quote-filter-bar-btn" id="quoteFilterToggleBtn" type="button" onclick="toggleQuoteFilters()">Filters</button>
     </div>
-    <div class="price-list-controls quote-filter-controls" id="quoteFilterControls">
+    <div class="price-list-controls quote-filter-controls hidden" id="quoteFilterControls">
+      <div class="quote-filter-drawer-head">
+        <button class="quote-filter-close" type="button" onclick="toggleQuoteFilters(false)">Hide filters</button>
+      </div>
       <div class="meta-field">
         <label>Category</label>
         <select id="quoteCategory" class="multi-select-native" multiple onchange="filterProducts()"></select>
@@ -2503,10 +2553,6 @@
       <div class="meta-field">
         <label id="quotePayTypeLabel">Payment Type</label>
         <select id="quotePayType" class="multi-select-native" multiple onchange="filterProducts()"></select>
-      </div>
-      <div class="meta-field search-field">
-        <label>Search Products</label>
-        <input type="text" id="searchInput" placeholder="Search by product, SKU or family…" oninput="filterProducts()">
       </div>
     </div>
     <button class="templates-btn" onclick="openTemplatesModal()">
@@ -3949,6 +3995,7 @@ function applyQuoteFilterState(state) {
   activeQuoteAgentFilters = normalizedAgent.slice();
   const searchInput = document.getElementById('searchInput');
   if (searchInput) searchInput.value = state.search || '';
+  updateQuoteFilterToggleLabel();
 }
 
 function getPriceListFilterState() {
@@ -4418,6 +4465,7 @@ function filterProducts() {
   activeQuoteCategoryFilters = getMultiSelectValues(document.getElementById('quoteCategory'));
   activeQuotePayFilters = getMultiSelectValues(document.getElementById('quotePayType'));
   activeQuoteAgentFilters = getMultiSelectValues(document.getElementById('quoteAgentType'));
+  updateQuoteFilterToggleLabel();
   renderProductList();
   persistWorkflowContext();
 }
@@ -6508,6 +6556,9 @@ function closeToolbarMenus() {
 document.addEventListener('click', function(e) {
   if (!e.target.closest('.toolbar-menu')) closeToolbarMenus();
   if (!e.target.closest('.multi-select')) closePriceListMultiDropdowns();
+  if (!quoteFiltersCollapsed && !e.target.closest('#quoteFilterControls') && !e.target.closest('#quoteFilterBar')) {
+    toggleQuoteFilters(false);
+  }
 });
 
 document.addEventListener('keydown', function(e) {
@@ -6824,6 +6875,7 @@ function syncQuoteFilterOptions() {
   activeQuoteCategoryFilters = getMultiSelectValues(categoryEl);
   activeQuotePayFilters = getMultiSelectValues(payEl);
   activeQuoteAgentFilters = getMultiSelectValues(agentEl);
+  updateQuoteFilterToggleLabel();
 }
 
 function bindPriceListSorting() {
@@ -6960,17 +7012,38 @@ function togglePriceListFilters(forceExpanded) {
   toggleBtn.textContent = priceListFiltersCollapsed ? 'Show filters' : 'Hide filters';
 }
 
+function getQuoteFilterGroupCount() {
+  const groups = [
+    document.getElementById('quoteCategory'),
+    document.getElementById('quotePayType'),
+    document.getElementById('quoteAgentType')
+  ];
+  return groups.reduce(function(count, selectEl) {
+    if (!selectEl) return count;
+    const selectedValues = getMultiSelectValues(selectEl);
+    const totalOptions = (selectEl.options || []).length;
+    const hasActiveSelection = selectedValues.length > 0 && selectedValues.length < totalOptions;
+    return count + (hasActiveSelection ? 1 : 0);
+  }, 0);
+}
+
+function updateQuoteFilterToggleLabel() {
+  const toggleBtn = document.getElementById('quoteFilterToggleBtn');
+  if (!toggleBtn) return;
+  const activeFilterCount = getQuoteFilterGroupCount();
+  toggleBtn.textContent = activeFilterCount > 0 ? 'Filters (' + activeFilterCount + ')' : 'Filters';
+}
+
 function toggleQuoteFilters(forceExpanded) {
   const controls = document.getElementById('quoteFilterControls');
-  const toggleBtn = document.getElementById('quoteFilterToggleBtn');
-  if (!controls || !toggleBtn) return;
+  if (!controls) return;
   if (typeof forceExpanded === 'boolean') {
     quoteFiltersCollapsed = !forceExpanded;
   } else {
     quoteFiltersCollapsed = !quoteFiltersCollapsed;
   }
   controls.classList.toggle('hidden', quoteFiltersCollapsed);
-  toggleBtn.textContent = quoteFiltersCollapsed ? 'Show filters' : 'Hide filters';
+  updateQuoteFilterToggleLabel();
   persistWorkflowContext();
 }
 
