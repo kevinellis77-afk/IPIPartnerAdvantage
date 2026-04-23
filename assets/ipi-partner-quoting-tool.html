@@ -5188,6 +5188,18 @@ function getSavedQuotes() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
 }
 
+function stripVersionSuffix(ref) {
+  return (ref || '').replace(/\s+v\d+$/, '');
+}
+
+function getQuoteBaseRef(q) {
+  return q.baseRef || stripVersionSuffix(q.ref);
+}
+
+function getQuoteVersion(q) {
+  return q.version || 1;
+}
+
 // ─── VERSION MANAGEMENT ──────────────────────────────────────────────────────
 function buildQuoteData(baseRef, version, changeNote) {
   const partner    = document.getElementById('partnerName').value || '';
@@ -5220,8 +5232,8 @@ function saveQuote() { promptSaveVersion(); }
 function promptSaveVersion() {
   if (quoteItems.length === 0) { showToast('⚠ Add products before saving'); return; }
   const baseRef  = currentBaseRef || document.getElementById('quoteRef').value || generateQuoteRef();
-  const existing = getSavedQuotes().filter(q => q.baseRef === baseRef);
-  const nextVer  = existing.length > 0 ? Math.max(...existing.map(q => q.version || 1)) + 1 : 1;
+  const existing = getSavedQuotes().filter(q => getQuoteBaseRef(q) === baseRef);
+  const nextVer  = existing.length > 0 ? Math.max(...existing.map(getQuoteVersion)) + 1 : 1;
   document.getElementById('versionNoteTitle').textContent = nextVer === 1 ? 'Save Quote' : 'Save as Version ' + nextVer;
   document.getElementById('versionNoteSubtitle').textContent = baseRef +
     (nextVer > 1 ? '  ·  ' + existing.length + ' previous version' + (existing.length > 1 ? 's' : '') : '');
@@ -5240,7 +5252,7 @@ function promptSaveVersion() {
 function doSaveVersion(baseRef, version, changeNote) {
   const saved     = getSavedQuotes();
   const quoteData = buildQuoteData(baseRef, version, changeNote);
-  const prev      = saved.filter(q => q.baseRef === baseRef);
+  const prev      = saved.filter(q => getQuoteBaseRef(q) === baseRef);
   if (prev.length > 0) quoteData.status = prev[0].status || 'draft';
   saved.unshift(quoteData);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
@@ -5263,8 +5275,8 @@ function updateVersionIndicator() {
   if (!indicator || !btn) return;
   const saved    = getSavedQuotes();
   const base     = currentBaseRef || document.getElementById('quoteRef').value;
-  const versions = saved.filter(q => q.baseRef === base);
-  const latest   = versions.length > 0 ? Math.max(...versions.map(q => q.version || 1)) : 0;
+  const versions = saved.filter(q => getQuoteBaseRef(q) === base);
+  const latest   = versions.length > 0 ? Math.max(...versions.map(getQuoteVersion)) : 0;
   const nextVer  = latest + 1;
   if (currentVersion > 0) {
     indicator.textContent   = 'v' + currentVersion;
@@ -5278,7 +5290,7 @@ function updateVersionIndicator() {
 }
 
 function onQuoteRefChange() {
-  currentBaseRef = document.getElementById('quoteRef').value;
+  currentBaseRef = stripVersionSuffix(document.getElementById('quoteRef').value);
   currentVersion = 0;
   updateVersionIndicator();
   updateWorkflowContextBar();
@@ -5310,7 +5322,9 @@ function doLoadQuote(ref) {
 
   document.getElementById('partnerName').value = q.partner || '';
   document.getElementById('endCustomer').value = q.customer || '';
-  document.getElementById('quoteRef').value = q.ref;
+  currentBaseRef = getQuoteBaseRef(q);
+  currentVersion = getQuoteVersion(q);
+  document.getElementById('quoteRef').value = currentBaseRef;
 
   setQuoteProfile(q.partnerModel || 'reseller', q.level || 'accredited');
   document.getElementById('quoteNotes').value = q.notes || '';
@@ -5324,6 +5338,7 @@ function doLoadQuote(ref) {
 
   closeSavedQuotesModal();
   renderQuote();
+  updateVersionIndicator();
   showToast('Loaded quote ' + ref);
 }
 
@@ -5342,7 +5357,7 @@ function deleteQuote(ref, sourceEl) {
     banner.remove();
     var saved = getSavedQuotes().filter(function(q) { return q.ref !== ref; });
     localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
-    if (ref === (currentBaseRef + ' v' + currentVersion)) { currentVersion = 0; updateVersionIndicator(); }
+    if (currentVersion > 0 && ref === (currentBaseRef + ' v' + currentVersion)) { currentVersion = 0; updateVersionIndicator(); }
     openSavedQuotesModal({ uiState: uiState });
     showToast('Deleted ' + ref);
   });
@@ -5445,7 +5460,7 @@ function restoreSavedQuotesUiState(state) {
 
 function updateQuoteStatus(baseRef, newStatus, sourceEl) {
   const saved = getSavedQuotes();
-  saved.forEach(q => { if ((q.baseRef || q.ref) === baseRef) q.status = newStatus; });
+  saved.forEach(q => { if (getQuoteBaseRef(q) === baseRef) q.status = newStatus; });
   localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
   openSavedQuotesModal({ uiState: captureSavedQuotesUiState(sourceEl) });
 }
@@ -5457,7 +5472,7 @@ function duplicateQuote(ref, sourceEl) {
   const uiState = captureSavedQuotesUiState(sourceEl);
   const newBase = generateQuoteRef();
   const copy = Object.assign({}, q, { baseRef: newBase, version: 1, ref: newBase + ' v1',
-    status: 'draft', changeNote: 'Duplicated from ' + (q.baseRef || q.ref), savedAt: new Date().toISOString() });
+    status: 'draft', changeNote: 'Duplicated from ' + getQuoteBaseRef(q), savedAt: new Date().toISOString() });
   saved.unshift(copy);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
   openSavedQuotesModal({ uiState: uiState });
@@ -5565,13 +5580,13 @@ function openSavedQuotesModal(options) {
     const groups = {};
     const groupOrder = [];
     filteredSortedSaved.forEach(q => {
-      const base = q.baseRef || q.ref;
+      const base = getQuoteBaseRef(q);
       if (!groups[base]) { groups[base] = []; groupOrder.push(base); }
       groups[base].push(q);
     });
 
     listHTML = groupOrder.map(base => {
-      const versions = groups[base].sort((a, b) => (b.version || 1) - (a.version || 1));
+      const versions = groups[base].sort((a, b) => getQuoteVersion(b) - getQuoteVersion(a));
       const latest   = versions[0];
       const vCount   = versions.length;
       const status   = latest.status || 'draft';
@@ -5598,7 +5613,7 @@ function openSavedQuotesModal(options) {
         const vDate = new Date(v.savedAt).toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'});
         const vTime = new Date(v.savedAt).toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
         return '<div class="sq-version-row' + (isLatest ? ' latest' : '') + '">' +
-          '<span class="sq-version-badge">v' + (v.version || 1) + (isLatest ? ' · Latest' : '') + '</span>' +
+          '<span class="sq-version-badge">v' + getQuoteVersion(v) + (isLatest ? ' · Latest' : '') + '</span>' +
           '<div class="sq-version-info">' +
             '<div class="sq-version-date">' + vDate + ' at ' + vTime + '</div>' +
             (v.changeNote ? '<div class="sq-version-change">' + v.changeNote + '</div>' : '') +
