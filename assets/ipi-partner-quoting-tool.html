@@ -1172,6 +1172,13 @@
     align-items: end;
     container-type: inline-size;
   }
+  .left-panel #quoteFilterControls {
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    max-width: 100%;
+    overflow: visible;
+    box-sizing: border-box;
+  }
   .quote-filter-controls .quote-filter-drawer-head {
     grid-column: 1 / -1;
     display: flex;
@@ -1209,6 +1216,11 @@
   @container (min-width: 700px) {
     .quote-filter-controls {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @container (min-width: 1020px) {
+    .left-panel #quoteFilterControls {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
   .left-panel.quote-filters-collapsed .product-list { padding-top: 2px; }
@@ -2585,7 +2597,7 @@
       </div>
       <button class="quote-filter-bar-btn" id="quoteFilterToggleBtn" type="button" aria-controls="quoteFilterControls" aria-expanded="false" onclick="toggleQuoteFilters()">Filters</button>
     </div>
-    <div class="price-list-controls quote-filter-controls hidden" id="quoteFilterControls">
+    <div class="quote-filter-controls hidden" id="quoteFilterControls">
       <div class="quote-filter-drawer-head">
         <button class="quote-filter-close" type="button" onclick="clearQuoteFilters()">Clear filters</button>
         <button class="quote-filter-close" type="button" onclick="toggleQuoteFilters(false)">Hide filters</button>
