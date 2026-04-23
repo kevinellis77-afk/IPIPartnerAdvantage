@@ -3475,7 +3475,31 @@ function replaceEmbeddedBaselineFromPastedData(rawText) {
   quoteItems = [];
   clearUploadedCatalogueStorage();
   setProductCatalogueSource({ sourceType: 'embedded', sourceLabel: 'Embedded baseline', sourceDate: new Date().toISOString() }, { clearPersisted: true });
-  refreshProductCatalogueViews();
+
+  applyDerivedProductAttributes();
+  NORMALIZED_PRODUCT_CACHE = {};
+  PRODUCTS.forEach(function(product) {
+    if (!product || !product.id) return;
+    NORMALIZED_PRODUCT_CACHE[product.id] = buildNormalizedProduct(product);
+  });
+  updateCategoryMetadataFromProducts();
+  syncQuoteItemsToCurrentProducts();
+
+  syncQuoteFilterOptions();
+  applyQuoteFilterState({
+    category: [],
+    payType: [],
+    agentType: [],
+    search: '',
+    filtersCollapsed: !!quoteFiltersCollapsed
+  });
+  openFamilies = {};
+  renderProductList();
+  renderQuote();
+  syncPriceListFilterOptions();
+  renderPartnerPriceList();
+
+  showToast('✓ ' + parsed.length + ' rows loaded — quote filters reset');
   return parsed.length;
 }
 
@@ -5489,9 +5513,8 @@ function applyPastedBaselineProductData() {
   const rawText = textArea ? textArea.value : '';
   clearPasteBaselineValidationError();
   try {
-    const count = replaceEmbeddedBaselineFromPastedData(rawText);
+    replaceEmbeddedBaselineFromPastedData(rawText);
     closePasteBaselineModal();
-    showToast('✓ Baseline products replaced (' + count + ' rows) — source: Embedded baseline');
   } catch (err) {
     showPasteBaselineValidationError(err && err.message ? err.message : String(err));
     showToast('⚠ Baseline replacement failed');
