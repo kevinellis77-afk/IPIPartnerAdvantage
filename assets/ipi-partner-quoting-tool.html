@@ -1891,6 +1891,26 @@
     font-size: 12.5px;
   }
   .email-summary-row:last-child { border-bottom: none; }
+  .paste-warning {
+    background: #fff7e0;
+    border: 1px solid #f0d28a;
+    color: #7a5c00;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12.5px;
+    margin-bottom: 12px;
+  }
+  .paste-validation-error {
+    margin-top: 10px;
+    background: #fef0f0;
+    border: 1px solid #f1c0c0;
+    color: #8b2b2b;
+    border-radius: 8px;
+    padding: 9px 11px;
+    font-size: 12px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+  }
 
   /* Print styles */
   @media print {
@@ -2665,6 +2685,31 @@
   </div>
 </div>
 
+<!-- Paste Baseline Product Data Modal -->
+<div class="modal-overlay hidden" id="pasteBaselineModal" onclick="closePasteBaselineModal(event)">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:760px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Paste Baseline Product Data</div>
+        <div class="modal-subtitle">Paste CSV/TSV rows to replace the current baseline catalogue.</div>
+      </div>
+      <button class="modal-close" onclick="closePasteBaselineModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="paste-warning"><strong>Warning:</strong> This will replace all current baseline products.</div>
+      <div class="email-field" style="margin-bottom:0">
+        <label for="pasteBaselineTextarea">Raw CSV/TSV Data</label>
+        <textarea id="pasteBaselineTextarea" placeholder="Paste product_id, product_e, category, charge_type/billing, list_rrp, cost, threshold…"></textarea>
+      </div>
+      <div id="pasteBaselineValidationError" class="paste-validation-error hidden" role="alert" aria-live="polite"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closePasteBaselineModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="applyPastedBaselineProductData()">Apply</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ─── PRODUCT DATA ───────────────────────────────────────────────────────────
 const PRODUCTS = [
@@ -3388,15 +3433,59 @@ function openProductImportPicker() {
   input.click();
 }
 
+function clearUploadedCatalogueStorage() {
+  try {
+    localStorage.removeItem(PRODUCT_CATALOGUE_STORAGE_KEY);
+    localStorage.removeItem(PRODUCT_CATALOGUE_META_STORAGE_KEY);
+  } catch (_) {}
+}
+
+function extractNormalizedHeadersFromRaw(rawText) {
+  const normalizedRaw = normalizeImportText(rawText);
+  const textWithLiteralFix = maybeDecodeEscapedLiteralBlock(normalizedRaw);
+  const headerLine = (textWithLiteralFix.split('\n').find(function(line) { return String(line || '').trim(); }) || '');
+  if (!headerLine) return [];
+  const delimiter = detectDelimiter(headerLine);
+  const rows = parseCsvRows(textWithLiteralFix, delimiter);
+  if (!rows.length) return [];
+  return rows[0].map(normalizeHeaderName);
+}
+
+function replaceEmbeddedBaselineFromPastedData(rawText) {
+  const raw = String(rawText == null ? '' : rawText);
+  if (!raw.trim()) throw new Error('Paste product CSV/TSV content before applying.');
+
+  const headers = extractNormalizedHeadersFromRaw(raw);
+  if (!headers.length) throw new Error('Unable to read a header row from pasted data.');
+  const hasChargeType = headers.includes('charge_type') || headers.includes('billing');
+  const requiredWithoutChargeType = ['product_id', 'product_e', 'category', 'list_rrp', 'cost', 'threshold'];
+  const missingHeaders = requiredWithoutChargeType.filter(function(h) { return !headers.includes(h); });
+  if (!hasChargeType) missingHeaders.push('charge_type/billing');
+  if (missingHeaders.length) {
+    throw new Error('Missing required columns: ' + missingHeaders.join(', '));
+  }
+
+  const parsed = parseProductCsv(raw);
+  if (!parsed.length) throw new Error('No valid product rows were found in the pasted data.');
+
+  PRODUCTS.splice(0, PRODUCTS.length);
+  parsed.forEach(function(p) { PRODUCTS.push(p); });
+  EMBEDDED_PRODUCT_CATALOGUE.splice(0, EMBEDDED_PRODUCT_CATALOGUE.length);
+  parsed.forEach(function(p) { EMBEDDED_PRODUCT_CATALOGUE.push(Object.assign({}, p)); });
+  quoteItems = [];
+  clearUploadedCatalogueStorage();
+  setProductCatalogueSource({ sourceType: 'embedded', sourceLabel: 'Embedded baseline', sourceDate: new Date().toISOString() }, { clearPersisted: true });
+  refreshProductCatalogueViews();
+  return parsed.length;
+}
+
 function resetProductCatalogueToBaseline() {
   PRODUCTS.splice(0, PRODUCTS.length);
   EMBEDDED_PRODUCT_CATALOGUE.forEach(function(product) {
     PRODUCTS.push(Object.assign({}, product));
   });
   quoteItems = [];
-  try {
-    localStorage.removeItem(PRODUCT_CATALOGUE_STORAGE_KEY);
-  } catch (_) {}
+  clearUploadedCatalogueStorage();
   setProductCatalogueSource({ sourceType: 'embedded', sourceLabel: 'Embedded baseline', sourceDate: null }, { clearPersisted: true });
   refreshProductCatalogueViews();
   showToast('✓ Product catalogue reset (' + PRODUCTS.length + ' rows) — source: Embedded baseline');
@@ -5367,6 +5456,48 @@ function closeTemplatesModal(e) {
   }
 }
 
+function clearPasteBaselineValidationError() {
+  const el = document.getElementById('pasteBaselineValidationError');
+  if (!el) return;
+  el.textContent = '';
+  el.classList.add('hidden');
+}
+
+function showPasteBaselineValidationError(message) {
+  const el = document.getElementById('pasteBaselineValidationError');
+  if (!el) return;
+  el.textContent = message;
+  el.classList.remove('hidden');
+}
+
+function openPasteBaselineModal() {
+  clearPasteBaselineValidationError();
+  const textArea = document.getElementById('pasteBaselineTextarea');
+  if (textArea) textArea.value = '';
+  document.getElementById('pasteBaselineModal').classList.remove('hidden');
+}
+
+function closePasteBaselineModal(e) {
+  if (!e || e.target === document.getElementById('pasteBaselineModal')) {
+    document.getElementById('pasteBaselineModal').classList.add('hidden');
+    clearPasteBaselineValidationError();
+  }
+}
+
+function applyPastedBaselineProductData() {
+  const textArea = document.getElementById('pasteBaselineTextarea');
+  const rawText = textArea ? textArea.value : '';
+  clearPasteBaselineValidationError();
+  try {
+    const count = replaceEmbeddedBaselineFromPastedData(rawText);
+    closePasteBaselineModal();
+    showToast('✓ Baseline products replaced (' + count + ' rows) — source: Embedded baseline');
+  } catch (err) {
+    showPasteBaselineValidationError(err && err.message ? err.message : String(err));
+    showToast('⚠ Baseline replacement failed');
+  }
+}
+
 // ─── SHARED GROUPED QUOTE BUILDER ────────────────────────────────────────────
 // Returns { monthly, oneOff, mrc, otc, acv } with items grouped by CAT_ORDER
 function getGroupedQuoteData() {
@@ -6429,6 +6560,10 @@ function updateToolbarState() {
           '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 .49-3.51"></path></svg>' +
           'Reset to baseline product catalogue' +
         '</button>' +
+        '<button class="toolbar-menu-item" onclick="openPasteBaselineModal(); closeToolbarMenus();">' +
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"></path><path d="M3 12h18"></path></svg>' +
+          'Paste Baseline Product Data' +
+        '</button>' +
         '<button class="toolbar-menu-item" onclick="clearWorkflowSessionContext(); closeToolbarMenus();">' +
           '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M8 6v12"></path><path d="M16 6v12"></path><path d="M5 6l1 14h12l1-14"></path></svg>' +
           'Clear workflow/session context' +
@@ -6463,6 +6598,10 @@ function updateToolbarState() {
         '<button class="toolbar-menu-item" onclick="resetProductCatalogueToBaseline(); closeToolbarMenus();">' +
           '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 .49-3.51"></path></svg>' +
           'Reset Products to Baseline' +
+        '</button>' +
+        '<button class="toolbar-menu-item" onclick="openPasteBaselineModal(); closeToolbarMenus();">' +
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"></path><path d="M3 12h18"></path></svg>' +
+          'Paste Baseline Product Data' +
         '</button>' +
         '<button class="toolbar-menu-item" onclick="clearWorkflowSessionContext(); closeToolbarMenus();">' +
           '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M8 6v12"></path><path d="M16 6v12"></path><path d="M5 6l1 14h12l1-14"></path></svg>' +
