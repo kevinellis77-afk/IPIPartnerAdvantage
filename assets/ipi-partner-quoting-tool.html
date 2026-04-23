@@ -864,6 +864,10 @@
     transition: border-color 0.15s;
   }
   .qty-input:focus { border-color: var(--green); }
+  .qty-input.qty-input-invalid {
+    border-color: #d88b8b;
+    background: #fff7f7;
+  }
 
   .price-cell {
     font-family: 'DM Mono', monospace;
@@ -4944,6 +4948,7 @@ function renderCatGroup(cat, items) {
         </td>
         <td>
           <input class="qty-input" type="number" min="1" value="${item.qty}"
+            oninput="handleQtyInputTyping(${globalIdx}, this)"
             onchange="commitQtyFromInput(${globalIdx}, this)"
             onblur="commitQtyFromInput(${globalIdx}, this)"
             onkeydown="handleQtyInputKeydown(event, ${globalIdx}, this)">
@@ -5022,6 +5027,7 @@ function renderSection(title, items) {
         <td><span class="tag" style="background:${colour}18;color:${colour};font-size:10px;">${p.cat}</span></td>
         <td>
           <input class="qty-input" type="number" min="1" value="${item.qty}"
+            oninput="handleQtyInputTyping(${globalIdx}, this)"
             onchange="commitQtyFromInput(${globalIdx}, this)"
             onblur="commitQtyFromInput(${globalIdx}, this)"
             onkeydown="handleQtyInputKeydown(event, ${globalIdx}, this)">
@@ -5072,7 +5078,8 @@ function renderSection(title, items) {
 
 function setQtyValue(idx, val) {
   if (!quoteItems[idx]) return false;
-  const qty = Math.max(1, parseInt(val) || 1);
+  const qty = parseCommittedQty(val);
+  if (qty === null) return false;
   if (quoteItems[idx].qty === qty) return false;
   quoteItems[idx].qty = qty;
   return true;
@@ -5086,8 +5093,14 @@ function updateQty(idx, val, rerender = true) {
 }
 
 function commitQtyFromInput(idx, inputEl) {
-  if (!inputEl) return;
-  const qty = Math.max(1, parseInt(inputEl.value) || 1);
+  if (!inputEl || !quoteItems[idx]) return;
+  const qty = parseCommittedQty(inputEl.value);
+  if (qty === null) {
+    showQtyInputFeedback(inputEl);
+    inputEl.value = quoteItems[idx].qty;
+    return;
+  }
+  clearQtyInputFeedback(inputEl);
   inputEl.value = qty;
   updateQty(idx, qty, false);
 }
@@ -5097,6 +5110,29 @@ function handleQtyInputKeydown(event, idx, inputEl) {
   event.preventDefault();
   commitQtyFromInput(idx, inputEl);
   inputEl.blur();
+}
+
+function handleQtyInputTyping(idx, inputEl) {
+  if (!inputEl || !quoteItems[idx]) return;
+  clearQtyInputFeedback(inputEl);
+}
+
+function parseCommittedQty(value) {
+  const raw = String(value == null ? '' : value).trim();
+  if (raw === '') return null;
+  const qty = Number(raw);
+  if (!Number.isFinite(qty) || !Number.isInteger(qty) || qty < 1) return null;
+  return qty;
+}
+
+function showQtyInputFeedback(inputEl) {
+  inputEl.classList.add('qty-input-invalid');
+  inputEl.title = 'Enter a whole number of at least 1';
+}
+
+function clearQtyInputFeedback(inputEl) {
+  inputEl.classList.remove('qty-input-invalid');
+  inputEl.title = '';
 }
 
 function refreshQuoteTotals(changedIdx = null) {
