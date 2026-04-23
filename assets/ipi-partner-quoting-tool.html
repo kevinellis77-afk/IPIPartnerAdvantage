@@ -2568,6 +2568,7 @@
     </div>
     <div class="price-list-controls quote-filter-controls hidden" id="quoteFilterControls">
       <div class="quote-filter-drawer-head">
+        <button class="quote-filter-close" type="button" onclick="clearQuoteFilters()">Clear filters</button>
         <button class="quote-filter-close" type="button" onclick="toggleQuoteFilters(false)">Hide filters</button>
       </div>
       <div class="meta-field">
@@ -7063,26 +7064,50 @@ function togglePriceListFilters(forceExpanded) {
   toggleBtn.textContent = priceListFiltersCollapsed ? 'Show filters' : 'Hide filters';
 }
 
-function getQuoteFilterGroupCount() {
-  const groups = [
-    document.getElementById('quoteCategory'),
-    document.getElementById('quotePayType'),
-    document.getElementById('quoteAgentType')
-  ];
-  return groups.reduce(function(count, selectEl) {
-    if (!selectEl) return count;
-    const selectedValues = getMultiSelectValues(selectEl);
-    const totalOptions = (selectEl.options || []).length;
-    const hasActiveSelection = selectedValues.length > 0 && selectedValues.length < totalOptions;
-    return count + (hasActiveSelection ? 1 : 0);
-  }, 0);
+function getQuoteActiveFilterCount() {
+  const categoryEl = document.getElementById('quoteCategory');
+  const payEl = document.getElementById('quotePayType');
+  const agentEl = document.getElementById('quoteAgentType');
+  const searchValue = (document.getElementById('searchInput')?.value || '').trim();
+
+  var count = 0;
+  if (categoryEl) {
+    const totalCategoryOptions = (categoryEl.options || []).length;
+    if (activeQuoteCategoryFilters.length > 0 && activeQuoteCategoryFilters.length < totalCategoryOptions) count += 1;
+  }
+  if (agentEl) {
+    const totalAgentOptions = (agentEl.options || []).length;
+    if (activeQuoteAgentFilters.length > 0 && activeQuoteAgentFilters.length < totalAgentOptions) count += 1;
+  }
+  if (payEl) {
+    const totalPayOptions = (payEl.options || []).length;
+    if (activeQuotePayFilters.length > 0 && activeQuotePayFilters.length < totalPayOptions) count += 1;
+  }
+  if (searchValue) count += 1;
+  return count;
 }
 
 function updateQuoteFilterToggleLabel() {
   const toggleBtn = document.getElementById('quoteFilterToggleBtn');
   if (!toggleBtn) return;
-  const activeFilterCount = getQuoteFilterGroupCount();
+  const activeFilterCount = getQuoteActiveFilterCount();
   toggleBtn.textContent = activeFilterCount > 0 ? 'Filters (' + activeFilterCount + ')' : 'Filters';
+}
+
+function clearQuoteFilters() {
+  const categoryEl = document.getElementById('quoteCategory');
+  const payEl = document.getElementById('quotePayType');
+  const agentEl = document.getElementById('quoteAgentType');
+  [categoryEl, payEl, agentEl].forEach(function(selectEl) {
+    if (!selectEl) return;
+    Array.from(selectEl.options || []).forEach(function(optionEl) {
+      optionEl.selected = true;
+    });
+    renderPriceListMultiSelect(selectEl);
+  });
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchInput.value = '';
+  filterProducts();
 }
 
 function toggleQuoteFilters(forceExpanded) {
