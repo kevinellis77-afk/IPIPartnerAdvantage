@@ -6679,15 +6679,77 @@ function sendEmailViaMailto() {
 
 function copyEmailHTML() {
   const html = buildEmailHTML();
-  navigator.clipboard.writeText(html).then(function() {
-    showToast('✓ HTML email copied — paste into your email client');
-  }).catch(function() {
-    // Fallback: open in new window
+  const plain = (function() {
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+    return temp.textContent || temp.innerText || '';
+  })();
+
+  function fallbackCopyFromRenderedDOM() {
+    const sandbox = document.createElement('div');
+    sandbox.setAttribute('aria-hidden', 'true');
+    sandbox.contentEditable = 'true';
+    sandbox.style.position = 'fixed';
+    sandbox.style.left = '-9999px';
+    sandbox.style.top = '0';
+    sandbox.style.opacity = '0';
+    sandbox.innerHTML = html;
+    document.body.appendChild(sandbox);
+
+    const selection = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(sandbox);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    const copied = document.execCommand('copy');
+    selection.removeAllRanges();
+    document.body.removeChild(sandbox);
+    return copied;
+  }
+
+  function finalFallbackOpenTab() {
     const win = window.open('', '_blank');
     win.document.write(html);
     win.document.close();
     showToast('Opened in new tab — copy from there');
-  });
+  }
+
+  function copyRawHTMLFallback() {
+    if (!navigator.clipboard || !navigator.clipboard.writeText) {
+      if (fallbackCopyFromRenderedDOM()) {
+        showToast('✓ Rendered email content copied (compatibility mode)');
+      } else {
+        finalFallbackOpenTab();
+      }
+      return;
+    }
+    navigator.clipboard.writeText(html).then(function() {
+      showToast('✓ Raw HTML copied (plain clipboard mode)');
+    }).catch(function() {
+      if (fallbackCopyFromRenderedDOM()) {
+        showToast('✓ Rendered email content copied (compatibility mode)');
+      } else {
+        finalFallbackOpenTab();
+      }
+    });
+  }
+
+  // Outlook paste behavior varies by version and compose editor mode.
+  if (navigator.clipboard && navigator.clipboard.write && window.ClipboardItem) {
+    const item = new ClipboardItem({
+      'text/html': new Blob([html], { type: 'text/html' }),
+      'text/plain': new Blob([plain], { type: 'text/plain' }),
+    });
+    navigator.clipboard.write([item]).then(function() {
+      showToast('✓ Rich HTML email copied (HTML + plain text)');
+    }).catch(function() {
+      copyRawHTMLFallback();
+    });
+    return;
+  }
+
+  copyRawHTMLFallback();
 }
 
 // ─── CONFIRM BANNER ──────────────────────────────────────────────────────────
