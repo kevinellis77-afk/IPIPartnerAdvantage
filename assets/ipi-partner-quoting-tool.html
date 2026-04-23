@@ -1848,12 +1848,29 @@
   /* Version management */
   .sq-group { border-bottom: 1px solid var(--border); }
   .sq-group:last-child { border-bottom: none; }
-  .sq-group-header { padding: 12px 20px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: background 0.1s; user-select: none; }
+  .sq-group-header { padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; transition: background 0.1s; user-select: none; }
   .sq-group-header:hover { background: var(--off-white); }
-  .sq-group-baseref { font-size: 13px; font-weight: 700; color: var(--charcoal); flex: 1; }
-  .sq-group-meta { font-size: 11.5px; color: var(--text-muted); margin-top: 1px; }
-  .sq-group-summary { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-  .sq-version-count { font-size: 10.5px; font-weight: 600; background: var(--charcoal-dark); color: white; padding: 2px 7px; border-radius: 10px; }
+  .sq-group-main { flex: 1; min-width: 0; }
+  .sq-group-baseref { font-size: 15px; font-weight: 800; color: var(--charcoal); line-height: 1.15; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .sq-group-meta { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.35; }
+  .sq-group-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .sq-group-kpi { text-align: right; min-width: 88px; }
+  .sq-group-mrc { font-family: "DM Mono", monospace; font-size: 12.5px; font-weight: 700; color: var(--green); line-height: 1.15; }
+  .sq-group-acv { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+  .sq-group-actions { display: flex; align-items: center; gap: 6px; }
+  .sq-version-count { font-size: 10px; font-weight: 600; background: var(--charcoal-dark); color: white; padding: 2px 7px; border-radius: 999px; }
+  .sq-header-control { min-height: 32px; }
+  .sq-status-control { display: flex; align-items: center; gap: 6px; padding: 0 2px; }
+  .sq-status-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); font-weight: 700; }
+  .sq-status-control .sq-status-select { min-height: 32px; padding-top: 0; padding-bottom: 0; }
+  .sq-load-latest-btn { min-height: 32px; white-space: nowrap; font-weight: 700; }
+  .sq-icon-btn { min-width: 32px; min-height: 32px; border: 1px solid var(--border); border-radius: 7px; background: white; color: var(--charcoal); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; line-height: 1; }
+  .sq-icon-btn:hover { background: var(--off-white); border-color: #cfd8dc; }
+  .sq-action-menu-wrap { position: relative; }
+  .sq-action-menu { position: absolute; top: calc(100% + 6px); right: 0; background: white; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); padding: 5px; min-width: 130px; display: none; z-index: 5; }
+  .sq-action-menu-wrap.open .sq-action-menu { display: block; }
+  .sq-action-menu-item { width: 100%; min-height: 32px; border: none; background: transparent; border-radius: 6px; font-size: 11px; font-weight: 600; color: var(--charcoal); text-align: left; padding: 6px 8px; cursor: pointer; }
+  .sq-action-menu-item:hover { background: var(--off-white); }
   .sq-group-chevron { font-size: 11px; color: var(--text-muted); transition: transform 0.2s; flex-shrink: 0; }
   .sq-group-chevron.open { transform: rotate(90deg); }
   .sq-versions-list { display: none; border-top: 1px solid var(--off-white); }
@@ -5442,12 +5459,15 @@ function openSavedQuotesModal() {
 
       // Status select — uses data-base so the handler can update ALL versions
       const statusSelect =
-        '<select class="sq-status-select sq-status-change" data-base="' + base + '" title="Change status">' +
+        '<label class="sq-status-control sq-header-control" title="Deal stage">' +
+        '<span class="sq-status-label">Stage</span>' +
+        '<select class="sq-status-select sq-status-change" data-base="' + base + '" title="Change stage">' +
         '<option value="draft"' + (status === 'draft' ? ' selected' : '') + '>✏️ Draft</option>' +
         '<option value="sent"'  + (status === 'sent'  ? ' selected' : '') + '>📤 Sent</option>'  +
         '<option value="won"'   + (status === 'won'   ? ' selected' : '') + '>✅ Won</option>'   +
         '<option value="lost"'  + (status === 'lost'  ? ' selected' : '') + '>❌ Lost</option>'  +
-        '</select>';
+        '</select>' +
+        '</label>';
 
       // Version rows
       const versionRows = versions.map((v, vi) => {
@@ -5478,21 +5498,29 @@ function openSavedQuotesModal() {
       return '<div class="sq-group" data-base="' + base + '">' +
         // Group header (click to expand)
         '<div class="sq-group-header">' +
-          '<div style="flex:1">' +
+          '<div class="sq-group-main">' +
             '<div class="sq-group-baseref">' + base + ' ' + levelBadge + '</div>' +
             '<div class="sq-group-meta">' + (latest.partner || '—') + ' → ' + (latest.customer || '—') + validStr + '</div>' +
           '</div>' +
-          '<div class="sq-group-summary">' +
-            '<div style="text-align:right;margin-right:4px">' +
-              '<div style="font-family:monospace;font-size:13px;font-weight:700;color:var(--green)">' +
+          '<div class="sq-group-right">' +
+            '<div class="sq-group-kpi">' +
+              '<div class="sq-group-mrc">' +
                 fmtGBP(latest.mrc) + '<span style="font-size:10px;font-weight:400;color:var(--text-muted)">/mo</span>' +
               '</div>' +
-              '<div style="font-size:10.5px;color:var(--text-muted)">ACV ' + fmtGBP(latest.acv) + '</div>' +
+              '<div class="sq-group-acv">ACV ' + fmtGBP(latest.acv) + '</div>' +
             '</div>' +
-            statusSelect +
-            '<span class="sq-version-count">' + vCount + ' ver' + (vCount > 1 ? 's' : '') + '</span>' +
-            '<button class="btn btn-outline btn-sm sq-duplicate-btn" data-ref="' + latest.ref + '" style="white-space:nowrap">Copy</button>' +
-            '<span class="sq-group-chevron">▶</span>' +
+            '<div class="sq-group-actions">' +
+              '<button class="btn btn-sm sq-load-latest-btn sq-header-control" data-ref="' + latest.ref + '" title="Load latest version">Load latest</button>' +
+              statusSelect +
+              '<span class="sq-version-count">' + vCount + ' ver' + (vCount > 1 ? 's' : '') + '</span>' +
+              '<div class="sq-action-menu-wrap">' +
+                '<button class="sq-icon-btn sq-more-btn sq-header-control" title="More actions" aria-label="More actions" aria-expanded="false">⋯</button>' +
+                '<div class="sq-action-menu">' +
+                  '<button class="sq-action-menu-item sq-duplicate-btn" data-ref="' + latest.ref + '">Copy quote</button>' +
+                '</div>' +
+              '</div>' +
+              '<span class="sq-group-chevron">▶</span>' +
+            '</div>' +
           '</div>' +
         '</div>' +
         // Expandable versions list
@@ -5522,7 +5550,7 @@ function openSavedQuotesModal() {
   // Group header: click to expand/collapse (ignore clicks on controls inside)
   body.querySelectorAll('.sq-group-header').forEach(function(hdr) {
     hdr.addEventListener('click', function(e) {
-      if (e.target.closest('select') || e.target.closest('button')) return;
+      if (e.target.closest('.sq-group-actions') || e.target.closest('select') || e.target.closest('button')) return;
       const group = this.closest('.sq-group');
       const list  = group.querySelector('.sq-versions-list');
       const chev  = this.querySelector('.sq-group-chevron');
@@ -5538,6 +5566,9 @@ function openSavedQuotesModal() {
   });
 
   // Load, delete, duplicate buttons
+  body.querySelectorAll('.sq-load-latest-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() { loadQuote(this.dataset.ref); });
+  });
   body.querySelectorAll('.sq-load-btn').forEach(function(btn) {
     btn.addEventListener('click', function() { loadQuote(this.dataset.ref); });
   });
@@ -5546,6 +5577,28 @@ function openSavedQuotesModal() {
   });
   body.querySelectorAll('.sq-duplicate-btn').forEach(function(btn) {
     btn.addEventListener('click', function() { duplicateQuote(this.dataset.ref); });
+  });
+
+  function closeHeaderActionMenus() {
+    body.querySelectorAll('.sq-action-menu-wrap.open').forEach(function(wrap) {
+      wrap.classList.remove('open');
+      const toggle = wrap.querySelector('.sq-more-btn');
+      if (toggle) toggle.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  body.querySelectorAll('.sq-more-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const wrap = this.closest('.sq-action-menu-wrap');
+      const shouldOpen = !wrap.classList.contains('open');
+      closeHeaderActionMenus();
+      wrap.classList.toggle('open', shouldOpen);
+      this.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+    });
+  });
+  body.addEventListener('click', function(e) {
+    if (!e.target.closest('.sq-action-menu-wrap')) closeHeaderActionMenus();
   });
 
   // Status dropdown — data-base ensures we update ALL versions of the quote
