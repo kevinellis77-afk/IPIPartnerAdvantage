@@ -7593,10 +7593,12 @@ function exportPriceListPdf() {
       const rowsHtml = items.map(function(p) {
         const listPrice = p.list > 0 ? p.list : p.threshold;
         const partnerPrice = showRrpOnly ? listPrice : getPriceForProductByProfile(p, profile);
+        const license = getDisplayLicenseType(p);
         const payment = getDisplayPaymentType(p);
         return '<tr>' +
           '<td>' + p.id + '</td>' +
           '<td>' + p.name + '</td>' +
+          '<td>' + license + '</td>' +
           '<td>' + payment + '</td>' +
           '<td class="num">' + fmtGBP(listPrice) + '</td>' +
           '<td class="num strong">' + fmtGBP(partnerPrice) + '</td>' +
@@ -7605,7 +7607,7 @@ function exportPriceListPdf() {
       return '' +
         '<div class="license-block">' +
           '<div class="license-header">' + block.licenseType + ' <span>' + items.length + ' products</span></div>' +
-          '<table class="export-lines"><colgroup><col class="col-sap"><col class="col-product"><col class="col-pay"><col class="col-list"><col class="col-partner"></colgroup><thead><tr><th>SAP ID</th><th>Product</th><th>' + LABELS.paymentType + '</th><th class="num">List RRP</th><th class="num">Partner Price</th></tr></thead>' +
+          '<table class="export-lines"><colgroup><col class="col-sap"><col class="col-product"><col class="col-license"><col class="col-pay"><col class="col-list"><col class="col-partner"></colgroup><thead><tr><th>SAP ID</th><th>Product</th><th>' + LABELS.licenseType + '</th><th>' + LABELS.paymentType + '</th><th class="num">List RRP</th><th class="num">Partner Price</th></tr></thead>' +
           '<tbody>' + rowsHtml + '</tbody></table>' +
         '</div>';
     }).join('');
@@ -7638,11 +7640,12 @@ function exportPriceListPdf() {
     .license-header{background:#36454F;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:6px 10px;display:flex;justify-content:space-between}
     .license-header span{color:#d6e2e8;font-weight:600}
     table{width:100%;border-collapse:collapse;table-layout:fixed}
-    table.export-lines .col-sap{width:120px}
+    table.export-lines .col-sap{width:110px}
     table.export-lines .col-product{width:auto}
-    table.export-lines .col-pay{width:180px}
-    table.export-lines .col-list{width:140px}
-    table.export-lines .col-partner{width:140px}
+    table.export-lines .col-license{width:125px}
+    table.export-lines .col-pay{width:125px}
+    table.export-lines .col-list{width:105px}
+    table.export-lines .col-partner{width:105px}
     th,td{padding:6px 8px;border-bottom:1px solid #eef3f6;vertical-align:top}
     th{font-size:8.5px;text-transform:uppercase;letter-spacing:.4px;background:#263337;color:#edf3f6;font-weight:600;text-align:left}
     td{font-size:10.5px}
