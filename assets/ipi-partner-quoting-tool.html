@@ -6312,130 +6312,112 @@ function printQuote() {
 
   const { monthlyGroups, oneOffGroups, mrc, otc, acv } = getGroupedQuoteData();
 
-  // Build billing block HTML for the print document
+  // Build billing block HTML for the print document using the same primitives as exportPriceListPdf.
   function printBillingBlock(groups, billingLabel, blockTotal) {
     if (!groups.length) return '';
-    const catBlocks = groups.map(({ cat, items }) => {
-      const catTotal = items.reduce((s, i) => s + getEffectivePrice(i) * i.qty, 0);
-      const catColours = {
-        'CCaaS':'#A37992','PCI Cloud':'#63AB8F','AI':'#7c6ea3',
-        'Services':'#e07b3a','Inbound Telephony':'#3a8de0',
-        'Networking':'#2aab7e','UCaaS':'#c0592f','Consultancy':'#5a6e7a'
-      };
-      const colour = catColours[cat] || '#888';
-      const rows = items.map(item => {
-        const ep   = getEffectivePrice(item);
-        const base = item.product.list > 0 ? item.product.list : item.product.threshold;
-        const disc = base > 0 && ep > 0 && ep < base ? Math.round((base - ep) / base * 100) : null;
-        const licenseType = getQuoteProductLicenseLabel(item.product);
-        const paymentType = getQuoteProductPaymentLabel(item.product);
-        return `<tr>
-          <td class="sku">${item.product.id}</td>
-          <td>${getProductDisplayName(item.product)}</td>
-          <td class="meta">${licenseType}</td>
-          <td class="meta">${paymentType}</td>
-          <td class="num">${item.qty}</td>
-          <td class="num muted">${base > 0 ? fmtGBP(base) : '—'}</td>
-          <td class="num grn">${ep > 0 ? fmtGBP(ep) : '—'}${disc !== null ? ` <span class="disc">-${disc}%</span>` : ''}</td>
-          <td class="num bold">${ep > 0 ? fmtGBP(ep * item.qty) : '—'}</td>
-        </tr>`;
+    const categorySections = groups.map(({ cat, items }) => {
+      const licenseBuckets = {};
+      items.forEach(item => {
+        const licenseType = getQuoteProductLicenseLabel(item.product) || 'N/A';
+        if (!licenseBuckets[licenseType]) licenseBuckets[licenseType] = [];
+        licenseBuckets[licenseType].push(item);
+      });
+      const licenseBlocks = Object.keys(licenseBuckets).sort().map(function(licenseType) {
+        const licenseItems = licenseBuckets[licenseType];
+        const rows = licenseItems.map(function(item) {
+          const ep   = getEffectivePrice(item);
+          const base = item.product.list > 0 ? item.product.list : item.product.threshold;
+          const disc = base > 0 && ep > 0 && ep < base ? Math.round((base - ep) / base * 100) : null;
+          const paymentType = getQuoteProductPaymentLabel(item.product);
+          return `<tr>
+            <td class="sku">${item.product.id}</td>
+            <td>${getProductDisplayName(item.product)}</td>
+            <td>${licenseType}</td>
+            <td>${paymentType}</td>
+            <td class="num">${item.qty}</td>
+            <td class="num muted">${base > 0 ? fmtGBP(base) : '—'}</td>
+            <td class="num strong">${ep > 0 ? fmtGBP(ep) : '—'}${disc !== null ? ` <span class="disc">-${disc}%</span>` : ''}</td>
+            <td class="num strong">${ep > 0 ? fmtGBP(ep * item.qty) : '—'}</td>
+          </tr>`;
+        }).join('');
+        return '' +
+          '<div class="license-block">' +
+            '<div class="license-header">' + licenseType + ' <span>' + licenseItems.length + ' items</span></div>' +
+            '<table class="export-lines"><thead><tr>' +
+              '<th>SKU</th><th>Product</th><th>License Type</th><th>Payment Type</th>' +
+              '<th class="num">Qty</th><th class="num">List Price</th><th class="num">Partner Price</th><th class="num">Total</th>' +
+            '</tr></thead><tbody>' + rows + '</tbody></table>' +
+          '</div>';
       }).join('');
-      return `
-        <tr class="cat-row">
-          <td colspan="8">
-            <span class="cat-dot" style="background:${colour}"></span>
-            <strong>${cat}</strong>
-            <span class="cat-sub">${fmtGBP(catTotal)}</span>
-          </td>
-        </tr>
-        ${rows}`;
+      const categoryTotal = items.reduce((sum, item) => sum + getEffectivePrice(item) * item.qty, 0);
+      return '<section class="category-section"><h2>' + billingLabel + ' · ' + cat + ' <span>' + fmtGBP(categoryTotal) + '</span></h2>' + licenseBlocks + '</section>';
     }).join('');
-
-    return `
-      <div class="billing-block">
-        <div class="billing-header">
-          <span>${billingLabel}</span>
-          <span>${fmtGBP(blockTotal)}</span>
-        </div>
-        <table>
-          <thead><tr>
-            <th>SKU</th><th>Product</th>
-            <th>License Type</th>
-            <th>Payment Type</th>
-            <th class="num">Qty</th>
-            <th class="num">List Price</th>
-            <th class="num">Partner Price</th>
-            <th class="num">Total</th>
-          </tr></thead>
-          <tbody>${catBlocks}</tbody>
-        </table>
-      </div>`;
+    return categorySections + '<div class="section-total"><span>' + billingLabel + ' Total</span><span>' + fmtGBP(blockTotal) + '</span></div>';
   }
 
   const htmlContent = `<!DOCTYPE html><html><head><meta charset='UTF-8'><title>IPI Quote ${ref}</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Segoe UI',Arial,sans-serif;font-size:11.5px;color:#263238;background:white;padding:28px 32px}
+    html,body,.doc-header,.meta-grid,.category-section,.category-section h2,.license-block,.license-header,th,.meta-cell{
+      -webkit-print-color-adjust:exact;
+      print-color-adjust:exact;
+    }
+    body{font-family:'Segoe UI',Arial,sans-serif;font-size:11px;color:#263238;background:white;padding:24px 28px}
     /* Header */
-    .doc-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #263238}
+    .doc-header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;border-bottom:3px solid #263337;padding-bottom:12px;margin-bottom:14px;background:#f5f8fa;padding:10px;border-radius:8px}
     .doc-logo{display:flex;align-items:center;gap:10px}
-    .doc-logo-mark{width:36px;height:36px;background:linear-gradient(135deg,#63AB8F,#A37992);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:13px}
+    .doc-logo-mark{width:34px;height:34px;background:linear-gradient(135deg,#63AB8F,#A37992);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:12px}
     .doc-logo-name{font-size:16px;font-weight:700;color:#263238}
-    .doc-logo-sub{font-size:11px;color:#63AB8F;font-weight:600}
+    .doc-logo-sub{font-size:10px;color:#63AB8F;font-weight:700;letter-spacing:0.4px;text-transform:uppercase}
     .doc-title-block{text-align:right}
-    .doc-title{font-size:18px;font-weight:700;color:#263238}
-    .doc-confidential{font-size:10px;color:#A37992;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-top:2px}
+    .doc-title{font-size:19px;font-weight:700;color:#263238}
+    .doc-confidential{font-size:10px;color:#7a8f9a;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-top:2px}
     /* Meta grid */
-    .meta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#dde4e8;border:1px solid #dde4e8;border-radius:6px;overflow:hidden;margin-bottom:20px}
-    .meta-cell{background:white;padding:9px 12px}
-    .meta-label{font-size:8.5px;text-transform:uppercase;letter-spacing:0.7px;color:#7a8f9a;margin-bottom:3px;font-weight:600}
-    .meta-value{font-size:12px;font-weight:700;color:#263238}
+    .meta-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:#dde4e8;border:1px solid #dde4e8;border-radius:6px;overflow:hidden;margin-bottom:16px}
+    .meta-cell{background:#ffffff;padding:8px 10px}
+    .meta-label{font-size:8px;text-transform:uppercase;letter-spacing:.6px;color:#7a8f9a;margin-bottom:2px;font-weight:700}
+    .meta-value{font-size:11px;font-weight:700;color:#263238}
     .level-pill{display:inline-block;padding:2px 9px;border-radius:10px;font-size:10.5px;font-weight:700}
     .accredited{background:#fff3cc;color:#7a5800;border:1px solid #e8c84a}
     .silver{background:#eef2f5;color:#3d5060;border:1px solid #a0b0bc}
     .gold{background:#fff7e0;color:#7a5c00;border:1px solid #ddb830}
-    /* Billing blocks */
-    .billing-block{margin-bottom:20px;border:1.5px solid #dde4e8;border-radius:6px;overflow:hidden;page-break-inside:avoid}
-    .billing-header{background:#263238;color:white;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px}
-    table{width:100%;border-collapse:collapse}
-    thead th{background:#3a4f5c;color:rgba(255,255,255,0.8);padding:6px 10px;font-size:9.5px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600}
-    thead th.num{text-align:right}
-    tbody tr:hover{background:#fafcfd}
-    td{padding:6px 10px;border-bottom:1px solid #f0f4f6;font-size:11px;vertical-align:middle}
-    td.num{text-align:right}
-    td.muted{color:#888}
-    td.meta{color:#586d79;font-size:10px}
-    td.grn{color:#27ae60;font-weight:600}
-    td.bold{font-weight:700}
+    .category-section{margin-bottom:14px;page-break-inside:avoid;break-inside:avoid}
+    .category-section h2{font-size:12px;text-transform:uppercase;letter-spacing:.5px;background:#36454F;border:1px solid #263337;padding:7px 10px;border-radius:6px;color:#fff;display:flex;justify-content:space-between;align-items:center;page-break-after:avoid;break-after:avoid}
+    .category-section h2 span{font-size:11px;color:#d6e2e8}
+    .license-block{margin-top:8px;border:1px solid #d4dde2;border-radius:6px;overflow:hidden;page-break-inside:avoid;break-inside:avoid}
+    .license-header{background:#36454F;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:6px 10px;display:flex;justify-content:space-between}
+    .license-header span{color:#d6e2e8;font-weight:600}
+    table{width:100%;border-collapse:collapse;table-layout:fixed}
+    th,td{padding:6px 8px;border-bottom:1px solid #eef3f6;vertical-align:top}
+    th{font-size:8.5px;text-transform:uppercase;letter-spacing:.4px;background:#263337;color:#edf3f6;font-weight:600;text-align:left}
+    td{font-size:10.5px}
+    td:nth-child(2){overflow-wrap:anywhere;word-break:break-word}
+    .num{text-align:right}
     td.sku{color:#7a8f9a;font-size:9.5px;white-space:nowrap;font-family:monospace}
-    .disc{font-size:8.5px;background:#e8f5f0;color:#1e7a55;padding:1px 4px;border-radius:3px;margin-left:2px;font-weight:700}
-    /* Category sub-header rows */
-    tr.cat-row td{background:#f5f8fa;border-top:1.5px solid #dde4e8;border-bottom:1px solid #dde4e8;padding:5px 10px}
-    .cat-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
-    .cat-sub{float:right;font-weight:700;font-size:11px;color:#36454F}
-    thead th:nth-child(1){width:10%}
-    thead th:nth-child(2){width:24%}
-    thead th:nth-child(3){width:14%}
-    thead th:nth-child(4){width:14%}
-    thead th:nth-child(5){width:6%}
-    thead th:nth-child(6){width:11%}
-    thead th:nth-child(7){width:11%}
-    thead th:nth-child(8){width:10%}
+    .muted{color:#888}
+    .strong{font-weight:700;color:#1f7a57}
+    .disc{font-size:8px;background:#e8f5f0;color:#1e7a55;padding:1px 4px;border-radius:3px;margin-left:2px;font-weight:700}
+    .section-total{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border:1px solid #d4dde2;border-radius:6px;background:#f8fbfd;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.45px;margin-bottom:16px;page-break-inside:avoid;break-inside:avoid}
     /* Totals */
-    .totals-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#dde4e8;border:1.5px solid #dde4e8;border-radius:6px;overflow:hidden;margin-bottom:20px}
+    .totals-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#dde4e8;border:1px solid #dde4e8;border-radius:6px;overflow:hidden;margin-bottom:16px;page-break-inside:avoid;break-inside:avoid}
     .total-cell{background:#f5f8fa;padding:12px 16px;text-align:center}
-    .total-label{font-size:8.5px;text-transform:uppercase;letter-spacing:0.7px;color:#7a8f9a;margin-bottom:4px;font-weight:600}
+    .total-label{font-size:8px;text-transform:uppercase;letter-spacing:0.7px;color:#7a8f9a;margin-bottom:4px;font-weight:700}
     .total-value{font-size:17px;font-weight:700}
     .total-sub{font-size:9px;color:#7a8f9a;margin-top:2px}
     .t-green{color:#27ae60} .t-mauve{color:#A37992}
+    .notes-block{margin-bottom:16px;border:1px solid #d4dde2;border-radius:6px;overflow:hidden;page-break-inside:avoid;break-inside:avoid}
+    .notes-header{background:#f5f8fa;padding:7px 10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#7a8f9a;border-bottom:1px solid #dde4e8}
+    .notes-body{padding:10px 12px;font-size:10.5px;line-height:1.6;color:#36454F;white-space:pre-wrap}
     /* Footer */
-    .doc-footer{border-top:1px solid #dde4e8;padding-top:10px;display:flex;justify-content:space-between;align-items:center}
+    .doc-footer{margin-top:10px;border-top:1px solid #dde4e8;padding-top:8px;display:flex;justify-content:space-between;align-items:center}
     .footer-note{font-size:9px;color:#aaa}
     .footer-page{font-size:9px;color:#aaa}
     @media print{
-      body{padding:16px 20px}
-      .billing-block{page-break-inside:avoid}
-      @page{margin:14mm 12mm;size:A4}
+      @page{margin:12mm 10mm;size:A4}
+      body{padding:0}
+      .category-section,.license-block,.section-total,.totals-grid,.notes-block,tr,td,th{page-break-inside:avoid;break-inside:avoid}
+      .category-section h2{page-break-after:avoid;break-after:avoid}
+      thead{display:table-header-group}
     }
   </style></head><body>
 
@@ -6453,7 +6435,7 @@ function printQuote() {
     </div>
   </div>
 
-  <div class="meta-grid" style="grid-template-columns:repeat(5,1fr)">
+  <div class="meta-grid">
     <div class="meta-cell"><div class="meta-label">Quote Reference</div><div class="meta-value">${ref}</div></div>
     <div class="meta-cell"><div class="meta-label">Partner Name</div><div class="meta-value">${partner}</div></div>
     <div class="meta-cell"><div class="meta-label">End Customer</div><div class="meta-value">${customer}</div></div>
@@ -6472,7 +6454,7 @@ function printQuote() {
     <div class="total-cell"><div class="total-label">Annual Contract Value</div><div class="total-value">${fmtGBP(acv)}</div><div class="total-sub">MRC &times; 12 + OTC</div></div>
   </div>
 
-  ${quoteNotes ? `<div style="margin-bottom:20px;border:1.5px solid #dde4e8;border-radius:6px;overflow:hidden"><div style="background:#f5f8fa;padding:7px 14px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#7a8f9a;border-bottom:1px solid #dde4e8">Notes &amp; Terms</div><div style="padding:12px 14px;font-size:11.5px;line-height:1.6;color:#36454F;white-space:pre-wrap">${quoteNotes}</div></div>` : ''}
+  ${quoteNotes ? `<div class="notes-block"><div class="notes-header">Notes &amp; Terms</div><div class="notes-body">${quoteNotes}</div></div>` : ''}
   <div class="doc-footer">
     <div class="footer-note">Generated by IPI Partner Quoting Tool &nbsp;&bull;&nbsp; ${date} &nbsp;&bull;&nbsp; Prices subject to formal agreement and IPI approval</div>
     <div class="footer-page">IP Integration Ltd</div>
