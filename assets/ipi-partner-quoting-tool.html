@@ -6327,7 +6327,6 @@ function printQuote() {
         const rows = licenseItems.map(function(item) {
           const ep   = getEffectivePrice(item);
           const base = item.product.list > 0 ? item.product.list : item.product.threshold;
-          const disc = base > 0 && ep > 0 && ep < base ? Math.round((base - ep) / base * 100) : null;
           const paymentType = getQuoteProductPaymentLabel(item.product);
           return `<tr>
             <td class="sku">${item.product.id}</td>
@@ -6336,7 +6335,7 @@ function printQuote() {
             <td>${paymentType}</td>
             <td class="num">${item.qty}</td>
             <td class="num muted">${base > 0 ? fmtGBP(base) : '—'}</td>
-            <td class="num strong">${ep > 0 ? fmtGBP(ep) : '—'}${disc !== null ? ` <span class="disc">-${disc}%</span>` : ''}</td>
+            <td class="num strong">${ep > 0 ? fmtGBP(ep) : '—'}</td>
             <td class="num strong">${ep > 0 ? fmtGBP(ep * item.qty) : '—'}</td>
           </tr>`;
         }).join('');
@@ -6396,7 +6395,6 @@ function printQuote() {
     td.sku{color:#7a8f9a;font-size:9.5px;white-space:nowrap;font-family:monospace}
     .muted{color:#888}
     .strong{font-weight:700;color:#1f7a57}
-    .disc{font-size:8px;background:#e8f5f0;color:#1e7a55;padding:1px 4px;border-radius:3px;margin-left:2px;font-weight:700}
     .section-total{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border:1px solid #d4dde2;border-radius:6px;background:#f8fbfd;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.45px;margin-bottom:16px;page-break-inside:avoid;break-inside:avoid}
     /* Totals */
     .totals-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#dde4e8;border:1px solid #dde4e8;border-radius:6px;overflow:hidden;margin-bottom:16px;page-break-inside:avoid;break-inside:avoid}
