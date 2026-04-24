@@ -5935,138 +5935,64 @@ function closeSavedQuotesModal(e) {
 // ─── TEMPLATES ───────────────────────────────────────────────────────────────
 const TEMPLATES = [
   {
-    key: 'voice_starter',
-    version: 'v1',
-    active: false,
-    updatedAt: '2025-11-15',
-    name: '50-Seat CCaaS Voice Starter',
-    desc: 'Named agent voice with MS Teams, CRM, and professional services',
+    key: 'voice_starter_with_uc',
+    version: 'v3',
+    active: true,
+    updatedAt: '2026-04-24',
+    name: '50 Seat CCaaS Voice Starter with 100 UC users',
+    desc: 'Named agent voice with MS Teams, CRM, and UC users',
     icon: '📞',
     items: [
       { id: 'S100937', qty: 50 },  // ECX Voice Named Annual PrePay
       { id: 'S100951', qty: 50 },  // ECX MS Teams Annual Pre-Pay
       { id: 'S100953', qty: 50 },  // ECX CCaaS CRM Annual Pre Pay
-      { id: 'S101117', qty: 1  },  // PS Package - ECX CCaaS Voice
-      { id: 'S101116', qty: 1  },  // PS Package - Rapid 50 Agents
-    ]
-  },
-  {
-    key: 'voice_starter',
-    version: 'v2',
-    active: true,
-    updatedAt: '2026-04-23',
-    name: '50-Seat CCaaS Voice Starter',
-    desc: 'Named agent voice with MS Teams, CRM, and professional services',
-    icon: '📞',
-    items: [
-      { id: 'S100937', qty: 50 },  // ECX Voice Named Annual PrePay
-      { id: 'S100951', qty: 50 },  // ECX MS Teams Annual Pre-Pay
-      { id: 'S100953', qty: 50 },  // ECX CCaaS CRM Annual Pre Pay
-      { id: 'S101117', qty: 1  },  // PS Package - ECX CCaaS Voice
-      { id: 'S101116', qty: 1  },  // PS Package - Rapid 50 Agents
+      { id: 'S100949', qty: 100 }, // ECX UCX Named Annual PrePay
     ]
   },
   {
     key: 'omni_channel',
-    version: 'v1',
-    active: false,
-    updatedAt: '2025-11-15',
+    version: 'v3',
+    active: true,
+    updatedAt: '2026-04-24',
     name: '100-Seat Omni-Channel CCaaS',
-    desc: 'Full omni-channel with AI Insight, SMS, and training & enablement',
+    desc: 'Omni-channel bundle with AI Insight',
     icon: '🌐',
     items: [
       { id: 'S100941', qty: 100 }, // ECX Omni Named Annual PrePay
-      { id: 'S100906', qty: 100 }, // ECX CCaaS AI Insight NAMED Ann Pre-Pay
-      { id: 'S101122', qty: 1   }, // PS Package - CCaaS SMS Queue
-      { id: 'S101134', qty: 1   }, // PS Package - Extra SMS Queue
-      { id: 'S101116', qty: 1   }, // PS Package - Rapid 50 Agents
-      { id: 'S101118', qty: 1   }, // PS Package - Email
-      { id: 'S101119', qty: 1   }, // PS Package - Chat
+      { id: 'S100955', qty: 100 }, // ECX CCaaS AI Insight NAMED Ann Pre-Pay
     ]
   },
   {
-    key: 'omni_channel',
-    version: 'v2',
+    key: 'max_cloud_pci',
+    version: 'v3',
     active: true,
-    updatedAt: '2026-04-23',
-    name: '100-Seat Omni-Channel CCaaS',
-    desc: 'Full omni-channel with AI Insight, SMS, and training & enablement',
-    icon: '🌐',
-    items: [
-      { id: 'S100941', qty: 100 }, // ECX Omni Named Annual PrePay
-      { id: 'S100906', qty: 100 }, // ECX CCaaS AI Insight NAMED Ann Pre-Pay
-      { id: 'S101122', qty: 1   }, // PS Package - CCaaS SMS Queue
-      { id: 'S101134', qty: 1   }, // PS Package - Extra SMS Queue
-      { id: 'S101116', qty: 1   }, // PS Package - Rapid 50 Agents
-      { id: 'S101118', qty: 1   }, // PS Package - Email
-      { id: 'S101119', qty: 1   }, // PS Package - Chat
-    ]
-  },
-  {
-    key: 'max_sidekick',
-    version: 'v1',
-    active: false,
-    updatedAt: '2025-11-15',
-    name: '25-Seat CCaaS Max with AI Side-Kick',
-    desc: 'Premium Max tier with AI Side-Kick assistant for agent augmentation',
+    updatedAt: '2026-04-24',
+    name: '25-Seat CCaaS Max with Cloud PCI',
+    desc: 'Max named agents paired with Cloud PCI Premium',
     icon: '🤖',
     items: [
       { id: 'S100945', qty: 25 },  // ECX Max Named Annual PrePay
-      { id: 'S100984', qty: 25 },  // ECX AI Side-Kick NAMED Pay Mthly
-      { id: 'S100906', qty: 25 },  // ECX CCaaS AI Insight NAMED Ann Pre-Pay
-      { id: 'S101115', qty: 1  },  // PS Package - Rapid 20 Agents
-    ]
-  },
-  {
-    key: 'max_sidekick',
-    version: 'v2',
-    active: true,
-    updatedAt: '2026-04-23',
-    name: '25-Seat CCaaS Max with AI Side-Kick',
-    desc: 'Premium Max tier with AI Side-Kick assistant for agent augmentation',
-    icon: '🤖',
-    items: [
-      { id: 'S100945', qty: 25 },  // ECX Max Named Annual PrePay
-      { id: 'S100984', qty: 25 },  // ECX AI Side-Kick NAMED Pay Mthly
-      { id: 'S100906', qty: 25 },  // ECX CCaaS AI Insight NAMED Ann Pre-Pay
-      { id: 'S101115', qty: 1  },  // PS Package - Rapid 20 Agents
+      { id: 'S101019', qty: 25 },  // Cloud PCI Premium Named AnPrePay
     ]
   },
   {
     key: 'pci_cloud_named',
-    version: 'v1',
-    active: false,
-    updatedAt: '2025-11-15',
+    version: 'v3',
+    active: true,
+    updatedAt: '2026-04-24',
     name: 'PCI Cloud – Named Agent Bundle',
     desc: 'PCI-compliant cloud with pauseable and premium tiers for payment handling',
     icon: '🔒',
     items: [
       { id: 'S101019', qty: 20 },  // Cloud PCI Premium Named AnPrePay
       { id: 'S100841', qty: 30 },  // Pauseable Named Ann PrePay
-      { id: 'S101069', qty: 1  },  // PM - PCI
-      { id: 'S100935', qty: 1  },  // Consultancy Services
-    ]
-  },
-  {
-    key: 'pci_cloud_named',
-    version: 'v2',
-    active: true,
-    updatedAt: '2026-04-23',
-    name: 'PCI Cloud – Named Agent Bundle',
-    desc: 'PCI-compliant cloud with pauseable and premium tiers for payment handling',
-    icon: '🔒',
-    items: [
-      { id: 'S101019', qty: 20 },  // Cloud PCI Premium Named AnPrePay
-      { id: 'S100841', qty: 30 },  // Pauseable Named Ann PrePay
-      { id: 'S101069', qty: 1  },  // PM - PCI
-      { id: 'S100935', qty: 1  },  // Consultancy Services
     ]
   },
   {
     key: 'ucaas_ccaas_voice',
-    version: 'v1',
-    active: false,
-    updatedAt: '2025-11-15',
+    version: 'v3',
+    active: true,
+    updatedAt: '2026-04-24',
     name: 'UCaaS + CCaaS Voice Bundle',
     desc: 'Combined unified comms and contact centre for mid-market customers',
     icon: '📡',
@@ -6074,58 +6000,6 @@ const TEMPLATES = [
       { id: 'S100949', qty: 100 }, // ECX UCX Named Annual PrePay
       { id: 'S100937', qty: 30  }, // ECX Voice Named Annual PrePay
       { id: 'S100951', qty: 30  }, // ECX MS Teams Annual Pre-Pay
-      { id: 'S101061', qty: 1   }, // PM - ECX UCaaS
-    ]
-  },
-  {
-    key: 'ucaas_ccaas_voice',
-    version: 'v2',
-    active: true,
-    updatedAt: '2026-04-23',
-    name: 'UCaaS + CCaaS Voice Bundle',
-    desc: 'Combined unified comms and contact centre for mid-market customers',
-    icon: '📡',
-    items: [
-      { id: 'S100949', qty: 100 }, // ECX UCX Named Annual PrePay
-      { id: 'S100937', qty: 30  }, // ECX Voice Named Annual PrePay
-      { id: 'S100951', qty: 30  }, // ECX MS Teams Annual Pre-Pay
-      { id: 'S101061', qty: 1   }, // PM - ECX UCaaS
-    ]
-  },
-  {
-    key: 'ai_first_contact_centre',
-    version: 'v1',
-    active: false,
-    updatedAt: '2025-11-15',
-    name: 'AI-First Contact Centre',
-    desc: 'Autopilot voice bot, batch transcription, AI Insight and Side-Kick',
-    icon: '✨',
-    items: [
-      { id: 'S100941', qty: 50  }, // ECX Omni Named Annual PrePay
-      { id: 'S100991', qty: 1   }, // ECX Autopilot AI Voice Bot P/Min
-      { id: 'S100976', qty: 1   }, // ECX Real-Time Transcriptions Hrs
-      { id: 'S100970', qty: 1   }, // ECX Batch Transcription Hours
-      { id: 'S100984', qty: 50  }, // ECX AI Side-Kick NAMED Pay Mthly
-      { id: 'S100906', qty: 50  }, // ECX CCaaS AI Insight NAMED Ann Pre-Pay
-      { id: 'S101116', qty: 1   }, // PS Package - Rapid 50 Agents
-    ]
-  },
-  {
-    key: 'ai_first_contact_centre',
-    version: 'v2',
-    active: true,
-    updatedAt: '2026-04-23',
-    name: 'AI-First Contact Centre',
-    desc: 'Autopilot voice bot, batch transcription, AI Insight and Side-Kick',
-    icon: '✨',
-    items: [
-      { id: 'S100941', qty: 50  }, // ECX Omni Named Annual PrePay
-      { id: 'S100991', qty: 1   }, // ECX Autopilot AI Voice Bot P/Min
-      { id: 'S100976', qty: 1   }, // ECX Real-Time Transcriptions Hrs
-      { id: 'S100970', qty: 1   }, // ECX Batch Transcription Hours
-      { id: 'S100984', qty: 50  }, // ECX AI Side-Kick NAMED Pay Mthly
-      { id: 'S100906', qty: 50  }, // ECX CCaaS AI Insight NAMED Ann Pre-Pay
-      { id: 'S101116', qty: 1   }, // PS Package - Rapid 50 Agents
     ]
   }
 ];
