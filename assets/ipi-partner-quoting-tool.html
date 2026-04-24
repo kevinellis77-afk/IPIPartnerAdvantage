@@ -6306,8 +6306,6 @@ function printQuote() {
   const ref      = document.getElementById('quoteRef').value;
   const date     = new Date().toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'});
   const printProfile = getSelectedQuoteProfile();
-  const levelStr    = printProfile.typeLabel + ' · ' + printProfile.tierLabel;
-  const discPctStr  = ` &nbsp;&bull;&nbsp; ${Math.round(printProfile.discount * 100)}% Partner Discount`;
   const validRaw    = getSelectedValidityDetails().validUntil;
   const validUntilStr = validRaw ? new Date(validRaw).toLocaleDateString('en-GB', {day:'2-digit',month:'long',year:'numeric'}) : 'Not specified';
   const quoteNotes  = document.getElementById('quoteNotes').value.trim();
@@ -6459,8 +6457,8 @@ function printQuote() {
     <div class="meta-cell"><div class="meta-label">Quote Reference</div><div class="meta-value">${ref}</div></div>
     <div class="meta-cell"><div class="meta-label">Partner Name</div><div class="meta-value">${partner}</div></div>
     <div class="meta-cell"><div class="meta-label">End Customer</div><div class="meta-value">${customer}</div></div>
-    <div class="meta-cell"><div class="meta-label">Partner Profile</div><div class="meta-value">
-      <span class="level-pill ${getProfileClassName(getSelectedQuoteProfile())}">${getSelectedQuoteProfile().typeLabel} · ${getSelectedQuoteProfile().tierLabel}</span> &nbsp;&bull;&nbsp; ${Math.round(getSelectedQuoteProfile().discount * 100)}% Partner Discount
+    <div class="meta-cell"><div class="meta-label">Discount Level</div><div class="meta-value">
+      ${Math.round(printProfile.discount * 100)}% Discount
     </div></div>
     <div class="meta-cell"><div class="meta-label">Valid Until</div><div class="meta-value">${validUntilStr}</div></div>
   </div>
