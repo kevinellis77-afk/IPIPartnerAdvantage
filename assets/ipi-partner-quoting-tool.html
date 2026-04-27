@@ -7005,17 +7005,45 @@ function sendEmailViaMailto() {
 
   // mailto body fields are plain text only; rich HTML cannot be reliably preloaded across email clients.
   // Keep this plain-text summary as the fallback content when opening a draft email via mailto.
-  const { mrc, otc, acv } = getGroupedQuoteData();
-  const summaryText = [
+  const { monthlyGroups, oneOffGroups, mrc, otc, acv } = getGroupedQuoteData();
+  const summaryLines = [
     '--- QUOTE SUMMARY ---',
     'Reference: ' + ref,
+    ''
+  ];
+
+  function addGroupedPlainTextLines(groups, billingLabel) {
+    if (!groups.length) return;
+    summaryLines.push('--- ' + billingLabel + ' ---');
+    groups.forEach(function(group) {
+      summaryLines.push(group.cat + ':');
+      group.items.forEach(function(item) {
+        var unitPrice = getEffectivePrice(item);
+        var lineTotal = unitPrice * item.qty;
+        summaryLines.push(
+          getProductDisplayName(item.product) +
+          ' | Qty ' + item.qty +
+          ' | Unit ' + fmtGBP(unitPrice) +
+          ' | Total ' + fmtGBP(lineTotal)
+        );
+      });
+      summaryLines.push('');
+    });
+  }
+
+  addGroupedPlainTextLines(monthlyGroups, 'Recurring Subscriptions');
+  addGroupedPlainTextLines(oneOffGroups, 'One-Off Charges');
+
+  summaryLines.push(
     'Recurring Subscriptions: ' + fmtGBP(mrc),
     otc > 0 ? 'One-Off Charges: ' + fmtGBP(otc) : null,
     'Annual Contract Value: ' + fmtGBP(acv),
     '',
     '--- FULL QUOTE ---',
-    'For the full formatted quote, please refer to the attached PDF or HTML version.',
-  ].filter(Boolean).join('\n');
+    'For the full formatted quote, please refer to the attached PDF or HTML version.'
+  );
+
+  const summaryText = summaryLines.filter(Boolean).join('\n');
 
   const fullBody = body + '\n\n' + summaryText;
   const mailto   = 'mailto:' + encodeURIComponent(to) +
