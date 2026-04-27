@@ -6832,7 +6832,7 @@ function openEmailModal() {
   const validRaw  = getSelectedValidityDetails().validUntil;
   const validStr  = validRaw ? new Date(validRaw).toLocaleDateString('en-GB', {day:'2-digit',month:'long',year:'numeric'}) : '';
   const emailProfile = getSelectedQuoteProfile();
-  const levelStr  = emailProfile.typeLabel + ' · ' + emailProfile.tierLabel;
+  const levelStr  = emailProfile.typeLabel + ' - ' + emailProfile.tierLabel;
 
   const { monthlyGroups, oneOffGroups, mrc, otc, acv } = getGroupedQuoteData();
 
@@ -6871,7 +6871,7 @@ function openEmailModal() {
   summaryRows += '<div style="margin-top:10px;padding-top:8px;border-top:2px solid #263238;display:flex;justify-content:space-between;font-weight:700;font-size:13px"><span>Recurring Total</span><span style="color:#27ae60;font-family:monospace">' + fmtGBP(mrc) + '</span></div>';
   if (otc > 0) summaryRows += '<div style="display:flex;justify-content:space-between;font-size:12px;padding-top:3px"><span style="color:#666">One-Off Charges</span><span style="color:#A37992;font-family:monospace">' + fmtGBP(otc) + '</span></div>';
   summaryRows += '<div style="display:flex;justify-content:space-between;font-size:12px;padding-top:3px"><span style="color:#666">Annual Contract Value</span><span style="font-family:monospace;font-weight:700">' + fmtGBP(acv) + '</span></div>';
-  if (validStr) summaryRows += '<div style="font-size:11px;color:#888;padding-top:6px">Valid until ' + escapeHtml(validStr) + (levelStr ? '  ·  ' + escapeHtml(levelStr) + ' Partner Pricing' : '') + '</div>';
+  if (validStr) summaryRows += '<div style="font-size:11px;color:#888;padding-top:6px">Valid until ' + escapeHtml(validStr) + (levelStr ? '  ·  ' + escapeHtml(levelStr) : '') + '</div>';
 
   document.getElementById('emailPreviewBox').innerHTML = summaryRows;
   document.getElementById('emailModal').classList.remove('hidden');
@@ -6909,7 +6909,7 @@ function buildEmailHTML() {
   const validRaw  = getSelectedValidityDetails().validUntil;
   const validStr  = validRaw ? new Date(validRaw).toLocaleDateString('en-GB', {day:'2-digit',month:'long',year:'numeric'}) : '';
   const emailHTMLProfile = getSelectedQuoteProfile();
-  const levelStr  = emailHTMLProfile.typeLabel + ' · ' + emailHTMLProfile.tierLabel + ' Partner Pricing';
+  const levelStr  = emailHTMLProfile.typeLabel + ' - ' + emailHTMLProfile.tierLabel;
   const bodyText  = escapeHtmlPreserveLines(document.getElementById('emailBody').value.trim());
   const partnerSafe = escapeHtml(partner);
   const customerSafe = escapeHtml(customer);
@@ -6957,7 +6957,7 @@ function buildEmailHTML() {
               '<tr>' +
                 '<td width="200" style="width:200px;padding:10px 14px;border-right:1px solid #dde4e8;vertical-align:top"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#7a8f9a;line-height:1.2">Partner</div><div style="font-size:12px;font-weight:700;color:#263238;line-height:1.4;padding-top:2px">' + partnerSafe + '</div></td>' +
                 '<td width="200" style="width:200px;padding:10px 14px;border-right:1px solid #dde4e8;vertical-align:top"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#7a8f9a;line-height:1.2">End Customer</div><div style="font-size:12px;font-weight:700;color:#263238;line-height:1.4;padding-top:2px">' + customerSafe + '</div></td>' +
-                '<td width="200" style="width:200px;padding:10px 14px;vertical-align:top"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#7a8f9a;line-height:1.2">Pricing + Valid Until</div><div style="font-size:12px;font-weight:700;color:#263238;line-height:1.4;padding-top:2px">' + levelStrSafe + '</div><div style="font-size:12px;font-weight:700;color:#263238;line-height:1.4">' + validStrSafe + '</div></td>' +
+                '<td width="200" style="width:200px;padding:10px 14px;vertical-align:top"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#7a8f9a;line-height:1.2">Pricing + Valid Until</div><div style="font-size:12px;font-weight:700;color:#263238;line-height:1.4;padding-top:2px">' + levelStrSafe + '</div><div style="font-size:12px;font-weight:700;color:#263238;line-height:1.4">Valid until ' + validStrSafe + '</div></td>' +
               '</tr>' +
             '</table>' +
           '</td></tr>' +
