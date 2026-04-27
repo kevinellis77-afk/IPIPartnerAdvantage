@@ -6969,28 +6969,18 @@ function buildEmailHTML() {
   const levelStrSafe = escapeHtml(levelStr);
   const { monthlyGroups, oneOffGroups, mrc, otc, acv } = getGroupedQuoteData();
 
-  function getEmailBuyUnitPrice(item) {
-    // Baseline buy price priority:
-    // 1) explicit product cost
-    // 2) threshold (agreed floor/margin baseline in this catalogue)
-    // 3) effective partner unit price as final fallback
-    var rawCost = item && item.product ? Number(item.product.cost) : 0;
-    if (Number.isFinite(rawCost) && rawCost > 0) return rawCost;
-
-    var rawThreshold = item && item.product ? Number(item.product.threshold) : 0;
-    if (Number.isFinite(rawThreshold) && rawThreshold > 0) return rawThreshold;
-
-    return getEffectivePrice(item);
-  }
-
   function buildTableSection(groups, label) {
     if (!groups.length) return '';
     let html = '<tr><td colspan="7" style="padding:10px 14px 4px;background:#f5f7f8;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;color:#7a8f9a;border-top:2px solid #dde4e8">' + escapeHtml(label) + '</td></tr>';
     groups.forEach(function(g) {
       html += '<tr><td colspan="7" style="padding:4px 14px 2px;font-size:11px;font-weight:700;color:#36454F;background:#fafcfd">' + escapeHtml(g.cat) + '</td></tr>';
       g.items.forEach(function(item) {
-        var ep = getEffectivePrice(item);
-        var buyPrice = getEmailBuyUnitPrice(item);
+        var partnerPrice = getEffectivePrice(item);
+        var rrp = item && item.product ? Number(item.product.list) : 0;
+        if (!Number.isFinite(rrp) || rrp <= 0) {
+          var thresholdFallback = item && item.product ? Number(item.product.threshold) : 0;
+          rrp = Number.isFinite(thresholdFallback) && thresholdFallback > 0 ? thresholdFallback : 0;
+        }
         var licenseType = escapeHtml(getQuoteProductLicenseLabel(item.product));
         var paymentType = escapeHtml(getQuoteProductPaymentLabel(item.product));
         var productName = escapeHtml(getProductDisplayName(item.product));
@@ -6998,9 +6988,9 @@ function buildEmailHTML() {
           '<td style="padding:5px 8px;font-size:11px;color:#586d79">' + licenseType + '</td>' +
           '<td style="padding:5px 8px;font-size:11px;color:#586d79">' + paymentType + '</td>' +
           '<td style="padding:5px 8px;text-align:center;font-size:12px;color:#888">×' + escapeHtml(item.qty) + '</td>' +
-          '<td style="padding:5px 8px;text-align:right;font-size:12px;color:#36454F;font-family:monospace">' + fmtGBP(ep) + '</td>' +
-          '<td style="padding:5px 8px;text-align:right;font-size:12px;color:#586d79;font-family:monospace">' + fmtGBP(buyPrice) + '</td>' +
-          '<td style="padding:5px 14px;text-align:right;font-size:12px;font-weight:600;font-family:monospace">' + fmtGBP(buyPrice * item.qty) + '</td></tr>';
+          '<td style="padding:5px 8px;text-align:right;font-size:12px;color:#36454F;font-family:monospace">' + (rrp > 0 ? fmtGBP(rrp) : '—') + '</td>' +
+          '<td style="padding:5px 8px;text-align:right;font-size:12px;color:#586d79;font-family:monospace">' + (partnerPrice > 0 ? fmtGBP(partnerPrice) : '—') + '</td>' +
+          '<td style="padding:5px 14px;text-align:right;font-size:12px;font-weight:600;font-family:monospace">' + (partnerPrice > 0 ? fmtGBP(partnerPrice * item.qty) : '—') + '</td></tr>';
       });
     });
     return html;
