@@ -2760,7 +2760,7 @@
         <span class="quote-notes-toggle" id="notesToggleLabel">+ Add notes</span>
       </div>
       <div id="notesBody" style="display:none">
-        <textarea class="notes-textarea" id="quoteNotes" placeholder="Add any notes, special terms, or covering message for this quote…" oninput="updateNotesToggle()"></textarea>
+        <textarea class="notes-textarea" id="quoteNotes" placeholder="Mandatory terms are always included. Add any extra notes beneath them…" oninput="updateNotesToggle()" onblur="enforceMandatoryQuoteNotes()"></textarea>
       </div>
     </div>
 
@@ -3845,6 +3845,7 @@ let quoteCounter     = generateQuoteRef();
 let currentBaseRef   = quoteCounter;   // base ref (without version suffix)
 let currentVersion   = 0;              // 0 = unsaved, 1+ = saved version number
 let currentChangeNote = '';            // brief description of what changed
+const MANDATORY_NOTES_TEXT = 'All quotations and orders are issued subject to the terms and conditions of the IPI Reseller Agreement, which shall take precedence over any conflicting terms';
 
 const WORKFLOW_CONTEXT_STORAGE_VERSION = 'v1';
 const HOST_COMMERCIAL_CONTEXT_STORAGE_KEY = 'ipi-host-commercial-context-v1';
@@ -5214,7 +5215,7 @@ function resetQuote() {
   document.getElementById('partnerName').value = '';
   document.getElementById('endCustomer').value = '';
   document.getElementById('quoteRef').value    = currentBaseRef;
-  document.getElementById('quoteNotes').value  = '';
+  document.getElementById('quoteNotes').value  = MANDATORY_NOTES_TEXT;
   setDefaultValidityDate();
   setQuoteProfile('reseller', 'accredited');
   renderQuote();
@@ -5310,6 +5311,26 @@ function getQuoteVersion(q) {
   return q.version || 1;
 }
 
+function normalizeQuoteNotes(notes) {
+  const trimmedNotes = (notes || '').trim();
+  if (!trimmedNotes) return MANDATORY_NOTES_TEXT;
+  if (trimmedNotes.includes(MANDATORY_NOTES_TEXT)) return trimmedNotes;
+  return MANDATORY_NOTES_TEXT + '\n\n' + trimmedNotes;
+}
+
+function getNormalizedQuoteNotes() {
+  const notesEl = document.getElementById('quoteNotes');
+  return normalizeQuoteNotes(notesEl ? notesEl.value : '');
+}
+
+function enforceMandatoryQuoteNotes() {
+  const notesEl = document.getElementById('quoteNotes');
+  if (!notesEl) return;
+  const normalized = normalizeQuoteNotes(notesEl.value);
+  if (notesEl.value !== normalized) notesEl.value = normalized;
+  updateNotesToggle();
+}
+
 // ─── VERSION MANAGEMENT ──────────────────────────────────────────────────────
 function buildQuoteData(baseRef, version, changeNote) {
   const partner    = document.getElementById('partnerName').value || '';
@@ -5317,7 +5338,7 @@ function buildQuoteData(baseRef, version, changeNote) {
   const profile    = getSelectedQuoteProfile();
   const level      = profile.tier || '';
   const partnerModel = profile.type || 'reseller';
-  const notes      = document.getElementById('quoteNotes').value.trim();
+  const notes      = getNormalizedQuoteNotes();
   const validityDetails = getSelectedValidityDetails();
   const validUntil = validityDetails.validUntil;
   let mrc = 0, otc = 0;
@@ -5437,14 +5458,12 @@ function doLoadQuote(ref) {
   document.getElementById('quoteRef').value = currentBaseRef;
 
   setQuoteProfile(q.partnerModel || 'reseller', q.level || 'accredited');
-  document.getElementById('quoteNotes').value = q.notes || '';
+  document.getElementById('quoteNotes').value = normalizeQuoteNotes(q.notes);
   populateValidityPresets(q.validUntilPreset || inferPresetFromDate(q.validUntil));
   syncValidUntilFromPreset();
   updateNotesToggle();
-  if (q.notes) {
-    document.getElementById('notesBody').style.display = 'block';
-    updateNotesToggle();
-  }
+  document.getElementById('notesBody').style.display = 'block';
+  updateNotesToggle();
 
   closeSavedQuotesModal();
   renderQuote();
@@ -6308,7 +6327,7 @@ function printQuote() {
   const printProfile = getSelectedQuoteProfile();
   const validRaw    = getSelectedValidityDetails().validUntil;
   const validUntilStr = validRaw ? new Date(validRaw).toLocaleDateString('en-GB', {day:'2-digit',month:'long',year:'numeric'}) : 'Not specified';
-  const quoteNotes  = document.getElementById('quoteNotes').value.trim();
+  const quoteNotes  = getNormalizedQuoteNotes();
 
   const { monthlyGroups, oneOffGroups, mrc, otc, acv } = getGroupedQuoteData();
 
@@ -6775,13 +6794,18 @@ function toggleNotes() {
 function updateNotesToggle() {
   const body   = document.getElementById('notesBody');
   const label  = document.getElementById('notesToggleLabel');
-  const notes  = document.getElementById('quoteNotes').value.trim();
+  const notes  = normalizeQuoteNotes(document.getElementById('quoteNotes').value);
   const isOpen = body.style.display !== 'none';
-  if (notes) {
-    label.textContent = isOpen ? '▲ Hide' : '▼ ' + notes.substring(0, 40) + (notes.length > 40 ? '…' : '');
-  } else {
-    label.textContent = isOpen ? '▲ Hide' : '+ Add notes';
+  const extraNotes = notes.replace(MANDATORY_NOTES_TEXT, '').trim();
+  if (isOpen) {
+    label.textContent = '▲ Hide';
+    return;
   }
+  if (extraNotes) {
+    label.textContent = '▼ ' + extraNotes.substring(0, 40) + (extraNotes.length > 40 ? '…' : '');
+    return;
+  }
+  label.textContent = '▼ Mandatory terms included';
 }
 
 // ─── HELP MODAL ──────────────────────────────────────────────────────────────
