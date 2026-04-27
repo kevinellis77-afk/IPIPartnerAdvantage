@@ -4506,6 +4506,10 @@ function compareProductsForBusinessOrder(left, right, categoryOverride) {
   const licenseDelta = getLicenseBlockOrder(a.agentType) - getLicenseBlockOrder(b.agentType);
   if (licenseDelta !== 0) return licenseDelta;
 
+  if (normalizeCategory(a.category) === 'services') {
+    return String(a.id).localeCompare(String(b.id), undefined, { numeric: true, sensitivity: 'base' });
+  }
+
   const familyDelta = getCategoryFamilyOrder(a.category, a.name) - getCategoryFamilyOrder(b.category, b.name);
   if (familyDelta !== 0) return familyDelta;
 
@@ -8014,10 +8018,7 @@ function getDisplayPaymentType(product) {
 }
 
 function sortRowsForCategory(rows, category) {
-  if (!Array.isArray(rows)) return [];
-  return rows.slice().sort(function(a, b) {
-    return compareProductsForBusinessOrder(a, b, category);
-  });
+  return sortRowsWithinCategory(rows, category);
 }
 
 function groupRowsForDisplay(rows) {
