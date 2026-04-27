@@ -5186,6 +5186,48 @@ function getEffectivePrice(item) {
   return getDiscountedPrice(item.product);
 }
 
+const DISCOUNT_THRESHOLD_WARNING_MESSAGE = 'Please contact your IPI Channel Manager to get price approval.';
+
+function getDiscountThresholdOffendingLines() {
+  return quoteItems.reduce(function(offending, item) {
+    const threshold = Number(item && item.product ? item.product.threshold : 0);
+    if (!Number.isFinite(threshold) || threshold <= 0) return offending;
+    const effectivePrice = getEffectivePrice(item);
+    if (effectivePrice < threshold) {
+      offending.push({
+        sku: item.product.id || 'Unknown SKU',
+        productName: getProductDisplayName(item.product),
+        effectivePrice: effectivePrice,
+        threshold: threshold
+      });
+    }
+    return offending;
+  }, []);
+}
+
+function formatDiscountThresholdWarningDetails(offendingLines) {
+  if (!offendingLines.length) return '';
+  const detailItems = offendingLines.map(function(line) {
+    return '<li><strong>' + escapeHtml(line.sku) + '</strong> — ' + escapeHtml(line.productName) +
+      ' (Partner Price: ' + fmtGBP(line.effectivePrice) + ', Threshold: ' + fmtGBP(line.threshold) + ')</li>';
+  }).join('');
+  return '<ul style="margin:8px 0 0 18px;padding:0;color:var(--charcoal);font-size:12px;line-height:1.5">' + detailItems + '</ul>';
+}
+
+function showDiscountThresholdWarning(offendingLines) {
+  const message = '<strong>Discount Threshold</strong><br>' +
+    DISCOUNT_THRESHOLD_WARNING_MESSAGE +
+    formatDiscountThresholdWarningDetails(offendingLines);
+  showConfirmBanner(message, 'OK', function() {});
+}
+
+function validateDiscountThresholdForQuoteAction() {
+  const offendingLines = getDiscountThresholdOffendingLines();
+  if (!offendingLines.length) return true;
+  showDiscountThresholdWarning(offendingLines);
+  return false;
+}
+
 function updateTotals() {
   let mrc = 0, otc = 0;
   quoteItems.forEach(item => {
@@ -5366,6 +5408,7 @@ function saveQuote() { promptSaveVersion(); }
 
 function promptSaveVersion() {
   if (quoteItems.length === 0) { showToast('⚠ Add products before saving'); return; }
+  if (!validateDiscountThresholdForQuoteAction()) return;
   const baseRef  = currentBaseRef || document.getElementById('quoteRef').value || generateQuoteRef();
   const existing = getSavedQuotes().filter(q => getQuoteBaseRef(q) === baseRef);
   const nextVer  = existing.length > 0 ? Math.max(...existing.map(getQuoteVersion)) + 1 : 1;
@@ -6226,6 +6269,7 @@ function getGroupedQuoteData() {
 // ─── EXPORT MODAL ─────────────────────────────────────────────────────────────
 function openExportModal() {
   if (quoteItems.length === 0) { showToast('⚠ Add products to your quote first'); return; }
+  if (!validateDiscountThresholdForQuoteAction()) return;
 
   const partner  = document.getElementById('partnerName').value || 'Partner';
   const customer = document.getElementById('endCustomer').value || 'End Customer';
@@ -6326,6 +6370,7 @@ function closeExportModal(e) {
 }
 
 function printQuote() {
+  if (!validateDiscountThresholdForQuoteAction()) return;
   const partner  = document.getElementById('partnerName').value || 'Partner';
   const customer = document.getElementById('endCustomer').value || 'End Customer';
   const ref      = document.getElementById('quoteRef').value;
@@ -6497,6 +6542,7 @@ function printQuote() {
 }
 
 function copyCSV() {
+  if (!validateDiscountThresholdForQuoteAction()) return;
   const ref = document.getElementById('quoteRef').value;
   const partner = document.getElementById('partnerName').value || '';
   const customer = document.getElementById('endCustomer').value || '';
@@ -6826,6 +6872,7 @@ function closeHelpModal(e) {
 
 // ─── EMAIL MODAL ──────────────────────────────────────────────────────────────
 function openEmailModal() {
+  if (!validateDiscountThresholdForQuoteAction()) return;
   const partner   = document.getElementById('partnerName').value || 'Partner';
   const customer  = document.getElementById('endCustomer').value || 'End Customer';
   const ref       = document.getElementById('quoteRef').value;
@@ -7014,6 +7061,7 @@ function buildEmailHTML() {
 }
 
 function sendEmailViaMailto() {
+  if (!validateDiscountThresholdForQuoteAction()) return;
   const to      = document.getElementById('emailTo').value.trim();
   const cc      = document.getElementById('emailCc').value.trim();
   const subject = document.getElementById('emailSubject').value.trim();
@@ -7082,6 +7130,7 @@ function sendEmailViaMailto() {
 }
 
 function copyEmailHTML() {
+  if (!validateDiscountThresholdForQuoteAction()) return;
   const html = buildEmailHTML();
   const plain = (function() {
     const temp = document.createElement('div');
