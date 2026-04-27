@@ -7000,7 +7000,7 @@ function buildEmailHTML() {
           '<td style="padding:5px 8px;text-align:center;font-size:12px;color:#888">×' + escapeHtml(item.qty) + '</td>' +
           '<td style="padding:5px 8px;text-align:right;font-size:12px;color:#36454F;font-family:monospace">' + fmtGBP(ep) + '</td>' +
           '<td style="padding:5px 8px;text-align:right;font-size:12px;color:#586d79;font-family:monospace">' + fmtGBP(buyPrice) + '</td>' +
-          '<td style="padding:5px 14px;text-align:right;font-size:12px;font-weight:600;font-family:monospace">' + fmtGBP(ep * item.qty) + '</td></tr>';
+          '<td style="padding:5px 14px;text-align:right;font-size:12px;font-weight:600;font-family:monospace">' + fmtGBP(buyPrice * item.qty) + '</td></tr>';
       });
     });
     return html;
@@ -7035,13 +7035,13 @@ function buildEmailHTML() {
           '<tr><td style="padding:0">' +
             '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse">' +
               '<thead><tr>' +
-                '<td role="columnheader" bgcolor="#263238" style="padding:8px 14px;background:#263238;color:#ffffff !important;-webkit-text-fill-color:#ffffff !important;font-size:10px;text-align:left;text-transform:uppercase;letter-spacing:0.5px"><span style="color:#ffffff !important;-webkit-text-fill-color:#ffffff !important">Product</span></td>' +
-                '<td role="columnheader" bgcolor="#263238" style="padding:8px 8px;background:#263238;color:#ffffff !important;-webkit-text-fill-color:#ffffff !important;font-size:10px;text-align:left;text-transform:uppercase;letter-spacing:0.5px"><span style="color:#ffffff !important;-webkit-text-fill-color:#ffffff !important">License Type</span></td>' +
-                '<td role="columnheader" bgcolor="#263238" style="padding:8px 8px;background:#263238;color:#ffffff !important;-webkit-text-fill-color:#ffffff !important;font-size:10px;text-align:left;text-transform:uppercase;letter-spacing:0.5px"><span style="color:#ffffff !important;-webkit-text-fill-color:#ffffff !important">Payment Type</span></td>' +
-                '<td role="columnheader" bgcolor="#263238" style="padding:8px 8px;background:#263238;color:#ffffff !important;-webkit-text-fill-color:#ffffff !important;font-size:10px;text-align:center;text-transform:uppercase;letter-spacing:0.5px"><span style="color:#ffffff !important;-webkit-text-fill-color:#ffffff !important">Qty</span></td>' +
-                '<td role="columnheader" bgcolor="#263238" style="padding:8px 8px;background:#263238;color:#ffffff !important;-webkit-text-fill-color:#ffffff !important;font-size:10px;text-align:right;text-transform:uppercase;letter-spacing:0.5px"><span style="color:#ffffff !important;-webkit-text-fill-color:#ffffff !important">Unit Price (Partner Pays / Net Sell)</span></td>' +
-                '<td role="columnheader" bgcolor="#263238" style="padding:8px 8px;background:#263238;color:#ffffff !important;-webkit-text-fill-color:#ffffff !important;font-size:10px;text-align:right;text-transform:uppercase;letter-spacing:0.5px"><span style="color:#ffffff !important;-webkit-text-fill-color:#ffffff !important">Partner Buy Price</span></td>' +
-                '<td role="columnheader" bgcolor="#263238" style="padding:8px 14px;background:#263238;color:#ffffff !important;-webkit-text-fill-color:#ffffff !important;font-size:10px;text-align:right;text-transform:uppercase;letter-spacing:0.5px"><span style="color:#ffffff !important;-webkit-text-fill-color:#ffffff !important">Total Line Value</span></td>' +
+                '<th style="padding:8px 14px;background:#263238;color:#ffffff !important;-webkit-text-fill-color:#ffffff !important;font-size:10px;text-align:left;text-transform:uppercase;letter-spacing:0.5px"><span style="color:#ffffff !important;-webkit-text-fill-color:#ffffff !important">Product</span></th>' +
+                '<th style="padding:8px 8px;background:#263238;color:#ffffff !important;-webkit-text-fill-color:#ffffff !important;font-size:10px;text-align:left;text-transform:uppercase;letter-spacing:0.5px"><span style="color:#ffffff !important;-webkit-text-fill-color:#ffffff !important">Type</span></th>' +
+                '<th style="padding:8px 8px;background:#263238;color:#ffffff !important;-webkit-text-fill-color:#ffffff !important;font-size:10px;text-align:left;text-transform:uppercase;letter-spacing:0.5px"><span style="color:#ffffff !important;-webkit-text-fill-color:#ffffff !important">Payment</span></th>' +
+                '<th style="padding:8px 8px;background:#263238;color:#ffffff !important;-webkit-text-fill-color:#ffffff !important;font-size:10px;text-align:center;text-transform:uppercase;letter-spacing:0.5px"><span style="color:#ffffff !important;-webkit-text-fill-color:#ffffff !important">Qty</span></th>' +
+                '<th style="padding:8px 8px;background:#263238;color:#ffffff !important;-webkit-text-fill-color:#ffffff !important;font-size:10px;text-align:right;text-transform:uppercase;letter-spacing:0.5px"><span style="color:#ffffff !important;-webkit-text-fill-color:#ffffff !important">RRP</span></th>' +
+                '<th style="padding:8px 8px;background:#263238;color:#ffffff !important;-webkit-text-fill-color:#ffffff !important;font-size:10px;text-align:right;text-transform:uppercase;letter-spacing:0.5px"><span style="color:#ffffff !important;-webkit-text-fill-color:#ffffff !important">Partner Price</span></th>' +
+                '<th style="padding:8px 14px;background:#263238;color:#ffffff !important;-webkit-text-fill-color:#ffffff !important;font-size:10px;text-align:right;text-transform:uppercase;letter-spacing:0.5px"><span style="color:#ffffff !important;-webkit-text-fill-color:#ffffff !important">Total</span></th>' +
               '</tr></thead><tbody>' +
               buildTableSection(monthlyGroups, 'Recurring Subscriptions') +
               buildTableSection(oneOffGroups,  'One-Off Charges') +
