@@ -7438,17 +7438,30 @@ function initPartnerTierModals() {
     document.body.classList.add('modal-open');
   }
 
+  const partnerTierQuoteUrl = 'https://kevinellis77-afk.github.io/IPIQuoting/';
+  const partnerTierQuoteKeys = new Set(['reseller', 'msp']);
+
+  function openPartnerTierQuote(key) {
+    if (!partnerTierQuoteKeys.has(key)) return false;
+    window.open(partnerTierQuoteUrl, '_blank', 'noopener');
+    return true;
+  }
+
   document.querySelectorAll('[data-tier-modal-open]').forEach((trigger) => {
     trigger.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      openModal(trigger.dataset.tierModalOpen);
+      if (!openPartnerTierQuote(trigger.dataset.tierModalOpen)) {
+        openModal(trigger.dataset.tierModalOpen);
+      }
     });
     if (trigger.classList.contains('partner-model-card--interactive')) {
       trigger.addEventListener('keydown', (event) => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
-          openModal(trigger.dataset.tierModalOpen);
+          if (!openPartnerTierQuote(trigger.dataset.tierModalOpen)) {
+            openModal(trigger.dataset.tierModalOpen);
+          }
         }
       });
     }
